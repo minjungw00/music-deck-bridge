@@ -1,0 +1,92 @@
+{
+  "heading": {
+    "message": "YouTube Music × Stream Deck"
+  },
+  "guide": {
+    "message": "Stream Deck 설정에서 PIN을 발급한 후 여기 입력하세요."
+  },
+  "pin": {
+    "message": "연결 PIN"
+  },
+  "connect": {
+    "message": "연결"
+  },
+  "refresh": {
+    "message": "상태 확인"
+  },
+  "forget": {
+    "message": "해제"
+  },
+  "portLabel": {
+    "message": "로컬 서버 포트"
+  },
+  "savePort": {
+    "message": "적용"
+  },
+  "portHint": {
+    "message": "Stream Deck과 같은 포트를 사용합니다. 연결된 상태라면 이곳에서 변경 시 서버에도 적용됩니다."
+  },
+  "portInvalid": {
+    "message": "포트는 1024~65535 사이의 정수여야 합니다."
+  },
+  "portSaved": {
+    "message": "로컬 서버 포트 변경 완료:"
+  },
+  "portLocal": {
+    "message": "확장 프로그램 포트만 저장되었습니다. Stream Deck 설정의 포트도 일치시켜 주세요."
+  },
+  "invalid": {
+    "message": "PIN은 6자리 숫자여야 합니다."
+  },
+  "checking": {
+    "message": "연결 확인 중…"
+  },
+  "fail": {
+    "message": "연결에 실패했습니다."
+  },
+  "connected": {
+    "message": "연결됨 · YouTube Music 앱을 열거나 새로고침하세요."
+  },
+  "unknown": {
+    "message": "확인할 수 없습니다."
+  },
+  "player": {
+    "message": "연결됨"
+  },
+  "app": {
+    "message": "앱"
+  },
+  "tab": {
+    "message": "브라우저 탭"
+  },
+  "current": {
+    "message": "현재 곡"
+  },
+  "waiting": {
+    "message": "확인 중"
+  },
+  "artwork": {
+    "message": "앨범 이미지"
+  },
+  "stale": {
+    "message": "플레이어 응답이 지연되고 있습니다. Chrome 메모리 절약 설정을 확인하세요."
+  },
+  "paired": {
+    "message": "인증됨 · YouTube Music 창을 열거나 새로고침하세요."
+  },
+  "removed": {
+    "message": "확장 프로그램 연결 정보를 지웠습니다. 새 PIN을 입력하세요."
+  },
+  "extensionName": {
+    "message": "Music Deck Bridge"
+  },
+  "extensionShortName": {
+    "message": "Music Deck Bridge"
+  },
+  "extensionDescription": {
+    "message": "Chrome 확장 프로그램을 통해 Elgato Stream Deck에서 YouTube Music을 조작합니다."
+  },
+  "notPaired": {
+    "message": "아직 페어링되지 않았습니다."
+  }
+}

@@ -1,0 +1,35 @@
+# Dependencies and build outputs
+node_modules/
+dist/
+coverage/
+*.streamDeckPlugin
+*.crx
+*.zip
+*.tsbuildinfo
+
+# Secrets and private files
+.env
+.env.*
+*.pem
+*.p12
+*.key
+*.pfx
+**/auth.json
+**/config.json.tmp-*
+
+# Runtime state
+runtime-data/
+logs/
+*.log
+
+# Editor and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*:Zone.Identifier
+
+# Python
+__pycache__/
+*.pyc
+.venv/

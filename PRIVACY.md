@@ -1,0 +1,43 @@
+# Privacy
+
+Effective date: October 17, 2026.
+
+Music Deck Bridge connects the YouTube Music web player in Chrome to a Stream Deck plugin on the same computer. It has no project-operated server, analytics, advertising or telemetry. It does not read Google passwords, account tokens, payment information or browser history. Normal YouTube Music and Chrome network activity is governed by their providers' policies.
+
+## Data used
+
+| Data | Purpose | Storage and retention |
+| --- | --- | --- |
+| Song title, artist, artwork URLs, playing/mute state, volume | Display the current track and control the player | Plugin memory; replaced as state changes and cleared when the process exits |
+| Chrome tab ID and installed-app status | Select a player, preferring the installed Chrome app | Plugin memory; not a persistent browsing record |
+| Six-digit pairing PIN | Authorize a new extension connection | Plugin memory; expires after ten minutes or successful pairing |
+| Random pairing token and extension origin/ID | Authenticate local requests | Plugin `auth.json`; extension token in `chrome.storage.local`; retained until replaced or deleted |
+| Local bridge port | Connect the two components | Plugin `config.json` and extension `chrome.storage.local` (`bridgePort`); retained until changed or deleted |
+| Artwork bytes and download errors | Show artwork and connection diagnostics | Plugin memory cache; cleared on plugin exit |
+| Queued playback commands | Deliver button and dial input | Plugin memory; consumed on delivery or discarded after five seconds |
+
+On Windows, plugin files are stored under `%APPDATA%\MusicDeckBridge\`. Chrome manages the extension's local storage inside the active browser profile; the extension does not use Chrome sync storage. Stream Deck separately stores action settings, including title display mode and dial step size, in its profiles.
+
+## Network activity
+
+The extension sends player state and authenticated commands to `http://127.0.0.1:<port>` (default `17864`). The bridge listens on the IPv4 loopback interface and accepts Chrome extension origins, with token and paired-origin checks after pairing. Content scripts do not receive the token through the extension message API.
+
+The plugin fetches album artwork over HTTPS from `i.ytimg.com`, `img.youtube.com`, `yt3.ggpht.com`, `yt3.googleusercontent.com` and numbered `lh*.googleusercontent.com` hosts. Redirect destinations must also pass this allowlist. These requests expose your IP address, the requested artwork URL, standard request metadata and a YouTube Music Referer to the image provider. Google account cookies are not supplied by the plugin. Artwork URLs may identify the track being played. **Not all network activity is local.**
+
+No listening data is sent to the project maintainer or sold. Diagnostic logs may contain connection details, artwork URLs or errors; review logs before sharing them. The project does not define a retention policy for logs maintained by Stream Deck or Chrome.
+
+## Permissions
+
+- `storage`: save the pairing token and port locally.
+- `scripting`: restore the content script after updates/startup and operate YouTube Music's volume/mute controls in the page's JavaScript environment. Pairing tokens remain in the extension service worker.
+- `alarms`: periodically check for open player windows.
+- `https://music.youtube.com/*`: read player metadata and execute playback controls on that site.
+- `http://127.0.0.1/*`: connect to the configurable local bridge port.
+
+## Delete or reset data
+
+Select **Unpair** in the popup to remove the extension's token. This does not delete the plugin's `auth.json` or the port. A new successful pairing replaces the plugin's previous token and extension origin.
+
+For a full reset, quit Stream Deck, delete `%APPDATA%\MusicDeckBridge\auth.json` and `config.json`, and remove the extension through `chrome://extensions` to delete its local storage. To uninstall the plugin, delete `io.github.minjungw00.musicdeckbridge.sdPlugin` from `C:\Users\username\AppData\Roaming\Elgato\StreamDeck\Plugins`, replacing `username` with your Windows account name. Remove associated Stream Deck actions/profiles through Stream Deck if you also want to delete their settings.
+
+For questions use the [repository issues](https://github.com/minjungw00/music-deck-bridge/issues); for sensitive information follow [SECURITY.md](SECURITY.md). Before Chrome Web Store submission, review this document against the actual submitted version and its store privacy declarations.

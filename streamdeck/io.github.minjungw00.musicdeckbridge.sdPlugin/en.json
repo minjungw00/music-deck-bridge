@@ -1,0 +1,32 @@
+{
+  "Name": "Music Deck Bridge",
+  "Description": "Control YouTube Music directly in Chrome.",
+  "io.github.minjungw00.musicdeckbridge.nowplaying": {
+    "Name": "Now Playing",
+    "Tooltip": "Show artwork, song and artist. Press to play or pause."
+  },
+  "io.github.minjungw00.musicdeckbridge.toggle": {
+    "Name": "Play / Pause",
+    "Tooltip": "Play or pause YouTube Music."
+  },
+  "io.github.minjungw00.musicdeckbridge.prev": {
+    "Name": "Previous Track",
+    "Tooltip": "Skip to the previous track."
+  },
+  "io.github.minjungw00.musicdeckbridge.next": {
+    "Name": "Next Track",
+    "Tooltip": "Skip to the next track."
+  },
+  "io.github.minjungw00.musicdeckbridge.mute": {
+    "Name": "Mute",
+    "Tooltip": "Toggle mute."
+  },
+  "io.github.minjungw00.musicdeckbridge.volume": {
+    "Name": "Volume Dial",
+    "Tooltip": "Turn to adjust volume, push to mute."
+  },
+  "io.github.minjungw00.musicdeckbridge.trackdial": {
+    "Name": "Track Dial",
+    "Tooltip": "Turn to change tracks, push to play or pause."
+  }
+}

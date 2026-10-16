@@ -1,0 +1,67 @@
+# Manual draft releases only. Complete docs/development.md's release checklist first.
+name: Draft release
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing version tag in vX.Y.Z format'
+        required: true
+        type: string
+      readiness_confirmed:
+        description: 'Windows install, pairing, device and SDK/DRM checks have been completed'
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    if: ${{ inputs.readiness_confirmed }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify tag matches source version
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: node -e "if (process.env.RELEASE_TAG !== 'v' + require('./package.json').version) process.exit(1)"
+      - run: npm ci --ignore-scripts
+      - run: npm run check
+      - run: npm test
+      - run: python -m unittest discover -s tests -p "test_*.py"
+      - run: npm run build:chrome
+      - run: npm install --global @elgato/cli@1.10.2
+      - run: npm run build:streamdeck
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-packages
+          path: |
+            dist/*.zip
+            dist/*.streamDeckPlugin
+          if-no-files-found: error
+
+  draft:
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-packages
+          path: dist
+      - name: Attach packages to a draft GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: gh release create "$RELEASE_TAG" dist/* --verify-tag --draft --title "Music Deck Bridge $RELEASE_TAG" --generate-notes

@@ -1,0 +1,9 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+# The runtime and root tooling have no npm dependencies. Review the vendored
+# sdpi-components bundle and the release workflow's pinned CLI manually.

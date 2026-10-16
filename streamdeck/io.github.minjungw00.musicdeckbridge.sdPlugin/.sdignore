@@ -1,0 +1,10 @@
+.env*
+auth.json
+runtime-data/
+logs/
+*.log
+*.map
+*:Zone.Identifier
+node_modules/
+.DS_Store
+Thumbs.db

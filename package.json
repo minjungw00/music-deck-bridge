@@ -1,0 +1,19 @@
+{
+  "name": "music-deck-bridge",
+  "version": "0.5.1",
+  "private": true,
+  "description": "Control YouTube Music from Elgato Stream Deck using a Chrome extension.",
+  "license": "Apache-2.0",
+  "author": "minjungw00",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/minjungw00/music-deck-bridge.git"
+  },
+  "engines": { "node": ">=24 <25" },
+  "scripts": {
+    "test": "node --test --test-concurrency=1 tests/*.test.mjs",
+    "check": "node scripts/check.mjs",
+    "build:chrome": "node scripts/package.mjs chrome",
+    "build:streamdeck": "node scripts/package.mjs streamdeck"
+  }
+}

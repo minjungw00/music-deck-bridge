@@ -1,0 +1,165 @@
+{
+  "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+  "Actions": [
+    {
+      "Name": "Now Playing",
+      "UUID": "io.github.minjungw00.musicdeckbridge.nowplaying",
+      "Icon": "imgs/actions/nowplaying/icon",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/nowplaying/key",
+          "TitleAlignment": "bottom",
+          "FontSize": 10,
+          "ShowTitle": true
+        }
+      ],
+      "Tooltip": "Show artwork, song and artist. Press to play or pause."
+    },
+    {
+      "Name": "Play / Pause",
+      "UUID": "io.github.minjungw00.musicdeckbridge.toggle",
+      "Icon": "imgs/actions/toggle/icon",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/toggle/key",
+          "TitleAlignment": "bottom",
+          "FontSize": 12,
+          "ShowTitle": true
+        }
+      ],
+      "Tooltip": "Play or pause YouTube Music."
+    },
+    {
+      "Name": "Previous Track",
+      "UUID": "io.github.minjungw00.musicdeckbridge.prev",
+      "Icon": "imgs/actions/prev/icon",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/prev/key",
+          "TitleAlignment": "bottom",
+          "FontSize": 12,
+          "ShowTitle": true
+        }
+      ],
+      "Tooltip": "Skip to the previous track."
+    },
+    {
+      "Name": "Next Track",
+      "UUID": "io.github.minjungw00.musicdeckbridge.next",
+      "Icon": "imgs/actions/next/icon",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/next/key",
+          "TitleAlignment": "bottom",
+          "FontSize": 12,
+          "ShowTitle": true
+        }
+      ],
+      "Tooltip": "Skip to the next track."
+    },
+    {
+      "Name": "Mute",
+      "UUID": "io.github.minjungw00.musicdeckbridge.mute",
+      "Icon": "imgs/actions/mute/icon",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/mute/key",
+          "TitleAlignment": "bottom",
+          "FontSize": 12,
+          "ShowTitle": true
+        }
+      ],
+      "Tooltip": "Toggle mute."
+    },
+    {
+      "Name": "Volume Dial",
+      "UUID": "io.github.minjungw00.musicdeckbridge.volume",
+      "Icon": "imgs/actions/volume/icon",
+      "Controllers": [
+        "Encoder"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/volume/key",
+          "TitleAlignment": "bottom",
+          "FontSize": 12,
+          "ShowTitle": true
+        }
+      ],
+      "Tooltip": "Turn to adjust volume, push to mute.",
+      "Encoder": {
+        "Icon": "imgs/actions/volume/key",
+        "layout": "$B1",
+        "TriggerDescription": {
+          "Push": "Mute",
+          "Rotate": "Adjust YouTube Music volume",
+          "Touch": "Play / Pause"
+        }
+      }
+    },
+    {
+      "Name": "Track Dial",
+      "UUID": "io.github.minjungw00.musicdeckbridge.trackdial",
+      "Icon": "imgs/actions/trackdial/icon",
+      "Controllers": [
+        "Encoder"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/trackdial/key",
+          "TitleAlignment": "bottom",
+          "FontSize": 12,
+          "ShowTitle": true
+        }
+      ],
+      "Tooltip": "Turn to change tracks, push to play or pause.",
+      "Encoder": {
+        "Icon": "imgs/actions/trackdial/key",
+        "layout": "$B1",
+        "TriggerDescription": {
+          "Push": "Play / Pause",
+          "Rotate": "Previous / next track",
+          "Touch": "Play / Pause"
+        }
+      }
+    }
+  ],
+  "Author": "minjungw00",
+  "Category": "Music Deck Bridge",
+  "CategoryIcon": "imgs/plugin/category",
+  "CodePath": "bin/plugin.js",
+  "Description": "Control YouTube Music directly from Chrome or its installed app. Independent, unofficial integration.",
+  "Icon": "imgs/plugin/icon",
+  "Name": "Music Deck Bridge",
+  "Nodejs": {
+    "Version": "24"
+  },
+  "OS": [
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ],
+  "SDKVersion": 3,
+  "Software": {
+    "MinimumVersion": "7.1"
+  },
+  "UUID": "io.github.minjungw00.musicdeckbridge",
+  "Version": "0.5.1.0",
+  "PropertyInspectorPath": "property-inspector/settings.html"
+}

@@ -1,0 +1,16 @@
+name: Feature request / 기능 제안
+description: Suggest an improvement to Music Deck Bridge.
+title: '[Feature] '
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / 해결하려는 문제
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed behavior / 제안하는 동작
+    validations:
+      required: true

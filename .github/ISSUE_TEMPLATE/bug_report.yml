@@ -1,0 +1,23 @@
+name: Bug report / 버그 보고
+description: Report a reproducible problem. Security reports belong in SECURITY.md.
+title: '[Bug] '
+body:
+  - type: input
+    id: versions
+    attributes:
+      label: Versions / 버전
+      description: Music Deck Bridge, Windows, Chrome, Stream Deck software and device model.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce / 재현 방법
+      description: Include normal tab or installed Chrome app, and expected versus actual behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics / 진단 정보
+      description: Remove tokens, PINs, auth.json contents, personal paths and private listening information before sharing.

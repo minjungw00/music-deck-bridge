@@ -1,0 +1,92 @@
+{
+  "heading": {
+    "message": "YouTube Music × Stream Deck"
+  },
+  "guide": {
+    "message": "Generate a PIN in Stream Deck action settings and enter it here."
+  },
+  "pin": {
+    "message": "Connection PIN"
+  },
+  "connect": {
+    "message": "Connect"
+  },
+  "refresh": {
+    "message": "Check status"
+  },
+  "forget": {
+    "message": "Unpair"
+  },
+  "portLabel": {
+    "message": "Local server port"
+  },
+  "savePort": {
+    "message": "Apply"
+  },
+  "portHint": {
+    "message": "Use the same port as Stream Deck. When connected, changing it here also updates the server."
+  },
+  "portInvalid": {
+    "message": "Port must be an integer from 1024 to 65535."
+  },
+  "portSaved": {
+    "message": "Local server port changed to:"
+  },
+  "portLocal": {
+    "message": "Only the Chrome port was saved. Match the port in your Stream Deck settings."
+  },
+  "invalid": {
+    "message": "Enter a six-digit PIN."
+  },
+  "checking": {
+    "message": "Checking connection…"
+  },
+  "fail": {
+    "message": "Connection failed."
+  },
+  "connected": {
+    "message": "Connected · Open or refresh YouTube Music."
+  },
+  "unknown": {
+    "message": "Unable to check connection."
+  },
+  "player": {
+    "message": "Connected"
+  },
+  "app": {
+    "message": "app"
+  },
+  "tab": {
+    "message": "browser tab"
+  },
+  "current": {
+    "message": "Now playing"
+  },
+  "waiting": {
+    "message": "Waiting"
+  },
+  "artwork": {
+    "message": "Album art"
+  },
+  "stale": {
+    "message": "The player is slow to respond. Check Chrome Memory Saver settings."
+  },
+  "paired": {
+    "message": "Paired · Open or refresh a YouTube Music window."
+  },
+  "removed": {
+    "message": "Removed the extension pairing information. You can enter a new PIN."
+  },
+  "extensionName": {
+    "message": "Music Deck Bridge"
+  },
+  "extensionShortName": {
+    "message": "Music Deck Bridge"
+  },
+  "extensionDescription": {
+    "message": "Control YouTube Music from Elgato Stream Deck using a Chrome extension."
+  },
+  "notPaired": {
+    "message": "Not paired yet."
+  }
+}

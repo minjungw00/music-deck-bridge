@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Music Deck Bridge – Settings</title>
+  <!-- Elgato sdpi-components v4.0.1, bundled locally for offline use. -->
+  <script src="sdpi-components.js"></script>
+  <style>
+    :root { color-scheme: dark; --sdpi-bgcolor: #2d2d2d; --sdpi-color: #e6e6e6; }
+    html, body { background: #2d2d2d !important; color: #e6e6e6 !important; }
+    body { font: 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; padding: 9px 0 18px; }
+    .hidden { display: none !important; }
+    .hint { margin: -3px 12px 14px 116px; color: #bbb; font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
+    .status { padding-left: 116px; margin: 7px 10px 10px 0; line-height: 1.45; font-size: 11px; color: #e6e6e6; overflow-wrap: anywhere; }
+    #pinOutput { color: #fff; font: 600 15px ui-monospace, Consolas, monospace; letter-spacing: .12em; padding: 0 0 0 8px; }
+    .inline { display: flex; align-items: center; gap: 8px; }
+    #stepLabel { color: #fff; font-variant-numeric: tabular-nums; min-width: 24px; }
+    .port-input { width: 88px; min-width: 72px; }
+    .connection { border-top: 1px solid #515151; padding-top: 10px; margin-top: 8px; }
+    sdpi-item { color: #e6e6e6; }
+    sdpi-button { white-space: nowrap; }
+    /* Native range, matching the direct event.target.value approach used by Elgato's Discord plugin. */
+    .native-range { display: flex; align-items: center; gap: 8px; min-height: 28px; width: 100%; }
+    .native-range span { color: #bcbcbc; font-size: 11px; white-space: nowrap; }
+    .native-range input[type="range"] {
+      -webkit-appearance: none; appearance: none; flex: 1; min-width: 0;
+      width: 100%; height: 22px; background: transparent; cursor: pointer; margin: 0;
+    }
+    .native-range input[type="range"]::-webkit-slider-runnable-track {
+      height: 5px; border-radius: 3px; border: 1px solid #424242; background: #636363;
+    }
+    .native-range input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none; width: 12px; height: 12px;
+      margin-top: -4px; background: #e6e6e6; border-radius: 50%; border: none;
+    }
+    .native-range input[type="range"]:focus-visible { outline: 1px solid #9e9e9e; outline-offset: 2px; }
+    .native-range input[type="range"]:disabled { opacity: .5; cursor: default; }
+  </style>
+</head>
+<body>
+  <section id="trackSection" class="hidden">
+    <sdpi-item id="titleModeRow" label="Title and artist">
+      <sdpi-select id="titleMode" setting="titleMode" default="truncate">
+        <option id="optTruncate" value="truncate">Truncate</option>
+        <option id="optScroll" value="scroll">Scroll left</option>
+      </sdpi-select>
+    </sdpi-item>
+    <p class="hint" id="titleHint">Both long titles and artist names will scroll.</p>
+  </section>
+  <section id="volumeSection" class="hidden">
+    <sdpi-item id="volumeRow" label="Volume per tick">
+      <div class="native-range">
+        <span aria-hidden="true">1%</span>
+        <input id="volumeStep" type="range" min="1" max="5" step="1" value="4" aria-label="Volume per tick">
+        <span aria-hidden="true">5%</span>
+      </div>
+    </sdpi-item>
+    <p class="hint"><span id="volumeHint">One dial tick changes the volume by</span> <strong id="stepLabel">4%</strong>.</p>
+  </section>
+  <section class="connection">
+    <sdpi-item id="pinRow" label="Connection">
+      <div class="inline"><sdpi-button id="generatePin">Generate PIN</sdpi-button><output id="pinOutput" aria-live="polite"></output></div>
+    </sdpi-item>
+    <p id="pairState" class="status" role="status" aria-live="polite">Checking connection…</p>
+    <p id="pairHint" class="hint">Enter the PIN in the Chrome extension popup. Expires in 10 minutes.</p>
+    <sdpi-item id="portRow" label="Local server port">
+      <div class="inline">
+        <sdpi-textfield id="serverPort" class="port-input" placeholder="17864" maxlength="5"></sdpi-textfield>
+        <sdpi-button id="applyPort">Apply</sdpi-button>
+      </div>
+    </sdpi-item>
+    <p id="portStatus" class="hint" aria-live="polite">Shared by every Stream Deck action. Chrome follows automatically when connected.</p>
+  </section>
+  <script src="settings.js"></script>
+</body>
+</html>
