@@ -21,7 +21,7 @@ jobs:
     if: ${{ inputs.readiness_confirmed }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: refs/tags/${{ inputs.tag }}
       - uses: actions/setup-node@v4
