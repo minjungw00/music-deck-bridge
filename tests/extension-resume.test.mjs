@@ -10,7 +10,7 @@ const content=readFileSync(join(root,'content.js'),'utf8');
 test('extension update reinjects into already-open PWA but never into discarded tabs',async()=>{
   const callbacks={};const injected=[];
   const chrome={
-    storage:{local:{get:async()=>({}),set:async()=>{},remove:async()=>{}}},
+    storage:{local:{setAccessLevel:async()=>{},get:async()=>({}),set:async()=>{},remove:async()=>{}}},
     tabs:{query:async()=>[{id:55,url:'https://music.youtube.com/',discarded:false},{id:56,discarded:true}]},
     scripting:{executeScript:async arg=>{injected.push(arg)}},
     runtime:{onMessage:{addListener(fn){callbacks.onMessage=fn}},onInstalled:{addListener(fn){callbacks.onInstalled=fn}},

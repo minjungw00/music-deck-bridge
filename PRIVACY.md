@@ -20,7 +20,7 @@ On Windows, plugin files are stored under `%APPDATA%\MusicDeckBridge\`. Chrome m
 
 ## Network activity
 
-The extension sends player state and authenticated commands to `http://127.0.0.1:<port>` (default `17864`). The bridge listens on the IPv4 loopback interface and accepts Chrome extension origins, with token and paired-origin checks after pairing. Content scripts do not receive the token through the extension message API.
+The extension sends player state and authenticated commands to `http://127.0.0.1:<port>` (default `17864`). The bridge listens on the IPv4 loopback interface and accepts Chrome extension origins, with token and paired-origin checks after pairing. The service worker restricts `chrome.storage.local` to trusted extension contexts before accessing tokens. Content scripts cannot read that storage or receive the token through the extension message API.
 
 The plugin fetches album artwork over HTTPS from `i.ytimg.com`, `img.youtube.com`, `yt3.ggpht.com`, `yt3.googleusercontent.com` and numbered `lh*.googleusercontent.com` hosts. Redirect destinations must also pass this allowlist. These requests expose your IP address, the requested artwork URL, standard request metadata and a YouTube Music Referer to the image provider. Google account cookies are not supplied by the plugin. Artwork URLs may identify the track being played. **Not all network activity is local.**
 
@@ -36,7 +36,7 @@ No listening data is sent to the project maintainer or sold. Diagnostic logs may
 
 ## Delete or reset data
 
-Select **Unpair** in the popup to remove the extension's token. This does not delete the plugin's `auth.json` or the port. A new successful pairing replaces the plugin's previous token and extension origin.
+Select **Unpair** in the popup to revoke the server token, delete the plugin's `auth.json` and remove the extension's token. Existing command polls are rejected, and player state and queued commands are cleared. The port is retained. If the bridge cannot be reached or revocation fails, the popup reports failure and retains the token so you can start Stream Deck, match the port and retry. A token already rejected by the server can be removed locally. A new successful pairing replaces the previous token and extension origin and rejects the previous session's pending requests.
 
 For a full reset, quit Stream Deck, delete `%APPDATA%\MusicDeckBridge\auth.json` and `config.json`, and remove the extension through `chrome://extensions` to delete its local storage. To uninstall the plugin, delete `io.github.minjungw00.musicdeckbridge.sdPlugin` from `C:\Users\username\AppData\Roaming\Elgato\StreamDeck\Plugins`, replacing `username` with your Windows account name. Remove associated Stream Deck actions/profiles through Stream Deck if you also want to delete their settings.
 

@@ -75,7 +75,7 @@
     "message": "인증됨 · YouTube Music 창을 열거나 새로고침하세요."
   },
   "removed": {
-    "message": "확장 프로그램 연결 정보를 지웠습니다. 새 PIN을 입력하세요."
+    "message": "브리지 연결을 해제했습니다. 다시 연결하려면 새 PIN을 입력하세요."
   },
   "extensionName": {
     "message": "Music Deck Bridge"
@@ -88,5 +88,8 @@
   },
   "notPaired": {
     "message": "아직 페어링되지 않았습니다."
+  },
+  "unpairFailed": {
+    "message": "연결을 해제하지 못했습니다. Stream Deck을 실행하고 포트를 확인한 뒤 다시 시도하세요."
   }
 }

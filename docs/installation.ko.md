@@ -56,4 +56,4 @@ Chrome 확장 프로그램 폴더의 절대 경로를 유지하세요. 소스를
 
 Stream Deck을 종료한 다음 `C:\Users\username\AppData\Roaming\Elgato\StreamDeck\Plugins`에서 `io.github.minjungw00.musicdeckbridge.sdPlugin` 폴더를 삭제합니다. Chrome 확장 프로그램은 `chrome://extensions`에서 별도로 삭제합니다.
 
-팝업의 **해제**는 Chrome에 저장된 토큰만 지웁니다. 완전 초기화 시에는 Stream Deck을 종료한 상태에서 `%APPDATA%\MusicDeckBridge\auth.json`, `config.json`도 삭제하세요. 데이터 보존과 액션 설정 삭제는 [개인정보 문서](../PRIVACY.md)를 참고하세요.
+팝업의 **해제**는 서버와 Chrome의 인증 토큰을 모두 폐기하고 대기 중인 명령 요청을 종료합니다. Stream Deck을 실행하고 포트를 맞춘 상태에서 해제하세요. 서버 인증 폐기에 실패하면 토큰을 유지하여 다시 시도할 수 있습니다. 포트 설정은 유지됩니다. 완전 초기화 시에는 Stream Deck을 종료한 상태에서 `%APPDATA%\MusicDeckBridge\auth.json`, `config.json`도 삭제하세요. 데이터 보존과 액션 설정 삭제는 [개인정보 문서](../PRIVACY.md)를 참고하세요.

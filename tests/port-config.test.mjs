@@ -119,7 +119,7 @@ test('Chrome extension uses stored custom port and follows live port changes ann
   const storage={bridgePort:23111,bridgeToken:'test-token'};
   const requested=[];let listener;
   const chrome={
-    storage:{local:{get:async key=>({[key]:storage[key]}),set:async data=>Object.assign(storage,data),remove:async key=>delete storage[key]}},
+    storage:{local:{setAccessLevel:async()=>{},get:async key=>({[key]:storage[key]}),set:async data=>Object.assign(storage,data),remove:async key=>delete storage[key]}},
     runtime:{onMessage:{addListener:cb=>{listener=cb}},onInstalled:{addListener:()=>{}},onStartup:{addListener:()=>{}}},
     alarms:{create:async()=>{},onAlarm:{addListener:()=>{}}},
     tabs:{query:async()=>[]},scripting:{executeScript:async()=>{}},

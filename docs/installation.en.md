@@ -56,4 +56,4 @@ Keep your Chrome unpacked folder at the same absolute path. After updating sourc
 
 Quit Stream Deck, then delete `io.github.minjungw00.musicdeckbridge.sdPlugin` from `C:\Users\username\AppData\Roaming\Elgato\StreamDeck\Plugins`. Remove the extension separately at `chrome://extensions`.
 
-**Unpair** in the popup removes only the Chrome token. For a full reset, also delete `%APPDATA%\MusicDeckBridge\auth.json` and `config.json` while Stream Deck is stopped. See [privacy](../PRIVACY.md) for action settings and retention details.
+**Unpair** in the popup revokes both the server and Chrome tokens and closes pending command requests. Start Stream Deck and match the port before unpairing; if revocation fails, the token is retained for retry. The port setting remains. For a full reset, also delete `%APPDATA%\MusicDeckBridge\auth.json` and `config.json` while Stream Deck is stopped. See [privacy](../PRIVACY.md) for action settings and retention details.

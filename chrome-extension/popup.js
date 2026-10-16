@@ -35,8 +35,11 @@ $('refresh').addEventListener('click', async () => {
   } catch (e) { info(e.message); }
 });
 $('forget').addEventListener('click', async () => {
-  await chrome.runtime.sendMessage({ type:'unpair' });
-  info(text.removed);
+  try {
+    const result = await chrome.runtime.sendMessage({ type:'unpair' });
+    if (!result?.ok) return info(result?.error || text.fail);
+    info(text.removed, true);
+  } catch (error) { info(error.message); }
 });
 $('savePort').addEventListener('click', async () => {
   const port = Number($('port').value);

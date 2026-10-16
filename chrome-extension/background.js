@@ -1,8 +1,12 @@
 'use strict';
 // Service worker; bearer token never leaves the extension background context.
+const storageReady = chrome.storage.local.setAccessLevel({ accessLevel: 'TRUSTED_CONTEXTS' });
+// Requests await this same promise and fail closed if the access restriction fails.
+void storageReady.catch(() => {});
 const DEFAULT_PORT = 17864;
 const validPort = p => Number.isInteger(Number(p)) && Number(p) >= 1024 && Number(p) <= 65535;
 async function configuredPort() {
+  await storageReady;
   const data = await chrome.storage.local.get('bridgePort');
   return validPort(data.bridgePort) ? Number(data.bridgePort) : DEFAULT_PORT;
 }
@@ -29,6 +33,7 @@ async function post(endpoint, payload, timeout = 3000) {
   return data;
 }
 async function pairedToken() {
+  await storageReady;
   const data = await chrome.storage.local.get('bridgeToken');
   return data.bridgeToken || '';
 }
@@ -130,7 +135,19 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
     return true;
   }
   if (msg?.type === 'unpair' && !sender.tab) {
-    chrome.storage.local.remove('bridgeToken').then(() => respond({ ok: true }));
+    (async () => {
+      const token = await pairedToken();
+      if (token) {
+        try { await post('/unpair', { token }); }
+        catch (error) {
+          // An invalid token is already revoked; network/server failures must be retried.
+          if (error.httpStatus !== 401) throw new Error(chrome.i18n?.getMessage?.('unpairFailed') ||
+            'Could not unpair. Start Stream Deck, check the port and try again.');
+        }
+      }
+      await chrome.storage.local.remove('bridgeToken');
+      return { ok: true };
+    })().then(respond).catch(e => respond({ ok: false, error: e.message }));
     return true;
   }
   if ((msg?.type === 'sync' || msg?.type === 'listen') && sender.tab &&

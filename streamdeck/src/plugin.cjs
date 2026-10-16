@@ -102,8 +102,24 @@ function readAuth() {
 }
 function saveAuth(newAuth) {
   fs.mkdirSync(path.dirname(authFile), { recursive: true });
-  fs.writeFileSync(authFile, JSON.stringify(newAuth, null, 2), { encoding: 'utf8', mode: 0o600 });
+  const temp = authFile + '.tmp-' + process.pid;
+  try {
+    fs.writeFileSync(temp, JSON.stringify(newAuth, null, 2), { encoding: 'utf8', mode: 0o600 });
+    fs.renameSync(temp, authFile);
+  } finally { try { fs.rmSync(temp, { force: true }); } catch {} }
+  resetSession();
   auth = newAuth;
+}
+function resetSession() {
+  for (const waiters of [...listenWaiters.values()]) {
+    for (const waiter of [...waiters]) waiter.reply({ error: 'Pairing revoked' }, 401);
+  }
+  queue.length = 0;
+  candidates.clear();
+  selectedSignature = '';
+  lastExtensionContactAt = 0;
+  cachedCoverUrl = ''; cachedCoverData = '';
+  drawSoon();
 }
 function validOrigin(origin) { return typeof origin === 'string' && /^chrome-extension:\/\/[a-p]{32}$/.test(origin); }
 function safeEqual(a, b) {
@@ -201,13 +217,13 @@ function listenForCommands(clientId, res, origin) {
   let complete = false;
   const waiter = {
     timer: null,
-    reply(message) {
+    reply(message, status = 200) {
       if (complete) return;
       complete = true;
       clearTimeout(waiter.timer);
       set.delete(waiter);
       if (!set.size) listenWaiters.delete(clientId);
-      if (!res.destroyed && !res.writableEnded) sendHttp(res, 200, message, origin);
+      if (!res.destroyed && !res.writableEnded) sendHttp(res, status, message, origin);
     },
   };
   set.add(waiter);
@@ -247,6 +263,14 @@ async function requestHandler(req, res) {
   }
   if (!authorized(body, origin)) return sendHttp(res, 401, { error: 'Not paired, or extension ID changed' }, origin);
   lastExtensionContactAt = Date.now();
+  if (req.url === '/unpair') {
+    // Persist revocation before acknowledging it; retain auth if deletion fails.
+    fs.rmSync(authFile, { force: true });
+    auth = null;
+    currentPin = ''; pinExpiresAt = 0;
+    resetSession();
+    return sendHttp(res, 200, { ok: true }, origin);
+  }
   if (req.url === '/configure-port') {
     const result = await changePort(body.port);
     return sendHttp(res, result.ok ? 200 : 409, result, origin);

@@ -43,6 +43,7 @@ export function playerHarness({ compact = false, available = true, delay = 0 } =
   const scriptCalls = [];
   let listener;
   const chrome = {
+    storage: { local: { setAccessLevel: async () => {} } },
     runtime: {
       onMessage: { addListener(fn) { listener = fn; } },
       onInstalled: { addListener() {} }, onStartup: { addListener() {} },

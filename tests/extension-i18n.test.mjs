@@ -21,11 +21,13 @@ for (const locale of ['en', 'ko', 'fr']) {
       return nodes.get(id);
     }
     const calls = [];
+    let unpairFailed = false;
     const chrome = {
       i18n: { getUILanguage: () => locale, getMessage: key => (catalog[key] || english[key])?.message || '' },
       runtime: { async sendMessage(message) {
         calls.push(message);
         if (message.type === 'get-port') return { ok: true, port: 17864 };
+        if (message.type === 'unpair') return unpairFailed ? { ok: false, error: catalog.unpairFailed.message } : { ok: true };
         if (message.type === 'pair') return { ok: true };
         return { ok: true, active: false };
       } },
@@ -47,6 +49,12 @@ for (const locale of ['en', 'ko', 'fr']) {
     await element('connect').click();
     assert.equal(element('pin').value, '');
     assert.equal(element('status').textContent, catalog.connected.message);
+    unpairFailed = true;
+    await element('forget').click();
+    assert.equal(element('status').textContent, catalog.unpairFailed.message);
+    unpairFailed = false;
+    await element('forget').click();
+    assert.equal(element('status').textContent, catalog.removed.message);
     element('port').value = '1';
     await element('savePort').click();
     assert.equal(element('status').textContent, catalog.portInvalid.message);

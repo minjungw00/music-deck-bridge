@@ -16,6 +16,7 @@ coverage/
 *.key
 *.pfx
 **/auth.json
+**/auth.json.tmp-*
 **/config.json.tmp-*
 
 # Runtime state

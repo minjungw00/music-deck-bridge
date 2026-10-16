@@ -75,7 +75,7 @@
     "message": "Paired · Open or refresh a YouTube Music window."
   },
   "removed": {
-    "message": "Removed the extension pairing information. You can enter a new PIN."
+    "message": "Unpaired from the bridge. Enter a new PIN to reconnect."
   },
   "extensionName": {
     "message": "Music Deck Bridge"
@@ -88,5 +88,8 @@
   },
   "notPaired": {
     "message": "Not paired yet."
+  },
+  "unpairFailed": {
+    "message": "Could not unpair. Start Stream Deck, check the port and try again."
   }
 }
