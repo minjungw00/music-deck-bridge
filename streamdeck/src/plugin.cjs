@@ -550,7 +550,13 @@ function handleDeckEvent(e) {
       const step = Number.isInteger(rawStep) ? limit(rawStep, 1, 5) : 4;
       if (!addCommand('volume_delta', ticks * step)) showAlert(e.context);
     }
-    if (kind === 'trackdial' && ticks !== 0 && !addCommand(ticks > 0 ? 'next' : 'prev')) showAlert(e.context);
+    if (kind === 'trackdial' && Number.isSafeInteger(ticks) && ticks !== 0) {
+      // Honor accumulated ticks, but cap a single event to avoid runaway skips.
+      const count = Math.min(Math.abs(ticks), 5);
+      for (let i = 0; i < count; i++) {
+        if (!addCommand(ticks > 0 ? 'next' : 'prev')) { showAlert(e.context); break; }
+      }
+    }
   } else if (e.event === 'dialDown') {
     const type = kind === 'volume' ? 'mute' : kind === 'trackdial' ? 'toggle' : null;
     if (type && !addCommand(type)) showAlert(e.context);

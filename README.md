@@ -11,7 +11,7 @@ Music Deck Bridge contains two components that must be installed together: a Str
 - Current song, artist and album artwork on a key; press to play or pause.
 - Play/pause, previous track, next track and mute keys.
 - Volume dial with 1–5 percentage points per tick and push to mute.
-- Track dial with turn to skip and push to play/pause.
+- Track dial with one track per tick (up to five per event) and push to play/pause.
 - English and Korean settings; truncated or scrolling track titles.
 - Six-digit PIN pairing, an authenticated loopback bridge and a configurable shared port.
 - Preference for an installed Chrome app when both an app and browser tab are open.

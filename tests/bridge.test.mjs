@@ -110,3 +110,42 @@ test('immediate long-poll delivery and configurable volume dial steps', async ()
     rmSync(temp,{recursive:true,force:true});
   }
 });
+
+test('track dial preserves tick counts and direction, caps bursts and ignores invalid ticks', async () => {
+  const temp = mkdtempSync(join(tmpdir(), 'music-deck-bridge-tracks-'));
+  const proc = spawn(process.execPath, [plugin], {
+    env: { ...process.env, APPDATA: temp, MUSIC_DECK_BRIDGE_DEV_TEST: '1', MUSIC_DECK_BRIDGE_TEST_PIN: '456789' },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  const closed = new Promise(resolve => proc.once('close', resolve));
+  try {
+    await ready(proc);
+    const { json: { token } } = await post('/pair', { pin: '456789' });
+    const state = { title: 'Example', playing: true };
+    async function rotate(ticks) {
+      assert.equal((await post('/__test/event', { token, event: {
+        event: 'dialRotate', context: 'track', action: 'io.github.minjungw00.musicdeckbridge.trackdial',
+        payload: { ticks },
+      } })).code, 200);
+    }
+    await rotate(3); // No player selected yet: these must not be queued for a later player.
+    assert.deepEqual((await post('/sync', { token, clientId: 15, state })).json.commands, []);
+    for (const [ticks, count, type] of [[1, 1, 'next'], [3, 3, 'next'], [-2, 2, 'prev'], [100, 5, 'next'], [-100, 5, 'prev']]) {
+      await rotate(ticks);
+      assert.deepEqual((await post('/sync', { token, clientId: 15, state })).json.commands,
+        Array.from({ length: count }, () => ({ type, amount: 0 })), `ticks: ${ticks}`);
+    }
+    for (const ticks of [0, undefined, null, 0.5, -0.5, 1e100, -1e100, 'invalid']) {
+      await rotate(ticks);
+      assert.deepEqual((await post('/sync', { token, clientId: 15, state })).json.commands, [], `ticks: ${ticks}`);
+    }
+    await rotate(3);
+    await rotate(-2);
+    assert.deepEqual((await post('/sync', { token, clientId: 15, state })).json.commands,
+      ['next', 'next', 'next', 'prev', 'prev'].map(type => ({ type, amount: 0 })));
+  } finally {
+    if (proc.exitCode === null && proc.signalCode === null) proc.kill();
+    await closed;
+    rmSync(temp, { recursive: true, force: true });
+  }
+});

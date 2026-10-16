@@ -130,7 +130,7 @@ for (const protectedManifest of [false, true]) {
         const r = await post('/sync', { token, clientId: 1, state });
         return r.commands.length ? r.commands : null;
       });
-      assert.deepEqual(result, [expected]);
+      assert.deepEqual(result, Array.isArray(expected) ? expected : [expected]);
     }
     for (const [name, type] of [['nowplaying', 'toggle'], ['toggle', 'toggle'], ['prev', 'prev'], ['next', 'next'], ['mute', 'mute']]) {
       await command('keyDown', name, {}, { type, amount: 0 });
@@ -141,6 +141,9 @@ for (const protectedManifest of [false, true]) {
     await command('touchTap', 'volume', {}, { type: 'toggle', amount: 0 });
     await command('dialRotate', 'trackdial', { ticks: -1 }, { type: 'prev', amount: 0 });
     await command('dialRotate', 'trackdial', { ticks: 1 }, { type: 'next', amount: 0 });
+    await command('dialRotate', 'trackdial', { ticks: 3 }, Array.from({ length: 3 }, () => ({ type: 'next', amount: 0 })));
+    await command('dialRotate', 'trackdial', { ticks: -3 }, Array.from({ length: 3 }, () => ({ type: 'prev', amount: 0 })));
+    await command('dialRotate', 'trackdial', { ticks: 100 }, Array.from({ length: 5 }, () => ({ type: 'next', amount: 0 })));
     await command('dialDown', 'trackdial', {}, { type: 'toggle', amount: 0 });
     await command('touchTap', 'trackdial', {}, { type: 'toggle', amount: 0 });
     send('willDisappear', 'nowplaying', { controller: 'Keypad', settings: {}, coordinates: { column: 0, row: 0 }, state: 0 });

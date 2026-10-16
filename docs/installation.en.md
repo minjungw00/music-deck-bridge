@@ -38,7 +38,7 @@ If replacing an existing installation, back up its folder first.
 2. Select that action and choose **Generate PIN** in its settings.
 3. Open the Chrome extension popup, enter the six-digit PIN, then select **Connect**. The PIN expires in ten minutes and can be used once.
 4. Open [YouTube Music](https://music.youtube.com/), start a track, then use **Check status** in the popup.
-5. Try play/pause, skip, mute and artwork. On Stream Deck +, try the volume and track dials. The volume step setting accepts 1–5 percentage points per tick.
+5. Try play/pause, skip, mute and artwork. On Stream Deck +, try the volume and track dials. The volume step setting accepts 1–5 percentage points per tick. The track dial skips one track per tick, capped at five tracks per event.
 
 You can install YouTube Music as a Chrome app through Chrome's app installation UI. The extension also works with a regular tab and prefers an installed app if both are open.
 
