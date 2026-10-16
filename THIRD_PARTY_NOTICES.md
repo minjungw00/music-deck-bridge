@@ -161,11 +161,13 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-## Existing artwork
+## Project artwork
 
-The repository includes a source mark and plugin/extension PNG assets.
-No separate third-party attribution or editable action artwork was supplied.
-Confirm their provenance and redistribution rights before publishing or store submission.
+The current plugin and extension icons are rendered by `streamdeck/generate_assets.py`
+from geometric primitives defined in that file. No external artwork, logos, fonts
+or source images are used as inputs. The previous supplied mark and icon assets
+were replaced; the unverified source mark was removed from the current tree.
+The generator and generated project artwork are distributed under this repository's Apache-2.0 license.
 Names such as Google, YouTube, Elgato and Corsair remain their owners' trademarks.
 
 ## Development tools

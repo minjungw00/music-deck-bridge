@@ -50,7 +50,7 @@ npm test
 Packaging uses Python 3.10+ (`python3`, `python`, or Windows `py`). `npm run build:chrome` creates a ZIP with `manifest.json` at its root. Stream Deck packaging uses the pinned Elgato CLI installed by `npm ci`. See [development and release checks](docs/development.md).
 
 ```text
-streamdeck/        Stream Deck plugin package and source artwork
+streamdeck/        Plugin source, bundle/resources and icon generator
 chrome-extension/ Chrome Manifest V3 extension and en/ko locales
 tests/            Node.js regression tests and Python packaging tests
 scripts/          Validation and packaging tools

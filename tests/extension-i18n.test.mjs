@@ -37,7 +37,8 @@ for (const locale of ['en', 'ko', 'fr']) {
     // Drain startup status/port promises before exercising user input.
     await new Promise(resolve => setImmediate(resolve));
     assert.equal(document.title, 'Music Deck Bridge');
-    assert.equal(element('heading').textContent, 'YouTube Music × Stream Deck');
+    assert.equal(element('heading').textContent, 'Music Deck Bridge');
+    assert.equal(element('subtitle').textContent, catalog.subtitle.message);
     assert.equal(document.documentElement.lang, locale === 'ko' ? 'ko' : 'en');
     assert.equal(element('connect').textContent, catalog.connect.message);
     assert.equal(element('status').textContent, catalog.paired.message);

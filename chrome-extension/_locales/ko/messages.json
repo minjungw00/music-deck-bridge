@@ -1,6 +1,6 @@
 {
   "heading": {
-    "message": "YouTube Music × Stream Deck"
+    "message": "Music Deck Bridge"
   },
   "guide": {
     "message": "Stream Deck 설정에서 PIN을 발급한 후 여기 입력하세요."
@@ -88,6 +88,9 @@
   },
   "notPaired": {
     "message": "아직 페어링되지 않았습니다."
+  },
+  "subtitle": {
+    "message": "YouTube Music · Stream Deck 연동"
   },
   "unpairFailed": {
     "message": "연결을 해제하지 못했습니다. Stream Deck을 실행하고 포트를 확인한 뒤 다시 시도하세요."

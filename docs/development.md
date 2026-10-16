@@ -20,7 +20,7 @@ Node integration tests use temporary APPDATA directories and local TCP/WebSocket
 
 - `streamdeck/src/plugin.cjs`: plugin source.
 - `streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/`: plugin resources and generated executable; deployable after `npm run build:plugin`.
-- `streamdeck/assets/music-mark.png`: supplied source mark. `generate_assets.py` can resize it into plugin/Chrome brand icons; existing action illustrations are retained. Requires Pillow (`python -m pip install Pillow`), only for optional asset regeneration.
+- `streamdeck/generate_assets.py`: source for all project brand/action icons, drawn from geometric primitives without external artwork. Optional regeneration requires Pillow 12.0.0 (`python -m pip install Pillow==12.0.0`), then `python streamdeck/generate_assets.py`. No Python packages are required to build or package the committed PNG files.
 - `chrome-extension/`: load unpacked directly in Chrome. User-facing popup/manifest strings live in `_locales/en` and `_locales/ko`.
 - `store-assets/`: preparation checklists; screenshots and promotional images must be captured from the actual product before submission.
 

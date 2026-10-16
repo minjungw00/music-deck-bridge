@@ -2,12 +2,12 @@
 const $ = id => document.getElementById(id);
 const language = (chrome.i18n?.getUILanguage?.() || navigator.language || 'en').toLowerCase().startsWith('ko') ? 'ko' : 'en';
 const text = Object.fromEntries(
-  ["heading","guide","pin","connect","refresh","forget","portLabel","savePort","portHint","portInvalid","portSaved","portLocal","invalid","checking","fail","connected","unknown","player","app","tab","current","waiting","artwork","stale","paired","removed"]
+  ["heading","subtitle","guide","pin","connect","refresh","forget","portLabel","savePort","portHint","portInvalid","portSaved","portLocal","invalid","checking","fail","connected","unknown","player","app","tab","current","waiting","artwork","stale","paired","removed"]
     .map(key => [key, chrome.i18n.getMessage(key)])
 );
 document.documentElement.lang = language;
 document.title = chrome.i18n.getMessage('extensionName');
-for (const [id, key] of [['heading','heading'],['guide','guide'],['pinLabel','pin'],['connect','connect'],['refresh','refresh'],['forget','forget'],['portLabel','portLabel'],['savePort','savePort'],['portHint','portHint']]) {
+for (const [id, key] of [['heading','heading'],['subtitle','subtitle'],['guide','guide'],['pinLabel','pin'],['connect','connect'],['refresh','refresh'],['forget','forget'],['portLabel','portLabel'],['savePort','savePort'],['portHint','portHint']]) {
   $(id).textContent = text[key];
 }
 function info(message, ok = false) {

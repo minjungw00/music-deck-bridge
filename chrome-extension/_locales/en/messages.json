@@ -1,6 +1,6 @@
 {
   "heading": {
-    "message": "YouTube Music × Stream Deck"
+    "message": "Music Deck Bridge"
   },
   "guide": {
     "message": "Generate a PIN in Stream Deck action settings and enter it here."
@@ -88,6 +88,9 @@
   },
   "notPaired": {
     "message": "Not paired yet."
+  },
+  "subtitle": {
+    "message": "For YouTube Music · Stream Deck integration"
   },
   "unpairFailed": {
     "message": "Could not unpair. Start Stream Deck, check the port and try again."
