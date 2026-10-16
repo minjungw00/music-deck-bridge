@@ -25,15 +25,31 @@ Run the commands in [development](development.md) against the exact release comm
 
 The opaque-manifest fixture only tests the SDK's handling of a non-JSON manifest. It does not reproduce Maker Console encryption.
 
-The baseline [CI run 38956429342](https://github.com/minjungw00/music-deck-bridge/actions/runs/38956429342) for `eb137f6` was rechecked: Ubuntu passed, while Windows passed 36/38 tests and failed both SDK round trips with `read ECONNRESET`. The local changes replace manual WebSocket framing and close the socket before killing the plugin. Linux checks above pass with those changes, but no new Windows CI result or hardware result has been obtained. Both OS jobs and their package uploads must pass for the final release commit; do not treat the local test-server fix as Windows certification.
+## GitHub CI evidence
+
+Verified on October 17, 2026: [CI run 38958092483](https://github.com/minjungw00/music-deck-bridge/actions/runs/38958092483) succeeded on both Ubuntu and Windows for `main` commit `59f9321` (`59f932186ebc88823fdf54c62709ad8ba9922f75`). Both job logs and uploaded artifact metadata were checked.
+
+| Automated check | Ubuntu | Windows |
+| --- | --- | --- |
+| Syntax, manifests, resources, versions, locales and basic secret checks | Passed | Passed |
+| Node regression tests | 40/40 passed | 40/40 passed |
+| Python packaging tests | 2/2 passed | 2/2 passed |
+| `npm audit` | 0 reported vulnerabilities | 0 reported vulnerabilities |
+| Chrome extension ZIP generation | Passed | Passed |
+| Elgato CLI validation and `.streamDeckPlugin` packaging | Passed | Passed |
+| Package artifact upload | `packages-ubuntu-latest` uploaded | `packages-windows-latest` uploaded |
+
+These results supersede the Windows failure in baseline [CI run 38956429342](https://github.com/minjungw00/music-deck-bridge/actions/runs/38956429342) for `eb137f6`, where both SDK round trips failed with `read ECONNRESET`. The passing run includes the standard `ws` test server and connection shutdown fixes. `npm audit` covers the locked npm dependency graph only.
+
+Automated checks are complete for `59f9321`; Windows hardware, store-installed packages and Maker Console DRM execution remain unverified. Both OS jobs and their package uploads must pass again for the final release commit, and the resulting packages must be inspected and tested before publication.
 
 ## Required manual evidence
 
 | Check | Status | Evidence to record |
 | --- | --- | --- |
-| GitHub CI for final commit on Ubuntu and Windows | Pending | Commit SHA and successful run URL; inspect both uploaded packages |
+| Final release commit CI and package inspection | Pending | Repeat the passing `59f9321` checks on the final release commit; record its SHA and successful run URL and inspect both uploaded packages |
 | Clean Windows 10/11 install, update, uninstall and reset | Pending | OS, Chrome and Stream Deck versions; package hashes and results |
-| All seven actions on actual keys and Stream Deck + dials | Pending | Device models, playback/artwork/title modes, volume steps, touch/push results |
+| All seven actions on actual keys and Stream Deck + dials | Pending | Device models, playback/artwork/title modes, volume steps, touch/push results; confirm the web player processes all 1–5 Track Dial skips per event in both directions |
 | Chrome unpacked and store-package install | Pending | First pairing, reload/update, browser restart, normal tab and installed app |
 | Idle recovery and port changes/conflicts | Pending | Sleep/reconnect and old-port grace behavior; retry after failed unpair |
 | Actual Maker Console DRM build | Pending | Upload with publishing disabled, download processed build, install and exercise all actions |
