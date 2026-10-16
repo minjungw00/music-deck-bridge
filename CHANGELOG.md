@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Move Stream Deck registration, seven action handlers and rendering to the official SDK 3.0.2, bundled into a standalone executable.
+- Validate and package Stream Deck installers in Linux/Windows CI using the pinned CLI; upload both component packages.
+- Revoke server authentication on Unpair, reject old command polls on unpair/re-pair, and clear previous player state/commands.
+- Restrict Chrome local storage to trusted extension contexts before token access; preserve credentials for retry if server revocation fails.
+- Use Music Deck Bridge consistently in the popup, with localized service descriptions.
+- Replace unverified artwork with reproducible geometric project icons and include SDK/runtime license notices.
+- Add English/Korean store copy and a manual release evidence checklist. Version remains 0.5.1 pending device and store verification.
+
+
+## Unreleased
+
 - Organize the Stream Deck plugin and Chrome extension in one repository.
 - Adopt the Music Deck Bridge name and `io.github.minjungw00.musicdeckbridge` plugin/action UUID prefix.
 - Align component versions and move Chrome popup translations into en/ko message catalogs.
