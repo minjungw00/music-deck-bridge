@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@elgato/cli": "1.10.2",
-    "esbuild": "0.28.2"
+    "esbuild": "0.28.2",
+    "ws": "8.22.0"
   }
 }
