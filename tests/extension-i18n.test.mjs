@@ -22,6 +22,7 @@ for (const locale of ['en', 'ko', 'fr']) {
     }
     const calls = [];
     let unpairFailed = false;
+    let status = { ok: true, active: false };
     const chrome = {
       i18n: { getUILanguage: () => locale, getMessage: key => (catalog[key] || english[key])?.message || '' },
       runtime: { async sendMessage(message) {
@@ -29,7 +30,7 @@ for (const locale of ['en', 'ko', 'fr']) {
         if (message.type === 'get-port') return { ok: true, port: 17864 };
         if (message.type === 'unpair') return unpairFailed ? { ok: false, error: catalog.unpairFailed.message } : { ok: true };
         if (message.type === 'pair') return { ok: true };
-        return { ok: true, active: false };
+        return status;
       } },
     };
     const document = { documentElement: {}, getElementById: element };
@@ -42,6 +43,17 @@ for (const locale of ['en', 'ko', 'fr']) {
     assert.equal(document.documentElement.lang, locale === 'ko' ? 'ko' : 'en');
     assert.equal(element('connect').textContent, catalog.connect.message);
     assert.equal(element('status').textContent, catalog.paired.message);
+    for (const [code, key] of [
+      ['missing', 'coverMissing'], ['blocked', 'coverBlocked'], ['ready', 'coverReady'],
+      ['downloading', 'coverDownloading'], ['waiting', 'coverWaiting'], ['failed', 'coverFailed'],
+      ['future-status', 'coverWaiting'], [undefined, 'coverWaiting'], ['표시 준비 완료', 'coverWaiting'],
+      ['__proto__', 'coverWaiting'],
+    ]) {
+      status = { ok: true, active: true, standalone: true, track: 'Test song', coverStatus: code };
+      await element('refresh').click();
+      assert.equal(element('status').textContent,
+        `${catalog.player.message} · ${catalog.app.message}\n${catalog.current.message}: Test song\n${catalog.artwork.message}: ${catalog[key].message}`);
+    }
     element('pin').value = '12';
     await element('connect').click();
     assert.equal(element('status').textContent, catalog.invalid.message);

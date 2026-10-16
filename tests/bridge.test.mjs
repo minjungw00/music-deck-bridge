@@ -56,6 +56,9 @@ test('local bridge pairing, auth, standalone prioritization and queue', async ()
     const status = await post('/status',{token});
     assert.equal(status.json.active,true);
     assert.equal(status.json.track,'Standalone PWA');
+    assert.equal(status.json.coverStatus,'missing');
+    await post('/sync',{token,clientId:11,state:{...pwa,cover:'https://untrusted.test/cover.jpg'}});
+    assert.equal((await post('/status',{token})).json.coverStatus,'blocked');
     const enqueued = await post('/__test/command',{token,type:'volume_delta',amount:8});
     assert.equal(enqueued.json.accepted,true);
     const wrong = await post('/sync',{token,clientId:10,state:browser});

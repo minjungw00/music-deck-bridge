@@ -68,6 +68,24 @@
   "artwork": {
     "message": "Album art"
   },
+  "coverMissing": {
+    "message": "No album art URL found on the page"
+  },
+  "coverBlocked": {
+    "message": "Album art host is not allowed"
+  },
+  "coverReady": {
+    "message": "Ready to display"
+  },
+  "coverDownloading": {
+    "message": "Downloading image"
+  },
+  "coverWaiting": {
+    "message": "Waiting for image"
+  },
+  "coverFailed": {
+    "message": "Image download failed"
+  },
   "stale": {
     "message": "The player is slow to respond. Check Chrome Memory Saver settings."
   },

@@ -5,6 +5,10 @@ const text = Object.fromEntries(
   ["heading","subtitle","guide","pin","connect","refresh","forget","portLabel","savePort","portHint","portInvalid","portSaved","portLocal","invalid","checking","fail","connected","unknown","player","app","tab","current","waiting","artwork","stale","paired","removed"]
     .map(key => [key, chrome.i18n.getMessage(key)])
 );
+const coverMessages = new Map([
+  ['missing', 'coverMissing'], ['blocked', 'coverBlocked'], ['ready', 'coverReady'],
+  ['downloading', 'coverDownloading'], ['waiting', 'coverWaiting'], ['failed', 'coverFailed'],
+].map(([code, key]) => [code, chrome.i18n.getMessage(key)]));
 document.documentElement.lang = language;
 document.title = chrome.i18n.getMessage('extensionName');
 for (const [id, key] of [['heading','heading'],['subtitle','subtitle'],['guide','guide'],['pinLabel','pin'],['connect','connect'],['refresh','refresh'],['forget','forget'],['portLabel','portLabel'],['savePort','savePort'],['portHint','portHint']]) {
@@ -30,7 +34,8 @@ $('refresh').addEventListener('click', async () => {
     const r = await chrome.runtime.sendMessage({ type:'check' });
     if (!r?.ok) return info(r?.error || text.unknown);
     if (!r.active) return info(text.paired, true);
-    const data = `${text.player} · ${r.standalone ? text.app : text.tab}\n${text.current}: ${r.track || text.waiting}\n${text.artwork}: ${r.coverStatus || text.waiting}`;
+    const cover = coverMessages.get(r.coverStatus) || coverMessages.get('waiting');
+    const data = `${text.player} · ${r.standalone ? text.app : text.tab}\n${text.current}: ${r.track || text.waiting}\n${text.artwork}: ${cover}`;
     info(r.playerStale ? `${data}\n${text.stale}` : data, !r.playerStale);
   } catch (e) { info(e.message); }
 });

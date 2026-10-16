@@ -282,10 +282,7 @@ async function requestHandler(req, res) {
       extensionOnline: Date.now() - lastExtensionContactAt < EXTENSION_ONLINE_MS,
       playerStale: !!chosen && Date.now() - chosen[1].lastMediaSyncAt > PLAYER_STALE_MS,
       coverDetected: Boolean(chosen?.[1].cover),
-      coverStatus: !chosen?.[1].cover ? '페이지에서 앨범 이미지 주소를 찾지 못함' :
-        !validCover(chosen[1].cover) ? '앨범 이미지 주소의 호스트가 허용되지 않음' :
-        cachedCoverUrl === chosen[1].cover ? '표시 준비 완료' :
-        (coverFailures.get(chosen[1].cover)?.reason || (coverInFlight === chosen[1].cover ? '이미지 다운로드 중' : '이미지 대기 중')) }, origin);
+      coverStatus: getCoverStatus(chosen?.[1].cover) }, origin);
   }
   if (req.url === '/listen') {
     const clientId = String(body.clientId ?? '').slice(0, 64);
@@ -434,6 +431,14 @@ async function loadCover(src, fallback = '') {
     coverFailures.set(src, { time: Date.now(), reason: String(e.message || '다운로드 실패').slice(0, 120) });
     if (coverFailures.size > 25) coverFailures.delete(coverFailures.keys().next().value);
   } finally { coverInFlight = ''; }
+}
+function getCoverStatus(src) {
+  if (!src) return 'missing';
+  if (!validCover(src)) return 'blocked';
+  if (cachedCoverUrl === src) return 'ready';
+  if (coverInFlight === src) return 'downloading';
+  if (coverFailures.has(src)) return 'failed';
+  return 'waiting';
 }
 function paint() {
   if (hasDrawing) return;

@@ -41,7 +41,7 @@ The plugin prioritizes an installed Chrome app over a browser tab. State is peri
 
 Port `17864` is the default; both components accept integers 1024–65535. On a live change the plugin binds the new port first, persists it, notifies clients and retains the old listener for two minutes. Sleeping/offline clients may need the port changed manually. No LAN listener is opened.
 
-Artwork downloads validate the HTTPS host, each redirect, content type and a 2 MB limit. See [privacy](../PRIVACY.md) for the allowlist and data lifecycle.
+Artwork downloads validate the HTTPS host, each redirect, content type and a 2 MB limit. `/status` returns a `coverStatus` code: `missing`, `blocked`, `ready`, `downloading`, `waiting` or `failed`. The Chrome popup translates these codes using its own en/ko catalog; unknown codes use the localized waiting message. See [privacy](../PRIVACY.md) for the allowlist and data lifecycle.
 
 ## Plugin identity
 

@@ -32,3 +32,21 @@ test('album cover redirects must remain within the approved hosts',async()=>{
   await assert.rejects(api.fetchCover('https://i.ytimg.com/vi/test.jpg'),/호스트/);
   assert.equal(calls,1,'should never fetch unapproved redirect destination');
 });
+
+test('album art status uses codes for missing, blocked, pending, retrying, failed and cached images', () => {
+  const src = 'https://i.ytimg.com/vi/test.jpg';
+  const sandbox = { URL, Map, Set, Date, cachedCoverUrl: '', coverInFlight: '', coverFailures: new Map() };
+  vm.runInNewContext(coverFns + '\nthis.getStatus = getCoverStatus;', sandbox);
+  assert.equal(sandbox.getStatus(), 'missing');
+  assert.equal(sandbox.getStatus('http://localhost/cover'), 'blocked');
+  assert.equal(sandbox.getStatus(src), 'waiting');
+  sandbox.coverInFlight = src;
+  assert.equal(sandbox.getStatus(src), 'downloading');
+  sandbox.coverInFlight = '';
+  sandbox.coverFailures.set(src, { time: Date.now(), reason: '이미지 HTTP 503' });
+  assert.equal(sandbox.getStatus(src), 'failed');
+  sandbox.coverInFlight = src;
+  assert.equal(sandbox.getStatus(src), 'downloading', 'an active retry takes precedence over the previous failure');
+  sandbox.cachedCoverUrl = src;
+  assert.equal(sandbox.getStatus(src), 'ready');
+});
