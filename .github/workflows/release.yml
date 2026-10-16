@@ -41,7 +41,7 @@ jobs:
       - run: npm run build:chrome
       - run: npm install --global @elgato/cli@1.10.2
       - run: npm run build:streamdeck
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: release-packages
           path: |
