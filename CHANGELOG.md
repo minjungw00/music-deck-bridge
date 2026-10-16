@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Replace the SDK integration test's manual WebSocket framing with a pinned `ws` server, verify normal closure before stopping the plugin, and include socket/process diagnostics on failure.
+- Return album art status codes from the bridge and translate them in the Chrome popup's English/Korean catalogs.
+- Honor multiple Track Dial ticks in both directions, capped at five skips per event; ignore invalid tick counts.
 - Move Stream Deck registration, seven action handlers and rendering to the official SDK 3.0.2, bundled into a standalone executable.
 - Validate and package Stream Deck installers in Linux/Windows CI using the pinned CLI; upload both component packages.
 - Revoke server authentication on Unpair, reject old command polls on unpair/re-pair, and clear previous player state/commands.

@@ -9,19 +9,23 @@ Evidence date: October 17, 2026. Source version remains **0.5.1**. This records 
 - Server-side unpair and re-pair revocation, old-poll termination, state/command reset and trusted-context token storage.
 - Consistent product title, reproducible project icons and bundled runtime license notices.
 - English/Korean store text and permission explanations in [store assets](../store-assets/listing.en.md).
+- Standard `ws` SDK test server, explicit error/close handling, normal close-handshake assertions and child-process diagnostics; cleanup waits for child stdio closure on Windows.
+- Language-independent album art status codes localized by Chrome, and Track Dial multi-tick handling capped at five skips per event.
 
 ## Local automated evidence
 
 Run the commands in [development](development.md) against the exact release commit. The current changes were checked on Linux with Node.js 24.19.0 and CLI 1.10.2:
 
 - Syntax, manifest/resources, versions, translations and basic accidental-secret checks.
-- 38 passing Node regression tests, including standalone SDK key/dial/inspector/settings/rendering tests and opaque-manifest fixtures.
+- 40 passing Node regression tests, including standalone SDK key/dial/inspector/settings/rendering tests and opaque-manifest fixtures, all album art status translations, and track dial direction/count/burst/invalid-input coverage.
 - Authentication tests for unpair/re-pair, pending polls, old commands, restart persistence, storage access failure and offline retry.
 - 2 passing Python packaging boundary/notice tests.
 - Official Stream Deck CLI validation and `.streamDeckPlugin` generation, and Chrome ZIP generation.
 - `npm audit`: zero reported vulnerabilities in the locked dependency graph.
 
-The opaque-manifest fixture only tests the SDK's handling of a non-JSON manifest. It does not reproduce Maker Console encryption. New GitHub CI runs, Windows behavior and device results must be recorded below.
+The opaque-manifest fixture only tests the SDK's handling of a non-JSON manifest. It does not reproduce Maker Console encryption.
+
+The baseline [CI run 38956429342](https://github.com/minjungw00/music-deck-bridge/actions/runs/38956429342) for `eb137f6` was rechecked: Ubuntu passed, while Windows passed 36/38 tests and failed both SDK round trips with `read ECONNRESET`. The local changes replace manual WebSocket framing and close the socket before killing the plugin. Linux checks above pass with those changes, but no new Windows CI result or hardware result has been obtained. Both OS jobs and their package uploads must pass for the final release commit; do not treat the local test-server fix as Windows certification.
 
 ## Required manual evidence
 
@@ -33,7 +37,7 @@ The opaque-manifest fixture only tests the SDK's handling of a non-JSON manifest
 | Chrome unpacked and store-package install | Pending | First pairing, reload/update, browser restart, normal tab and installed app |
 | Idle recovery and port changes/conflicts | Pending | Sleep/reconnect and old-port grace behavior; retry after failed unpair |
 | Actual Maker Console DRM build | Pending | Upload with publishing disabled, download processed build, install and exercise all actions |
-| Private vulnerability reporting | Disabled at last check | Public GitHub API returned `enabled: false` on October 17, 2026; maintainer must enable and verify the private reporting entry point |
+| Private vulnerability reporting | Rechecked: disabled | Public GitHub API again returned `enabled: false` on October 17, 2026; maintainer must enable and verify the private reporting entry point |
 | Secret scanning and push protection | Unverified | Maintainer verifies repository settings and reviews repository history |
 | Store screenshots and promotional images | Pending | Actual en/ko popup, Now Playing, settings and dial captures; current store image specifications |
 | Store declarations, public privacy link and final listing | Pending | Review [English](../store-assets/listing.en.md)/[Korean](../store-assets/listing.ko.md) copy against final build and current forms |

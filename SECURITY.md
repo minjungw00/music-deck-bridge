@@ -6,6 +6,6 @@ Use [GitHub private vulnerability reporting](https://github.com/minjungw00/music
 
 Include the affected version, Windows/Chrome/Stream Deck versions, reproduction steps, impact and a minimal proof of concept with dummy data. Review the [architecture](docs/architecture.md) for the local origin/token boundary and permitted artwork hosts.
 
-Before making this repository public, the maintainer should enable private vulnerability reporting, secret scanning and push protection where available, and review existing history and distribution contents. Local checks only detect a limited set of accidental secrets.
+Before release, the maintainer should enable private vulnerability reporting, secret scanning and push protection where available, and review existing history and distribution contents. Local checks only detect a limited set of accidental secrets.
 
-Last checked October 17, 2026: the public GitHub private-vulnerability-reporting API returned `enabled: false`. The maintainer must enable this repository setting before advertising private reporting as available. This check does not verify secret scanning or push protection settings.
+Rechecked October 17, 2026: the public GitHub private-vulnerability-reporting API still returned `enabled: false`. The maintainer must enable this repository setting before advertising private reporting as available. This check does not verify secret scanning or push protection settings.
