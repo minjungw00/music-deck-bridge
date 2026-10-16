@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 
 const plugin=readFileSync(join(dirname(fileURLToPath(import.meta.url)),'..',
-  'streamdeck', 'io.github.minjungw00.musicdeckbridge.sdPlugin','bin','plugin.js'),'utf8');
+  'streamdeck', 'src','plugin.cjs'),'utf8');
 const coverFns=plugin.slice(plugin.indexOf('const COVERS = '),plugin.indexOf('function paint()'));
 
 function harness(fetch){

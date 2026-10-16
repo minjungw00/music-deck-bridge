@@ -6,7 +6,7 @@ Install **both** components on Windows 10/11. Use Chrome 116+ and Stream Deck 7.
 
 ## Stream Deck plugin
 
-1. Download or clone the repository.
+1. Download or clone the repository. Install Node.js 24 and run `npm ci --ignore-scripts`, then `npm run build:plugin` in the repository root. This creates the standalone `bin/plugin.js` bundle, including the official SDK.
 2. Quit Stream Deck using the system tray menu. Closing its window alone may leave it running.
 3. Copy the entire `streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin` folder into:
 
@@ -48,7 +48,7 @@ The default port is `17864`. Set an unused integer from `1024` to `65535` in any
 
 ## Update
 
-Quit Stream Deck, back up the installed plugin folder, and replace it with the updated `io.github.minjungw00.musicdeckbridge.sdPlugin` folder in the Plugins directory above. Include the license/privacy files as described in the installation steps, then restart Stream Deck. Pairing and port data are stored separately and remain available.
+Quit Stream Deck, back up the installed plugin folder, and rebuild with `npm ci --ignore-scripts` and `npm run build:plugin`, then replace it with the updated `io.github.minjungw00.musicdeckbridge.sdPlugin` folder in the Plugins directory above. Include the license/privacy files as described in the installation steps, then restart Stream Deck. Pairing and port data are stored separately and remain available.
 
 Keep your Chrome unpacked folder at the same absolute path. After updating source files, open `chrome://extensions` and click **Reload** for this extension. Refresh YouTube Music if it does not reconnect. A different extension ID requires a new pairing.
 

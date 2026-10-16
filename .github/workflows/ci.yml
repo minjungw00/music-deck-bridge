@@ -28,3 +28,11 @@ jobs:
       - run: npm audit
       - run: python -m unittest discover -s tests -p "test_*.py"
       - run: npm run build:chrome
+      - run: npm run build:streamdeck
+      - uses: actions/upload-artifact@v7
+        with:
+          name: packages-${{ matrix.os }}
+          path: |
+            dist/*.zip
+            dist/*.streamDeckPlugin
+          if-no-files-found: error

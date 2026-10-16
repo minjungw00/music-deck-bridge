@@ -28,14 +28,14 @@ Music Deck Bridge contains two components that must be installed together: a Str
 
 ## Install from source
 
-1. Download or clone this repository. Quit Stream Deck from its system tray menu.
+1. Download or clone this repository. Install Node.js 24, run `npm ci --ignore-scripts` and `npm run build:plugin` in the repository root, then quit Stream Deck from its system tray menu.
 2. Copy the `streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin` folder into `C:\Users\username\AppData\Roaming\Elgato\StreamDeck\Plugins`, replacing `username` with your Windows account name. Copy the root `LICENSE`, `NOTICE`, `THIRD_PARTY_NOTICES.md` and `PRIVACY.md` into the installed plugin folder, then start Stream Deck.
 3. Open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**, and select `chrome-extension/`.
 4. Add a Music Deck Bridge action in Stream Deck. In its settings, select **Generate PIN**.
 5. Open the extension popup and enter the six-digit PIN within ten minutes. The default port is `17864`.
 6. Open or refresh [YouTube Music](https://music.youtube.com/) in Chrome and play a track.
 
-See the installation guides for updates, custom ports and removal. Source installation needs no separate Node.js installation; development and packaging do.
+See the installation guides for updates, custom ports and removal. Building from source requires Node.js 24. The installed bundle uses the Node.js runtime provided by Stream Deck and needs no separate runtime or npm install.
 
 ## Development
 
@@ -47,7 +47,7 @@ npm run check
 npm test
 ```
 
-Packaging uses Python 3.10+ (`python3`, `python`, or Windows `py`). `npm run build:chrome` creates a ZIP with `manifest.json` at its root. Stream Deck packaging additionally requires the Elgato CLI. See [development and release checks](docs/development.md).
+Packaging uses Python 3.10+ (`python3`, `python`, or Windows `py`). `npm run build:chrome` creates a ZIP with `manifest.json` at its root. Stream Deck packaging uses the pinned Elgato CLI installed by `npm ci`. See [development and release checks](docs/development.md).
 
 ```text
 streamdeck/        Stream Deck plugin package and source artwork

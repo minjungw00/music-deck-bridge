@@ -9,11 +9,24 @@
     "type": "git",
     "url": "https://github.com/minjungw00/music-deck-bridge.git"
   },
-  "engines": { "node": ">=24 <25" },
+  "engines": {
+    "node": ">=24 <25"
+  },
   "scripts": {
     "test": "node --test --test-concurrency=1 tests/*.test.mjs",
     "check": "node scripts/check.mjs",
     "build:chrome": "node scripts/package.mjs chrome",
-    "build:streamdeck": "node scripts/package.mjs streamdeck"
+    "build:streamdeck": "node scripts/package.mjs streamdeck",
+    "build:plugin": "node scripts/build-plugin.mjs",
+    "precheck": "npm run build:plugin",
+    "pretest": "npm run build:plugin",
+    "prebuild:streamdeck": "npm run build:plugin"
+  },
+  "dependencies": {
+    "@elgato/streamdeck": "3.0.2"
+  },
+  "devDependencies": {
+    "@elgato/cli": "1.10.2",
+    "esbuild": "0.28.2"
   }
 }

@@ -63,11 +63,11 @@ async function walk(dir) {
     if (entry.isDirectory()) { await walk(file); continue; }
     const name = relative(root, file).replaceAll('\\', '/');
     assert.ok(!/(:Zone\.Identifier$|\.(pem|p12|pfx|key|crx|streamDeckPlugin)$|(^|\/)auth\.json$|(^|\/)\.env(?:\.|$))/.test(name), `Private or generated file: ${name}`);
-    if (/\.(js|mjs)$/.test(name)) {
+    if (/\.(js|mjs|cjs)$/.test(name)) {
       const result = spawnSync(process.execPath, ['--check', file], { encoding: 'utf8' });
       assert.equal(result.status, 0, result.stderr);
     }
-    if (/\.(js|mjs|json|html|md|yml|py|txt)$/.test(name)) {
+    if (/\.(js|mjs|cjs|json|html|md|yml|py|txt)$/.test(name)) {
       const source = await readFile(file, 'utf8');
       if (name.endsWith('.json')) JSON.parse(source);
       assert.ok(!/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/.test(source), `Private key: ${name}`);

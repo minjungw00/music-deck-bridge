@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {dirname,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import vm from 'node:vm';
-const code=readFileSync(join(dirname(fileURLToPath(import.meta.url)),'..','streamdeck','io.github.minjungw00.musicdeckbridge.sdPlugin','bin','plugin.js'),'utf8');
+const code=readFileSync(join(dirname(fileURLToPath(import.meta.url)),'..','streamdeck','src','plugin.cjs'),'utf8');
 test('idle player stays selected for up to 90 seconds instead of dropping after 3.5s',()=>{
   const fn=code.slice(code.indexOf('function selectedEntry()'),code.indexOf('function addCommand('));
   const candidates=new Map([['123',{lastSeen:100000,playing:false,standalone:true,title:'Paused song'}]]);

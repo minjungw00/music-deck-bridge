@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 
 const root=join(dirname(fileURLToPath(import.meta.url)),'..','streamdeck','io.github.minjungw00.musicdeckbridge.sdPlugin');
-const script=readFileSync(join(root,'bin','plugin.js'),'utf8');
+const script=readFileSync(join(root,'..','src','plugin.cjs'),'utf8');
 const m=JSON.parse(readFileSync(join(root,'manifest.json'),'utf8'));
 const version=JSON.parse(readFileSync(join(root,'..','..','package.json'),'utf8')).version;
 

@@ -5,5 +5,9 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
-# The runtime and root tooling have no npm dependencies. Review the vendored
-# sdpi-components bundle and the release workflow's pinned CLI manually.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+# Review the vendored sdpi-components bundle manually.

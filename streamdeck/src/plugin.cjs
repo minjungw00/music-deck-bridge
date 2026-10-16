@@ -1,8 +1,8 @@
 'use strict';
 /**
  * Music Deck Bridge.
- * Native Stream Deck WebSocket protocol + a loopback-only HTTP bridge.
- * No npm packages, remote-control APIs, credentials or debugging ports.
+ * Official Stream Deck SDK + a loopback-only HTTP bridge.
+ * SDK and runtime dependencies are bundled by scripts/build-plugin.mjs.
  * Node.js 24 is provided by Stream Deck 7.1+.
  */
 const http = require('node:http');
@@ -65,7 +65,7 @@ let failures = [];
 let auth = null;
 let lastExtensionContactAt = 0;
 let locale = 'en';
-let sdSocket;
+let streamDeck;
 let sdOnline = false;
 let updateTimer = null;
 let hasDrawing = false;
@@ -294,7 +294,21 @@ async function requestHandler(req, res) {
   return sendHttp(res, 404, { error: 'Unknown endpoint' }, origin);
 }
 function sendStream(message) {
-  if (sdOnline && sdSocket?.readyState === WebSocket.OPEN) sdSocket.send(JSON.stringify(message));
+  if (!sdOnline) return;
+  let result;
+  if (message.event === 'sendToPropertyInspector') {
+    // A port change can finish after the user switches inspectors.
+    if (streamDeck.ui.action?.id !== message.context) return;
+    result = streamDeck.ui.sendToPropertyInspector(message.payload);
+  } else {
+    const action = streamDeck.actions.getActionById(message.context);
+    if (!action) return;
+    if (message.event === 'setTitle') result = action.setTitle(message.payload.title);
+    else if (message.event === 'setImage') result = action.setImage(message.payload.image);
+    else if (message.event === 'setFeedback' && action.isDial()) result = action.setFeedback(message.payload);
+    else if (message.event === 'showAlert') result = action.showAlert();
+  }
+  void result?.catch(error => log(`Stream Deck output error: ${error.message}`));
 }
 function setTitle(context, title) { sendStream({ event: 'setTitle', context, payload: { title } }); }
 function setImage(context, image) { sendStream({ event: 'setImage', context, payload: image ? { image } : {} }); }
@@ -518,25 +532,35 @@ function handleDeckEvent(e) {
   }
 }
 function connectDeck() {
-  const args = process.argv.slice(2);
-  const arg = name => { const i = args.indexOf(name); return i < 0 ? null : args[i + 1]; };
-  const port = arg('-port'), uuid = arg('-pluginUUID'), registerEvent = arg('-registerEvent');
-  try { locale = JSON.parse(arg('-info') || '{}')?.application?.language === 'ko' ? 'ko' : 'en'; } catch { locale = 'en'; }
-  if (!port || !uuid || !registerEvent) {
+  if (!process.argv.includes('-port')) {
     if (!IS_TEST) log('Not launched by Stream Deck: waiting for SDK launch arguments.');
     return;
   }
-  sdSocket = new WebSocket(`ws://${LOCALHOST}:${port}`);
-  sdSocket.addEventListener('open', () => {
+  const sdk = require('@elgato/streamdeck');
+  streamDeck = sdk.default;
+  locale = streamDeck.info.application.language === 'ko' ? 'ko' : 'en';
+  class BridgeAction extends sdk.SingletonAction {
+    constructor(name) { super(); this.manifestId = `${PLUGIN_ID}.${name}`; }
+    forward(ev) {
+      handleDeckEvent({ event: ev.type, context: ev.action.id,
+        action: ev.action.manifestId, payload: ev.payload });
+    }
+    onWillAppear(ev) { this.forward(ev); }
+    onWillDisappear(ev) { this.forward(ev); }
+    onDidReceiveSettings(ev) { this.forward(ev); }
+    onSendToPlugin(ev) { this.forward(ev); }
+    onKeyDown(ev) { this.forward(ev); }
+    onDialRotate(ev) { this.forward(ev); }
+    onDialDown(ev) { this.forward(ev); }
+    onTouchTap(ev) { this.forward(ev); }
+  }
+  for (const name of ['nowplaying', 'toggle', 'prev', 'next', 'mute', 'volume', 'trackdial']) {
+    streamDeck.actions.registerAction(new BridgeAction(name));
+  }
+  void streamDeck.connect().then(() => {
     sdOnline = true;
-    sendStream({ event: registerEvent, uuid });
     drawSoon();
-  });
-  sdSocket.addEventListener('message', ev => {
-    try { handleDeckEvent(JSON.parse(String(ev.data))); } catch (error) { log(`Stream Deck event error: ${error.message}`); }
-  });
-  sdSocket.addEventListener('close', () => { sdOnline = false; log('Stream Deck disconnected.'); });
-  sdSocket.addEventListener('error', () => { log('Stream Deck socket error.'); });
+  }).catch(error => { log(`Stream Deck connection error: ${error.message}`); process.exitCode = 1; });
 }
 
 function makeServer() {

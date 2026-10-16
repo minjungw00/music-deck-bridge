@@ -6,7 +6,7 @@ Music Deck Bridge는 **Stream Deck 플러그인과 Chrome 확장 프로그램을
 
 ## Stream Deck 플러그인 설치
 
-1. 저장소를 다운로드하거나 복제합니다.
+1. 저장소를 다운로드하거나 복제합니다. Node.js 24를 설치한 뒤 저장소 루트에서 `npm ci --ignore-scripts`, `npm run build:plugin`을 실행합니다. 공식 SDK가 포함된 독립 실행 파일 `bin/plugin.js`가 생성됩니다.
 2. 시스템 트레이 메뉴에서 Stream Deck을 완전히 종료합니다. 창만 닫으면 계속 실행 중일 수 있습니다.
 3. `streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin` 폴더 전체를 다음 경로에 붙여넣습니다.
 
@@ -48,7 +48,7 @@ Music Deck Bridge는 **Stream Deck 플러그인과 Chrome 확장 프로그램을
 
 ## 업데이트
 
-Stream Deck을 종료하고 설치된 플러그인 폴더를 백업한 뒤, 위 Plugins 경로의 `io.github.minjungw00.musicdeckbridge.sdPlugin` 폴더를 새 폴더로 교체합니다. 설치 절차에 안내된 라이선스·개인정보 문서도 복사하고 Stream Deck을 다시 실행하세요. 인증 정보와 포트 설정은 별도로 저장되어 유지됩니다.
+Stream Deck을 종료하고 설치된 플러그인 폴더를 백업한 뒤, `npm ci --ignore-scripts`, `npm run build:plugin`으로 다시 빌드하고 위 Plugins 경로의 `io.github.minjungw00.musicdeckbridge.sdPlugin` 폴더를 새 폴더로 교체합니다. 설치 절차에 안내된 라이선스·개인정보 문서도 복사하고 Stream Deck을 다시 실행하세요. 인증 정보와 포트 설정은 별도로 저장되어 유지됩니다.
 
 Chrome 확장 프로그램 폴더의 절대 경로를 유지하세요. 소스를 업데이트한 뒤 `chrome://extensions`에서 이 확장 프로그램의 **새로고침**을 누릅니다. 자동 재연결이 되지 않으면 YouTube Music 창도 새로고침하세요. 확장 프로그램 ID가 달라지면 새 PIN으로 연결해야 합니다.
 
