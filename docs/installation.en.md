@@ -108,6 +108,8 @@ The stores may launch separately. For example, once the Chrome listing is availa
 
 The extension prefers an installed Chrome YouTube Music app if both it and a regular tab are open.
 
+Reinstalling the Chrome extension removes its local pairing token even if the plugin still stores previous credentials. Generate a new PIN in the Stream Deck action settings and pair the reinstalled extension. If using a custom port, match it in the popup first. Updating files in the same unpacked folder and reloading avoids removing extension storage.
+
 ### Launch and song ratings
 
 Add **Open YouTube Music**, **Like** and **Dislike** from the Music Deck Bridge action list.

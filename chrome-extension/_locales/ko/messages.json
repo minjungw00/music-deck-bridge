@@ -105,7 +105,7 @@
     "message": "Chrome 확장 프로그램을 통해 Elgato Stream Deck에서 YouTube Music을 조작합니다."
   },
   "notPaired": {
-    "message": "아직 페어링되지 않았습니다."
+    "message": "연결 정보가 없습니다. 확장 프로그램을 재설치했다면 Stream Deck 액션 설정에서 새 PIN을 발급하여 연결하세요. 사용자 지정 포트도 양쪽에서 맞추세요."
   },
   "subtitle": {
     "message": "YouTube Music · Stream Deck 연동"

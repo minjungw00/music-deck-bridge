@@ -14,7 +14,7 @@ const strings = {
     pairHint: 'Chrome 확장 프로그램에 PIN을 입력하세요. 10분 동안 유효합니다.',
     offline: 'Stream Deck 플러그인에서 응답이 없습니다. Stream Deck 앱을 다시 실행하세요.',
     unpaired: '미연결 · PIN을 발급하여 Chrome 확장 프로그램에 입력하세요.',
-    extensionMissing: 'PIN 등록됨 · Chrome 확장 프로그램의 통신을 기다리는 중입니다.',
+    extensionMissing: '확장 프로그램 연결 미확인 · 기존 인증 정보가 보관되어 있습니다. 확장을 재설치했다면 새 PIN을 발급하여 연결하세요.',
     playerMissing: 'Chrome 확장 프로그램 연결됨 · YouTube Music 창을 확인하세요.',
     sleeping: '연결됨 · YouTube Music이 유휴 상태이거나 응답이 지연되고 있습니다.',
     connected: '연결됨 · YouTube Music 제어 가능',
@@ -32,7 +32,7 @@ const strings = {
     pairHint: 'Enter the PIN in the Chrome extension popup. Valid for 10 minutes.',
     offline: 'No response from the Stream Deck plugin. Restart the Stream Deck app.',
     unpaired: 'Not paired · Generate a PIN and enter it in Chrome.',
-    extensionMissing: 'Paired · Waiting for the Chrome extension to connect.',
+    extensionMissing: 'Extension connection unconfirmed · Previous credentials are stored. If you reinstalled the extension, generate a new PIN and pair again.',
     playerMissing: 'Chrome extension connected · Open or refresh YouTube Music.',
     sleeping: 'Connected · YouTube Music may be idle or temporarily unresponsive.',
     connected: 'Connected · YouTube Music is ready',
@@ -112,7 +112,7 @@ function showConnection(payload) {
   if (payload.bridgeOnline === false && payload.portError) {
     $('portStatus').textContent = `${t('portOffline')} ${payload.portError}`;
   }
-  if (payload.pin && !payload.extensionOnline) {
+  if (payload.pin) {
     $('pairState').textContent = t('pinIssued');
   } else if (!payload.paired) {
     $('pairState').textContent = t('unpaired');

@@ -105,7 +105,7 @@
     "message": "Control YouTube Music from Elgato Stream Deck using a Chrome extension."
   },
   "notPaired": {
-    "message": "Not paired yet."
+    "message": "No pairing credentials. If you reinstalled the extension, generate a new PIN in the Stream Deck action settings and pair again. Match any custom port on both sides."
   },
   "subtitle": {
     "message": "For YouTube Music · Stream Deck integration"

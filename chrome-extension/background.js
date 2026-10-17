@@ -145,7 +145,13 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
     (async () => {
       const token = await pairedToken();
       if (!token) return { ok: false, error: (chrome.i18n?.getMessage?.('notPaired') || 'Not paired yet.') };
-      const result = await post('/status', { token });
+      let result;
+      try { result = await post('/status', { token }); }
+      catch (error) {
+        if (error.httpStatus === 401) throw new Error(chrome.i18n?.getMessage?.('notPaired') ||
+          'Pair again with a new PIN from the Stream Deck action settings.');
+        throw error;
+      }
       void startBrowserListener();
       return { ok: true, ...result };
     })().then(respond).catch(e => respond({ ok: false, error: e.message }));

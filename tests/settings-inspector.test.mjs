@@ -62,10 +62,20 @@ test('each action can generate a PIN, with real connection-state messages', asyn
     pi.subscribers.connection({payload:{type:'connection',paired:true,extensionOnline:true,playerActive:false}});
     assert.match(pi.elems.pairState.textContent,/YouTube Music/);
     pi.subscribers.connection({payload:{type:'connection',paired:true,extensionOnline:false,playerActive:false}});
-    assert.match(pi.elems.pairState.textContent,/통신/);
+    assert.match(pi.elems.pairState.textContent,/연결 미확인/);
+    assert.match(pi.elems.pairState.textContent,/재설치.*새 PIN/);
+    assert.doesNotMatch(pi.elems.pairState.textContent,/PIN 등록됨/);
     pi.subscribers.connection({payload:{type:'connection',pin:'123456',expiresAt:Date.now()+600000,paired:false,extensionOnline:false}});
     assert.equal(pi.elems.pinOutput.textContent,'123456');
   }
+});
+
+test('new PIN instructions take priority over a recently connected old extension', async()=>{
+  const pi=makeInspector(); await pi.ready();
+  pi.subscribers.connection({payload:{type:'connection',pin:'123456',expiresAt:Date.now()+600000,
+    paired:true,extensionOnline:true,playerActive:true}});
+  assert.equal(pi.elems.pinOutput.textContent,'123456');
+  assert.equal(pi.elems.pairState.textContent,'PIN 발급됨 · Chrome 확장 프로그램에 입력하세요.');
 });
 
 test('native range saves actual first input and supports manual settings persistence', async()=>{
