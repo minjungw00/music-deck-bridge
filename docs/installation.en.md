@@ -118,12 +118,31 @@ Back up Stream Deck profiles before changing installations. Keep `%APPDATA%\Musi
 
 | Installed from | Update procedure |
 | --- | --- |
-| GitHub Releases | Download both packages from the new stable release; open the plugin installer to replace the existing version and update the Chrome folder as below. |
-| GitHub Actions | Select another successful `main` run and manually replace both components; record its SHA. No automatic updates. |
+| GitHub Releases | Download both matching packages; use the plugin-file replacement procedure below for an existing install, then update the Chrome folder in place. |
+| GitHub Actions | Select another successful `main` run and replace both components as below; record its SHA. No automatic updates. |
 | Source | Pull the chosen revision, run `npm ci --ignore-scripts` and `npm run build:plugin`, quit Stream Deck, replace the installed plugin folder including notices, then restart. |
 | Official stores, once available | Use each store's update mechanism; check that both components have updated. |
 
-For an unpacked Chrome extension, replace the contents of its existing permanent folder with the new extracted files (or update the same source checkout), preserving the **absolute folder path**. Click **Reload** at `chrome://extensions` and refresh YouTube Music if needed. Do not load every new version as another extension. If the plugin installer refuses replacement/downgrade, back up profiles and follow the removal/reinstallation procedure below.
+For an unpacked Chrome extension, replace the contents of its existing permanent folder with the new extracted files (or update the same source checkout), preserving the **absolute folder path**. Click **Reload** at `chrome://extensions` and refresh YouTube Music if needed. Do not load every new version as another extension.
+
+<a id="replacing-plugin-files"></a>
+
+### Replace plugin files while keeping settings
+
+Installing a downloaded package over an existing plugin is not verified for this project. The maintainer's first 1.0.1 attempt showed “Unable to install plugin”; the old version resumed working only after Stream Deck restarted. The earlier 0.5.1 → 1.0.0 transition used removal of the old plugin files followed by reinstallation. Do not treat that result as a successful install over existing files.
+
+For a package update in this situation:
+
+1. Back up Stream Deck profiles and the installed plugin folder. If investigating an installation error, save `%APPDATA%\Elgato\StreamDeck\logs\StreamDeck0.log` and the plugin's `logs` folder before replacing files. Do not share PINs/tokens or unredacted personal data.
+2. **Quit Stream Deck from its system tray menu**, rather than just closing its window.
+3. Move only `%APPDATA%\Elgato\StreamDeck\Plugins\io.github.minjungw00.musicdeckbridge.sdPlugin` to a backup location **outside** the `Plugins` directory. Do not leave a renamed second copy inside `Plugins`.
+4. Keep `%APPDATA%\MusicDeckBridge\auth.json`, `config.json`, Stream Deck profiles and the existing Chrome extension. This is a file replacement, not a full reset: do not unpair or remove the extension.
+5. Start Stream Deck, then double-click the newly downloaded `.streamDeckPlugin`. Confirm installation and check that the installed manifest's `Version` is the intended version (`1.0.1.0` for 1.0.1). A completed download or restored old actions alone does not establish an update.
+6. Reload the existing Chrome extension after updating its files. Confirm pairing, matching ports, saved action settings/profiles and playback controls.
+
+If installation fails, quit Stream Deck, move any incomplete new plugin folder out of `Plugins`, restore the backed-up plugin folder to its original path and restart. If needed, restore the matching Chrome files in the same extension folder and reload. Keep authentication/configuration and profiles. Record the actual installed version and inspect the host installation log; do not repeatedly reinstall or reset pairing to diagnose `Failed to fetch`.
+
+`Failed to fetch` means the extension did not obtain an HTTP response from the configured local bridge. After a rejected install, first restart Stream Deck and check whether the old version works again, then check matching ports. It does not by itself demonstrate invalid PIN authentication or a defect in the new plugin, which may never have been installed. The exact reason for a host installer rejection requires its logs.
 
 ### Verify downloaded files
 
@@ -141,7 +160,7 @@ All plugin builds use UUID `io.github.minjungw00.musicdeckbridge`; use one insta
 
 | Switch | Procedure |
 | --- | --- |
-| Actions → Releases | Replace the plugin with the stable installer; update the existing unpacked Chrome folder in place and reload. |
+| Actions → Releases | Follow the plugin-file replacement procedure above with the stable package; update the existing unpacked Chrome folder in place and reload. |
 | Releases → Actions | Replace both components with a matching `main` build; updates become manual and stability is not guaranteed. |
 | GitHub → Elgato Marketplace | Once approved, back up profiles and plugin files, quit Stream Deck and remove the existing plugin folder as below. Restart and install the Marketplace plugin; verify existing actions and settings. |
 | Unpacked Chrome → Chrome Web Store | While Stream Deck and the old extension are connected, choose **Unpair** and confirm success, then remove the old extension. Install the approved store extension and pair with a new PIN. |
