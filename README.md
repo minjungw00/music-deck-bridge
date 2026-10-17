@@ -26,16 +26,18 @@ Music Deck Bridge contains two components that must be installed together: a Str
 | Device | Key actions target Stream Deck key models; encoder actions require Stream Deck + |
 | Languages | English / 한국어 |
 
-## Install from source
+## Installation
 
-1. Download or clone this repository. Install Node.js 24, run `npm ci --ignore-scripts` and `npm run build:plugin` in the repository root, then quit Stream Deck from its system tray menu.
-2. Copy the `streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin` folder into `%APPDATA%\Elgato\StreamDeck\Plugins`. Copy the root `LICENSE`, `NOTICE`, `THIRD_PARTY_NOTICES.md` and `PRIVACY.md` into the installed plugin folder, then start Stream Deck.
-3. Open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**, and select `chrome-extension/`.
-4. Add a Music Deck Bridge action in Stream Deck. In its settings, select **Generate PIN**.
-5. Open the extension popup and enter the six-digit PIN within ten minutes. The default port is `17864`.
-6. Open or refresh [YouTube Music](https://music.youtube.com/) in Chrome and play a track.
+**Start with a GitHub Actions development build while the first stable release is pending.** Prebuilt packages need no separate Node.js, npm or Python installation: Stream Deck provides the plugin runtime. Install both the `.streamDeckPlugin` and the Chrome extension, then complete PIN pairing.
 
-See the installation guides for updates, custom ports and removal. Building from source requires Node.js 24. The installed bundle uses the Node.js runtime provided by Stream Deck and needs no separate runtime or npm install.
+| Method | Audience and availability | Instructions |
+| --- | --- | --- |
+| GitHub Actions | Testers; latest development packages, stability not guaranteed; GitHub sign-in required | [English](docs/installation.en.md#method-2-github-actions) / [한국어](docs/installation.ko.md#method-2-github-actions) |
+| GitHub Releases | General users; stable packages planned for the first published release | [English](docs/installation.en.md#method-1-github-releases) / [한국어](docs/installation.ko.md#method-1-github-releases) |
+| Build from source | Developers; requires Node.js 24 and npm, plus Python 3.10+ for packaging | [English](docs/installation.en.md#method-3-build-from-source) / [한국어](docs/installation.ko.md#method-3-build-from-source) |
+| Official stores | General users; Elgato Marketplace and Chrome Web Store links pending approval, tracked separately | [English](docs/installation.en.md#method-4-official-stores) / [한국어](docs/installation.ko.md#method-4-official-stores) |
+
+See the guides for [PIN pairing](docs/installation.en.md#pairing), updates, switching installation methods and removal. Chrome ZIP packages must be extracted to a permanent folder and loaded unpacked in Developer mode.
 
 ## Development
 
@@ -47,7 +49,7 @@ npm run check
 npm test
 ```
 
-Packaging uses Python 3.10+ (`python3`, `python`, or Windows `py`). `npm run build:chrome` creates a ZIP with `manifest.json` at its root. Stream Deck packaging uses the pinned Elgato CLI installed by `npm ci`. See [development and release checks](docs/development.md).
+`npm run build:plugin` needs only Node.js and npm. Packaging uses Python 3.10+ (`python3`, `python`, or Windows `py`). See [development and release checks](docs/development.md) for source builds, tests and packaging.
 
 ```text
 streamdeck/        Plugin source, bundle/resources and icon generator

@@ -48,7 +48,7 @@ Automated checks are complete for `59f9321`; Windows hardware, store-installed p
 | Check | Status | Evidence to record |
 | --- | --- | --- |
 | Final release commit CI and package inspection | Pending | Repeat the passing `59f9321` checks on the final release commit; record its SHA and successful run URL and inspect both uploaded packages |
-| Clean Windows 10/11 install, update, uninstall and reset | Pending | OS, Chrome and Stream Deck versions; package hashes and results |
+| Clean Windows 10/11 install, update, uninstall and reset | Partially reported; clean-PC evidence pending | The supplied installation plan reports a successful actual package install and normal operation, without OS/device versions, commit or hashes. Repeat on a Windows PC without separately installed Node.js/npm/Python; record OS, Chrome, Stream Deck/device versions, source run/commit, SHA-256 hashes, pairing/playback, reinstall/update/uninstall/reset results and profile/auth retention. This report does not complete hardware or DRM certification. |
 | All seven actions on actual keys and Stream Deck + dials | Pending | Device models, playback/artwork/title modes, volume steps, touch/push results; confirm the web player processes all 1–5 Track Dial skips per event in both directions |
 | Chrome unpacked and store-package install | Pending | First pairing, reload/update, browser restart, normal tab and installed app |
 | Idle recovery and port changes/conflicts | Pending | Sleep/reconnect and old-port grace behavior; retry after failed unpair |
@@ -57,6 +57,8 @@ Automated checks are complete for `59f9321`; Windows hardware, store-installed p
 | Secret scanning and push protection | Unverified | Maintainer verifies repository settings and reviews repository history |
 | Store screenshots and promotional images | Pending | Actual en/ko popup, Now Playing, settings and dial captures; current store image specifications |
 | Store declarations, public privacy link and final listing | Pending | Review [English](../store-assets/listing.en.md)/[Korean](../store-assets/listing.ko.md) copy against final build and current forms |
+| Elgato Marketplace public install URL | Pending approval/publication | Verify the product URL and plugin install before activating it in README and both installation guides |
+| Chrome Web Store public install URL | Pending approval/publication | Verify the product URL and extension install independently; test removal of the unpacked extension and new PIN pairing |
 
 ## Screenshot capture plan
 

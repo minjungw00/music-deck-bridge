@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Document Releases, Actions, source and future store installation in English/Korean, including package-only setup, updates, source switching and separate store availability.
 - Replace the SDK integration test's manual WebSocket framing with a pinned `ws` server, verify normal closure before stopping the plugin, and include socket/process diagnostics on failure.
 - Return album art status codes from the bridge and translate them in the Chrome popup's English/Korean catalogs.
 - Honor multiple Track Dial ticks in both directions, capped at five skips per event; ignore invalid tick counts.

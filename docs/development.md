@@ -1,8 +1,15 @@
 # Development
 
-## Local checks
+## Developer requirements
 
-Use Node.js 24 and Python 3.10+. Packaging automatically tries `python3`/`python` or the Windows `py` launcher. Use `python3` instead of `python` in the commands below on systems without a `python` alias. Run `npm ci --ignore-scripts` to install the pinned official SDK, esbuild and Elgato CLI. `npm run build:plugin` bundles the plugin and its runtime dependencies into `bin/plugin.js`; the output is ignored by Git. Chrome JavaScript is deployed directly.
+These tools are for contributors; users of prebuilt packages need none of them. See [installation](installation.en.md) for all four installation methods.
+
+- Git, Node.js 24 and npm for source builds and Node checks.
+- Python 3.10+ for packaging and Python tests. It is **not required** by `npm run build:plugin` or manual plugin-folder installation.
+
+Packaging automatically tries `python3`/`python` or the Windows `py` launcher. Use `python3` instead of `python` in the commands below on systems without a `python` alias. Run `npm ci --ignore-scripts` to install the pinned official SDK, esbuild and Elgato CLI. `npm run build:plugin` bundles the plugin and its runtime dependencies into `bin/plugin.js`; the output is ignored by Git. Chrome JavaScript is deployed directly.
+
+## Local checks
 
 ```sh
 npm ci --ignore-scripts
