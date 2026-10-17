@@ -1,0 +1,124 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import test from 'node:test';
+import { inflateSync } from 'node:zlib';
+
+const root = new URL('../', import.meta.url);
+const plugin = 'streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/';
+const assets = [
+  [plugin + 'imgs/plugin/icon.png', 256],
+  [plugin + 'imgs/plugin/icon@2x.png', 512],
+  [plugin + 'imgs/plugin/category.png', 28],
+  [plugin + 'imgs/plugin/category@2x.png', 56],
+  ...[16, 48, 128].map(size => [`chrome-extension/icons/${size}.png`, size]),
+];
+
+// Decode our noninterlaced RGBA8 PNGs using only Node's standard library.
+// Testing committed pixels keeps Pillow optional for ordinary builds and CI.
+async function png(path) {
+  const bytes = await readFile(new URL(path, root));
+  assert.deepEqual(bytes.subarray(0, 8), Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+  const chunks = [];
+  let width, height;
+  for (let offset = 8; offset < bytes.length;) {
+    const length = bytes.readUInt32BE(offset);
+    const type = bytes.toString('ascii', offset + 4, offset + 8);
+    const data = bytes.subarray(offset + 8, offset + 8 + length);
+    if (type === 'IHDR') {
+      width = data.readUInt32BE(0);
+      height = data.readUInt32BE(4);
+      assert.deepEqual([...data.subarray(8)], [8, 6, 0, 0, 0], `${path}: expected RGBA8, no interlacing`);
+    }
+    if (type === 'IDAT') chunks.push(data);
+    offset += length + 12;
+  }
+  const stride = width * 4;
+  const raw = inflateSync(Buffer.concat(chunks));
+  assert.equal(raw.length, (stride + 1) * height);
+  const pixels = Buffer.alloc(stride * height);
+  for (let y = 0; y < height; y++) {
+    const filter = raw[y * (stride + 1)];
+    assert.ok(filter <= 4, `${path}: invalid PNG filter`);
+    for (let x = 0; x < stride; x++) {
+      const i = y * stride + x;
+      const a = x >= 4 ? pixels[i - 4] : 0;
+      const b = y ? pixels[i - stride] : 0;
+      const c = y && x >= 4 ? pixels[i - stride - 4] : 0;
+      const p = a + b - c;
+      const paeth = Math.abs(p - a) <= Math.abs(p - b) && Math.abs(p - a) <= Math.abs(p - c)
+        ? a : Math.abs(p - b) <= Math.abs(p - c) ? b : c;
+      const predictor = [0, a, b, Math.floor((a + b) / 2), paeth][filter];
+      pixels[i] = (raw[y * (stride + 1) + 1 + x] + predictor) & 255;
+    }
+  }
+  const pixel = (x, y) => [...pixels.subarray((y * width + x) * 4, (y * width + x) * 4 + 4)];
+  return { width, height, pixel, at: (x, y) => pixel(Math.floor(x * width), Math.floor(y * height)) };
+}
+
+test('all seven brand PNGs have the required dimensions, alpha and safe corner margins', async () => {
+  for (const [path, size] of assets) {
+    const image = await png(path);
+    assert.equal(image.width, size, path);
+    assert.equal(image.height, size, path);
+    for (const [x, y] of [[0, 0], [size - 1, 0], [0, size - 1], [size - 1, size - 1]]) {
+      assert.ok(image.pixel(x, y)[3] <= 4, `${path}: corner is clipped/opaque`);
+    }
+    assert.ok(image.at(0.26, 0.48)[3] >= 250, `${path}: missing disc`);
+  }
+});
+
+test('colored brand assets preserve the magenta disc, white play triangle and dark background', async () => {
+  for (const [path] of assets.filter(([path]) => !path.includes('category'))) {
+    const image = await png(path);
+    const [r, g, b] = image.at(0.26, 0.48);
+    assert.ok(r > 235 && g < 55 && b > 100 && b < 135, `${path}: magenta`);
+    const play = image.at(0.42, 0.48);
+    assert.ok(Math.min(...play.slice(0, 3)) > 180 && play[3] === 255, `${path}: white play`);
+    const dark = image.at(0.5, 0.15);
+    assert.ok(Math.max(...dark.slice(0, 3)) < 45 && dark[3] >= 250, `${path}: dark background`);
+  }
+  // Actual final PNG colors, without gradients, at the source resolution.
+  const source = await png(assets[1][0]);
+  assert.deepEqual(source.at(0.26, 0.48), [247, 37, 117, 255]);
+  assert.deepEqual(source.at(0.83, 0.62), [207, 20, 90, 255]);
+  assert.deepEqual(source.at(0.42, 0.48), [255, 255, 255, 255]);
+  assert.deepEqual(source.at(0.5, 0.15), [21, 25, 35, 255]);
+});
+
+test('16px color and 28px monochrome play triangles retain a wider base than tip', async () => {
+  for (const [path, monochrome] of [[assets[4][0], false], [assets[2][0], true]]) {
+    const image = await png(path);
+    const columnHeight = x => {
+      let count = 0;
+      for (let y = Math.ceil(image.height * 0.3); y < image.height * 0.65; y++) {
+        const pixel = image.pixel(Math.floor(image.width * x), y);
+        if (monochrome ? pixel[3] < 64 : Math.min(...pixel.slice(0, 3)) > 180) count++;
+      }
+      return count;
+    };
+    assert.ok(columnHeight(0.41) >= (monochrome ? 7 : 4), `${path}: missing triangle base`);
+    assert.ok(columnHeight(0.52) >= 1, `${path}: missing triangle tip`);
+    assert.ok(columnHeight(0.41) > columnHeight(0.52), `${path}: triangle shape lost`);
+    if (monochrome) {
+      for (let y = 0; y < image.height; y++) {
+        for (let x = 0; x < image.width; x++) {
+          const [r, g, b, a] = image.pixel(x, y);
+          if (a) assert.deepEqual([r, g, b], [255, 255, 255], `${path}: must be monochrome`);
+        }
+      }
+    }
+  }
+});
+
+test('both manifests reference the complete brand asset family', async () => {
+  const json = async path => JSON.parse(await readFile(new URL(path, root), 'utf8'));
+  const sd = await json(plugin + 'manifest.json');
+  const chrome = await json('chrome-extension/manifest.json');
+  const referenced = [sd.Icon, sd.CategoryIcon].flatMap(path =>
+    ['', '@2x'].map(suffix => plugin + path + suffix + '.png'));
+  for (const icons of [chrome.icons, chrome.action.default_icon]) {
+    assert.deepEqual(Object.keys(icons), ['16', '48', '128']);
+    referenced.push(...Object.values(icons).map(path => 'chrome-extension/' + path));
+  }
+  assert.deepEqual([...new Set(referenced)].sort(), assets.map(([path]) => path).sort());
+});

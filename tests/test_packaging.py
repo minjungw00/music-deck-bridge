@@ -45,6 +45,8 @@ class PackagingTests(unittest.TestCase):
                 self.assertIn(name, names)
             self.assertFalse(any("auth.json" in name or name.endswith(".pem") or ":" in name for name in names))
             self.assertFalse(any(name.startswith("chrome-extension/") for name in names))
+            for name in manifest["icons"].values():
+                self.assertEqual(bundle.read(name), (self.root / "chrome-extension" / name).read_bytes())
 
     def test_streamdeck_staging_preserves_runtime_resources_and_licenses(self):
         plugin = self.root / "streamdeck" / packaging_tool.PLUGIN
@@ -63,6 +65,10 @@ class PackagingTests(unittest.TestCase):
             self.assertTrue((staged / name).is_file(), name)
         for action in manifest["Actions"]:
             self.assertTrue((staged / (action["Icon"] + ".png")).is_file())
+        for icon in (manifest["Icon"], manifest["CategoryIcon"]):
+            for suffix in (".png", "@2x.png"):
+                name = icon + suffix
+                self.assertEqual((staged / name).read_bytes(), (plugin / name).read_bytes())
         self.assertFalse((staged / "auth.json").exists())
         self.assertFalse((staged / "bin/plugin.js:Zone.Identifier").exists())
 
