@@ -17,9 +17,22 @@ Local evidence on October 17, 2026 (Linux, Node.js 24.19.0, Python 3.12.3, optio
 | 16px colored and 28px monochrome play triangle | Pixel checks and visual review passed; installed-UI review pending |
 | Reproducible icon generation | All 35 PNGs reproduced byte-for-byte; all 28 action PNGs match 1.0.0 |
 | Chrome ZIP and official Stream Deck validation/packaging | Passed |
-| Release SHA256SUMS.txt generation and verification | Passed locally; final CI downloads must be verified separately |
+| Release SHA256SUMS.txt generation and verification | Passed for final CI packages, uploaded assets and public downloads |
 | npm audit | 0 reported vulnerabilities |
-| Revised reference-style icons: Windows / Ubuntu CI and package downloads | Passed on `de1a0e9`; final publication commit must pass again |
+| Final release Windows / Ubuntu CI and package downloads | Passed on `a78f7de`; [run 39016914494](https://github.com/minjungw00/music-deck-bridge/actions/runs/39016914494) |
+
+Published on October 17, 2026: [v1.0.1 GitHub Release](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.0.1), marked as the latest stable release. The annotated tag resolves to release commit `a78f7de785b96aa9f5673bc41783e8d76f877933`. [Final CI run 39016914494](https://github.com/minjungw00/music-deck-bridge/actions/runs/39016914494) passed on both Windows and Ubuntu, including 50 Node tests, two Python tests, zero npm audit findings, official validation/packaging and artifact uploads.
+
+The exact release commit's Windows packages were selected after both OS downloads passed original checksum inventories and source metadata checks. Their full package payloads match the operationally confirmed `de1a0e9` draft byte-for-byte. The final two-package inventory was verified before upload, after draft download, and again after **public release download**. The API confirmed `draft: false`, `prerelease: false` and latest version `v1.0.1`.
+
+Public download hashes:
+
+```text
+ccaaf7233637ff5cf32f978e39145188b52f437fc1d5efdf22db60008bf1b49e  io.github.minjungw00.musicdeckbridge.streamDeckPlugin
+c3693c05a62b41bc8b21572872489c7c56432397574113bd6113b00fde79032d  music-deck-bridge-chrome-1.0.1.zip
+```
+
+The original v1.0.0 tag object and all three release asset IDs/update timestamps were checked and remain unchanged. This publication record is maintained on `main` after release; the v1.0.1 source tag and published package files remain fixed.
 
 Revised candidate evidence: [CI run 39016410622](https://github.com/minjungw00/music-deck-bridge/actions/runs/39016410622) passed on Windows and Ubuntu for commit `de1a0e9d8922288ab6c3412ce3d05a35ce3f6306`. Both jobs passed 50 Node tests, two Python packaging tests, npm audit (zero reported vulnerabilities), official validation/packaging and artifact upload. Both downloaded artifacts passed source metadata and original checksum verification. The Windows packages were uploaded to the draft and downloaded again for byte/checksum verification.
 
@@ -40,7 +53,7 @@ After receiving the revised icons, updated draft packages and file replacement/r
 | PIN authentication, custom port, action settings and profile retention | Not individually itemized | General normal operation was confirmed; do not invent separate retention measurements or a clean-reset test |
 | Installed icon rendering | No issue reported with revised build | Native-size PNG/pixel review passed automatically/visually; detailed installed-UI captures were not supplied |
 | Test environment and installed-copy hashes | Not supplied | Windows, Chrome, Stream Deck software/device/firmware versions and installed-copy hashes can be added when available |
-| Public 1.0.1 release | Operational confirmation received; final CI/package verification required | Select packages from the exact release commit's passing Windows/Ubuntu run; record source SHA/run and hashes in the release notes |
+| Public 1.0.1 release | Published and public downloads verified | Exact release commit, successful Windows/Ubuntu CI, payload comparison and SHA-256 hashes are recorded above and in the release notes |
 
 The confirmed draft targeted `de1a0e9d8922288ab6c3412ce3d05a35ce3f6306`. Its published draft checksum inventory was:
 
@@ -49,7 +62,7 @@ The confirmed draft targeted `de1a0e9d8922288ab6c3412ce3d05a35ce3f6306`. Its pub
 397df9fbfb6474eb1bf238dfc31371f934b94d2a92b230f43d3d5b77f274fd1b  music-deck-bridge-chrome-1.0.1.zip
 ```
 
-These identify the supplied draft, not an independently measured installed copy. Subsequent source changes record this evidence and release status only. Before publication, verify that final CI package payloads match the confirmed draft byte-for-byte, even if ZIP metadata changes the archive hashes. Use final release hashes for public downloads.
+These identify the supplied draft, not an independently measured installed copy. Subsequent release-source changes recorded evidence and release status only. Final CI package payloads were verified against the confirmed draft byte-for-byte; archive hashes differ because ZIP metadata changed. Use the final public release hashes above for downloads.
 
 Maker Console DRM, clean-PC/reset scenarios, detailed hardware coverage and each store approval remain separate checks. GitHub publication does not mark them complete.
 
