@@ -39,6 +39,8 @@ Test-only `/__test/*` routes and deterministic PIN/port overrides are enabled on
 
 The plugin prioritizes an installed Chrome app over a browser tab. State is periodically refreshed and remains eligible for 90 seconds to accommodate idle throttling; slower media updates can be marked stale. Commands target the selected client, expire after five seconds and are delivered once through long polling or a sync response. Startup/update/alarm handlers reinject the guarded content script into open player tabs.
 
+The Play / Pause key displays a Pause image while the selected player is playing, otherwise a Play image. It uses the reported player state rather than optimistically toggling on key presses. Without an eligible player it displays Play with the offline title. Image updates are cached per visible key and reset when the key reappears; all instances follow the same selected player. The action retains its existing single manifest state and toggle command behavior.
+
 Port `17864` is the default; both components accept integers 1024–65535. On a live change the plugin binds the new port first, persists it, notifies clients and retains the old listener for two minutes. Sleeping/offline clients may need the port changed manually. No LAN listener is opened.
 
 Artwork downloads validate the HTTPS host, each redirect, content type and a 2 MB limit. `/status` returns a `coverStatus` code: `missing`, `blocked`, `ready`, `downloading`, `waiting` or `failed`. The Chrome popup translates these codes using its own en/ko catalog; unknown codes use the localized waiting message. See [privacy](../PRIVACY.md) for the allowlist and data lifecycle.

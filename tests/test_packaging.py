@@ -72,6 +72,9 @@ class PackagingTests(unittest.TestCase):
             for suffix in (".png", "@2x.png"):
                 name = icon + suffix
                 self.assertEqual((staged / name).read_bytes(), (plugin / name).read_bytes())
+        for suffix in (".png", "@2x.png"):
+            name = "imgs/actions/toggle/pause" + suffix
+            self.assertEqual((staged / name).read_bytes(), (plugin / name).read_bytes())
         self.assertFalse((staged / "auth.json").exists())
         self.assertFalse((staged / "bin/plugin.js:Zone.Identifier").exists())
 

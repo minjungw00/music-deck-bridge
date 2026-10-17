@@ -2,6 +2,8 @@
 
 Evidence date: October 17, 2026 (Asia/Seoul). The maintainer reports **v1.0.1 uploaded to Elgato Marketplace, Pending review**. This records work possible while review is pending; it does not establish approval or successful execution of a DRM-processed package.
 
+Subsequent development on October 18 separates the toggle key's Play/Pause artwork and synchronizes its image with reported playback. See [current behavior and previews](../branding.md#unreleased-action-family). The 51-test/43-plugin-file measurements below describe the earlier preparation source; they do not cover this later change.
+
 ## Completed in the development source
 
 - Root README uses the supplied 1672×941 thumbnail without altering its bytes. [Artwork provenance and checksum](../assets/README.md).

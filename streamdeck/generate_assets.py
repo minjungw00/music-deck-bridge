@@ -101,9 +101,10 @@ def render(kind, size, background):
             draw.ellipse(box((x - half, y - half, x + half, y + half)), fill=255)
 
     if kind == "toggle":
-        polygon([(154, 174), (154, 330), (252, 252)])
-        rectangle((280, 174, 308, 330))
-        rectangle((332, 174, 360, 330))
+        polygon([(208, 168), (208, 336), (334, 252)])
+    elif kind == "pause":
+        rectangle((202, 174, 236, 330))
+        rectangle((276, 174, 310, 330))
     elif kind in ("prev", "next", "trackdial"):
         polygon([(170, 178), (170, 326), (286, 252)])
         rectangle((310, 178, 340, 326))
@@ -150,6 +151,8 @@ def main():
         for name, size, background in [("icon", 20, False), ("key", 72, True)]:
             for suffix, scale in [("", 1), ("@2x", 2)]:
                 outputs[f"{plugin}/actions/{kind}/{name}{suffix}.png"] = (kind, size * scale, background)
+    for suffix, scale in [("", 1), ("@2x", 2)]:
+        outputs[f"{plugin}/actions/toggle/pause{suffix}.png"] = ("pause", 72 * scale, True)
     for name, spec in outputs.items():
         target = args.output_root / name
         target.parent.mkdir(parents=True, exist_ok=True)

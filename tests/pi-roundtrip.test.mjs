@@ -93,9 +93,9 @@ for (const protectedManifest of [false, true]) {
       }
       throw Error('SDK event timeout: ' + diagnostics());
     }
-    function send(event, name, payload = {}) {
+    function send(event, name, payload = {}, context = name) {
       assert.equal(peer?.readyState, WebSocket.OPEN, diagnostics());
-      peer.send(JSON.stringify({ event, context: name, device: 'device', action: `${id}.${name}`, payload }),
+      peer.send(JSON.stringify({ event, context, device: 'device', action: `${id}.${name}`, payload }),
         error => { if (error) recordError(error); });
     }
     const origin = 'chrome-extension://' + 'a'.repeat(32);
@@ -112,6 +112,11 @@ for (const protectedManifest of [false, true]) {
       send('willAppear', name, { controller: ['volume', 'trackdial'].includes(name) ? 'Encoder' : 'Keypad',
         settings: { volumeStep: 3 }, coordinates: { column: 0, row: 0 }, state: 0 });
     }
+    const toggleImage = (context = 'toggle') => messages.findLast(m => m.event === 'setImage' && m.context === context)?.payload.image;
+    const playImage = 'imgs/actions/toggle/key@2x.png';
+    const pauseImage = 'imgs/actions/toggle/pause@2x.png';
+    // Before any player state is available, show Play with the offline title.
+    await waitFor(() => toggleImage() === playImage);
     send('propertyInspectorDidAppear', 'nowplaying');
     send('sendToPlugin', 'nowplaying', { type: 'generate-pin' });
     const reply = await waitFor(() => messages.find(m => m.event === 'sendToPropertyInspector'));
@@ -121,6 +126,7 @@ for (const protectedManifest of [false, true]) {
     const { token } = await post('/pair', { pin: reply.payload.pin });
     const state = { title: 'SDK song', artist: 'Artist', playing: true, volume: 50 };
     await post('/sync', { token, clientId: 1, state });
+    await waitFor(() => toggleImage() === pauseImage);
     await waitFor(() => messages.some(m => m.event === 'setTitle' && m.context === 'toggle' && m.payload.title === '일시정지'));
     await waitFor(() => messages.some(m => m.event === 'setFeedback' && m.context === 'volume' && m.payload.value === '50%'));
     await waitFor(() => messages.some(m => m.event === 'setImage' && m.context === 'nowplaying'));
@@ -135,6 +141,21 @@ for (const protectedManifest of [false, true]) {
     for (const [name, type] of [['nowplaying', 'toggle'], ['toggle', 'toggle'], ['prev', 'prev'], ['next', 'next'], ['mute', 'mute']]) {
       await command('keyDown', name, {}, { type, amount: 0 });
     }
+    assert.equal(toggleImage(), pauseImage, 'key presses must wait for confirmed browser playback state');
+    // Reappearing keys and another instance of the same action follow the player.
+    send('willDisappear', 'toggle');
+    const reappearStart = messages.length;
+    send('willAppear', 'toggle', { controller: 'Keypad', settings: {}, state: 0 });
+    send('willAppear', 'toggle', { controller: 'Keypad', settings: {}, state: 0 }, 'toggle-2');
+    await waitFor(() => messages.slice(reappearStart).some(m => m.event === 'setImage' && m.context === 'toggle' && m.payload.image === pauseImage));
+    await waitFor(() => toggleImage('toggle-2') === pauseImage);
+    state.playing = false;
+    await post('/sync', { token, clientId: 1, state });
+    await waitFor(() => toggleImage() === playImage && toggleImage('toggle-2') === playImage);
+    await waitFor(() => messages.findLast(m => m.event === 'setTitle' && m.context === 'toggle')?.payload.title === '재생');
+    state.playing = true;
+    await post('/sync', { token, clientId: 1, state });
+    await waitFor(() => toggleImage() === pauseImage && toggleImage('toggle-2') === pauseImage);
     send('didReceiveSettings', 'volume', { settings: { volumeStep: 2 } });
     await command('dialRotate', 'volume', { ticks: 2 }, { type: 'volume_delta', amount: 4 });
     await command('dialDown', 'volume', {}, { type: 'mute', amount: 0 });
@@ -152,6 +173,8 @@ for (const protectedManifest of [false, true]) {
     await post('/sync', { token, clientId: 1, state });
     await new Promise(resolve => setTimeout(resolve, 180));
     assert.ok(!messages.slice(count).some(m => m.context === 'nowplaying' && m.event === 'setTitle'));
+    await post('/unpair', { token });
+    await waitFor(() => toggleImage() === playImage && toggleImage('toggle-2') === playImage);
     await closePeer(peer);
     assert.equal(peerClose?.code, 1000, diagnostics());
     assert.deepEqual(errors, [], diagnostics());

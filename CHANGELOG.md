@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Show only Play on the toggle key when paused and only Pause while playing, following the selected player's reported state, including changes made directly in Chrome. Use Play with the offline title when no player is available.
 - Align all seven Stream Deck action families with the main magenta play-disc identity, using matching circular badges, white symbols and dark key backgrounds. Keep action-list icons monochrome and align the Chrome popup palette.
 - Add the maintainer-supplied project thumbnail to README and record v1.0.1's Marketplace Pending review status. These development assets are separate from the fixed public and submitted v1.0.1 packages.
 

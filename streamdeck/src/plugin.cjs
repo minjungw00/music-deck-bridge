@@ -464,6 +464,10 @@ function paint() {
         // Do not continually transmit the same cover (may be several hundred KB).
         if (item.lastImage !== image) { setImage(context, image); item.lastImage = image; }
       } else if (kind === 'toggle') {
+        // Reflect the selected player's confirmed state, including changes made
+        // in Chrome. A key press alone must not optimistically flip the icon.
+        const image = `imgs/actions/toggle/${state?.playing ? 'pause' : 'key'}@2x.png`;
+        if (item.lastImage !== image) { setImage(context, image); item.lastImage = image; }
         setTitle(context, state ? state.playing ? tr('pause') : tr('play') : tr('offline'));
       } else if (kind === 'volume') {
         const vol = state ? `${state.muted ? tr('muted') + ' ' : ''}${state.volume}%` : tr('absent');

@@ -163,3 +163,22 @@ test('action icons share the brand palette with distinct glyphs and monochrome l
     assert.equal(files.size, actionFamilies.length, `${name}: actions must have distinct glyphs`);
   }
 });
+
+test('toggle artwork shows a single play symbol or two pause bars, never both together', async () => {
+  for (const [suffix, size] of [['', 72], ['@2x', 144]]) {
+    for (const [name, expectedRuns] of [['key', 1], ['pause', 2]]) {
+      const path = `${plugin}imgs/actions/toggle/${name}${suffix}.png`;
+      const image = await png(path);
+      assert.equal(image.width, size, path);
+      assert.equal(image.height, size, path);
+      let runs = 0, previousWhite = false;
+      for (let x = Math.ceil(size * 0.27); x < size * 0.73; x++) {
+        const [r, g, b, a] = image.pixel(x, Math.floor(size * 0.492));
+        const white = Math.min(r, g, b) > 200 && a > 240;
+        if (white && !previousWhite) runs++;
+        previousWhite = white;
+      }
+      assert.equal(runs, expectedRuns, `${path}: unexpected combined or missing glyph`);
+    }
+  }
+});

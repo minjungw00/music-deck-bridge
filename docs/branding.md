@@ -50,6 +50,12 @@ All seven actions now use the main icon's circular badge, gradient magenta, whit
 
 Each family has a 72px key and 144px @2x key. The 20px/40px action-list badges use white with transparent symbol cutouts so they remain monochrome on Stream Deck's dark UI. All action exports use 4× supersampling before downsampling. The Chrome popup uses the same dark background, a deep-magenta primary button for white-text contrast and a magenta keyboard-focus outline. The property inspector retains the host's neutral SDPI style.
 
+The Play / Pause key has separate artwork for its next operation: Play when paused, Pause while playing. It follows the selected player's confirmed state, including changes made in Chrome, and updates every visible instance of the key. A key press alone does not flip the image. With no selected player it shows Play and the existing offline title. The action-list icon uses Play.
+
+| Paused: Play | Playing: Pause |
+| --- | --- |
+| ![Play](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/toggle/key.png) | ![Pause](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/toggle/pause.png) |
+
 These are **unreleased development assets**, separate from the fixed GitHub v1.0.1 packages and the v1.0.1 package the maintainer reports as Pending review in Marketplace. No submitted package is replaced by a source change. A future package needs its own source/version and verification record before distribution; program versions remain unchanged until that release is selected.
 
 The [root README thumbnail](assets/music-deck-bridge-thumbnail.png) is the supplied promotional image, copied unchanged; its [provenance](assets/README.md) is separate from the generated icons. It is not a product screenshot.
@@ -66,7 +72,7 @@ git diff --exit-code -- chrome-extension/icons streamdeck/io.github.minjungw00.m
 
 Use `python3` on systems without a `python` alias. To review regeneration without overwriting tracked PNGs, pass `--output-root /path/to/temporary-output`. The generator defines every shape in a 512-unit coordinate system. Brand shapes are rendered at 4× resolution and downsampled using Lanczos, including the 512px export. The generator takes no external artwork, logo, font or source-image inputs. The pinned Pillow version reproduces the committed PNGs.
 
-Run the normal [development checks](development.md#local-checks). `tests/brand-assets.test.mjs` verifies brand/store PNG dimensions, RGBA data, corner transparency, palette, minimum-size triangle shape and manifest references, plus all 28 action PNGs' dimensions, palette, distinct symbols and monochrome cutouts using Node's standard library. Python packaging tests verify that Chrome ZIP and Stream Deck staging preserve the brand and action PNG bytes. The generator produces 36 assets, including the store app icon. Pillow is required only for regeneration, not ordinary tests or packaging.
+Run the normal [development checks](development.md#local-checks). `tests/brand-assets.test.mjs` verifies brand/store PNG dimensions, RGBA data, corner transparency, palette, minimum-size triangle shape and manifest references, plus the 28 base action PNGs' dimensions, palette, distinct symbols and monochrome cutouts and the separate play/pause glyphs at both key sizes, using Node's standard library. Python packaging tests verify that Chrome ZIP and Stream Deck staging preserve the brand and action PNG bytes, including both pause images. The generator produces 38 assets, including the store app icon and the two additional pause PNGs. Pillow is required only for regeneration, not ordinary tests or packaging.
 
 ## License and attribution
 
