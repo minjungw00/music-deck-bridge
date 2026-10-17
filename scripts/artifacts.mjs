@@ -70,10 +70,29 @@ export async function prepareDevelopment(directory, version, env) {
   }
 }
 
+export async function prepareRelease(directory, version) {
+  const names = packageNames(version);
+  await inspect(directory, names);
+  const sums = await Promise.all(names.map(name => checksum(directory, name)));
+  await writeFile(join(directory, 'SHA256SUMS.txt'), sums.join(''));
+  await verifyRelease(directory, version);
+}
+
+export async function verifyRelease(directory, version) {
+  const names = packageNames(version);
+  await inspect(directory, names);
+  const expected = (await Promise.all(names.map(name => checksum(directory, name)))).join('');
+  const actual = await readFile(join(directory, 'SHA256SUMS.txt'), 'utf8');
+  // Exact comparison also rejects missing, duplicate, stale or unsafe filenames.
+  assert.equal(actual, expected, 'Release SHA-256 checksums or asset names do not match');
+}
+
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const root = dirname(dirname(fileURLToPath(import.meta.url)));
   const { version } = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
-  assert.equal(process.argv[2], 'development', 'Usage: node scripts/artifacts.mjs development');
-  await prepareDevelopment(join(root, 'dist'), version, process.env);
-  console.log('Development build metadata and SHA256SUMS.txt generated.');
+  const operations = { __proto__: null, development: prepareDevelopment, release: prepareRelease, verify: verifyRelease };
+  const operation = operations[process.argv[2]];
+  assert.equal(typeof operation, 'function', 'Usage: node scripts/artifacts.mjs development|release|verify');
+  await operation(join(root, 'dist'), version, process.env);
+  console.log(`Artifact ${process.argv[2]} checks passed.`);
 }

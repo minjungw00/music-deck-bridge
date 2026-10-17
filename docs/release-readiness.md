@@ -25,6 +25,19 @@ Run the commands in [development](development.md) against the exact release comm
 
 The opaque-manifest fixture only tests the SDK's handling of a non-JSON manifest. It does not reproduce Maker Console encryption.
 
+## Installation and distribution update evidence
+
+Local Linux checks on October 17, 2026 with Node.js 24.19.0 and Python 3.12.3:
+
+- `npm run check` passed, including unchanged component versions at 0.5.1 and plugin UUID/runtime checks.
+- All 46 Node tests passed (40 existing regressions plus six build metadata/checksum tests). Local TCP/WebSocket integration tests required execution outside the sandbox, which blocks loopback listeners.
+- Both Python packaging tests passed; both actual packages were generated and the official Stream Deck validator passed.
+- Release checksum generation and verification passed on those packages. Regression tests reject missing/empty/stale assets, unexpected files, malformed inventories and corrupted downloads.
+- `npm audit` reported zero vulnerabilities in the locked dependency graph.
+- Local documentation links and section anchors were checked. Both installation guides cover all four methods and common pairing, updating, switching and removal procedures.
+
+The revised workflows still require a successful Windows/Ubuntu GitHub run on the final commit. These local results do not replace the pending clean Windows installation, hardware, DRM or store evidence below.
+
 ## GitHub CI evidence
 
 Verified on October 17, 2026: [CI run 38958092483](https://github.com/minjungw00/music-deck-bridge/actions/runs/38958092483) succeeded on both Ubuntu and Windows for `main` commit `59f9321` (`59f932186ebc88823fdf54c62709ad8ba9922f75`). Both job logs and uploaded artifact metadata were checked.

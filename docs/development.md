@@ -60,6 +60,23 @@ npm run build:streamdeck
 
 The build first bundles the SDK and bridge; the packaging script stages the plugin plus notices under `dist/staging/`, invokes `streamdeck validate`, then `streamdeck pack ... --output dist/`. The output is `dist/io.github.minjungw00.musicdeckbridge.streamDeckPlugin`. Review validation warnings before distribution.
 
+After building both components in a clean `dist/` (no old packages or development metadata), prepare release assets:
+
+```sh
+node scripts/artifacts.mjs release
+node scripts/artifacts.mjs verify
+```
+
+This requires exactly the nonempty plugin installer and the Chrome ZIP matching `package.json`'s version, creates `SHA256SUMS.txt`, and rejects unexpected files. `dist/staging/` is allowed locally but never uploaded. Release verification compares both exact asset names and hashes, rejecting missing/empty packages, stale versions, malformed checksum lists and changed contents. No extra dependencies are needed for these Node commands.
+
+The draft release contains exactly:
+
+```text
+io.github.minjungw00.musicdeckbridge.streamDeckPlugin
+music-deck-bridge-chrome-<version>.zip
+SHA256SUMS.txt
+```
+
 For Marketplace distribution, review Elgato's [DRM compatibility requirements](https://docs.elgato.com/streamdeck/sdk/introduction/distribution/), including the official `@elgato/streamdeck` v2+ requirement for Node.js DRM distribution. [CLI packaging reference](https://docs.elgato.com/streamdeck/cli/commands/pack/).
 
 ## Release checklist
@@ -72,6 +89,6 @@ Track outstanding manual evidence in [release readiness](release-readiness.md). 
 - Check all key actions and Stream Deck + dials, en/ko UI, normal Chrome tab and installed app, artwork, idle recovery, extension reload/re-pairing and live port changes/conflict handling.
 - Capture actual screenshots/video; complete store descriptions, permissions, privacy declarations and assets.
 - Update versions and CHANGELOG, then create the matching `vX.Y.Z` tag.
-- Manually run **Draft release** for an existing matching tag and confirm the readiness input. It reruns checks, builds both packages and creates a draft GitHub Release. Review its files and notes before publishing manually.
+- Ensure the tagged source includes the current artifact scripts. Manually run **Draft release** for an existing matching tag and confirm the readiness input. It reruns checks, builds both packages, generates checksums and verifies them again after transfer to the draft job. Only the three named release assets are attached. Review the draft files and notes before publishing manually.
 
 The workflow runs manually and creates a draft GitHub Release for review before publication.

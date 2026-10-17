@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Generate SHA256SUMS.txt for the two release assets, reject missing/empty/stale or unexpected assets, and verify downloaded checksums again before attaching only the intended files to a draft release.
 - Identify development artifacts by platform and full commit SHA; include source/run metadata, SHA-256 checksums and download guidance while retaining both OS and PR checks.
 - Document Releases, Actions, source and future store installation in English/Korean, including package-only setup, updates, source switching and separate store availability.
 - Replace the SDK integration test's manual WebSocket framing with a pinned `ws` server, verify normal closure before stopping the plugin, and include socket/process diagnostics on failure.

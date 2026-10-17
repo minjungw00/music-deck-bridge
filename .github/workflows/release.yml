@@ -40,12 +40,15 @@ jobs:
       - run: python -m unittest discover -s tests -p "test_*.py"
       - run: npm run build:chrome
       - run: npm run build:streamdeck
+      - name: Generate and verify release asset checksums
+        run: node scripts/artifacts.mjs release
       - uses: actions/upload-artifact@v7
         with:
           name: release-packages
           path: |
             dist/*.zip
             dist/*.streamDeckPlugin
+            dist/SHA256SUMS.txt
           if-no-files-found: error
 
   draft:
@@ -54,13 +57,27 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
       - uses: actions/download-artifact@v8
         with:
           name: release-packages
           path: dist
+      - name: Verify downloaded release assets
+        run: node scripts/artifacts.mjs verify
       - name: Attach packages to a draft GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ inputs.tag }}
-        run: gh release create "$RELEASE_TAG" dist/* --verify-tag --draft --title "Music Deck Bridge $RELEASE_TAG" --generate-notes
+        run: |
+          RELEASE_VERSION=$(node -p "require('./package.json').version")
+          gh release create "$RELEASE_TAG" \
+            dist/io.github.minjungw00.musicdeckbridge.streamDeckPlugin \
+            "dist/music-deck-bridge-chrome-$RELEASE_VERSION.zip" \
+            dist/SHA256SUMS.txt \
+            --verify-tag --draft --title "Music Deck Bridge $RELEASE_TAG" --generate-notes

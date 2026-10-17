@@ -141,6 +141,16 @@ npm run build:chrome
 
 압축 해제한 Chrome 확장 프로그램은 **폴더 절대 경로를 유지**하며 기존 폴더의 내용을 새 파일로 교체합니다. 소스 설치라면 같은 저장소 경로를 갱신하세요. `chrome://extensions`에서 **새로고침**을 누르고 필요하면 YouTube Music도 새로고침합니다. 새 버전마다 별도 확장 프로그램으로 로드하지 마세요. 플러그인 설치 파일이 교체·다운그레이드를 거부하면 프로필을 백업하고 아래 삭제·재설치 절차를 따르세요.
 
+### 다운로드 파일 검증
+
+새 Actions 빌드와 향후 Releases에는 `SHA256SUMS.txt`가 포함됩니다. 릴리스 패키지와 함께 다운로드하거나 Actions 산출물에서 압축 해제하세요. 패키지 폴더에서 PowerShell을 열고 실행합니다.
+
+```powershell
+Get-FileHash -Algorithm SHA256 -Path .\*.streamDeckPlugin, .\music-deck-bridge-chrome-*.zip
+```
+
+각 파일의 해시를 `SHA256SUMS.txt`에서 같은 파일명의 행과 비교합니다. 대소문자는 무관합니다. 개발 빌드의 `BUILD-INFO.json`도 `Get-FileHash -Algorithm SHA256 .\BUILD-INFO.json`으로 확인할 수 있습니다. 해시가 다르면 설치 전에 같은 릴리스·실행에서 다시 다운로드하세요.
+
 <a id="switching-installation-methods"></a>
 
 ## 설치 경로 전환

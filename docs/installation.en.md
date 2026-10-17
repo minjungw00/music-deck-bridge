@@ -127,6 +127,16 @@ Back up Stream Deck profiles before changing installations. Keep `%APPDATA%\Musi
 
 For an unpacked Chrome extension, replace the contents of its existing permanent folder with the new extracted files (or update the same source checkout), preserving the **absolute folder path**. Click **Reload** at `chrome://extensions` and refresh YouTube Music if needed. Do not load every new version as another extension. If the plugin installer refuses replacement/downgrade, back up profiles and follow the removal/reinstallation procedure below.
 
+### Verify downloaded files
+
+New Actions builds and future Releases include `SHA256SUMS.txt`. Download it alongside the release packages, or extract it from the Actions artifact. In PowerShell opened in the package folder, run:
+
+```powershell
+Get-FileHash -Algorithm SHA256 -Path .\*.streamDeckPlugin, .\music-deck-bridge-chrome-*.zip
+```
+
+Compare each hash with the line for that filename in `SHA256SUMS.txt` (uppercase/lowercase does not matter). For development builds, you can also check `BUILD-INFO.json` with `Get-FileHash -Algorithm SHA256 .\BUILD-INFO.json`. If a hash differs, download the files again from the same release/run before installing.
+
 ## Switching installation methods
 
 All plugin builds use UUID `io.github.minjungw00.musicdeckbridge`; use one installed version. Unpacked and store Chrome extensions can have different IDs. Two active extensions can replace each other's authentication and interrupt control.

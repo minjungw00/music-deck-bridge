@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { buildInfo, packageNames, prepareDevelopment } from '../scripts/artifacts.mjs';
+import { buildInfo, packageNames, prepareDevelopment, prepareRelease, verifyRelease } from '../scripts/artifacts.mjs';
 
 const version = '0.5.1';
 const env = {
@@ -62,4 +62,43 @@ test('artifact generation fails for a missing or empty package and unexpected fi
   await writeFile(plugin, 'plugin');
   await writeFile(join(directory, 'music-deck-bridge-chrome-0.4.0.zip'), 'stale package');
   await assert.rejects(prepareDevelopment(directory, version, env), /Unexpected artifact/);
+});
+
+test('release checksums survive transfer and reject a corrupted asset', async t => {
+  const directory = await fixture(t);
+  await prepareRelease(directory, version);
+  const downloaded = await mkdtemp(join(tmpdir(), 'music-deck-download-'));
+  t.after(() => rm(downloaded, { recursive: true, force: true }));
+  for (const name of [...packageNames(version), 'SHA256SUMS.txt']) {
+    await copyFile(join(directory, name), join(downloaded, name));
+  }
+  await verifyRelease(downloaded, version);
+  const sums = await readFile(join(directory, 'SHA256SUMS.txt'), 'utf8');
+  assert.equal(sums.trim().split('\n').length, 2);
+  await writeFile(join(downloaded, packageNames(version)[0]), 'corrupted download');
+  await assert.rejects(verifyRelease(downloaded, version), /checksums or asset names/);
+});
+
+test('release verification rejects missing assets and malformed checksum inventories', async t => {
+  const directory = await fixture(t);
+  await prepareRelease(directory, version);
+  const sumsFile = join(directory, 'SHA256SUMS.txt');
+  const sums = await readFile(sumsFile, 'utf8');
+  for (const invalid of ['', sums.split('\n')[0] + '\n', sums + sums, sums.replace('  music-', '  ../music-')]) {
+    await writeFile(sumsFile, invalid);
+    await assert.rejects(verifyRelease(directory, version), /checksums or asset names/);
+  }
+  await writeFile(sumsFile, sums);
+  await rm(join(directory, packageNames(version)[1]));
+  await assert.rejects(verifyRelease(directory, version), /ENOENT/);
+});
+
+test('release preparation refuses stale versions, development metadata and empty packages', async t => {
+  const directory = await fixture(t);
+  await assert.rejects(prepareRelease(directory, '0.5.2'), /Unexpected artifact/);
+  await prepareDevelopment(directory, version, env);
+  await assert.rejects(prepareRelease(directory, version), /Unexpected artifact: BUILD-INFO/);
+  await rm(join(directory, 'BUILD-INFO.json'));
+  await writeFile(join(directory, packageNames(version)[1]), '');
+  await assert.rejects(prepareRelease(directory, version), /empty artifact/);
 });
