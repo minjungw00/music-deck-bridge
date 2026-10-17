@@ -10,6 +10,7 @@
 - Align source/Chrome versions at 1.0.2 and Stream Deck at 1.0.2.0; preserve UUIDs, authentication, shared port, protocol and configuration paths.
 - Record the known update-installation rejection and Windows lock diagnostics. This candidate does **not** claim to fix the update conflict; the October 18 running-plugin 1.0.1 → 1.0.2 attempt failed at the directory rename after process exit. A later developer-mode/official-stop retry installed and started 1.0.2 with the same host running. Detailed operation/settings retention, fully exited-host comparison and rollback remain unverified. Maker Console DRM and store approval remain separate.
 - Record the maintainer's normal-operation confirmation for plugin 1.0.2 with Chrome extension 1.0.1 after that retry. This confirms the observed mixed-version combination; Chrome 1.0.2 manual operation and itemized retention/rollback checks are separate.
+- Record a later successful running-plugin update, including the old-folder rename, with developer mode enabled after host restart and baseline reinstall. Official stop is not universally necessary; the differing conditions do not establish developer mode as the cause or resolve the original failure.
 
 ## v1.0.1 — 2026-10-17
 

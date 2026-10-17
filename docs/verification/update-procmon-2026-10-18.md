@@ -4,6 +4,8 @@ Evidence inspected October 18, 2026 (Asia/Seoul). **Direct update failed; the ol
 
 A later [stopped-plugin retry at 02:45 succeeded](update-procmon-retry-2026-10-18.md) using the same candidate and running host, after enabling developer mode and issuing the official stop request. That retry used recursive old-folder removal and candidate deployment rather than the denied old-root rename. This failed attempt remains recorded separately.
 
+A [third trace at 02:58](update-procmon-direct-2026-10-18.md) records the original rename succeeding during a running-plugin update, with developer mode enabled after host restart and explicit baseline reinstall. The differing conditions prevent a single-factor root-cause conclusion.
+
 ## Source and method
 
 The maintainer supplied `music-deck-update-101-to-102.PML` under the Windows Downloads/ProcessMonitor directory. The original file was read without modification. Raw PML, process command lines/environments, machine identifiers and unrelated activity are not committed.

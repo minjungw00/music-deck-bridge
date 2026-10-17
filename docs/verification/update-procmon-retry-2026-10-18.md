@@ -2,6 +2,8 @@
 
 Evidence inspected October 18, 2026 (Asia/Seoul). **Installation and SDK reconnection succeeded with Stream Deck still running, after the official plugin-stop request. All 45 installed candidate files match the selected package.** The maintainer subsequently confirmed normal operation with plugin 1.0.2 and Chrome extension 1.0.1. Individual action checks, measured pairing/settings retention and rollback remain separate. The earlier [running-plugin update failure](update-procmon-2026-10-18.md) remains a failure.
 
+A later [running-plugin update at 02:58](update-procmon-direct-2026-10-18.md) also succeeds, including the old-root rename, without an official stop request. That test follows host restart and explicit baseline reinstall with developer mode enabled. This successful retry does not establish that official stop is necessary or identify the original denial's cause.
+
 ## Provenance and conditions
 
 | Field | Observed value |
