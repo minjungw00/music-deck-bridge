@@ -8,7 +8,7 @@
 - Align all seven Stream Deck action families with the main magenta play-disc identity, using matching circular badges, white symbols and dark key backgrounds. Keep action-list icons monochrome and align the Chrome popup palette.
 - Add the maintainer-supplied project thumbnail to README and record v1.0.1's Marketplace Pending review status. These candidate assets are separate from the fixed public and submitted v1.0.1 packages.
 - Align source/Chrome versions at 1.0.2 and Stream Deck at 1.0.2.0; preserve UUIDs, authentication, shared port, protocol and configuration paths.
-- Record the known update-installation rejection and Windows lock diagnostics. This candidate does **not** claim to fix the update conflict; actual 1.0.1 → 1.0.2 comparison, update retention and rollback remain unverified. Maker Console DRM and store approval remain separate.
+- Record the known update-installation rejection and Windows lock diagnostics. This candidate does **not** claim to fix the update conflict; the October 18 direct 1.0.1 → 1.0.2 attempt failed at the directory rename after process exit. Unloaded-plugin/host comparisons, successful update retention and rollback remain unverified. Maker Console DRM and store approval remain separate.
 
 ## v1.0.1 — 2026-10-17
 

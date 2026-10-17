@@ -2,7 +2,7 @@
 
 Last updated: October 18, 2026 (Asia/Seoul); the dated release/manual evidence below was collected on October 17 unless stated otherwise. Latest stable release: **v1.0.1** (Stream Deck **1.0.1.0**). Public v1.0.0/v1.0.1 tags and assets remain fixed. This page summarizes current evidence and remaining work; detailed historical results are retained below.
 
-The current **unpublished candidate is v1.0.2** (Stream Deck **1.0.2.0**), selected for the existing artwork, popup and state-linked toggle changes. Versioned source `c96e908` passed both Windows and Ubuntu [CI run 39050002596](https://github.com/minjungw00/music-deck-bridge/actions/runs/39050002596), and both downloaded artifact inventories and metadata were verified. It does not include a confirmed fix for the update conflict. See the [candidate scope, release-note draft and comparison-test preparation](verification/v1.0.2.md).
+The current **unpublished candidate is v1.0.2** (Stream Deck **1.0.2.0**), selected for the existing artwork, popup and state-linked toggle changes. Final candidate source `b35323c` passed both Windows and Ubuntu [CI run 39050170510](https://github.com/minjungw00/music-deck-bridge/actions/runs/39050170510), and both downloaded artifact inventories and metadata were verified. Its October 18 direct update **failed**; it does not include a confirmed fix for the update conflict. See the [candidate scope and comparison status](verification/v1.0.2.md).
 
 ## Current evidence
 
@@ -11,7 +11,7 @@ The current **unpublished candidate is v1.0.2** (Stream Deck **1.0.2.0**), selec
 | Release automation (Windows and Ubuntu) | Passed for public v1.0.1 source `a78f7de` | [CI run 39016914494](https://github.com/minjungw00/music-deck-bridge/actions/runs/39016914494): 50 Node tests, 2 Python tests, packaging, checksums, audit and artifact uploads. This is the released source's CI, not a run for later documentation commits. |
 | Public packages | Checksums reverified; runtime unchanged from v1.0.0 | [v1.0.1 evidence](verification/v1.0.1.md); only manifest versions and seven brand PNGs differ. Current installed plugin payload matches all 43 public package files. |
 | Developer installation/operation | Normal operation reported after file replacement/reinstallation guidance | General report only; detailed device/action/settings-retention measurements were not supplied. |
-| Install over existing plugin | Four failures identified in real host logs | Host stops plugin, then cannot rename its directory (`Access is denied`). Process/permission responsible remains unknown. [Investigation](verification/update-installation.md). |
+| Install over existing plugin | Four historical host-log failures; exact v1.0.1 → v1.0.2 failure captured October 18 | PML confirms Node/console exit, root close and host DELETE-access open succeeding before the rename returns ACCESS DENIED. Responsible component remains unknown. [Actual trace](verification/update-procmon-2026-10-18.md), [historical investigation](verification/update-installation.md). |
 | Live directory-lock diagnostic | Complete plugin stop releases the observed lock | Windows DELETE-access probe: sharing violation 32 → success 0 while stopped → 32 after restart. SDK reconnected, developer-mode setting restored, 18 inventoried state files unchanged. [Scope and limits](verification/update-lock-diagnostics.md); direct package update still unverified. |
 | File removal/reinstallation | Maintainer report plus later AllOk/SDK connection | Exact steps, before/after retention and backup rollback still need measured evidence. |
 | Maker Console DRM | **Not tested** | [Actual processed-package checklist](verification/marketplace-drm.md); local packaging and opaque-manifest tests do not establish DRM compatibility. |
@@ -41,6 +41,7 @@ Local checks for that change passed: 52 Node tests, 2 Python packaging tests, al
 - [v1.0.0 publication and maintainer verification](verification/v1.0.0.md)
 - [Pre-v1.0.0 automation and distribution history](verification/v0.5.1.md)
 - [Update-installation investigation and redacted host evidence](verification/update-installation.md)
+- [October 18 v1.0.1 → v1.0.2 failed-update PML analysis](verification/update-procmon-2026-10-18.md)
 - [Marketplace DRM test record (not performed)](verification/marketplace-drm.md)
 
 Documentation/evidence changes do not bump component versions. The Music Deck Bridge name, seven main v1.0.1 brand PNGs, Apache-2.0 license, plugin/action UUIDs, authentication, common port and storage paths remain unchanged. The redesigned action PNGs, state-linked toggle images and popup palette are selected for the unpublished v1.0.2 candidate; the submitted and public v1.0.1 packages remain fixed. GitHub Releases, Actions, source builds and future store installs remain documented.

@@ -2,6 +2,8 @@
 
 Evidence collected October 17, 2026 (Asia/Seoul). Status: **installer failure identified; live directory-lock release confirmed; historical post-stop failure and measured package-update/recovery procedure still pending**. See the [controlled Windows lock diagnostics](update-lock-diagnostics.md). No plugin runtime patch or version bump is justified by this evidence.
 
+Subsequent October 18 evidence: the [v1.0.1 → v1.0.2 PML trace](update-procmon-2026-10-18.md) reproduces the failure after Node/console exit and a successful DELETE-access open. It identifies the exact candidate installer and preserved installed baseline; the component denying the rename remains unconfirmed. The October 17 observations below are retained as history.
+
 ## Environment and provenance
 
 The existing Windows host logs were read from WSL without stopping or changing the installed application. Raw logs remain on the host; only the relevant redacted entries are committed in [update-installation.log.txt](update-installation.log.txt). Machine identifiers, device serial numbers, unrelated plugin activity and user paths are omitted.
