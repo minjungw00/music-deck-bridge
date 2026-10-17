@@ -1,6 +1,6 @@
 # Plugin update installation investigation
 
-Evidence collected October 17, 2026 (Asia/Seoul). Status: **installer failure identified; lock owner and fully measured update/recovery procedure still pending**. No plugin runtime patch or version bump is justified by this evidence.
+Evidence collected October 17, 2026 (Asia/Seoul). Status: **installer failure identified; live directory-lock release confirmed; historical post-stop failure and measured package-update/recovery procedure still pending**. See the [controlled Windows lock diagnostics](update-lock-diagnostics.md). No plugin runtime patch or version bump is justified by this evidence.
 
 ## Environment and provenance
 
@@ -13,7 +13,7 @@ The existing Windows host logs were read from WSL without stopping or changing t
 | Attached device firmware | 2.0.3.7; exact model not established from this inspection |
 | Chrome version | Not collected |
 | Currently installed plugin | Manifest `1.0.1.0`; every one of the 43 public v1.0.1 package files matches the installed file bytes |
-| Current Downloads installer | `1.0.1.0`, SHA-256 `1438f064a4f09a54e6adfe90e589b0f9df326ccfafb50713d50db89da0e0075e` — the previously supplied revised draft, not the final public archive |
+| Downloads installer at initial inspection | `1.0.1.0`, SHA-256 `1438f064a4f09a54e6adfe90e589b0f9df326ccfafb50713d50db89da0e0075e` — the previously supplied revised draft, not the final public archive |
 | Failed-attempt installer provenance | The log records the Downloads path but no package hash or before/after manifest versions; today's file cannot establish which bytes were present during each earlier attempt |
 
 The current draft installer and public v1.0.1 installer have identical file payloads; archive metadata accounts for different archive hashes. The public package is identified in [v1.0.1 verification](v1.0.1.md).
@@ -56,6 +56,7 @@ Package structure and unchanged runtime bytes provide no evidence of a new runti
 | Quit host completely, retain old folder, then launch package | Pending controlled comparison; opening the package starts Stream Deck, so record whether the old plugin starts before replacement |
 | Move old plugin folder outside Plugins, install replacement | Maintainer reports normal operation after replacement/reinstallation guidance; later AllOk/SDK connection corroborated; exact steps not restated |
 | Restart after rejected update | Maintainer reported recovery of old version; reconnects also appear in host logs |
+| Controlled plugin stop/restart and lock probe | At 19:18 KST, root DELETE-access probe changed 32 → 0 → 32; plugin reconnected and 18 inventoried state files remained unchanged. [Scope and developer-mode prerequisite](update-lock-diagnostics.md). This is not a package-update test. |
 | Restore backed-up plugin after failed replacement | Procedure documented; end-to-end rollback and retention measurements pending |
 | PIN token, Chrome identity, custom port, profiles and per-action settings retained | Storage locations are unchanged; separate before/after measurements still pending |
 | Maker Console processed build | Separate [DRM verification](marketplace-drm.md); not tested here |
