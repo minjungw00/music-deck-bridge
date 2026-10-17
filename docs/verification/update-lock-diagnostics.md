@@ -4,6 +4,8 @@ Evidence date: October 17, 2026 (Asia/Seoul), on the Windows host from the [inst
 
 Subsequent October 18 evidence: an [actual v1.0.1 → v1.0.2 update trace](update-procmon-2026-10-18.md) records Node/console exit and root-handle closure, followed by a successful host DELETE-access open and a denied rename. That failed direct update narrows the investigation; it does not turn this historical stop/restart diagnostic into an installer success.
 
+A [later official-stop retry](update-procmon-retry-2026-10-18.md) installed and started 1.0.2 while the host remained running. Its recursive old-folder removal differs from the failed rename path; installation success and outstanding operation/retention checks are recorded separately.
+
 ## Read-only inspection
 
 The installed plugin remains public v1.0.1 (`1.0.1.0`). No installer was run and no plugin files, authentication settings, port settings or profiles were replaced during this investigation.
