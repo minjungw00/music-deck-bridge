@@ -1,8 +1,8 @@
 # Release readiness
 
-Evidence date: October 17, 2026. Source version is **1.0.1** (Stream Deck **1.0.1.0**); the published stable baseline is **1.0.0**. This records development checks and outstanding release work; it is not a store approval or hardware certification.
+Evidence date: October 17, 2026. Release version is **1.0.1** (Stream Deck **1.0.1.0**); the previous stable release **1.0.0** is preserved. This records development checks and outstanding release work; it is not a store approval or hardware certification.
 
-## 1.0.1 brand release candidate
+## 1.0.1 GitHub release
 
 This patch introduces the [magenta play-disc brand](branding.md) in seven representative/category PNGs. All 28 action PNGs reproduce byte-for-byte from 1.0.0. Playback, local communication and authentication code are unchanged; plugin/action UUIDs, permissions, configuration paths and settings formats are preserved. Protocol compatibility negotiation for independently updated components is deferred to a separate **1.1.0 candidate** feature.
 
@@ -19,7 +19,9 @@ Local evidence on October 17, 2026 (Linux, Node.js 24.19.0, Python 3.12.3, optio
 | Chrome ZIP and official Stream Deck validation/packaging | Passed |
 | Release SHA256SUMS.txt generation and verification | Passed locally; final CI downloads must be verified separately |
 | npm audit | 0 reported vulnerabilities |
-| Initial candidate Windows / Ubuntu CI and package downloads | Passed on `d89fa17`; revised reference-style icons require a new final run |
+| Revised reference-style icons: Windows / Ubuntu CI and package downloads | Passed on `de1a0e9`; final publication commit must pass again |
+
+Revised candidate evidence: [CI run 39016410622](https://github.com/minjungw00/music-deck-bridge/actions/runs/39016410622) passed on Windows and Ubuntu for commit `de1a0e9d8922288ab6c3412ce3d05a35ce3f6306`. Both jobs passed 50 Node tests, two Python packaging tests, npm audit (zero reported vulnerabilities), official validation/packaging and artifact upload. Both downloaded artifacts passed source metadata and original checksum verification. The Windows packages were uploaded to the draft and downloaded again for byte/checksum verification.
 
 Initial candidate evidence (before the reference-style icon revision): [CI run 39015337447](https://github.com/minjungw00/music-deck-bridge/actions/runs/39015337447) passed on Windows and Ubuntu for commit `d89fa17f6a616ccafe4fc356790e1c5e8503ae72`. Both logs confirm 50 Node tests, two Python tests, zero npm audit findings, successful official validation/packaging and artifact upload. Both downloaded artifacts passed their original three-file checksum inventories and source metadata checks.
 
@@ -27,17 +29,29 @@ Both CI packages were compared against the published, checksum-verified v1.0.0 d
 
 Any later release commit, including documentation-only evidence changes, must pass both CI jobs again. The draft/final release notes record the exact selected commit, CI run and downloaded package hashes; use those hashes for manual installation evidence.
 
-Required 1.0.1 manual evidence is separate from the completed 1.0.0 report below:
+### Maintainer operational confirmation
 
-| Check | Status | Evidence to record |
+After receiving the revised icons, updated draft packages and file replacement/reinstallation guidance, the maintainer reported **“정상 동작이 확인되었습니다.”** (“Normal operation was confirmed”) on October 17, 2026. This is the operational confirmation for publishing 1.0.1. The report does not change the earlier failed install-over-existing result into a success.
+
+| Check | Recorded result | Scope |
 | --- | --- | --- |
-| Plugin transition 1.0.0.0 → 1.0.1.0 | First install-over-existing attempt failed; file replacement/reinstall pending | Follow the [file replacement procedure](installation.en.md#replacing-plugin-files); record installed version, source SHA/run/hash, environment and settings retention. Keep the failed in-place attempt as separate evidence. |
-| Chrome extension update 1.0.0 → 1.0.1 | Pending | Update the existing unpacked extension folder and reload it; preserve extension identity; record Chrome version, update result and visible new icon |
-| Existing PIN authentication, port, action settings and profiles retained | Pending on actual install | Keep existing data/profile; confirm existing pairing without reset, custom port, title/volume settings and all existing action instances |
-| Playback controls, keys/dials and installed icon rendering | Pending on actual hardware/UI | Confirm play/pause, previous/next, mute, volume/track dials as applicable; inspect representative/category/Chrome icons |
-| Public v1.0.1 GitHub Release | Pending the checks above | Use the exact commit's passing Windows/Ubuntu CI packages; verify downloaded checksums, inspect packaged manifests/resources and preserve v1.0.0 |
+| Revised 1.0.1 installation and normal operation | Passed (maintainer operational report) | Confirmation follows the corrected file replacement/reinstallation guidance; exact steps were not restated |
+| Combined plugin/Chrome playback operation | Passed (general maintainer report) | Detailed per-action/device results and component-version screenshots were not supplied |
+| PIN authentication, custom port, action settings and profile retention | Not individually itemized | General normal operation was confirmed; do not invent separate retention measurements or a clean-reset test |
+| Installed icon rendering | No issue reported with revised build | Native-size PNG/pixel review passed automatically/visually; detailed installed-UI captures were not supplied |
+| Test environment and installed-copy hashes | Not supplied | Windows, Chrome, Stream Deck software/device/firmware versions and installed-copy hashes can be added when available |
+| Public 1.0.1 release | Operational confirmation received; final CI/package verification required | Select packages from the exact release commit's passing Windows/Ubuntu run; record source SHA/run and hashes in the release notes |
 
-Do not mark these manual checks complete from source equivalence or automated tests. Prepare a draft with the candidate packages for installation testing; publish the new tag's Release after the update/retention results are recorded. Maker Console DRM and each store approval remain separate pending checks and do not become complete with a GitHub Release.
+The confirmed draft targeted `de1a0e9d8922288ab6c3412ce3d05a35ce3f6306`. Its published draft checksum inventory was:
+
+```text
+1438f064a4f09a54e6adfe90e589b0f9df326ccfafb50713d50db89da0e0075e  io.github.minjungw00.musicdeckbridge.streamDeckPlugin
+397df9fbfb6474eb1bf238dfc31371f934b94d2a92b230f43d3d5b77f274fd1b  music-deck-bridge-chrome-1.0.1.zip
+```
+
+These identify the supplied draft, not an independently measured installed copy. Subsequent source changes record this evidence and release status only. Before publication, verify that final CI package payloads match the confirmed draft byte-for-byte, even if ZIP metadata changes the archive hashes. Use final release hashes for public downloads.
+
+Maker Console DRM, clean-PC/reset scenarios, detailed hardware coverage and each store approval remain separate checks. GitHub publication does not mark them complete.
 
 ## Reported candidate installation failure
 
@@ -51,7 +65,7 @@ The maintainer clarified the initial 1.0.1 draft test:
 
 Assessment: the report identifies a host installation rejection, with the prior install recoverable by restart. Package validation, version ordering (1.0.0.0 < 1.0.1.0), UUIDs and payload inspection are valid; all packaged executable/extension files match 1.0.0. There is no demonstrated new-runtime regression to patch. The precise host rejection reason is **unconfirmed without installation logs**; do not claim every Stream Deck version universally prohibits package updates. Keep runtime code unchanged and correct the installation guidance instead. The revised icons change assets only.
 
-Use the documented stopped-plugin file replacement/reinstallation path without resetting authentication, configuration, profiles or Chrome identity. Record its actual result before release. This is a recommended next test, not a completed manual check.
+The maintainer later confirmed normal operation after the revised draft and file replacement/reinstallation guidance, as recorded above. The original install-over-existing failure remains recorded; the exact host rejection reason is still unconfirmed. Keep authentication, configuration, profiles and Chrome identity when replacing plugin files.
 
 ## 1.0.0 GitHub release
 

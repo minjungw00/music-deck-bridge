@@ -9,7 +9,7 @@
 - Document the brand palette, icon history and reproducible generation; record the maintainer-reported v1.0.0 Release installation and manual verification. The 0.5.1.0 → 1.0.0.0 transition succeeded after removing the old plugin files and reinstalling, rather than installing over them.
 - Document recovery and plugin-folder replacement when Stream Deck rejects a package install over existing files. The first 1.0.1 candidate was rejected by the host installer; restarting restored the old version. No runtime change is attributed to this installation failure.
 - Align package/Chrome versions at 1.0.1 and Stream Deck at 1.0.1.0. Preserve plugin/action UUIDs, playback and local protocol code, PIN authentication, ports and settings formats.
-- Track actual 1.0.0 → 1.0.1 device/extension updates and settings retention separately from automated regressions; see the release-readiness record for completed and pending checks.
+- Record the maintainer's normal-operation confirmation for the revised 1.0.1 draft after the corrected installation guidance; preserve the failed install-over-existing result and distinguish unreported detailed retention/device checks in release readiness.
 
 ## v1.0.0 — 2026-10-17
 
