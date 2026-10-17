@@ -11,10 +11,27 @@ def render(kind, size, background):
     image = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
     draw = ImageDraw.Draw(image)
     white = "#ffffff"
+    if kind == "brand":
+        # A play disc with an offset signal and a bent bridge connection.
+        # No surrounding rings: the silhouette must remain distinct at 16px.
+        magenta = "#F72575" if background else white
+        deep_magenta = "#CF145A" if background else white
+        if background:
+            draw.rounded_rectangle((12, 12, 500, 500), radius=112, fill="#151923")
+        draw.line([(280, 372), (340, 372), (388, 316), (444, 316)],
+                  fill=deep_magenta, width=28, joint="curve")
+        draw.ellipse((430, 302, 458, 330), fill=deep_magenta)
+        draw.rounded_rectangle((400, 104, 424, 212), radius=12, fill=magenta)
+        draw.rounded_rectangle((444, 144, 468, 212), radius=12, fill=magenta)
+        draw.ellipse((88, 100, 376, 388), fill=magenta)
+        # A transparent play cutout makes the category mark monochrome.
+        draw.polygon([(200, 158), (200, 330), (316, 244)],
+                     fill=white if background else (0, 0, 0, 0))
+        return image.resize((size, size), Image.Resampling.LANCZOS)
     if background:
         draw.rounded_rectangle((12, 12, 500, 500), radius=112, fill="#202433")
         draw.rounded_rectangle((30, 30, 482, 482), radius=96, outline="#414b64", width=8)
-    if kind in ("brand", "nowplaying"):
+    if kind == "nowplaying":
         # Equalizer bars joined by a bridge deck: the project's own visual mark.
         for x, top in [(128, 216), (224, 120), (320, 168)]:
             draw.rounded_rectangle((x, top, x + 64, 368), radius=24, fill="#f36b83" if background else white)
