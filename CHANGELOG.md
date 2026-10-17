@@ -12,6 +12,7 @@
 - Record the maintainer's normal-operation confirmation for plugin 1.0.2 with Chrome extension 1.0.1 after that retry. This confirms the observed mixed-version combination; Chrome 1.0.2 manual operation and itemized retention/rollback checks are separate.
 - Record a later successful running-plugin update, including the old-folder rename, with developer mode enabled after host restart and baseline reinstall. Official stop is not universally necessary; the differing conditions do not establish developer mode as the cause or resolve the original failure.
 - Record the subsequent successful normal-mode running-plugin update after baseline reinstall, with developer mode absent and exact installed candidate files verified. Developer mode is not a universal prerequisite; the original denial's cause remains unconfirmed.
+- Corroborate the full explicit uninstall → public 1.0.1 installation → running-plugin 1.0.2 update sequence in a fifth PML capture. All stages pass in normal mode; distinguish the actual update from the initial baseline installation and from unmeasured settings retention/rollback.
 
 ## v1.0.1 — 2026-10-17
 

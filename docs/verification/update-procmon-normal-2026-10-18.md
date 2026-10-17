@@ -39,6 +39,39 @@ All times are KST on October 18. PML indexes are zero-based event-offset indexes
 
 The root CloseFile → rename interval is **8.5096 ms**, versus 8.4482 ms for the third successful attempt and 8.0029 ms for the first failed attempt. No ACCESS DENIED or SHARING VIOLATION was decoded among the selected matching-path events. A long manual wait or official stop was not needed for this successful normal-mode update; fine-grained timing races are not ruled out.
 
+## Fifth trace: complete installation sequence
+
+The maintainer explicitly reported deleting the plugin, then installing 1.0.1 and 1.0.2 in sequence. Unlike the fourth trace, the supplied `music-deck-update-101-to-102-5.PML` **captures all three stages**, corroborated by the same host log and public/candidate installer paths.
+
+| Field | Observed value |
+| --- | --- |
+| Format / bytes / events / process records | v9 / 526,987,726 / 1,097,322 / 742 |
+| Original SHA-256 | `2731cfa77c4144ad11da62030009d2cf28a434456e27cb5fa01f07c6a114c081` |
+| Capture interval | October 18, 03:12:44.538805–03:13:22.176954 KST |
+| Host | Same running Stream Deck PID 57560; no host restart during this sequence |
+| Mode | Host `developer_mode` queries return NAME NOT FOUND during both baseline and candidate installation; no setting writes found in this trace |
+| Packages / installed result | Same checksum-verified public 1.0.1 and fixed 1.0.2 candidate identified above; final manifest 1.0.2.0 and all 45 candidate files match |
+
+The same reader decoded 3,656 matching-path records without selected-record parsing errors, with process/registry events inspected separately. The original file remained unchanged; raw/private data remains outside Git. No ACCESS DENIED or SHARING VIOLATION was decoded among selected matching-path events.
+
+| Time (KST) | Source / zero-based PML index | Observed stage |
+| --- | --- | --- |
+| 03:12:49.997295 | PML 81528 | Existing Node PID 20808 exits for the explicit uninstall. |
+| 03:12:50.005928 / .072 | PML 81907 / host log | Old-root rename succeeds; explicit uninstall finishes AllOk. |
+| 03:12:55.130 | Host log | Public v1.0.1 installer requested. |
+| 03:12:56.407733 | PML 492397 | Extracted baseline folder deployment succeeds. |
+| 03:12:56.418444 | PML 493149 | Baseline plugin Node PID **6204** starts. |
+| 03:12:56.491 / .563 | Host log | Baseline installation AllOk / SDK connected. |
+| 03:13:02.945 | Host log | Same final v1.0.2 installer requested while baseline Node remains running. |
+| 03:13:04.229 | Host log | `Aborting with reason 'Update plugin'`; no second explicit uninstall or official stop precedes this update. |
+| 03:13:04.545679 | PML 849215 | Baseline Node PID 6204 exits. |
+| 03:13:04.555556 | PML 850483 | Existing baseline root rename to `.sdPlugin.uninstall` succeeds. |
+| 03:13:04.567618 | PML 851681 | Extracted 1.0.2 candidate deployment succeeds. |
+| 03:13:04.577869 | PML 852845 | New candidate Node PID **15496** starts. |
+| 03:13:04.641 / .709 | Host log | Candidate installation AllOk / SDK connected. |
+
+This records **two distinct successful operations after the initial uninstall**: installation of the 1.0.1 baseline, then a real running-plugin 1.0.1 → 1.0.2 update. It is not merely an empty-folder 1.0.2 installation. It repeats the normal-mode result, while still leaving the original failing host/folder state unexplained. The initial uninstall is not a backup rollback or proof of private-state/profile retention; those remain separately scoped checks.
+
 ## Conclusions and remaining cause investigation
 
 | Trace | Host / baseline / mode / pre-install state | Outcome |
@@ -47,6 +80,7 @@ The root CloseFile → rename interval is **8.5096 ms**, versus 8.4482 ms for th
 | [Second](update-procmon-retry-2026-10-18.md) | Same host after failure; mode 1; official stop with Node already absent | Recursive old-folder removal and installation succeed |
 | [Third](update-procmon-direct-2026-10-18.md) | Restarted host; reinstalled baseline; mode 1; plugin running | Old-root rename and installation succeed |
 | Fourth | Same host as third; reinstalled baseline again; mode absent; plugin running | Old-root rename and installation succeed |
+| Fifth | Same host; full initial uninstall and sequential 1.0.1/1.0.2 installation captured; mode absent | Initial uninstall, baseline installation and actual running-plugin update all succeed |
 
 The requested fresh-baseline mode comparison now has successful enabled and absent-setting observations. Neither developer mode nor official stop is a universal prerequisite, and developer mode's absence alone does not explain the original denial. This does not prove the setting could never influence a different failing state.
 
