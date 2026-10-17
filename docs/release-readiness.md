@@ -19,7 +19,13 @@ Local evidence on October 17, 2026 (Linux, Node.js 24.19.0, Python 3.12.3, optio
 | Chrome ZIP and official Stream Deck validation/packaging | Passed |
 | Release SHA256SUMS.txt generation and verification | Passed locally; final CI downloads must be verified separately |
 | npm audit | 0 reported vulnerabilities |
-| Final commit Windows / Ubuntu CI and package downloads | Pending; record exact SHA/run and hashes in release notes |
+| Windows / Ubuntu candidate CI and package downloads | Passed on `d89fa17`; see the exact evidence below |
+
+Remote candidate evidence: [CI run 39015337447](https://github.com/minjungw00/music-deck-bridge/actions/runs/39015337447) passed on Windows and Ubuntu for commit `d89fa17f6a616ccafe4fc356790e1c5e8503ae72`. Both logs confirm 50 Node tests, two Python tests, zero npm audit findings, successful official validation/packaging and artifact upload. Both downloaded artifacts passed their original three-file checksum inventories and source metadata checks.
+
+Both CI packages were compared against the published, checksum-verified v1.0.0 downloads. The only changed payload files are the component manifests (version fields only) and the seven representative/category brand PNGs. All other packaged runtime, action, property-inspector, locale and extension files match v1.0.0 byte-for-byte. This supports regression review; it does not establish actual device update/retention results.
+
+Any later release commit, including documentation-only evidence changes, must pass both CI jobs again. The draft/final release notes record the exact selected commit, CI run and downloaded package hashes; use those hashes for manual installation evidence.
 
 Required 1.0.1 manual evidence is separate from the completed 1.0.0 report below:
 
