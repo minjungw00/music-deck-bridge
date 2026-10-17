@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Identify development artifacts by platform and full commit SHA; include source/run metadata, SHA-256 checksums and download guidance while retaining both OS and PR checks.
 - Document Releases, Actions, source and future store installation in English/Korean, including package-only setup, updates, source switching and separate store availability.
 - Replace the SDK integration test's manual WebSocket framing with a pinned `ws` server, verify normal closure before stopping the plugin, and include socket/process diagnostics on failure.
 - Return album art status codes from the bridge and translate them in the Chrome popup's English/Korean catalogs.

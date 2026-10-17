@@ -39,6 +39,10 @@ Keep the root and Chrome versions aligned, and append a fourth segment for the S
 
 ## Packaging
 
+CI keeps both Windows and Ubuntu checks, including PR builds. Downloadable development builds are identified as `music-deck-bridge-dev-<windows|ubuntu>-<full-commit-sha>`. Recommend only successful `main` runs with both jobs passed to users; Ubuntu artifacts are packaging evidence, not Linux runtime support.
+
+After both packages are built, `node scripts/artifacts.mjs development` records GitHub's source SHA/ref, version, platform/architecture, run URL and attempt in `dist/BUILD-INFO.json` and hashes both packages plus this metadata in `dist/SHA256SUMS.txt`. This command uses GitHub Actions environment variables. PR artifacts keep their merge ref and SHA, distinct from `main`. Metadata/checksums remain alongside the packages; nothing is injected into the plugin or extension. Artifact retention follows repository settings (90 days by default); users must sign in to download and update development packages manually.
+
 Chrome:
 
 ```sh

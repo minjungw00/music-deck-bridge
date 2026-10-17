@@ -13,6 +13,11 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            platform: ubuntu
+          - os: windows-latest
+            platform: windows
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
@@ -29,10 +34,14 @@ jobs:
       - run: python -m unittest discover -s tests -p "test_*.py"
       - run: npm run build:chrome
       - run: npm run build:streamdeck
+      - name: Record build source and package checksums
+        run: node scripts/artifacts.mjs development
       - uses: actions/upload-artifact@v7
         with:
-          name: packages-${{ matrix.os }}
+          name: music-deck-bridge-dev-${{ matrix.platform }}-${{ github.sha }}
           path: |
             dist/*.zip
             dist/*.streamDeckPlugin
+            dist/BUILD-INFO.json
+            dist/SHA256SUMS.txt
           if-no-files-found: error
