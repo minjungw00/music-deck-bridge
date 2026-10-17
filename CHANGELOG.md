@@ -2,9 +2,13 @@
 
 ## Unreleased
 
+- Prepare development patch 1.1.1 (Stream Deck 1.1.1.0). Distinguish stored credentials from an unconfirmed extension connection and explain new-PIN recovery after extension reinstallation.
+- Hide default titles on Play/Pause, Like, Dislike and Open keys while retaining their state-driven icons.
+- Let every control open a missing player and complete its requested input after readiness, including native Chrome startup. Preserve input order, bound startup waits, cancel on pairing changes and deduplicate delivered request IDs. A new-player playback request starts playback without pausing a track that already resumed.
+
 - Add Open YouTube Music, Like and Dislike keys with localized labels and matching magenta artwork. Rating keys display confirmed selection and toggle the site's current-song rating; stale commands for another song are discarded.
 - Open/focus an existing player from the launch key, or open a Chrome tab when no player exists. Playback inputs also launch when no player exists. Use an authenticated browser-wide channel and a fixed-URL Windows Chrome fallback without changing extension permissions or existing pairing/storage paths.
-- Prepare source/Chrome 1.1.0 and Stream Deck 1.1.0.0 on the feature branch. Preserve the separate 1.0.2 candidate; these features are not published. Explicit protocol-version compatibility negotiation remains separate work.
+- Preserve the separate 1.0.2 candidate; launch and rating development remains unpublished. Explicit protocol-version compatibility negotiation remains separate work.
 
 ## v1.0.2 — release candidate (not published)
 

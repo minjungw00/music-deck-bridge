@@ -143,50 +143,89 @@
     if (!el || el.disabled || el.getAttribute('aria-disabled') === 'true') return false;
     el.click(); return true;
   }
-  function command(message) {
-    if (!message || typeof message.type !== 'string') return;
+  async function command(message) {
+    if (!message || typeof message.type !== 'string' || !active) return { ok: false };
     const el = media();
+    let result = { ok: false };
     switch (message.type) {
-      case 'toggle':
-        if (!press('.play-pause-button') && el) {
-          if (el.paused) void el.play().catch(() => {}); else el.pause();
-        }
+      case 'play':
+        if (el && !el.paused && !el.ended) { result = { ok: true }; break; }
+        // An offline Play key means start playback, never pause a restored player.
+        if (press('.play-pause-button')) result = { ok: true };
+        else if (el && typeof el.play === 'function') {
+          try { await el.play(); result = { ok: true }; } catch { result = { ok: false }; }
+        } else result = { ok: false, retry: true };
         break;
-      case 'next': press('.next-button'); break;
-      case 'prev': press('.previous-button'); break;
+      case 'toggle':
+        if (press('.play-pause-button')) result = { ok: true };
+        else if (el && typeof el.play === 'function' && typeof el.pause === 'function') {
+          try { if (el.paused) await el.play(); else el.pause(); result = { ok: true }; }
+          catch { result = { ok: false }; }
+        } else result = { ok: false, retry: true };
+        break;
+      case 'next': result = { ok: press('.next-button') }; result.retry = !result.ok; break;
+      case 'prev': result = { ok: press('.previous-button') }; result.retry = !result.ok; break;
       case 'like':
       case 'dislike': {
         const state = current();
         const clean = value => String(value ?? '').replace(/[\x00-\x1f\x7f]/g, ' ').trim().slice(0, 180);
         const key = /^[\w-]{11}$/.test(state.trackId) ? state.trackId : JSON.stringify([clean(state.title), clean(state.artist)]);
-        if (!message.trackKey || message.trackKey !== key) break;
-        // Click the site's own toggle, scoped to the current player, never a list item.
+        if (!state.title) { result = { ok: false, retry: true }; break; }
+        if (message.trackKey ? message.trackKey !== key : !message.allowCurrentTrack) break;
         const button = ratingButton(message.type);
-        if (button && !button.disabled && button.getAttribute('aria-disabled') !== 'true' &&
-            !button.closest?.('[disabled], [aria-disabled="true"]')) button.click();
-        break;
+        if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true' ||
+            button.closest?.('[disabled], [aria-disabled="true"]')) {
+          result = { ok: false, retry: true }; break;
+        }
+        button.click(); result = { ok: true }; break;
       }
       case 'mute':
       case 'volume_delta': {
         if (message.type === 'volume_delta' && !Number.isFinite(message.amount)) break;
-        volumeCommands = volumeCommands.then(async () => {
-          if (!active) return;
-          const result = await chrome.runtime.sendMessage({
+        if (!el) { result = { ok: false, retry: true }; break; }
+        if (message.type === 'volume_delta' && siteVolume() === null) { result = { ok: false, retry: true }; break; }
+        if (message.type === 'mute') {
+          const button = document.querySelector('ytmusic-player-bar .volume, ytmusic-player-bar #expand-volume');
+          if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true') {
+            result = { ok: false, retry: true }; break;
+          }
+        }
+        const operation = volumeCommands.then(async () => {
+          if (!active) return { ok: false };
+          const response = await chrome.runtime.sendMessage({
             type: 'player-volume', command: message.type, amount: message.amount,
           });
-          if (result?.ok) scheduleSync(60);
-        }).catch(() => {});
+          return { ok: response?.ok === true };
+        }).catch(() => ({ ok: false }));
+        volumeCommands = operation;
+        result = await operation;
         break;
       }
     }
     scheduleSync(60);
+    return result;
   }
   let active = true;
+  const browserCommands = new Map();
   chrome.runtime.onMessage.addListener((message, sender, respond) => {
-    if (message?.type !== 'bridge-toggle' || sender.id !== chrome.runtime.id || sender.tab || !active) return;
-    const available = Boolean(document.querySelector('ytmusic-player-bar .play-pause-button') || media());
-    if (available) command({ type: 'toggle' });
-    respond({ ok: available });
+    if (!['bridge-command', 'bridge-toggle'].includes(message?.type) ||
+        sender.id !== chrome.runtime.id || sender.tab || !active) return;
+    if (Number.isFinite(message.expiresAt) && Date.now() >= message.expiresAt) {
+      respond({ ok: false }); return false;
+    }
+    const input = message.type === 'bridge-toggle' ? { type: 'toggle' } : message.command;
+    const id = typeof message.id === 'string' ? message.id : null;
+    let operation = id && browserCommands.get(id);
+    if (!operation) {
+      operation = command(input).catch(() => ({ ok: false }));
+      if (id) {
+        browserCommands.set(id, operation);
+        operation.then(result => { if (result.retry) browserCommands.delete(id); });
+        while (browserCommands.size > 100) browserCommands.delete(browserCommands.keys().next().value);
+      }
+    }
+    operation.then(respond);
+    return true;
   });
   let volumeCommands = Promise.resolve();
   let listenerGeneration = 0;
@@ -200,7 +239,7 @@
     try {
       const result = await chrome.runtime.sendMessage({ type: 'sync', state: current() });
       if (result?.paired && Array.isArray(result.commands)) {
-        for (const c of result.commands) command(c);
+        for (const c of result.commands) void command(c).catch(() => {});
       }
     } catch { /* Service worker or PWA restarting. */ }
     finally { inFlight = false; }
@@ -222,7 +261,7 @@
         const response = await chrome.runtime.sendMessage({ type: 'listen' });
         if (!active || generation !== listenerGeneration) return;
         if (response?.paired && Array.isArray(response.commands)) {
-          for (const c of response.commands) command(c);
+          for (const c of response.commands) void command(c).catch(() => {});
           if (response.commands.length) continue;
           if (response.idle) await new Promise(resolve => setTimeout(resolve, 300));
         } else if (!response?.paired) {

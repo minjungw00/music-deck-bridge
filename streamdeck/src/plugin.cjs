@@ -57,7 +57,10 @@ const coverCache = new Map();
 const coverFailures = new Map();
 const listenWaiters = new Map(); // active one-shot long polls per Chrome tab
 let browserWaiter = null;
-let browserRequest = null;
+const browserRequests = new Map();
+let nativeLaunchStarted = false;
+let nativeTabPending = false;
+let nativeLaunchTimer = null;
 let browserCapable = false;
 let cachedCoverUrl = '';
 let cachedCoverData = '';
@@ -116,7 +119,12 @@ function saveAuth(newAuth) {
 }
 function resetSession() {
   browserWaiter?.reply({ error: 'Pairing revoked' }, 401);
-  browserRequest?.finish(false);
+  clearTimeout(nativeLaunchTimer); nativeLaunchTimer = null;
+  const pendingBrowser = [...browserRequests.values()];
+  browserRequests.clear();
+  for (const request of pendingBrowser) request.finish(false);
+  nativeLaunchStarted = false;
+  nativeTabPending = false;
   browserCapable = false;
   for (const waiters of [...listenWaiters.values()]) {
     for (const waiter of [...waiters]) waiter.reply({ error: 'Pairing revoked' }, 401);
@@ -253,15 +261,35 @@ function listenForCommands(clientId, res, origin) {
     }
   });
 }
+function scheduleNativeLaunch() {
+  if (!browserRequests.size || nativeLaunchStarted || nativeLaunchTimer ||
+      [...browserRequests.values()].some(request => request.delivered)) return;
+  nativeLaunchTimer = setTimeout(async () => {
+    nativeLaunchTimer = null;
+    if (!browserRequests.size || [...browserRequests.values()].some(request => request.delivered)) return;
+    nativeLaunchStarted = true;
+    nativeTabPending = true;
+    const session = auth;
+    const requests = [...browserRequests.values()];
+    try {
+      if (!IS_TEST) await launchChrome();
+      // Without credentials only opening is possible; never bypass PIN pairing.
+      if (!session && auth === session) for (const request of requests) request.finish(request.type === 'open');
+    } catch (error) {
+      log(`Chrome launch failed: ${error.message}`);
+      for (const request of requests) request.finish(false);
+    }
+  }, auth ? 2000 : 0);
+}
 function flushBrowserRequest() {
-  if (!browserWaiter || !browserRequest || browserRequest.delivered) return;
-  browserRequest.delivered = true;
-  clearTimeout(browserRequest.timer);
-  const request = browserRequest;
-  request.timer = setTimeout(() => request.finish(false), 6000);
-  const clientId = selectedEntry()?.[0];
-  browserWaiter.reply({ commands: [{ id: browserRequest.id, type: browserRequest.type,
-    preferredTabId: clientId === undefined ? null : Number(clientId) }] });
+  const request = browserRequests.values().next().value;
+  if (!browserWaiter || !request || request.delivered) return;
+  request.delivered = true;
+  clearTimeout(nativeLaunchTimer); nativeLaunchTimer = null;
+  browserWaiter.reply({ commands: [{ id: request.id, type: request.type, amount: request.amount,
+    expiresAt: request.expiresAt, nativeLaunched: nativeTabPending,
+    preferredTabId: request.preferredTabId, ...(request.trackKey ? { trackKey: request.trackKey } : {}) }] });
+  nativeTabPending = false;
 }
 function listenForBrowser(res, origin) {
   // One paired extension profile owns the browser-wide channel, even with no tabs.
@@ -283,29 +311,45 @@ function listenForBrowser(res, origin) {
   });
   flushBrowserRequest();
 }
-async function openOrToggle(type) {
-  // Old extensions keep their existing playback path until both components update.
-  if (type === 'toggle' && !browserCapable && selectedEntry()) return addCommand('toggle');
-  if (browserRequest) return browserRequest.promise; // Coalesce presses during launch.
-  let finish;
-  const promise = new Promise(resolve => { finish = resolve; });
-  const request = { id: crypto.randomBytes(12).toString('hex'), type, delivered: false, promise,
-    finish(ok) { clearTimeout(request.timer); if (browserRequest === request) browserRequest = null; finish(ok); } };
-  browserRequest = request;
-  request.timer = setTimeout(async () => {
-    if (request.delivered) { request.finish(false); return; }
-    // Remove before spawning: a newly started worker must not repeat this launch.
-    browserRequest = null;
-    try {
-      if (!IS_TEST) await launchChrome();
-      request.finish(true);
-    } catch (error) { log(`Chrome launch failed: ${error.message}`); request.finish(false); }
-  }, auth ? 2000 : 0);
+async function requestPlayerCommand(type, amount = 0) {
+  if (!['open', 'toggle', 'prev', 'next', 'mute', 'volume_delta', 'like', 'dislike'].includes(type)) return false;
+  // Keep existing controls available when paired with a legacy extension.
+  if (type !== 'open' && !browserCapable && selectedEntry()) return addCommand(type, amount);
+  if (type === 'open') {
+    const existing = [...browserRequests.values()].find(request => request.type === 'open');
+    if (existing) return existing.promise;
+  }
+  if (browserRequests.size >= 60) return false;
+  const entry = selectedEntry();
+  const state = entry?.[1];
+  let resolve;
+  const promise = new Promise(done => { resolve = done; });
+  const request = {
+    id: crypto.randomBytes(12).toString('hex'), type, amount, promise, delivered: false,
+    expiresAt: Date.now() + 45000, preferredTabId: entry ? Number(entry[0]) : null,
+    trackKey: (type === 'like' || type === 'dislike') && state?.title ?
+      state.trackId || JSON.stringify([state.title, state.artist]) : null,
+    finish(ok) {
+      clearTimeout(request.timer);
+      browserRequests.delete(request.id);
+      resolve(ok);
+      if (!browserRequests.size) {
+        nativeLaunchStarted = false;
+        nativeTabPending = false;
+        clearTimeout(nativeLaunchTimer); nativeLaunchTimer = null;
+      }
+      flushBrowserRequest();
+      scheduleNativeLaunch();
+    },
+  };
+  request.timer = setTimeout(() => request.finish(false), 45000);
+  browserRequests.set(request.id, request);
   flushBrowserRequest();
+  scheduleNativeLaunch();
   return promise;
 }
-function controlPlayback(context) {
-  void openOrToggle('toggle').then(ok => { if (!ok) showAlert(context); });
+function controlPlayer(context, type, amount = 0) {
+  void requestPlayerCommand(type, amount).then(ok => { if (!ok) showAlert(context); });
 }
 async function requestHandler(req, res) {
   const origin = req.headers.origin;
@@ -355,7 +399,8 @@ async function requestHandler(req, res) {
   }
   if (req.url === '/browser-listen') return listenForBrowser(res, origin);
   if (req.url === '/browser-result') {
-    if (browserRequest?.delivered && body.id === browserRequest.id) browserRequest.finish(body.ok === true);
+    const request = browserRequests.get(body.id);
+    if (request?.delivered) request.finish(body.ok === true);
     return sendHttp(res, 200, { ok: true }, origin);
   }
   if (req.url === '/listen') {
@@ -542,14 +587,14 @@ function paint() {
         // in Chrome. A key press alone must not optimistically flip the icon.
         const image = `imgs/actions/toggle/${state?.playing ? 'pause' : 'key'}@2x.png`;
         if (item.lastImage !== image) { setImage(context, image); item.lastImage = image; }
-        setTitle(context, state ? state.playing ? tr('pause') : tr('play') : tr('open'));
+        if (item.lastTitle !== '') { setTitle(context, ''); item.lastTitle = ''; }
       } else if (kind === 'open') {
-        setTitle(context, tr('open'));
+        if (item.lastTitle !== '') { setTitle(context, ''); item.lastTitle = ''; }
       } else if (kind === 'like' || kind === 'dislike') {
         const selected = state?.rating === kind.toUpperCase();
         const image = `imgs/actions/${kind}/${selected ? 'selected' : 'key'}@2x.png`;
         if (item.lastImage !== image) { setImage(context, image); item.lastImage = image; }
-        setTitle(context, state ? `${selected ? '✓ ' : ''}${tr(kind)}` : tr('absent'));
+        if (item.lastTitle !== '') { setTitle(context, ''); item.lastTitle = ''; }
       } else if (kind === 'volume') {
         const vol = state ? `${state.muted ? tr('muted') + ' ' : ''}${state.volume}%` : tr('absent');
         setFeedback(context, { title: 'YouTube Music', value: vol, indicator: { value: state?.volume ?? 0, range: { min: 0, max: 100 } } });
@@ -625,37 +670,26 @@ function handleDeckEvent(e) {
     return;
   }
   if (e.event === 'keyDown') {
-    if (kind === 'open') {
-      void openOrToggle('open').then(ok => { if (!ok) showAlert(e.context); });
-      return;
-    }
-    if (kind === 'nowplaying' || kind === 'toggle') { controlPlayback(e.context); return; }
-    const type = ({ prev: 'prev', next: 'next', mute: 'mute', like: 'like', dislike: 'dislike' })[kind];
-    if (type && !addCommand(type)) showAlert(e.context);
+    const type = ({ nowplaying: 'toggle', toggle: 'toggle', open: 'open', prev: 'prev',
+      next: 'next', mute: 'mute', like: 'like', dislike: 'dislike' })[kind];
+    if (type) controlPlayer(e.context, type);
   } else if (e.event === 'dialRotate') {
     const ticks = Number(e.payload?.ticks) || 0;
     if (kind === 'volume' && ticks !== 0) {
       const dial = displayed.get(e.context);
       const rawStep = Number(dial?.volumePreview?.value ?? dial?.settings?.volumeStep);
       const step = Number.isInteger(rawStep) ? limit(rawStep, 1, 5) : 4;
-      if (!addCommand('volume_delta', ticks * step)) showAlert(e.context);
+      controlPlayer(e.context, 'volume_delta', limit(ticks * step, -100, 100));
     }
     if (kind === 'trackdial' && Number.isSafeInteger(ticks) && ticks !== 0) {
-      // Honor accumulated ticks, but cap a single event to avoid runaway skips.
       const count = Math.min(Math.abs(ticks), 5);
-      for (let i = 0; i < count; i++) {
-        if (!addCommand(ticks > 0 ? 'next' : 'prev')) { showAlert(e.context); break; }
-      }
+      for (let i = 0; i < count; i++) controlPlayer(e.context, ticks > 0 ? 'next' : 'prev');
     }
   } else if (e.event === 'dialDown') {
     const type = kind === 'volume' ? 'mute' : kind === 'trackdial' ? 'toggle' : null;
-    if (type === 'toggle') { controlPlayback(e.context); return; }
-    if (type && !addCommand(type)) showAlert(e.context);
-  } else if (e.event === 'touchTap') {
-    // Touch strip: tap the volume or track dial area to pause/resume.
-    const type = kind === 'volume' || kind === 'trackdial' ? 'toggle' : null;
-    if (type === 'toggle') { controlPlayback(e.context); return; }
-    if (type && !addCommand(type)) showAlert(e.context);
+    if (type) controlPlayer(e.context, type);
+  } else if (e.event === 'touchTap' && (kind === 'volume' || kind === 'trackdial')) {
+    controlPlayer(e.context, 'toggle');
   }
 }
 function connectDeck() {

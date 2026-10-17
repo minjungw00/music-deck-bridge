@@ -117,6 +117,9 @@ for (const protectedManifest of [false, true]) {
     const pauseImage = 'imgs/actions/toggle/pause@2x.png';
     // Before any player state is available, show Play with the offline title.
     await waitFor(() => toggleImage() === playImage);
+    for (const name of ['toggle', 'like', 'dislike', 'open']) {
+      await waitFor(() => messages.some(m => m.event === 'setTitle' && m.context === name && m.payload.title === ''));
+    }
     send('propertyInspectorDidAppear', 'nowplaying');
     send('sendToPlugin', 'nowplaying', { type: 'generate-pin' });
     const reply = await waitFor(() => messages.find(m => m.event === 'sendToPropertyInspector'));
@@ -127,7 +130,7 @@ for (const protectedManifest of [false, true]) {
     const state = { title: 'SDK song', artist: 'Artist', playing: true, volume: 50, rating: 'INDIFFERENT' };
     await post('/sync', { token, clientId: 1, state });
     await waitFor(() => toggleImage() === pauseImage);
-    await waitFor(() => messages.some(m => m.event === 'setTitle' && m.context === 'toggle' && m.payload.title === '일시정지'));
+    await waitFor(() => messages.some(m => m.event === 'setTitle' && m.context === 'toggle' && m.payload.title === ''));
     await waitFor(() => messages.some(m => m.event === 'setFeedback' && m.context === 'volume' && m.payload.value === '50%'));
     await waitFor(() => messages.some(m => m.event === 'setImage' && m.context === 'nowplaying'));
     async function command(event, name, payload, expected) {
@@ -153,7 +156,7 @@ for (const protectedManifest of [false, true]) {
     state.playing = false;
     await post('/sync', { token, clientId: 1, state });
     await waitFor(() => toggleImage() === playImage && toggleImage('toggle-2') === playImage);
-    await waitFor(() => messages.findLast(m => m.event === 'setTitle' && m.context === 'toggle')?.payload.title === '재생');
+    await waitFor(() => messages.findLast(m => m.event === 'setTitle' && m.context === 'toggle')?.payload.title === '');
     state.playing = true;
     await post('/sync', { token, clientId: 1, state });
     await waitFor(() => toggleImage() === pauseImage && toggleImage('toggle-2') === pauseImage);

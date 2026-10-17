@@ -30,7 +30,7 @@
           "Image": "imgs/actions/toggle/key",
           "TitleAlignment": "bottom",
           "FontSize": 12,
-          "ShowTitle": true
+          "ShowTitle": false
         }
       ],
       "Tooltip": "Play/pause, or open YouTube Music when no player is open."
@@ -150,7 +150,7 @@
           "Image": "imgs/actions/open/key",
           "TitleAlignment": "bottom",
           "FontSize": 12,
-          "ShowTitle": true
+          "ShowTitle": false
         }
       ],
       "Tooltip": "Open or focus YouTube Music in Chrome."
@@ -167,7 +167,7 @@
           "Image": "imgs/actions/like/key",
           "TitleAlignment": "bottom",
           "FontSize": 12,
-          "ShowTitle": true
+          "ShowTitle": false
         }
       ],
       "Tooltip": "Like the current song; press again to remove the like."
@@ -184,7 +184,7 @@
           "Image": "imgs/actions/dislike/key",
           "TitleAlignment": "bottom",
           "FontSize": 12,
-          "ShowTitle": true
+          "ShowTitle": false
         }
       ],
       "Tooltip": "Dislike the current song; press again to remove the dislike."
@@ -211,6 +211,6 @@
     "MinimumVersion": "7.1"
   },
   "UUID": "io.github.minjungw00.musicdeckbridge",
-  "Version": "1.1.0.0",
+  "Version": "1.1.1.0",
   "PropertyInspectorPath": "property-inspector/settings.html"
 }

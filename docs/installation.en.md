@@ -115,10 +115,10 @@ Reinstalling the Chrome extension removes its local pairing token even if the pl
 Add **Open YouTube Music**, **Like** and **Dislike** from the Music Deck Bridge action list.
 
 - **Open YouTube Music** focuses the selected open player, including a Chrome-installed app, or opens a Chrome tab if no player exists.
-- **Now Playing** and **Play / Pause** control an existing player; if none exists, they open YouTube Music. Dial play/pause inputs behave the same way. Opening the page does not automatically start a song; sign in or start playback on the site when needed.
-- **Like** and **Dislike** use the current song's own rating buttons. Press the same key again to remove that rating. A filled thumb and check mark reflect the site's confirmed selection, including changes made in Chrome. Ratings require an available signed-in player with working rating controls.
+- **Now Playing**, **Play / Pause**, previous/next, mute, ratings and dial inputs open YouTube Music when no player exists, wait for its controls, and then perform the requested input. A playback input starts a newly opened paused player without pausing one that already resumed. **Open YouTube Music** only opens/focuses the page. Sign in and select a song if the site has no playable track to restore.
+- **Like** and **Dislike** use the current song's own rating buttons. Press the same key again to remove that rating. A filled thumb reflects the site's confirmed selection, including changes made in Chrome. Ratings require an available signed-in player with working rating controls. Play/Pause, Like, Dislike and Open keys use icons without default titles.
 
-Install matching plugin and extension builds for these features. Keep the extension paired in the Chrome profile you use for YouTube Music. If Chrome is fully closed, the plugin starts Chrome from its standard Windows installation location and opens a tab. Other browsers and custom Chrome installation paths are not launch targets.
+Install matching plugin and extension builds for these features. Keep the extension paired in the Chrome profile you use for YouTube Music. If Chrome is fully closed, the plugin starts Chrome from its standard Windows installation location and opens a tab. Other browsers and custom Chrome installation paths are not launch targets. Pending inputs expire after 45 seconds; a page without usable controls cannot complete them. Re-pairing cancels pending inputs.
 
 ### Custom port
 

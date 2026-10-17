@@ -12,7 +12,7 @@ Music Deck Bridge contains two components that must be installed together: a Str
 
 - Current song, artist and album artwork on a key; press to play or pause.
 - Play/pause, previous track, next track and mute keys.
-- Open YouTube Music from a dedicated key, or press a playback key to open it when no player is available.
+- Open YouTube Music from a dedicated key; other controls open a missing player and continue their requested action when ready.
 - Like/dislike the current song, with selected-state icons; press again to remove the rating.
 - Volume dial with 1–5 percentage points per tick and push to mute.
 - Track dial with one track per tick (up to five per event) and push to play/pause.

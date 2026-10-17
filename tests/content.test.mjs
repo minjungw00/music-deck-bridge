@@ -10,11 +10,13 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..', 'chrome-extensi
 const source = readFileSync(join(root, 'content.js'), 'utf8');
 
 async function scenario(useMediaSession=false, { commands, manualVolume, compact = false,
-  rating = 'INDIFFERENT', ratingsAvailable = true, ratingsDisabled = false } = {}) {
+  rating = 'INDIFFERENT', ratingsAvailable = true, ratingsDisabled = false,
+  browserInputs = [], initiallyPaused = false } = {}) {
   let playClicks = 0, nextClicks = 0, syncCount = 0, lastState;
   const player = playerHarness({ compact, delay: 2 });
   const { audio } = player;
-  const playBtn = {click(){playClicks++;},disabled:false,getAttribute(){return null;}};
+  audio.paused = initiallyPaused;
+  const playBtn = {click(){playClicks++;audio.paused=!audio.paused;},disabled:false,getAttribute(){return null;}};
   const nextBtn = {click(){nextClicks++;},disabled:false,getAttribute(){return null;}};
   const img = { matches(){return true;}, currentSrc:'https://lh5.googleusercontent.com/cover=w120-h120-rj',src:'' };
   const thumb = { matches(){return false;},querySelectorAll(){return useMediaSession?[]:[img];},style:{} };
@@ -78,8 +80,16 @@ async function scenario(useMediaSession=false, { commands, manualVolume, compact
     eventHandlers.change({target:player.contentSliders[0]});
     await new Promise(resolve => setTimeout(resolve,170));
   }
+  const browserResponses = [];
+  for (const input of browserInputs) {
+    input.before?.({ audio, playBtn, nextBtn, ratingButtons });
+    browserResponses.push(await new Promise(resolve => {
+      const keep = eventHandlers.runtimeMessage(input.message, input.sender || { id: 'this-extension' }, resolve);
+      if (keep !== true) resolve({ ignored: true });
+    }));
+  }
   eventHandlers.pagehide?.();
-  return {syncCount,lastState,playClicks,nextClicks,audio,interval,player,ratingClicks,eventHandlers};
+  return {syncCount,lastState,playClicks,nextClicks,audio,interval,player,ratingClicks,eventHandlers,browserResponses};
 }
 
 test('Current track: artwork from YTM player-bar image, volume commands',async()=>{
@@ -143,4 +153,44 @@ test('a rating queued for another track is discarded instead of rating the next 
   ] });
   assert.deepEqual(result.ratingClicks, []);
   assert.equal(result.lastState.rating, 'INDIFFERENT');
+});
+
+test('browser inputs retry only before execution and deduplicate successful request IDs', async () => {
+  const input = { type: 'bridge-command', id: 'next-once', command: { type: 'next' } };
+  const result = await scenario(false, { commands: [], browserInputs: [
+    { message: input, before: ({nextBtn}) => { nextBtn.disabled = true; } },
+    { message: input, before: ({nextBtn}) => { nextBtn.disabled = false; } },
+    { message: input },
+  ] });
+  assert.equal(result.nextClicks, 1);
+  assert.equal(result.browserResponses[0].retry, true);
+  assert.ok(result.browserResponses.slice(1).every(response => response.ok));
+});
+
+test('launch continuation starts paused playback and leaves restored playing media playing', async () => {
+  for (const paused of [true, false]) {
+    const result = await scenario(false, { commands: [], initiallyPaused: paused, browserInputs: [
+      { message: { type: 'bridge-command', id: 'start', command: { type: 'play' } } },
+    ] });
+    assert.equal(result.browserResponses[0].ok, true);
+    assert.equal(result.audio.paused, false);
+    assert.equal(result.playClicks, paused ? 1 : 0);
+  }
+});
+
+test('a rating requested while opening acts on the restored song once', async () => {
+  const input = { type: 'bridge-command', id: 'like-once',
+    command: { type: 'like', allowCurrentTrack: true } };
+  const result = await scenario(false, { commands: [], browserInputs: [{ message: input }, { message: input }] });
+  assert.deepEqual(result.ratingClicks, ['like']);
+  assert.ok(result.browserResponses.every(response => response.ok));
+});
+
+test('untrusted and expired browser messages do not operate the player', async () => {
+  const result = await scenario(false, { commands: [], browserInputs: [
+    { sender: { id: 'another-extension' }, message: { type: 'bridge-command', command: { type: 'next' } } },
+    { sender: { id: 'this-extension', tab: { id: 1 } }, message: { type: 'bridge-command', command: { type: 'next' } } },
+    { message: { type: 'bridge-command', expiresAt: Date.now()-1, command: { type: 'next' } } },
+  ] });
+  assert.equal(result.nextClicks, 0);
 });

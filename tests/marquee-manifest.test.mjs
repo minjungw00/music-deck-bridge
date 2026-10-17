@@ -17,6 +17,9 @@ test('manifest exposes the supported actions and shares the property inspector',
   assert.deepEqual(m.Actions.map(a=>a.UUID.slice(m.UUID.length+1)),
     ['nowplaying','toggle','prev','next','mute','volume','trackdial','open','like','dislike']);
   assert.ok(m.Actions.every(a=>!a.PropertyInspectorPath));
+  for (const name of ['toggle', 'like', 'dislike', 'open']) {
+    assert.ok(m.Actions.find(action=>action.UUID.endsWith('.'+name)).States.every(state=>state.ShowTitle===false));
+  }
 });
 
 test('marquee scrolls long titles and artists leftwards and preserves Unicode graphemes',()=>{

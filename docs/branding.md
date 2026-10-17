@@ -42,7 +42,7 @@ All ten actions use the main icon's circular badge, gradient magenta, white symb
 
 Each family has a 72px key and 144px @2x key. The 20px/40px action-list badges use white with transparent symbol cutouts so they remain monochrome on Stream Deck's dark UI. All action exports use 4× supersampling before downsampling. The Chrome popup uses the same dark background, a deep-magenta primary button for white-text contrast and a magenta keyboard-focus outline. The property inspector retains the host's neutral SDPI style.
 
-The Play / Pause key has separate artwork for its next operation: Play when paused, Pause while playing. It follows the selected player's confirmed state, including changes made in Chrome, and updates every visible instance of the key. A key press alone does not flip the image. With no selected player it shows Play and an Open YTM title. The action-list icon uses Play.
+The Play / Pause key has separate artwork for its next operation: Play when paused, Pause while playing. It follows the selected player's confirmed state, including changes made in Chrome, and updates every visible instance of the key. A key press alone does not flip the image. With no selected player it shows Play. Play/Pause, Like, Dislike and Open keys have no default text titles. The action-list icon uses Play.
 
 | Paused: Play | Playing: Pause |
 | --- | --- |

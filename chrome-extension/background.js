@@ -40,25 +40,59 @@ async function pairedToken() {
 
 const MUSIC_URL = 'https://music.youtube.com/';
 let browserListening = false;
-async function performBrowserCommand(command) {
-  if (!['open', 'toggle'].includes(command?.type)) return false;
-  const tabs = await chrome.tabs.query({ url: MUSIC_URL + '*' });
-  const tab = tabs.find(tab => tab.id === command.preferredTabId) ||
-    tabs.find(tab => tab.active) || tabs[0];
+const PLAYER_COMMANDS = ['toggle', 'prev', 'next', 'mute', 'volume_delta', 'like', 'dislike'];
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+async function performBrowserCommand(command, stillPaired = async () => true) {
+  if (!['open', ...PLAYER_COMMANDS].includes(command?.type)) return false;
+  const deadline = Math.min(Number(command.expiresAt) || Date.now() + 30000, Date.now() + 30000);
+  const allowed = async (confirm = false) => Date.now() < deadline && await stillPaired(confirm) && Date.now() < deadline;
+  if (!await allowed()) return false;
+  const query = () => chrome.tabs.query({ url: MUSIC_URL + '*' });
+  const select = tabs => tabs.find(tab => tab.id === command.preferredTabId) || tabs.find(tab => tab.active) || tabs[0];
+  let tab = select(await query());
+  // Native Chrome startup may still be creating its requested music tab.
+  if (!tab && command.nativeLaunched) {
+    const openingUntil = Math.min(deadline, Date.now() + 5000);
+    while (!tab && Date.now() < openingUntil && await allowed()) {
+      await wait(200);
+      tab = select(await query());
+    }
+  }
+  let opened = command.nativeLaunched === true;
   if (!tab) {
-    await chrome.tabs.create({ url: MUSIC_URL, active: true });
-    return true; // Opening is not an autoplay request; the site owns playback.
+    if (!await allowed(true)) return false;
+    tab = await chrome.tabs.create({ url: MUSIC_URL, active: true });
+    opened = true;
   }
-  if (command.type === 'open' || tab.discarded || tab.frozen || tab.status === 'loading') {
+  const resuming = tab.discarded || tab.frozen || tab.status === 'loading';
+  if (command.type === 'open' || resuming) {
+    if (!await allowed(true)) return false;
     await chrome.tabs.update(tab.id, { active: true });
-    await chrome.windows.update(tab.windowId, { focused: true });
-    return true;
+    if (Number.isInteger(tab.windowId)) await chrome.windows.update(tab.windowId, { focused: true });
+    if (command.type === 'open') return true;
   }
-  // Reinject after extension updates, then address only the selected top frame.
-  await chrome.scripting.executeScript({ target: { tabId: tab.id, frameIds: [0] },
-    files: ['content.js'], world: 'ISOLATED' });
-  const result = await chrome.tabs.sendMessage(tab.id, { type: 'bridge-toggle' }, { frameId: 0 });
-  return result?.ok === true;
+  while (await allowed()) {
+    // Injection can fail harmlessly while a tab is loading. Do not retry an
+    // ambiguously delivered input; only an explicit not-ready reply is retryable.
+    try {
+      await chrome.scripting.executeScript({ target: { tabId: tab.id, frameIds: [0] },
+        files: ['content.js'], world: 'ISOLATED' });
+    } catch { await wait(200); continue; }
+    if (!await allowed(true)) return false;
+    let result;
+    try {
+      const trackKey = !opened && !resuming ? command.trackKey : undefined;
+      result = await chrome.tabs.sendMessage(tab.id, { type: 'bridge-command', id: command.id,
+        expiresAt: deadline, command: {
+          type: command.type === 'toggle' && opened ? 'play' : command.type,
+          amount: command.amount, trackKey, allowCurrentTrack: !trackKey,
+        } }, { frameId: 0 });
+    } catch { return false; }
+    if (result?.ok) return true;
+    if (result?.retry !== true) return false;
+    await wait(200);
+  }
+  return false;
 }
 async function startBrowserListener() {
   if (browserListening || !chrome.tabs?.query) return;
@@ -75,7 +109,17 @@ async function startBrowserListener() {
       if (await pairedToken() !== token) continue;
       for (const command of result.commands) {
         let ok = false;
-        try { ok = await performBrowserCommand(command); } catch { /* Report failure to the key. */ }
+        try {
+          ok = await performBrowserCommand(command, async confirm => {
+            if (await pairedToken() !== token) return false;
+            // A different extension/profile may have replaced this pairing while
+            // the page was loading; local storage alone cannot detect that.
+            if (confirm) {
+              try { await post('/status', { token }); } catch { return false; }
+            }
+            return await pairedToken() === token;
+          });
+        } catch { /* Report failure to the key. */ }
         await post('/browser-result', { token, id: command.id, ok });
       }
     }
@@ -215,6 +259,7 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
       const result = msg.type === 'sync' ?
         await post('/sync', { token, clientId: sender.tab.id, state: msg.state }) :
         await post('/listen', { token, clientId: sender.tab.id }, 15500);
+      void startBrowserListener();
       return { paired: true, commands: result.commands || [], idle: result.idle === true };
     })().then(respond).catch(() => respond({ paired: false, commands: [] }));
     return true;
