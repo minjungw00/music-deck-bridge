@@ -108,6 +108,16 @@ The stores may launch separately. For example, once the Chrome listing is availa
 
 The extension prefers an installed Chrome YouTube Music app if both it and a regular tab are open.
 
+### Launch and song ratings
+
+Add **Open YouTube Music**, **Like** and **Dislike** from the Music Deck Bridge action list.
+
+- **Open YouTube Music** focuses the selected open player, including a Chrome-installed app, or opens a Chrome tab if no player exists.
+- **Now Playing** and **Play / Pause** control an existing player; if none exists, they open YouTube Music. Dial play/pause inputs behave the same way. Opening the page does not automatically start a song; sign in or start playback on the site when needed.
+- **Like** and **Dislike** use the current song's own rating buttons. Press the same key again to remove that rating. A filled thumb and check mark reflect the site's confirmed selection, including changes made in Chrome. Ratings require an available signed-in player with working rating controls.
+
+Install matching plugin and extension builds for these features. Keep the extension paired in the Chrome profile you use for YouTube Music. If Chrome is fully closed, the plugin starts Chrome from its standard Windows installation location and opens a tab. Other browsers and custom Chrome installation paths are not launch targets.
+
 ### Custom port
 
 The default port is `17864`. Set an unused integer from `1024` to `65535` in any action's settings or the extension popup. All plugin actions share this port. A connected client follows a live port change; if disconnected or asleep, manually match both ports.

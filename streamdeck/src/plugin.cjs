@@ -10,6 +10,7 @@ const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
+const { launchChrome } = require('./launch-chrome.cjs');
 
 const PLUGIN_ID = 'io.github.minjungw00.musicdeckbridge';
 const LOCALHOST = '127.0.0.1';
@@ -55,6 +56,9 @@ const queue = [];
 const coverCache = new Map();
 const coverFailures = new Map();
 const listenWaiters = new Map(); // active one-shot long polls per Chrome tab
+let browserWaiter = null;
+let browserRequest = null;
+let browserCapable = false;
 let cachedCoverUrl = '';
 let cachedCoverData = '';
 let coverInFlight = '';
@@ -72,8 +76,8 @@ let hasDrawing = false;
 const MARQUEE_STEP_MS = 380;
 const MARQUEE_WIDTH = 11;
 const STRINGS = {
-  ko: { unavailable: '연결 안 됨', offline: '오프라인', pause: '일시정지', play: '재생', muted: '음소거', absent: 'YTM 없음', next: '곡 이동' },
-  en: { unavailable: 'Disconnected', offline: 'Offline', pause: 'Pause', play: 'Play', muted: 'Muted', absent: 'No YTM', next: 'Track' },
+  ko: { unavailable: '연결 안 됨', offline: '오프라인', pause: '일시정지', play: '재생', muted: '음소거', absent: 'YTM 없음', next: '곡 이동', open: 'YTM 실행', like: '좋아요', dislike: '싫어요' },
+  en: { unavailable: 'Disconnected', offline: 'Offline', pause: 'Pause', play: 'Play', muted: 'Muted', absent: 'No YTM', next: 'Track', open: 'Open YTM', like: 'Like', dislike: 'Dislike' },
 };
 const tr = key => STRINGS[locale]?.[key] || STRINGS.en[key];
 const marqueeTimer = setInterval(() => {
@@ -111,6 +115,9 @@ function saveAuth(newAuth) {
   auth = newAuth;
 }
 function resetSession() {
+  browserWaiter?.reply({ error: 'Pairing revoked' }, 401);
+  browserRequest?.finish(false);
+  browserCapable = false;
   for (const waiters of [...listenWaiters.values()]) {
     for (const waiter of [...waiters]) waiter.reply({ error: 'Pairing revoked' }, 401);
   }
@@ -167,6 +174,8 @@ function normalizeState(data) {
     muted: s.muted === true,
     volume: Number.isFinite(s.volume) ? limit(Math.round(s.volume), 0, 100) : 0,
     standalone: s.standalone === true,
+    rating: ['LIKE', 'DISLIKE', 'INDIFFERENT'].includes(s.rating) ? s.rating : null,
+    trackId: typeof s.trackId === 'string' && /^[\w-]{11}$/.test(s.trackId) ? s.trackId : '',
     lastSeen: Date.now(), lastMediaSyncAt: Date.now(),
   };
 }
@@ -181,11 +190,14 @@ function selectedEntry() {
 function addCommand(type, ticks = 0) {
   const entry = selectedEntry();
   if (!entry) return false;
-  const [clientId] = entry;
-  if (!['toggle', 'next', 'prev', 'mute', 'volume_delta'].includes(type)) return false;
+  const [clientId, state] = entry;
+  if (!['toggle', 'next', 'prev', 'mute', 'volume_delta', 'like', 'dislike'].includes(type)) return false;
   const amount = type === 'volume_delta' ? limit(Number(ticks) || 0, -100, 100) : 0;
   if (type === 'volume_delta' && amount === 0) return true;
-  queue.push({ clientId, type, amount, created: Date.now() });
+  const rating = type === 'like' || type === 'dislike';
+  if (rating && (!state.title || state.rating === null)) return false;
+  queue.push({ clientId, type, amount, created: Date.now(),
+    ...(rating ? { trackKey: state.trackId || JSON.stringify([state.title, state.artist]) } : {}) });
   while (queue.length > 60) queue.shift();
   flushWaiters(clientId);
   return true;
@@ -195,7 +207,10 @@ function dispatch(clientId) {
   for (let i = queue.length - 1; i >= 0; i--) {
     const cmd = queue[i];
     if (Date.now() - cmd.created > 5000) { queue.splice(i, 1); continue; }
-    if (cmd.clientId === clientId) { out.push({ type: cmd.type, amount: cmd.amount }); queue.splice(i, 1); }
+    if (cmd.clientId === clientId) {
+      out.push({ type: cmd.type, amount: cmd.amount, ...(cmd.trackKey ? { trackKey: cmd.trackKey } : {}) });
+      queue.splice(i, 1);
+    }
   }
   return out.reverse();
 }
@@ -237,6 +252,60 @@ function listenForCommands(clientId, res, origin) {
       if (!set.size) listenWaiters.delete(clientId);
     }
   });
+}
+function flushBrowserRequest() {
+  if (!browserWaiter || !browserRequest || browserRequest.delivered) return;
+  browserRequest.delivered = true;
+  clearTimeout(browserRequest.timer);
+  const request = browserRequest;
+  request.timer = setTimeout(() => request.finish(false), 6000);
+  const clientId = selectedEntry()?.[0];
+  browserWaiter.reply({ commands: [{ id: browserRequest.id, type: browserRequest.type,
+    preferredTabId: clientId === undefined ? null : Number(clientId) }] });
+}
+function listenForBrowser(res, origin) {
+  // One paired extension profile owns the browser-wide channel, even with no tabs.
+  browserCapable = true;
+  browserWaiter?.reply({ commands: [] });
+  const waiter = {
+    timer: null,
+    reply(message, status = 200) {
+      clearTimeout(waiter.timer);
+      if (browserWaiter !== waiter) return;
+      browserWaiter = null;
+      if (!res.destroyed && !res.writableEnded) sendHttp(res, status, message, origin);
+    },
+  };
+  browserWaiter = waiter;
+  waiter.timer = setTimeout(() => waiter.reply({ commands: [] }), 12000);
+  res.once('close', () => {
+    if (browserWaiter === waiter) { clearTimeout(waiter.timer); browserWaiter = null; }
+  });
+  flushBrowserRequest();
+}
+async function openOrToggle(type) {
+  // Old extensions keep their existing playback path until both components update.
+  if (type === 'toggle' && !browserCapable && selectedEntry()) return addCommand('toggle');
+  if (browserRequest) return browserRequest.promise; // Coalesce presses during launch.
+  let finish;
+  const promise = new Promise(resolve => { finish = resolve; });
+  const request = { id: crypto.randomBytes(12).toString('hex'), type, delivered: false, promise,
+    finish(ok) { clearTimeout(request.timer); if (browserRequest === request) browserRequest = null; finish(ok); } };
+  browserRequest = request;
+  request.timer = setTimeout(async () => {
+    if (request.delivered) { request.finish(false); return; }
+    // Remove before spawning: a newly started worker must not repeat this launch.
+    browserRequest = null;
+    try {
+      if (!IS_TEST) await launchChrome();
+      request.finish(true);
+    } catch (error) { log(`Chrome launch failed: ${error.message}`); request.finish(false); }
+  }, auth ? 2000 : 0);
+  flushBrowserRequest();
+  return promise;
+}
+function controlPlayback(context) {
+  void openOrToggle('toggle').then(ok => { if (!ok) showAlert(context); });
 }
 async function requestHandler(req, res) {
   const origin = req.headers.origin;
@@ -284,6 +353,11 @@ async function requestHandler(req, res) {
       coverDetected: Boolean(chosen?.[1].cover),
       coverStatus: getCoverStatus(chosen?.[1].cover) }, origin);
   }
+  if (req.url === '/browser-listen') return listenForBrowser(res, origin);
+  if (req.url === '/browser-result') {
+    if (browserRequest?.delivered && body.id === browserRequest.id) browserRequest.finish(body.ok === true);
+    return sendHttp(res, 200, { ok: true }, origin);
+  }
   if (req.url === '/listen') {
     const clientId = String(body.clientId ?? '').slice(0, 64);
     if (!/^\d{1,12}$/.test(clientId)) return sendHttp(res, 400, { error: 'Invalid client' }, origin);
@@ -301,7 +375,7 @@ async function requestHandler(req, res) {
     for (const [id, s] of candidates) if (Date.now() - s.lastSeen > LIVE_MS * 2) candidates.delete(id);
     const chosen = selectedEntry();
     const signature = JSON.stringify(chosen ? [chosen[0], chosen[1].title, chosen[1].artist,
-      chosen[1].cover, chosen[1].coverFallback, chosen[1].playing, chosen[1].volume, chosen[1].muted] : []);
+      chosen[1].cover, chosen[1].coverFallback, chosen[1].playing, chosen[1].volume, chosen[1].muted, chosen[1].rating] : []);
     if (signature !== selectedSignature) { selectedSignature = signature; drawSoon(); }
     return sendHttp(res, 200, { commands: dispatch(clientId), selected: chosen && chosen[0] === clientId }, origin);
   }
@@ -468,7 +542,14 @@ function paint() {
         // in Chrome. A key press alone must not optimistically flip the icon.
         const image = `imgs/actions/toggle/${state?.playing ? 'pause' : 'key'}@2x.png`;
         if (item.lastImage !== image) { setImage(context, image); item.lastImage = image; }
-        setTitle(context, state ? state.playing ? tr('pause') : tr('play') : tr('offline'));
+        setTitle(context, state ? state.playing ? tr('pause') : tr('play') : tr('open'));
+      } else if (kind === 'open') {
+        setTitle(context, tr('open'));
+      } else if (kind === 'like' || kind === 'dislike') {
+        const selected = state?.rating === kind.toUpperCase();
+        const image = `imgs/actions/${kind}/${selected ? 'selected' : 'key'}@2x.png`;
+        if (item.lastImage !== image) { setImage(context, image); item.lastImage = image; }
+        setTitle(context, state ? `${selected ? '✓ ' : ''}${tr(kind)}` : tr('absent'));
       } else if (kind === 'volume') {
         const vol = state ? `${state.muted ? tr('muted') + ' ' : ''}${state.volume}%` : tr('absent');
         setFeedback(context, { title: 'YouTube Music', value: vol, indicator: { value: state?.volume ?? 0, range: { min: 0, max: 100 } } });
@@ -544,7 +625,12 @@ function handleDeckEvent(e) {
     return;
   }
   if (e.event === 'keyDown') {
-    const type = ({ nowplaying: 'toggle', toggle: 'toggle', prev: 'prev', next: 'next', mute: 'mute' })[kind];
+    if (kind === 'open') {
+      void openOrToggle('open').then(ok => { if (!ok) showAlert(e.context); });
+      return;
+    }
+    if (kind === 'nowplaying' || kind === 'toggle') { controlPlayback(e.context); return; }
+    const type = ({ prev: 'prev', next: 'next', mute: 'mute', like: 'like', dislike: 'dislike' })[kind];
     if (type && !addCommand(type)) showAlert(e.context);
   } else if (e.event === 'dialRotate') {
     const ticks = Number(e.payload?.ticks) || 0;
@@ -563,10 +649,12 @@ function handleDeckEvent(e) {
     }
   } else if (e.event === 'dialDown') {
     const type = kind === 'volume' ? 'mute' : kind === 'trackdial' ? 'toggle' : null;
+    if (type === 'toggle') { controlPlayback(e.context); return; }
     if (type && !addCommand(type)) showAlert(e.context);
   } else if (e.event === 'touchTap') {
     // Touch strip: tap the volume or track dial area to pause/resume.
     const type = kind === 'volume' || kind === 'trackdial' ? 'toggle' : null;
+    if (type === 'toggle') { controlPlayback(e.context); return; }
     if (type && !addCommand(type)) showAlert(e.context);
   }
 }
@@ -593,7 +681,7 @@ function connectDeck() {
     onDialDown(ev) { this.forward(ev); }
     onTouchTap(ev) { this.forward(ev); }
   }
-  for (const name of ['nowplaying', 'toggle', 'prev', 'next', 'mute', 'volume', 'trackdial']) {
+  for (const name of ['nowplaying', 'toggle', 'prev', 'next', 'mute', 'volume', 'trackdial', 'open', 'like', 'dislike']) {
     streamDeck.actions.registerAction(new BridgeAction(name));
   }
   void streamDeck.connect().then(() => {

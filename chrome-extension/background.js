@@ -38,6 +38,55 @@ async function pairedToken() {
   return data.bridgeToken || '';
 }
 
+const MUSIC_URL = 'https://music.youtube.com/';
+let browserListening = false;
+async function performBrowserCommand(command) {
+  if (!['open', 'toggle'].includes(command?.type)) return false;
+  const tabs = await chrome.tabs.query({ url: MUSIC_URL + '*' });
+  const tab = tabs.find(tab => tab.id === command.preferredTabId) ||
+    tabs.find(tab => tab.active) || tabs[0];
+  if (!tab) {
+    await chrome.tabs.create({ url: MUSIC_URL, active: true });
+    return true; // Opening is not an autoplay request; the site owns playback.
+  }
+  if (command.type === 'open' || tab.discarded || tab.frozen || tab.status === 'loading') {
+    await chrome.tabs.update(tab.id, { active: true });
+    await chrome.windows.update(tab.windowId, { focused: true });
+    return true;
+  }
+  // Reinject after extension updates, then address only the selected top frame.
+  await chrome.scripting.executeScript({ target: { tabId: tab.id, frameIds: [0] },
+    files: ['content.js'], world: 'ISOLATED' });
+  const result = await chrome.tabs.sendMessage(tab.id, { type: 'bridge-toggle' }, { frameId: 0 });
+  return result?.ok === true;
+}
+async function startBrowserListener() {
+  if (browserListening || !chrome.tabs?.query) return;
+  browserListening = true;
+  let listeningToken;
+  try {
+    while (true) {
+      const token = await pairedToken();
+      listeningToken = token;
+      if (!token) return;
+      const result = await post('/browser-listen', { token }, 15500);
+      if (!Array.isArray(result.commands)) return;
+      // Re-pairing/unpairing must invalidate already received browser commands.
+      if (await pairedToken() !== token) continue;
+      for (const command of result.commands) {
+        let ok = false;
+        try { ok = await performBrowserCommand(command); } catch { /* Report failure to the key. */ }
+        await post('/browser-result', { token, id: command.id, ok });
+      }
+    }
+  } catch { /* A startup, popup check or alarm restarts after host/network failure. */ }
+  finally {
+    browserListening = false;
+    const token = await pairedToken().catch(() => '');
+    if (token && token !== listeningToken) void startBrowserListener();
+  }
+}
+
 // Runs in the page's MAIN world: Polymer slider properties belong to the site,
 // and are not visible through the content script's isolated DOM wrappers.
 function controlPlayerVolume(type, amount) {
@@ -87,6 +136,7 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
       if (!/^\d{6}$/.test(msg.pin)) throw new Error((chrome.i18n?.getMessage?.('invalid') || 'Enter a six-digit PIN.'));
       const result = await post('/pair', { pin: msg.pin });
       await chrome.storage.local.set({ bridgeToken: result.token });
+      void startBrowserListener();
       return { ok: true };
     })().then(respond).catch(e => respond({ ok: false, error: e.message }));
     return true;
@@ -96,6 +146,7 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
       const token = await pairedToken();
       if (!token) return { ok: false, error: (chrome.i18n?.getMessage?.('notPaired') || 'Not paired yet.') };
       const result = await post('/status', { token });
+      void startBrowserListener();
       return { ok: true, ...result };
     })().then(respond).catch(e => respond({ ok: false, error: e.message }));
     return true;
@@ -183,11 +234,18 @@ async function ensureMusicScripts() {
 chrome.runtime.onInstalled.addListener(() => {
   void chrome.alarms.create('pwa-check', { periodInMinutes: 1 });
   void ensureMusicScripts();
+  void startBrowserListener();
 });
 chrome.runtime.onStartup.addListener(() => {
   void chrome.alarms.create('pwa-check', { periodInMinutes: 1 });
   void ensureMusicScripts();
+  void startBrowserListener();
 });
 chrome.alarms.onAlarm.addListener(alarm => {
-  if (alarm.name === 'pwa-check') void ensureMusicScripts();
+  if (alarm.name === 'pwa-check') {
+    void ensureMusicScripts();
+    void startBrowserListener();
+  }
 });
+// Listen even when no YouTube Music content script exists.
+void startBrowserListener();

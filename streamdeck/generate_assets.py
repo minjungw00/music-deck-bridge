@@ -105,6 +105,21 @@ def render(kind, size, background):
     elif kind == "pause":
         rectangle((202, 174, 236, 330))
         rectangle((276, 174, 310, 330))
+    elif kind == "open":
+        line([(290, 184), (174, 184), (174, 330), (330, 330), (330, 280)], 18)
+        line([(242, 270), (340, 172)], 24)
+        line([(280, 172), (340, 172), (340, 232)], 24)
+    elif kind in ("like", "dislike", "like_selected", "dislike_selected"):
+        thumb = [(212, 234), (246, 188), (254, 154), (278, 154), (292, 180),
+                 (282, 224), (338, 224), (354, 242), (328, 332), (212, 332)]
+        if kind.endswith("_selected"):
+            polygon(thumb)
+        else:
+            draw.line([box(point) for point in thumb + [thumb[0]]],
+                      fill=255, width=16 * scale, joint="curve")
+        rectangle((158, 236, 194, 334), radius=5)
+        if kind.startswith("dislike"):
+            glyph = glyph.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
     elif kind in ("prev", "next", "trackdial"):
         polygon([(170, 178), (170, 326), (286, 252)])
         rectangle((310, 178, 340, 326))
@@ -147,12 +162,14 @@ def main():
     }
     for size in (16, 48, 128):
         outputs[f"chrome-extension/icons/{size}.png"] = ("brand", size, True)
-    for kind in ("nowplaying", "toggle", "prev", "next", "mute", "volume", "trackdial"):
+    for kind in ("nowplaying", "toggle", "prev", "next", "mute", "volume", "trackdial", "open", "like", "dislike"):
         for name, size, background in [("icon", 20, False), ("key", 72, True)]:
             for suffix, scale in [("", 1), ("@2x", 2)]:
                 outputs[f"{plugin}/actions/{kind}/{name}{suffix}.png"] = (kind, size * scale, background)
     for suffix, scale in [("", 1), ("@2x", 2)]:
         outputs[f"{plugin}/actions/toggle/pause{suffix}.png"] = ("pause", 72 * scale, True)
+        for kind in ("like", "dislike"):
+            outputs[f"{plugin}/actions/{kind}/selected{suffix}.png"] = (kind + "_selected", 72 * scale, True)
     for name, spec in outputs.items():
         target = args.output_root / name
         target.parent.mkdir(parents=True, exist_ok=True)

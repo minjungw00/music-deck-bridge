@@ -137,10 +137,10 @@ test('Chrome extension uses stored custom port and follows live port changes ann
   const check=await send({type:'check'});
   assert.equal(check.ok,true);
   assert.equal(storage.bridgePort,23112);
-  assert.ok(requested[0].startsWith('http://127.0.0.1:23111/status'));
+  assert.ok(requested.some(url=>url.startsWith('http://127.0.0.1:23111/status')));
   const result=await send({type:'set-port',port:23113});
   assert.equal(result.ok,true);
   assert.equal(result.localOnly,false);
   assert.equal(storage.bridgePort,23113);
-  assert.ok(requested.at(-1).startsWith('http://127.0.0.1:23112/configure-port'));
+  assert.ok(requested.some(url=>url.startsWith('http://127.0.0.1:23112/configure-port')));
 });

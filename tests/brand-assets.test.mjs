@@ -12,7 +12,7 @@ const assets = [
   [plugin + 'imgs/plugin/category@2x.png', 56],
   ...[16, 48, 128].map(size => [`chrome-extension/icons/${size}.png`, size]),
 ];
-const actionFamilies = ['nowplaying', 'toggle', 'prev', 'next', 'mute', 'volume', 'trackdial'];
+const actionFamilies = ['nowplaying', 'toggle', 'prev', 'next', 'mute', 'volume', 'trackdial', 'open', 'like', 'dislike'];
 
 // Decode our noninterlaced RGBA8 PNGs using only Node's standard library.
 // Testing committed pixels keeps Pillow optional for ordinary builds and CI.
@@ -179,6 +179,28 @@ test('toggle artwork shows a single play symbol or two pause bars, never both to
         previousWhite = white;
       }
       assert.equal(runs, expectedRuns, `${path}: unexpected combined or missing glyph`);
+    }
+  }
+});
+
+test('rating selection fills the thumb while preserving the shared brand surface', async () => {
+  for (const kind of ['like', 'dislike']) {
+    for (const suffix of ['', '@2x']) {
+      const normal = await png(`${plugin}imgs/actions/${kind}/key${suffix}.png`);
+      const selected = await png(`${plugin}imgs/actions/${kind}/selected${suffix}.png`);
+      assert.equal(normal.width, selected.width);
+      assert.equal(normal.height, selected.height);
+      const white = image => {
+        let count = 0;
+        for (let y = 0; y < image.height; y++) for (let x = 0; x < image.width; x++) {
+          const [r, g, b, a] = image.pixel(x, y);
+          if (Math.min(r, g, b) > 200 && a > 240) count++;
+        }
+        return count;
+      };
+      assert.ok(white(selected) > white(normal) * 1.4, 'selected thumb must be clearly filled');
+      assert.deepEqual(normal.at(0.5, 0.1), selected.at(0.5, 0.1));
+      assert.deepEqual(normal.pixel(0, 0), selected.pixel(0, 0));
     }
   }
 });

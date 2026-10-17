@@ -3,11 +3,11 @@
   "Description": "Control YouTube Music directly in Chrome.",
   "io.github.minjungw00.musicdeckbridge.nowplaying": {
     "Name": "Now Playing",
-    "Tooltip": "Show artwork, song and artist. Press to play or pause."
+    "Tooltip": "Show artwork, song and artist. Press to play/pause or open YouTube Music when closed."
   },
   "io.github.minjungw00.musicdeckbridge.toggle": {
     "Name": "Play / Pause",
-    "Tooltip": "Play or pause YouTube Music."
+    "Tooltip": "Play/pause, or open YouTube Music when no player is open."
   },
   "io.github.minjungw00.musicdeckbridge.prev": {
     "Name": "Previous Track",
@@ -28,5 +28,17 @@
   "io.github.minjungw00.musicdeckbridge.trackdial": {
     "Name": "Track Dial",
     "Tooltip": "Turn to change tracks, push to play or pause."
+  },
+  "io.github.minjungw00.musicdeckbridge.open": {
+    "Name": "Open YouTube Music",
+    "Tooltip": "Open or focus YouTube Music in Chrome."
+  },
+  "io.github.minjungw00.musicdeckbridge.like": {
+    "Name": "Like",
+    "Tooltip": "Like the current song; press again to remove the like."
+  },
+  "io.github.minjungw00.musicdeckbridge.dislike": {
+    "Name": "Dislike",
+    "Tooltip": "Dislike the current song; press again to remove the dislike."
   }
 }

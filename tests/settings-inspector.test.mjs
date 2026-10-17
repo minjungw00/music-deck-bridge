@@ -53,7 +53,7 @@ test('uses bundled official SDPI components in dark style and locale-aware label
 });
 
 test('each action can generate a PIN, with real connection-state messages', async()=>{
-  for (const name of ['nowplaying','toggle','prev','next','mute','volume','trackdial']) {
+  for (const name of ['nowplaying','toggle','prev','next','mute','volume','trackdial','open','like','dislike']) {
     const pi=makeInspector('io.github.minjungw00.musicdeckbridge.'+name); await pi.ready();
     pi.elems.generatePin.listeners.click();await pi.ready();
     assert.equal(pi.calls.at(-1).payload.type,'generate-pin');
@@ -90,7 +90,7 @@ test('native range saves actual first input and supports manual settings persist
 });
 
 test('all buttons and dials share the global port and can request a live port change', async()=>{
-  for (const action of ['nowplaying','toggle','prev','next','mute','volume','trackdial']) {
+  for (const action of ['nowplaying','toggle','prev','next','mute','volume','trackdial','open','like','dislike']) {
     const pi=makeInspector('io.github.minjungw00.musicdeckbridge.'+action,'ko'); await pi.ready();
     pi.subscribers.connection({payload:{type:'connection',paired:true,extensionOnline:true,playerActive:true,serverPort:17864,bridgeOnline:true}});
     assert.equal(pi.elems.serverPort.value,'17864');

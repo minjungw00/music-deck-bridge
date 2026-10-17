@@ -108,7 +108,7 @@ for (const protectedManifest of [false, true]) {
     }
     await waitFor(() => messages.find(m => m.event === 'registerPlugin'));
     assert.equal(messages[0].uuid, id);
-    for (const name of ['nowplaying', 'toggle', 'prev', 'next', 'mute', 'volume', 'trackdial']) {
+    for (const name of ['nowplaying', 'toggle', 'prev', 'next', 'mute', 'volume', 'trackdial', 'open', 'like', 'dislike']) {
       send('willAppear', name, { controller: ['volume', 'trackdial'].includes(name) ? 'Encoder' : 'Keypad',
         settings: { volumeStep: 3 }, coordinates: { column: 0, row: 0 }, state: 0 });
     }
@@ -124,7 +124,7 @@ for (const protectedManifest of [false, true]) {
     assert.equal(reply.payload.pin, '654321');
     assert.ok(reply.payload.expiresAt > Date.now());
     const { token } = await post('/pair', { pin: reply.payload.pin });
-    const state = { title: 'SDK song', artist: 'Artist', playing: true, volume: 50 };
+    const state = { title: 'SDK song', artist: 'Artist', playing: true, volume: 50, rating: 'INDIFFERENT' };
     await post('/sync', { token, clientId: 1, state });
     await waitFor(() => toggleImage() === pauseImage);
     await waitFor(() => messages.some(m => m.event === 'setTitle' && m.context === 'toggle' && m.payload.title === '일시정지'));
@@ -138,8 +138,9 @@ for (const protectedManifest of [false, true]) {
       });
       assert.deepEqual(result, Array.isArray(expected) ? expected : [expected]);
     }
-    for (const [name, type] of [['nowplaying', 'toggle'], ['toggle', 'toggle'], ['prev', 'prev'], ['next', 'next'], ['mute', 'mute']]) {
-      await command('keyDown', name, {}, { type, amount: 0 });
+    for (const [name, type] of [['nowplaying', 'toggle'], ['toggle', 'toggle'], ['prev', 'prev'], ['next', 'next'], ['mute', 'mute'], ['like', 'like'], ['dislike', 'dislike']]) {
+      await command('keyDown', name, {}, { type, amount: 0,
+        ...(['like', 'dislike'].includes(type) ? { trackKey: JSON.stringify([state.title, state.artist]) } : {}) });
     }
     assert.equal(toggleImage(), pauseImage, 'key presses must wait for confirmed browser playback state');
     // Reappearing keys and another instance of the same action follow the player.
@@ -167,6 +168,29 @@ for (const protectedManifest of [false, true]) {
     await command('dialRotate', 'trackdial', { ticks: 100 }, Array.from({ length: 5 }, () => ({ type: 'next', amount: 0 })));
     await command('dialDown', 'trackdial', {}, { type: 'toggle', amount: 0 });
     await command('touchTap', 'trackdial', {}, { type: 'toggle', amount: 0 });
+    const ratingImage = kind => messages.findLast(m => m.event === 'setImage' && m.context === kind)?.payload.image;
+    await waitFor(() => ratingImage('like') === 'imgs/actions/like/key@2x.png');
+    state.rating = 'LIKE';
+    await post('/sync', { token, clientId: 1, state });
+    await waitFor(() => ratingImage('like') === 'imgs/actions/like/selected@2x.png');
+    state.rating = 'DISLIKE';
+    await post('/sync', { token, clientId: 1, state });
+    await waitFor(() => ratingImage('dislike') === 'imgs/actions/dislike/selected@2x.png' &&
+      ratingImage('like') === 'imgs/actions/like/key@2x.png');
+
+    async function browserCommand(name, type, preferredTabId) {
+      const listening = post('/browser-listen', { token });
+      // Listening can register before or after the key press; both paths must work.
+      send('keyDown', name, {});
+      if (name === 'open') send('keyDown', name, {}); // Repeated launch presses coalesce.
+      const { commands } = await listening;
+      assert.equal(commands.length, 1);
+      assert.equal(commands[0].type, type);
+      assert.equal(commands[0].preferredTabId, preferredTabId);
+      await post('/browser-result', { token, id: commands[0].id, ok: true });
+    }
+    await browserCommand('open', 'open', 1);
+    await browserCommand('toggle', 'toggle', 1);
     send('willDisappear', 'nowplaying', { controller: 'Keypad', settings: {}, coordinates: { column: 0, row: 0 }, state: 0 });
     const count = messages.length;
     state.title = 'Changed after disappearance';
@@ -175,6 +199,21 @@ for (const protectedManifest of [false, true]) {
     assert.ok(!messages.slice(count).some(m => m.context === 'nowplaying' && m.event === 'setTitle'));
     await post('/unpair', { token });
     await waitFor(() => toggleImage() === playImage && toggleImage('toggle-2') === playImage);
+    await waitFor(() => ratingImage('like') === 'imgs/actions/like/key@2x.png' &&
+      ratingImage('dislike') === 'imgs/actions/dislike/key@2x.png');
+    // A newly paired browser with zero player tabs still receives the launch request.
+    send('willAppear', 'nowplaying', { controller: 'Keypad', settings: {}, state: 0 });
+    send('propertyInspectorDidAppear', 'nowplaying');
+    const pinStart = messages.length;
+    send('sendToPlugin', 'nowplaying', { type: 'generate-pin' });
+    await waitFor(() => messages.slice(pinStart).some(m => m.event === 'sendToPropertyInspector' && m.payload.pin === '654321'));
+    const pair = await post('/pair', { pin: '654321' });
+    const listening = post('/browser-listen', { token: pair.token });
+    send('keyDown', 'toggle', {});
+    const launch = await listening;
+    assert.equal(launch.commands[0].type, 'toggle');
+    assert.equal(launch.commands[0].preferredTabId, null);
+    await post('/browser-result', { token: pair.token, id: launch.commands[0].id, ok: true });
     await closePeer(peer);
     assert.equal(peerClose?.code, 1000, diagnostics());
     assert.deepEqual(errors, [], diagnostics());

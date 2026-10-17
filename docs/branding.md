@@ -34,7 +34,7 @@ The 288px Marketplace export uses the same renderer; its size follows the [Marke
 
 ## Action icons
 
-All seven actions use the main icon's circular badge, gradient magenta, white symbol and dark rounded surface. Now Playing uses the main play-disc mark; the other six retain recognizable play/pause, previous/next, speaker/mute and dial symbols.
+All ten actions use the main icon's circular badge, gradient magenta, white symbol and dark rounded surface. Now Playing uses the main play-disc mark; the other actions use recognizable playback, speaker/mute, dial, launch and thumb symbols.
 
 | Now Playing | Play / Pause | Previous | Next | Mute | Volume Dial | Track Dial |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -42,11 +42,17 @@ All seven actions use the main icon's circular badge, gradient magenta, white sy
 
 Each family has a 72px key and 144px @2x key. The 20px/40px action-list badges use white with transparent symbol cutouts so they remain monochrome on Stream Deck's dark UI. All action exports use 4× supersampling before downsampling. The Chrome popup uses the same dark background, a deep-magenta primary button for white-text contrast and a magenta keyboard-focus outline. The property inspector retains the host's neutral SDPI style.
 
-The Play / Pause key has separate artwork for its next operation: Play when paused, Pause while playing. It follows the selected player's confirmed state, including changes made in Chrome, and updates every visible instance of the key. A key press alone does not flip the image. With no selected player it shows Play and the existing offline title. The action-list icon uses Play.
+The Play / Pause key has separate artwork for its next operation: Play when paused, Pause while playing. It follows the selected player's confirmed state, including changes made in Chrome, and updates every visible instance of the key. A key press alone does not flip the image. With no selected player it shows Play and an Open YTM title. The action-list icon uses Play.
 
 | Paused: Play | Playing: Pause |
 | --- | --- |
 | ![Play](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/toggle/key.png) | ![Pause](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/toggle/pause.png) |
+
+Open uses a window-and-arrow glyph. Like and Dislike use outlined thumbs before selection and filled thumbs after the selected player's rating is confirmed. Both use 72px/144px variants and the shared magenta surface.
+
+| Open | Like | Liked | Dislike | Disliked |
+| --- | --- | --- | --- | --- |
+| ![Open](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/open/key.png) | ![Like](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/like/key.png) | ![Liked](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/like/selected.png) | ![Dislike](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/dislike/key.png) | ![Disliked](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/dislike/selected.png) |
 
 The [root README thumbnail](assets/music-deck-bridge-thumbnail.png) is the supplied promotional image, copied unchanged; its [provenance](assets/README.md) is separate from the generated icons. It is not a product screenshot.
 
@@ -62,7 +68,7 @@ git diff --exit-code -- chrome-extension/icons streamdeck/io.github.minjungw00.m
 
 Use `python3` on systems without a `python` alias. To review regeneration without overwriting tracked PNGs, pass `--output-root /path/to/temporary-output`. The generator defines every shape in a 512-unit coordinate system. Brand shapes are rendered at 4× resolution and downsampled using Lanczos, including the 512px export. The generator takes no external artwork, logo, font or source-image inputs. The pinned Pillow version reproduces the committed PNGs.
 
-Run the normal [development checks](development.md#local-checks). `tests/brand-assets.test.mjs` verifies brand/store PNG dimensions, RGBA data, corner transparency, palette, minimum-size triangle shape and manifest references, plus the 28 base action PNGs' dimensions, palette, distinct symbols and monochrome cutouts and the separate play/pause glyphs at both key sizes, using Node's standard library. Python packaging tests verify that Chrome ZIP and Stream Deck staging preserve the brand and action PNG bytes, including both pause images. The generator produces 38 assets, including the store app icon and the two additional pause PNGs. Pillow is required only for regeneration, not ordinary tests or packaging.
+Run the normal [development checks](development.md#local-checks). `tests/brand-assets.test.mjs` verifies brand/store PNG dimensions, RGBA data, corner transparency, palette, minimum-size triangle shape and manifest references, plus the 40 base action PNGs' dimensions, palette, distinct symbols and monochrome cutouts and separate playback/rating state artwork at both key sizes, using Node's standard library. Python packaging tests verify that Chrome ZIP and Stream Deck staging preserve the brand and action PNG bytes, including pause and selected-rating images. The generator produces 54 assets, including the store app icon and six additional state PNGs. Pillow is required only for regeneration, not ordinary tests or packaging.
 
 ## License and attribution
 

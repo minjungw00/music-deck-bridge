@@ -104,6 +104,22 @@
     return value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value))
       ? Math.max(0, Math.min(100, Number(value))) : null;
   }
+  function ratingButton(kind) {
+    const renderer = document.querySelector('ytmusic-player-bar ytmusic-like-button-renderer');
+    if (!renderer || renderer.disabled || renderer.getAttribute('aria-disabled') === 'true') return null;
+    return renderer.querySelector(`#button-shape-${kind} button, #${kind}-button button, .${kind} button`) ||
+      renderer.querySelector(`#${kind}-button, .${kind}`);
+  }
+  function ratingState() {
+    const renderer = document.querySelector('ytmusic-player-bar ytmusic-like-button-renderer');
+    const value = renderer?.getAttribute('like-status');
+    if (['LIKE', 'DISLIKE', 'INDIFFERENT'].includes(value)) return value;
+    const liked = ratingButton('like')?.getAttribute('aria-pressed');
+    const disliked = ratingButton('dislike')?.getAttribute('aria-pressed');
+    if (liked === 'true') return 'LIKE';
+    if (disliked === 'true') return 'DISLIKE';
+    return liked === 'false' && disliked === 'false' ? 'INDIFFERENT' : null;
+  }
   function current() {
     const el = media();
     const meta = mediaMetadata();
@@ -113,7 +129,8 @@
       .map(a => a.textContent?.trim()).filter(Boolean).join(', ') ||
       text('ytmusic-player-bar .byline').split(' • ')[0] || meta?.artist || '';
     return {
-      title, artist, ...getCoverWithFallback(),
+      title, artist, ...getCoverWithFallback(), rating: ratingState(),
+      trackId: new URL(location.href).searchParams.get('v') || '',
       playing: el ? !el.paused && !el.ended : false,
       muted: el ? !!el.muted : false,
       volume: siteVolume() ?? (el ? Math.round(el.volume * 100) : 0),
@@ -137,6 +154,18 @@
         break;
       case 'next': press('.next-button'); break;
       case 'prev': press('.previous-button'); break;
+      case 'like':
+      case 'dislike': {
+        const state = current();
+        const clean = value => String(value ?? '').replace(/[\x00-\x1f\x7f]/g, ' ').trim().slice(0, 180);
+        const key = /^[\w-]{11}$/.test(state.trackId) ? state.trackId : JSON.stringify([clean(state.title), clean(state.artist)]);
+        if (!message.trackKey || message.trackKey !== key) break;
+        // Click the site's own toggle, scoped to the current player, never a list item.
+        const button = ratingButton(message.type);
+        if (button && !button.disabled && button.getAttribute('aria-disabled') !== 'true' &&
+            !button.closest?.('[disabled], [aria-disabled="true"]')) button.click();
+        break;
+      }
       case 'mute':
       case 'volume_delta': {
         if (message.type === 'volume_delta' && !Number.isFinite(message.amount)) break;
@@ -153,6 +182,12 @@
     scheduleSync(60);
   }
   let active = true;
+  chrome.runtime.onMessage.addListener((message, sender, respond) => {
+    if (message?.type !== 'bridge-toggle' || sender.id !== chrome.runtime.id || sender.tab || !active) return;
+    const available = Boolean(document.querySelector('ytmusic-player-bar .play-pause-button') || media());
+    if (available) command({ type: 'toggle' });
+    respond({ ok: available });
+  });
   let volumeCommands = Promise.resolve();
   let listenerGeneration = 0;
   let inFlight = false;
@@ -210,7 +245,7 @@
     const observer = new MutationObserver(() => scheduleSync(120));
     const bar = document.querySelector('ytmusic-player-bar');
     if (bar) observer.observe(bar, { childList: true, subtree: true, attributes: true,
-      attributeFilter: ['src', 'title', 'aria-label', 'style', 'aria-valuenow', 'aria-pressed'] });
+      attributeFilter: ['src', 'title', 'aria-label', 'style', 'aria-valuenow', 'aria-pressed', 'like-status'] });
     addEventListener('pagehide', () => observer.disconnect(), { once: true });
   }
   addEventListener('pagehide', () => {

@@ -10,12 +10,12 @@ const script=readFileSync(join(root,'..','src','plugin.cjs'),'utf8');
 const m=JSON.parse(readFileSync(join(root,'manifest.json'),'utf8'));
 const version=JSON.parse(readFileSync(join(root,'..','..','package.json'),'utf8')).version;
 
-test('manifest exposes the seven supported actions and shares the property inspector',()=>{
+test('manifest exposes the supported actions and shares the property inspector',()=>{
   assert.equal(m.UUID,'io.github.minjungw00.musicdeckbridge');
   assert.equal(m.PropertyInspectorPath,'property-inspector/settings.html');
   assert.equal(m.Version,version+'.0');
   assert.deepEqual(m.Actions.map(a=>a.UUID.slice(m.UUID.length+1)),
-    ['nowplaying','toggle','prev','next','mute','volume','trackdial']);
+    ['nowplaying','toggle','prev','next','mute','volume','trackdial','open','like','dislike']);
   assert.ok(m.Actions.every(a=>!a.PropertyInspectorPath));
 });
 

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add Open YouTube Music, Like and Dislike keys with localized labels and matching magenta artwork. Rating keys display confirmed selection and toggle the site's current-song rating; stale commands for another song are discarded.
+- Open/focus an existing player from the launch key, or open a Chrome tab when no player exists. Playback inputs also launch when no player exists. Use an authenticated browser-wide channel and a fixed-URL Windows Chrome fallback without changing extension permissions or existing pairing/storage paths.
+- Prepare source/Chrome 1.1.0 and Stream Deck 1.1.0.0 on the feature branch. Preserve the separate 1.0.2 candidate; these features are not published. Explicit protocol-version compatibility negotiation remains separate work.
+
 ## v1.0.2 — release candidate (not published)
 
 - Show only Play on the toggle key when paused and only Pause while playing, following the selected player's reported state, including changes made directly in Chrome. Use Play with the offline title when no player is available.

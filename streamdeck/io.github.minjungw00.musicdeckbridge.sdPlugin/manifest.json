@@ -16,7 +16,7 @@
           "ShowTitle": true
         }
       ],
-      "Tooltip": "Show artwork, song and artist. Press to play or pause."
+      "Tooltip": "Show artwork, song and artist. Press to play/pause or open YouTube Music when closed."
     },
     {
       "Name": "Play / Pause",
@@ -33,7 +33,7 @@
           "ShowTitle": true
         }
       ],
-      "Tooltip": "Play or pause YouTube Music."
+      "Tooltip": "Play/pause, or open YouTube Music when no player is open."
     },
     {
       "Name": "Previous Track",
@@ -137,6 +137,57 @@
           "Touch": "Play / Pause"
         }
       }
+    },
+    {
+      "Name": "Open YouTube Music",
+      "UUID": "io.github.minjungw00.musicdeckbridge.open",
+      "Icon": "imgs/actions/open/icon",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/open/key",
+          "TitleAlignment": "bottom",
+          "FontSize": 12,
+          "ShowTitle": true
+        }
+      ],
+      "Tooltip": "Open or focus YouTube Music in Chrome."
+    },
+    {
+      "Name": "Like",
+      "UUID": "io.github.minjungw00.musicdeckbridge.like",
+      "Icon": "imgs/actions/like/icon",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/like/key",
+          "TitleAlignment": "bottom",
+          "FontSize": 12,
+          "ShowTitle": true
+        }
+      ],
+      "Tooltip": "Like the current song; press again to remove the like."
+    },
+    {
+      "Name": "Dislike",
+      "UUID": "io.github.minjungw00.musicdeckbridge.dislike",
+      "Icon": "imgs/actions/dislike/icon",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/dislike/key",
+          "TitleAlignment": "bottom",
+          "FontSize": 12,
+          "ShowTitle": true
+        }
+      ],
+      "Tooltip": "Dislike the current song; press again to remove the dislike."
     }
   ],
   "Author": "minjungw00",
@@ -160,6 +211,6 @@
     "MinimumVersion": "7.1"
   },
   "UUID": "io.github.minjungw00.musicdeckbridge",
-  "Version": "1.0.2.0",
+  "Version": "1.1.0.0",
   "PropertyInspectorPath": "property-inspector/settings.html"
 }

@@ -3,11 +3,11 @@
   "Description": "Chrome 및 YouTube Music 앱을 Stream Deck에서 직접 제어합니다.",
   "io.github.minjungw00.musicdeckbridge.nowplaying": {
     "Name": "현재 곡",
-    "Tooltip": "앨범 아트, 곡명과 아티스트 표시 및 재생/일시정지"
+    "Tooltip": "앨범 아트·곡 정보 표시 및 재생/일시정지. 창이 없으면 YouTube Music을 실행합니다."
   },
   "io.github.minjungw00.musicdeckbridge.toggle": {
     "Name": "재생 / 일시정지",
-    "Tooltip": "재생 또는 일시정지"
+    "Tooltip": "재생/일시정지. 창이 없으면 YouTube Music을 실행합니다."
   },
   "io.github.minjungw00.musicdeckbridge.prev": {
     "Name": "이전 곡",
@@ -42,5 +42,17 @@
         "Touch": "재생/일시정지"
       }
     }
+  },
+  "io.github.minjungw00.musicdeckbridge.open": {
+    "Name": "YouTube Music 실행",
+    "Tooltip": "YouTube Music 창을 열거나 기존 창으로 이동합니다."
+  },
+  "io.github.minjungw00.musicdeckbridge.like": {
+    "Name": "좋아요",
+    "Tooltip": "현재 곡에 좋아요를 표시합니다. 다시 누르면 취소합니다."
+  },
+  "io.github.minjungw00.musicdeckbridge.dislike": {
+    "Name": "싫어요",
+    "Tooltip": "현재 곡에 싫어요를 표시합니다. 다시 누르면 취소합니다."
   }
 }
