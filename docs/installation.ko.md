@@ -4,7 +4,7 @@
 
 로컬 브리지를 실행하는 **Stream Deck 플러그인과 Chrome 확장 프로그램을 모두 설치**해야 합니다. 네 설치 경로는 같은 PIN 연결 절차를 사용하며, 일반 YouTube Music 탭과 Chrome으로 설치한 앱(PWA)을 모두 지원합니다.
 
-**현재 다운로드 경로는 GitHub Actions 개발 빌드입니다.** 안정 GitHub Release와 스토어 승인은 아직 준비 중입니다. 사전 빌드 패키지를 설치할 때는 Node.js·npm·Python을 별도로 설치할 필요가 없습니다.
+**권장 경로는 [GitHub Releases의 안정 패키지](https://github.com/minjungw00/music-deck-bridge/releases/latest)입니다.** Actions는 개발 빌드를 제공하며 스토어 승인은 아직 준비 중입니다. 사전 빌드 패키지를 설치할 때는 Node.js·npm·Python을 별도로 설치할 필요가 없습니다.
 
 - [요구사항](#requirements)
 - [방법 1: GitHub Releases](#method-1-github-releases)
@@ -31,9 +31,7 @@
 
 ## 방법 1: GitHub Releases
 
-**출시 예정: 현재 안정 릴리스가 없습니다.** 첫 공개 전에는 [방법 2](#method-2-github-actions)를 사용하세요. [Releases 페이지](https://github.com/minjungw00/music-deck-bridge/releases)는 릴리스 목록이며, 현재 패키지 다운로드를 제공한다는 의미는 아닙니다.
-
-안정 릴리스가 공개되면 다음과 같이 설치합니다.
+**v1.0.0**부터 제공하는 [최신 안정 릴리스](https://github.com/minjungw00/music-deck-bridge/releases/latest)를 사용하세요. 빌드 도구 없이 다음과 같이 설치합니다.
 
 1. **Pre-release** 표시가 없는 최신 안정 릴리스를 열고 같은 릴리스의 두 파일을 다운로드합니다.
    - `io.github.minjungw00.musicdeckbridge.streamDeckPlugin`
@@ -43,7 +41,7 @@
 4. `chrome://extensions`에서 **개발자 모드**를 켜고 **압축해제된 확장 프로그램을 로드합니다**를 눌러 압축 해제한 폴더를 선택합니다. 필요하면 도구 모음에 고정하세요. Chrome의 [압축 해제 확장 프로그램 설치 안내](https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world#load-an-unpacked-extension)를 따르는 방식입니다.
 5. [PIN 연결](#pairing)을 수행합니다.
 
-GitHub가 자동 생성하는 **Source code** 압축 파일 대신 배포용 Chrome ZIP을 받으세요. ZIP을 Chrome에 드래그하거나 임의의 CRX를 설치하지 마세요. 관리자는 첫 안정 릴리스 공개 후 기본 다운로드 링크를 `releases/latest`로 바꿀 수 있습니다.
+GitHub가 자동 생성하는 **Source code** 압축 파일 대신 배포용 Chrome ZIP을 받으세요. ZIP을 Chrome에 드래그하거나 임의의 CRX를 설치하지 마세요.
 
 <a id="method-2-github-actions"></a>
 
@@ -58,7 +56,7 @@ GitHub가 자동 생성하는 **Source code** 압축 파일 대신 배포용 Chr
 5. `.streamDeckPlugin`을 더블클릭해 설치합니다. **내부 Chrome ZIP도 별도로 압축 해제**하여 고정 폴더에 두고, `chrome://extensions`에서 **개발자 모드 → 압축해제된 확장 프로그램 로드**로 설치합니다. 바깥 산출물 폴더 대신 `manifest.json`이 있는 폴더를 선택하세요.
 6. [PIN 연결](#pairing) 후 재생 제어를 확인합니다.
 
-여러 개발 빌드의 버전이 모두 `0.5.1`일 수 있습니다. 커밋 SHA와 실행 URL로 빌드를 식별하세요. 두 구성요소는 같은 실행의 패키지를 사용하며, 개발 패키지는 자동 업데이트되지 않습니다.
+여러 개발 빌드의 버전이 같을 수 있습니다. 커밋 SHA와 실행 URL로 빌드를 식별하세요. 두 구성요소는 같은 실행의 패키지를 사용하며, 개발 패키지는 자동 업데이트되지 않습니다.
 
 <a id="method-3-build-from-source"></a>
 
@@ -103,12 +101,12 @@ npm run build:chrome
 
 | 구성요소 | 스토어 | 상태 |
 | --- | --- | --- |
-| Stream Deck 플러그인 | Elgato Marketplace | 준비 중; 현재는 Actions 패키지 사용 |
+| Stream Deck 플러그인 | Elgato Marketplace | 준비 중; 현재는 GitHub Release 패키지 사용 |
 | Chrome 확장 프로그램 | Chrome 웹 스토어 | 준비 중; 현재는 Chrome ZIP 압축 해제 후 사용 |
 
 각 스토어에 공개된 뒤 검증한 제품 URL을 이 절에 추가합니다. Elgato Marketplace에서 플러그인을 설치하고 Chrome 웹 스토어에서 확장 프로그램을 추가한 뒤 [PIN 연결](#pairing)을 수행합니다. 양쪽 모두 출시되면 공식 스토어를 가장 먼저 안내합니다.
 
-출시 시점이 다를 수 있습니다. 예를 들어 Chrome 스토어가 먼저 공개되면 확장 프로그램은 스토어에서, 플러그인은 GitHub Releases에서 설치할 수 있습니다. Releases 공개 전에는 Actions 플러그인을 사용합니다. 각 구성요소는 하나만 활성화하고 [설치 경로 전환](#switching-installation-methods)을 따르세요.
+출시 시점이 다를 수 있습니다. 예를 들어 Chrome 스토어가 먼저 공개되면 확장 프로그램은 스토어에서, 플러그인은 GitHub Releases에서 설치할 수 있습니다. 각 구성요소는 하나만 활성화하고 [설치 경로 전환](#switching-installation-methods)을 따르세요.
 
 <a id="pairing"></a>
 
@@ -143,7 +141,7 @@ npm run build:chrome
 
 ### 다운로드 파일 검증
 
-새 Actions 빌드와 향후 Releases에는 `SHA256SUMS.txt`가 포함됩니다. 릴리스 패키지와 함께 다운로드하거나 Actions 산출물에서 압축 해제하세요. 패키지 폴더에서 PowerShell을 열고 실행합니다.
+Actions 빌드와 Releases에는 `SHA256SUMS.txt`가 포함됩니다. 릴리스 패키지와 함께 다운로드하거나 Actions 산출물에서 압축 해제하세요. 패키지 폴더에서 PowerShell을 열고 실행합니다.
 
 ```powershell
 Get-FileHash -Algorithm SHA256 -Path .\*.streamDeckPlugin, .\music-deck-bridge-chrome-*.zip

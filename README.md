@@ -28,12 +28,12 @@ Music Deck Bridge contains two components that must be installed together: a Str
 
 ## Installation
 
-**Start with a GitHub Actions development build while the first stable release is pending.** Prebuilt packages need no separate Node.js, npm or Python installation: Stream Deck provides the plugin runtime. Install both the `.streamDeckPlugin` and the Chrome extension, then complete PIN pairing.
+**Download the stable packages from [GitHub Releases](https://github.com/minjungw00/music-deck-bridge/releases/latest).** Prebuilt packages need no separate Node.js, npm or Python installation: Stream Deck provides the plugin runtime. Install both the `.streamDeckPlugin` and the Chrome extension, then complete PIN pairing.
 
 | Method | Audience and availability | Instructions |
 | --- | --- | --- |
+| GitHub Releases | General users; stable prebuilt packages | [English](docs/installation.en.md#method-1-github-releases) / [한국어](docs/installation.ko.md#method-1-github-releases) |
 | GitHub Actions | Testers; latest development packages, stability not guaranteed; GitHub sign-in required | [English](docs/installation.en.md#method-2-github-actions) / [한국어](docs/installation.ko.md#method-2-github-actions) |
-| GitHub Releases | General users; stable packages planned for the first published release | [English](docs/installation.en.md#method-1-github-releases) / [한국어](docs/installation.ko.md#method-1-github-releases) |
 | Build from source | Developers; requires Node.js 24 and npm, plus Python 3.10+ for packaging | [English](docs/installation.en.md#method-3-build-from-source) / [한국어](docs/installation.ko.md#method-3-build-from-source) |
 | Official stores | General users; Elgato Marketplace and Chrome Web Store links pending approval, tracked separately | [English](docs/installation.en.md#method-4-official-stores) / [한국어](docs/installation.ko.md#method-4-official-stores) |
 

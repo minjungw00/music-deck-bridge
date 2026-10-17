@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## v1.0.0 — 2026-10-17
+
+- Publish the first GitHub Release with prebuilt Stream Deck and Chrome packages; align source/Chrome versions at 1.0.0 and the Stream Deck manifest at 1.0.0.0.
 - Generate SHA256SUMS.txt for the two release assets, reject missing/empty/stale or unexpected assets, and verify downloaded checksums again before attaching only the intended files to a draft release.
 - Identify development artifacts by platform and full commit SHA; include source/run metadata, SHA-256 checksums and download guidance while retaining both OS and PR checks.
 - Document Releases, Actions, source and future store installation in English/Korean, including package-only setup, updates, source switching and separate store availability.
@@ -14,7 +17,7 @@
 - Restrict Chrome local storage to trusted extension contexts before token access; preserve credentials for retry if server revocation fails.
 - Use Music Deck Bridge consistently in the popup, with localized service descriptions.
 - Replace unverified artwork with reproducible geometric project icons and include SDK/runtime license notices.
-- Add English/Korean store copy and a manual release evidence checklist. Version remains 0.5.1 pending device and store verification.
+- Add English/Korean store copy and a manual release evidence checklist. Store approval and device/DRM verification remain tracked separately from the GitHub release.
 - Organize the Stream Deck plugin and Chrome extension in one repository.
 - Adopt the Music Deck Bridge name and `io.github.minjungw00.musicdeckbridge` plugin/action UUID prefix.
 - Align component versions and move Chrome popup translations into en/ko message catalogs.

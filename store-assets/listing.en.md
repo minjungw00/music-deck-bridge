@@ -1,6 +1,6 @@
 # Store copy — English
 
-Draft for the current 0.5.1 source. Check every claim against the final submitted build. Screenshots and release approval are still pending; see [release readiness](../docs/release-readiness.md).
+Draft for the current 1.0.0 source. Check every claim against the final submitted build. Screenshots and release approval are still pending; see [release readiness](../docs/release-readiness.md).
 
 ## Chrome Web Store
 

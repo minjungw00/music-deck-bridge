@@ -4,7 +4,7 @@
 
 Install **both** the Stream Deck plugin (which runs the local bridge) and the Chrome extension. All four methods use the same PIN pairing procedure and support a normal YouTube Music tab or the app installed through Chrome (PWA).
 
-**Current download route: GitHub Actions development builds.** A stable GitHub Release and approved store listings are pending. Prebuilt packages need no separate Node.js, npm or Python installation.
+**Recommended: [GitHub Releases](https://github.com/minjungw00/music-deck-bridge/releases/latest) for stable packages.** Actions provides development builds; approved store listings are still pending. Prebuilt packages need no separate Node.js, npm or Python installation.
 
 - [Requirements](#requirements)
 - [Method 1: GitHub Releases](#method-1-github-releases)
@@ -27,9 +27,7 @@ Install **both** the Stream Deck plugin (which runs the local bridge) and the Ch
 
 ## Method 1: GitHub Releases
 
-**Planned: no stable release is currently available.** Until the first publication, use [Method 2](#method-2-github-actions). The [Releases page](https://github.com/minjungw00/music-deck-bridge/releases) is a release index, not a current package download.
-
-Once a stable release is published:
+Use the [latest stable release](https://github.com/minjungw00/music-deck-bridge/releases/latest), starting with **v1.0.0**. No build tools are required:
 
 1. Open the most recent stable release, avoiding entries marked **Pre-release**, and download both assets from that same release:
    - `io.github.minjungw00.musicdeckbridge.streamDeckPlugin`
@@ -39,7 +37,7 @@ Once a stable release is published:
 4. Open `chrome://extensions`, enable **Developer mode**, select **Load unpacked**, and choose that extracted folder. Pin the extension to the toolbar if useful. This follows Chrome's [unpacked extension instructions](https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world#load-an-unpacked-extension).
 5. Complete [Pairing](#pairing).
 
-Use the packaged Chrome ZIP, rather than GitHub's automatically generated **Source code** archives. Do not drag the ZIP into Chrome or install an arbitrary CRX. Maintainers can switch the default download to `releases/latest` after the first stable release is public.
+Use the packaged Chrome ZIP, rather than GitHub's automatically generated **Source code** archives. Do not drag the ZIP into Chrome or install an arbitrary CRX.
 
 ## Method 2: GitHub Actions
 
@@ -52,7 +50,7 @@ Development builds include recent changes and may be unstable. They require GitH
 5. Double-click the `.streamDeckPlugin` to install it. Extract the **inner Chrome ZIP** into a permanent folder and load that folder at `chrome://extensions` with **Developer mode → Load unpacked**. Select the folder containing `manifest.json`, not the outer artifact folder.
 6. Complete [Pairing](#pairing) and check playback controls.
 
-Both package versions may remain `0.5.1` across multiple development builds. Identify the build by its commit SHA and run URL. Install both components from the same run; development packages have no automatic updates.
+Both package versions may remain unchanged across multiple development builds. Identify the build by its commit SHA and run URL. Install both components from the same run; development packages have no automatic updates.
 
 ## Method 3: Build from source
 
@@ -93,12 +91,12 @@ The files are written to `dist/` with the same names as release packages. Stream
 
 | Component | Store | Status |
 | --- | --- | --- |
-| Stream Deck plugin | Elgato Marketplace | Pending; use an Actions package meanwhile |
+| Stream Deck plugin | Elgato Marketplace | Pending; use a GitHub Release package meanwhile |
 | Chrome extension | Chrome Web Store | Pending; use an extracted Chrome ZIP meanwhile |
 
 After each listing becomes public, its verified product URL will appear here. Install the plugin from Elgato Marketplace and add the extension from Chrome Web Store, then complete [Pairing](#pairing). Once both are available, stores become the first recommended method.
 
-The stores may launch separately. For example, once the Chrome listing is available, you can combine it with a GitHub Release plugin (or an Actions plugin while Releases are pending). Keep only one active copy of each component and follow [Switching installation methods](#switching-installation-methods).
+The stores may launch separately. For example, once the Chrome listing is available, you can combine it with a GitHub Release plugin. Keep only one active copy of each component and follow [Switching installation methods](#switching-installation-methods).
 
 ## Pairing
 
@@ -129,7 +127,7 @@ For an unpacked Chrome extension, replace the contents of its existing permanent
 
 ### Verify downloaded files
 
-New Actions builds and future Releases include `SHA256SUMS.txt`. Download it alongside the release packages, or extract it from the Actions artifact. In PowerShell opened in the package folder, run:
+Actions builds and Releases include `SHA256SUMS.txt`. Download it alongside the release packages, or extract it from the Actions artifact. In PowerShell opened in the package folder, run:
 
 ```powershell
 Get-FileHash -Algorithm SHA256 -Path .\*.streamDeckPlugin, .\music-deck-bridge-chrome-*.zip

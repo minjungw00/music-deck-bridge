@@ -1,6 +1,12 @@
 # Release readiness
 
-Evidence date: October 17, 2026. Source version remains **0.5.1**. This records development checks and outstanding release work; it is not a store approval or hardware certification.
+Evidence date: October 17, 2026. Source version is **1.0.0** for the maintainer-requested GitHub release. This records development checks and outstanding release work; it is not a store approval or hardware certification.
+
+## 1.0.0 GitHub release
+
+The maintainer requested a version change and GitHub release on October 17, 2026. Package and Chrome versions are 1.0.0; Stream Deck uses 1.0.0.0. Store copy now targets that source version. README and both installation guides use GitHub Releases as the default download route; store URLs remain inactive. The final commit must pass both CI platforms before release assets are selected. Manual evidence below remains outstanding unless a result is recorded.
+
+Local checks for 1.0.0 passed: `npm run check`, all 46 Node tests, both Python packaging tests, and `npm audit` (zero reported vulnerabilities). The [v1.0.0 release notes](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.0.0) record the exact release commit, final Windows/Ubuntu CI run and package hashes after remote verification.
 
 ## Implemented
 
@@ -12,9 +18,9 @@ Evidence date: October 17, 2026. Source version remains **0.5.1**. This records 
 - Standard `ws` SDK test server, explicit error/close handling, normal close-handshake assertions and child-process diagnostics; cleanup waits for child stdio closure on Windows.
 - Language-independent album art status codes localized by Chrome, and Track Dial multi-tick handling capped at five skips per event.
 
-## Local automated evidence
+## Baseline local automated evidence (0.5.1)
 
-Run the commands in [development](development.md) against the exact release commit. The current changes were checked on Linux with Node.js 24.19.0 and CLI 1.10.2:
+Run the commands in [development](development.md) against the exact release commit. The 0.5.1 baseline was checked on Linux with Node.js 24.19.0 and CLI 1.10.2:
 
 - Syntax, manifest/resources, versions, translations and basic accidental-secret checks.
 - 40 passing Node regression tests, including standalone SDK key/dial/inspector/settings/rendering tests and opaque-manifest fixtures, all album art status translations, and track dial direction/count/burst/invalid-input coverage.
@@ -60,7 +66,7 @@ Automated checks are complete for `59f9321`; Windows hardware, store-installed p
 
 | Check | Status | Evidence to record |
 | --- | --- | --- |
-| Final release commit CI and package inspection | Pending | Repeat the passing `59f9321` checks on the final release commit; record its SHA and successful run URL and inspect both uploaded packages |
+| Final release commit CI and package inspection | Recorded per release | See the v1.0.0 release notes for the final commit SHA, successful Windows/Ubuntu run, package inspection and SHA-256 hashes |
 | Clean Windows 10/11 install, update, uninstall and reset | Partially reported; clean-PC evidence pending | The supplied installation plan reports a successful actual package install and normal operation, without OS/device versions, commit or hashes. Repeat on a Windows PC without separately installed Node.js/npm/Python; record OS, Chrome, Stream Deck/device versions, source run/commit, SHA-256 hashes, pairing/playback, reinstall/update/uninstall/reset results and profile/auth retention. This report does not complete hardware or DRM certification. |
 | All seven actions on actual keys and Stream Deck + dials | Pending | Device models, playback/artwork/title modes, volume steps, touch/push results; confirm the web player processes all 1–5 Track Dial skips per event in both directions |
 | Chrome unpacked and store-package install | Pending | First pairing, reload/update, browser restart, normal tab and installed app |
@@ -83,4 +89,4 @@ Use a clean Windows profile and dummy listening details. Capture each image from
 4. Action settings in English and Korean: title display mode and connection status. Hide live PINs, tokens and local identifying details.
 5. Verify current store dimensions and export the requested screenshot and promotional formats into the relevant store-assets subdirectory.
 
-After all required checks pass, update all versions to the chosen release version, finalize CHANGELOG and create its matching tag. Only then run the manual Draft release workflow and review its draft files before publishing. No release tag, store submission or publication is performed by these changes.
+For workflow-based draft releases, complete the checks described by the readiness input before confirming it. The maintainer requested direct GitHub publication of 1.0.0; use the exact tagged commit's successful Windows/Ubuntu CI packages, inspect both components and verify SHA-256 hashes before publication. Record the CI run and package hashes in the release notes. This GitHub release does not complete the pending hardware, Maker Console DRM or store checks, and does not submit either component to a store.
