@@ -8,6 +8,8 @@ A third [running-plugin update with developer mode enabled](verification/update-
 
 The fifth PML then captures the entire explicit uninstall → public 1.0.1 installation/startup → running-plugin 1.0.2 update sequence at 03:12–03:13, all successful in normal mode. This corroborates an actual update over the running baseline rather than an empty-folder 1.0.2 installation; private-state retention remains separately unmeasured.
 
+The [expected-behavior assessment](verification/update-behavior-assessment.md) classifies direct newer-version updating as the supported normal workflow and the earlier denial as an unresolved conditional installation failure. One-PC repeated tests and public procedural documentation do not establish population frequency or justify calling the failure rare. User guides now distinguish ordinary package updates from replacement/recovery.
+
 ## Current evidence
 
 | Verification category | Current result | Evidence / limits |
@@ -54,6 +56,7 @@ Local checks for that change passed: 52 Node tests, 2 Python packaging tests, al
 - [October 18 successful official-stop installation retry](verification/update-procmon-retry-2026-10-18.md)
 - [October 18 successful running-plugin update and remaining mode control](verification/update-procmon-direct-2026-10-18.md)
 - [October 18 successful normal-mode running-plugin update](verification/update-procmon-normal-2026-10-18.md)
+- [Expected update behavior, failure classification and limits of generalization](verification/update-behavior-assessment.md)
 - [Marketplace DRM test record (not performed)](verification/marketplace-drm.md)
 
 Documentation/evidence changes do not bump component versions. The Music Deck Bridge name, seven main v1.0.1 brand PNGs, Apache-2.0 license, plugin/action UUIDs, authentication, common port and storage paths remain unchanged. The redesigned action PNGs, state-linked toggle images and popup palette are selected for the unpublished v1.0.2 candidate; the submitted and public v1.0.1 packages remain fixed. GitHub Releases, Actions, source builds and future store installs remain documented.
