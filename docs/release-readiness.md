@@ -4,9 +4,35 @@ Evidence date: October 17, 2026. Source version is **1.0.0** for the maintainer-
 
 ## 1.0.0 GitHub release
 
-The maintainer requested a version change and GitHub release on October 17, 2026. Package and Chrome versions are 1.0.0; Stream Deck uses 1.0.0.0. Store copy now targets that source version. README and both installation guides use GitHub Releases as the default download route; store URLs remain inactive. The final commit must pass both CI platforms before release assets are selected. Manual evidence below remains outstanding unless a result is recorded.
+The maintainer requested a version change and GitHub release on October 17, 2026. Package and Chrome versions are 1.0.0; Stream Deck uses 1.0.0.0. Store copy now targets that source version. README and both installation guides use GitHub Releases as the default download route; store URLs remain inactive. The exact release commit passed both CI platforms before publication. Manual evidence is updated below from the maintainer report on October 17, 2026; unperformed checks remain pending.
 
 Local checks for 1.0.0 passed: `npm run check`, all 46 Node tests, both Python packaging tests, and `npm audit` (zero reported vulnerabilities). The [v1.0.0 release notes](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.0.0) record the exact release commit, final Windows/Ubuntu CI run and package hashes after remote verification.
+
+## 1.0.0 maintainer manual verification
+
+Reported by the maintainer on October 17, 2026:
+
+| Check | Result | Evidence / scope |
+| --- | --- | --- |
+| GitHub Release package installation | Passed (maintainer report) | Installed the published package; exact download/file details can be added below |
+| Installed package normal operation | Passed (maintainer report) | Normal operation confirmed after installation |
+| Manual functional verification | Complete (maintainer report) | Detailed action/device coverage was not supplied; do not infer every hardware scenario |
+| Stream Deck plugin upgrade 0.5.1.0 → 1.0.0.0 | Passed (maintainer report) | Does not establish the later 1.0.0.0 → 1.0.1.0 upgrade |
+| Windows / Ubuntu tests and packaging | Passed (GitHub CI) | [Run 39011082543](https://github.com/minjungw00/music-deck-bridge/actions/runs/39011082543), release commit `722552f3fc04f5753755cbfb0d4a5b40442ea582` |
+
+Environment and provenance fields intentionally remain open where the report supplied no details:
+
+| Field | Recorded value |
+| --- | --- |
+| Windows edition / version / build | Not recorded — add actual test environment |
+| Chrome version | Not recorded — add actual test environment |
+| Stream Deck software version | Not recorded — add actual test environment |
+| Stream Deck model / firmware | Not recorded — add actual device details |
+| Installer source URL / downloaded filename | GitHub Release package reported; exact source/file not recorded. Reference: [v1.0.0 assets](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.0.0) |
+| Downloaded package SHA-256 | Not recorded for the manually installed copy; published hashes are in the release notes |
+| Manual test date / action coverage / notes | Report received October 17, 2026; detailed execution notes not recorded |
+
+This records the completed GitHub Release installation and upgrade without claiming a clean PC, every key/dial scenario, Chrome Web Store installation or Maker Console DRM execution. The DRM-processed package is a separate pending check below.
 
 ## Implemented
 
@@ -67,7 +93,7 @@ Automated checks are complete for `59f9321`; Windows hardware, store-installed p
 | Check | Status | Evidence to record |
 | --- | --- | --- |
 | Final release commit CI and package inspection | Recorded per release | See the v1.0.0 release notes for the final commit SHA, successful Windows/Ubuntu run, package inspection and SHA-256 hashes |
-| Clean Windows 10/11 install, update, uninstall and reset | Partially reported; clean-PC evidence pending | The supplied installation plan reports a successful actual package install and normal operation, without OS/device versions, commit or hashes. Repeat on a Windows PC without separately installed Node.js/npm/Python; record OS, Chrome, Stream Deck/device versions, source run/commit, SHA-256 hashes, pairing/playback, reinstall/update/uninstall/reset results and profile/auth retention. This report does not complete hardware or DRM certification. |
+| Clean Windows 10/11 install, uninstall and reset | Pending beyond reported Release install/upgrade | GitHub Release installation, normal operation, manual verification and 0.5.1.0 → 1.0.0.0 upgrade passed as reported above. A PC without separately installed Node.js/npm/Python, uninstall/reset, environment details and explicit profile/auth retention still need evidence. |
 | All seven actions on actual keys and Stream Deck + dials | Pending | Device models, playback/artwork/title modes, volume steps, touch/push results; confirm the web player processes all 1–5 Track Dial skips per event in both directions |
 | Chrome unpacked and store-package install | Pending | First pairing, reload/update, browser restart, normal tab and installed app |
 | Idle recovery and port changes/conflicts | Pending | Sleep/reconnect and old-port grace behavior; retry after failed unpair |
