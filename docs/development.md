@@ -37,6 +37,12 @@ Use `io.github.minjungw00.musicdeckbridge` as the plugin UUID and action UUID pr
 
 Keep the root/lockfile at `X.Y.Z-dev` during development. Chrome uses numeric `X.Y.Z` with `version_name: X.Y.Z-dev`; Stream Deck uses fixed `X.Y.Z.0`. Builds change identity through SHA and metadata, without incrementing release or manifest versions. Use the [versioning workflow](versioning.md) to synchronize or explicitly promote them.
 
+## Browser integration regression
+
+`npm test` runs the Node/SDK/HTTP fixtures. To exercise the actual MV3 runtime on Linux, install Chromium once with `npx playwright install --with-deps chromium`, then run `npm run test:browser`. OpenSSL is required to generate an ephemeral test certificate. Ubuntu CI runs this check automatically.
+
+The browser test uses a fresh temporary profile and a local HTTPS fixture mapped to `music.youtube.com`. Certificate validation is disabled only in that test browser. It exercises real extension storage, authenticated loopback requests, cold-tab navigation, script injection, command/result messages and existing-tab reuse. It checks all eight input types in sequence and replaces a receiver during navigation. It does not establish actual YouTube Music selectors/account behavior, Windows native process startup or Marketplace DRM.
+
 ## Packaging
 
 For local development packages, use `npm run build:dev`. It builds both components into a distinct `dist/development/<build-id>/` folder and includes local source metadata and checksums. See [development builds and replacement](versioning.md#build-and-test-development-packages). The individual commands below default to `dist/` and are also used by clean CI checkouts.

@@ -34,3 +34,14 @@ test('missing Chrome and process launch errors are reported without a default-br
       return child;
     } }), /Permission denied/);
 });
+
+test('paired startup wakes Chrome without racing the extension to create a music tab', async () => {
+  let args;
+  await launchChrome({ openMusic: false, platform: 'win32', env: { PROGRAMFILES: '/programs' },
+    exists: () => true, spawnProcess: (_executable, argv) => {
+      args = argv;
+      const child = new EventEmitter(); child.unref = () => {};
+      queueMicrotask(() => child.emit('spawn')); return child;
+    } });
+  assert.deepEqual(args, []);
+});

@@ -6,12 +6,13 @@ const source = readFileSync(new URL('../chrome-extension/background.js', import.
 
 function harness({ tabs = [], response = true, injectionFailures = 0 } = {}) {
   const calls = [];
+  let listener;
   const storage = { bridgeToken: '' };
   let now = Date.now();
   const chrome = {
     storage: { local: { setAccessLevel: async () => {},
       get: async key => ({ [key]: storage[key] }), set: async values => Object.assign(storage, values) } },
-    runtime: { onMessage: { addListener() {} }, onInstalled: { addListener() {} }, onStartup: { addListener() {} } },
+    runtime: { onMessage: { addListener(fn) { listener = fn; } }, onInstalled: { addListener() {} }, onStartup: { addListener() {} } },
     alarms: { onAlarm: { addListener() {} } },
     tabs: {
       async query(filter) { calls.push(['query', filter]); return tabs; },
@@ -35,7 +36,8 @@ function harness({ tabs = [], response = true, injectionFailures = 0 } = {}) {
   const context = vm.createContext({ chrome, AbortSignal, Date: { now: () => now },
     setTimeout(fn, ms) { now += ms; queueMicrotask(fn); } });
   vm.runInContext(source + '\nthis.api = { performBrowserCommand, startBrowserListener };', context);
-  return { api: context.api, calls, storage, context };
+  return { api: context.api, calls, storage, context,
+    send: (message, sender) => new Promise(resolve => listener(message, sender, resolve)) };
 }
 
 test('every control opens a missing player and then performs its original input', async () => {
@@ -94,6 +96,67 @@ test('commands wait for readiness with a deadline and never retry an ambiguous d
   const failed = harness({ response: () => { throw Error('Reply lost'); } });
   assert.equal(await failed.api.performBrowserCommand({ type: 'next' }), false);
   assert.equal(failed.calls.filter(c => c[0] === 'message').length, 1);
+});
+
+test('navigation replacing an injected receiver retries the undelivered input exactly once', async () => {
+  let attempts = 0;
+  const h = harness({ response: () => {
+    if (++attempts === 1) throw Error('Could not establish connection. Receiving end does not exist.');
+    return { ok: true };
+  } });
+  assert.equal(await h.api.performBrowserCommand({ type: 'next', id: 'navigation' }), true);
+  assert.equal(attempts, 2);
+  assert.equal(h.calls.filter(c => c[0] === 'script').length, 2);
+  assert.equal(h.calls.filter(c => c[0] === 'create').length, 1);
+});
+
+test('missing credentials are reported to the bridge without starting a browser command channel', async () => {
+  const h = harness();
+  await new Promise(resolve => setImmediate(resolve));
+  const requests = [];
+  h.context.fetch = async (url, options) => {
+    requests.push([url, JSON.parse(options.body)]);
+    return { ok: false, status: 401, json: async () => ({ error: 'Not paired' }) };
+  };
+  await h.api.startBrowserListener();
+  assert.equal(requests.length, 1);
+  assert.ok(requests[0][0].endsWith('/status'));
+  assert.equal(requests[0][1].token, '');
+  assert.equal(h.calls.length, 0);
+});
+
+test('modern browser routing avoids per-tab HTTP polls, with fallback for older plugins', async () => {
+  for (const legacy of [false, true]) {
+    const h = harness();
+    await new Promise(resolve => setImmediate(resolve));
+    h.storage.bridgeToken = 'paired-token';
+    vm.runInContext(`browserChannelAvailable = ${!legacy};`, h.context);
+    const requests = [];
+    h.context.fetch = async url => {
+      requests.push(url);
+      if (url.endsWith('/browser-listen')) return { ok: false, status: 401, json: async () => ({ error: 'Stopped' }) };
+      return { ok: true, json: async () => ({ commands: [], idle: true }) };
+    };
+    const result = await h.send({ type: 'listen' }, { tab: { id: 7 }, url: 'https://music.youtube.com/' });
+    assert.equal(result.paired, true);
+    assert.equal(requests.some(url => url.endsWith('/listen')), legacy);
+  }
+});
+
+test('a transient browser-channel failure reconnects without waiting for a maintenance alarm', async () => {
+  const h = harness();
+  await new Promise(resolve => setImmediate(resolve));
+  h.storage.bridgeToken = 'paired-token';
+  let attempts = 0;
+  h.context.fetch = async url => {
+    if (url.endsWith('/status')) return { ok: false, status: 401, json: async () => ({ error: 'Stopped' }) };
+    if (++attempts === 1) throw Error('Bridge restarting');
+    h.storage.bridgeToken = '';
+    return { ok: true, json: async () => ({ commands: [] }) };
+  };
+  await h.api.startBrowserListener();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(attempts, 2);
 });
 
 test('newly opened players use their restored current track while existing players keep stale-track protection', async () => {

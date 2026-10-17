@@ -15,13 +15,14 @@ Music Deck Bridge connects the YouTube Music web player in Chrome to a Stream De
 | Local bridge port | Connect the two components | Plugin `config.json` and extension `chrome.storage.local` (`bridgePort`); retained until changed or deleted |
 | Artwork bytes and download errors | Show artwork and connection diagnostics | Plugin memory cache; cleared on plugin exit |
 | Queued playback/rating commands | Deliver button and dial input; bind ratings to the intended current track | Plugin memory; consumed on delivery or discarded after five seconds |
+| Last command failure code | Explain pairing, delivery or player readiness failures | Plugin memory until successful execution, pairing reset or process exit; bounded codes are also written to the SDK log |
 | Browser launch/playback request and acknowledgment | Open or focus YouTube Music, including when no player tab exists | Plugin memory; ordered inputs expire after 45 seconds or clear on completion/pairing reset; repeated Open requests coalesce |
 
 On Windows, plugin files are stored under `%APPDATA%\MusicDeckBridge\`. Chrome manages the extension's local storage inside the active browser profile; the extension does not use Chrome sync storage. Stream Deck separately stores action settings, including title display mode and dial step size, in its profiles.
 
 ## Network activity
 
-The extension sends player state and authenticated commands to `http://127.0.0.1:<port>` (default `17864`). The bridge listens on the IPv4 loopback interface and accepts Chrome extension origins, with token and paired-origin checks after pairing. The service worker restricts `chrome.storage.local` to trusted extension contexts before accessing tokens. Content scripts cannot read that storage or receive the token through the extension message API.
+The extension sends player state and authenticated commands to `http://127.0.0.1:<port>` (default `17864`). The bridge listens on the IPv4 loopback interface and accepts Chrome extension origins, with token and paired-origin checks after pairing. The service worker restricts `chrome.storage.local` to trusted extension contexts before accessing tokens. Content scripts cannot read that storage or receive the token through the extension message API. An extension with no local token can report that absence to the bridge using `/status`; the request receives HTTP 401 and grants no state or control access. The bridge retains its saved credentials and can mark the connection unconfirmed and cancel undelivered commands; an active authenticated browser poll takes precedence.
 
 Any control may open `https://music.youtube.com/` in Chrome. Functional inputs wait for the opened player and then operate its controls. Like/dislike inputs from a closed player act on the restored current song; changes are saved by YouTube Music to the signed-in account under its policies. Removing Music Deck Bridge or unpairing does not undo saved song ratings. The extension uses existing site permissions to locate YouTube Music tabs; it does not request access to other sites.
 

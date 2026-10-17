@@ -47,7 +47,7 @@ let changingPort = Promise.resolve();
 const retiringListeners = new Map();
 const LIVE_MS = 90000; // Prevent false offline status when Chrome throttles idle PWA timers.
 const PLAYER_STALE_MS = 35000;
-const EXTENSION_ONLINE_MS = 45000;
+const EXTENSION_ONLINE_MS = 3000; // Grace between authenticated long polls.
 const PIN_LIFETIME_MS = 10 * 60 * 1000;
 const authFile = path.join(dataDir, 'auth.json');
 const candidates = new Map();
@@ -71,6 +71,11 @@ let pinExpiresAt = 0;
 let failures = [];
 let auth = null;
 let lastExtensionContactAt = 0;
+let pairingRequired = false;
+let lastCommandError = '';
+const COMMAND_ERRORS = new Set(['pairing-required', 'extension-unavailable', 'command-timeout',
+  'authorization-lost', 'injection-unavailable', 'receiver-unavailable', 'delivery-uncertain',
+  'player-rejected', 'player-not-ready', 'browser-api-failed', 'bridge-unavailable', 'command-failed']);
 let locale = 'en';
 let streamDeck;
 let sdOnline = false;
@@ -90,7 +95,10 @@ const marqueeTimer = setInterval(() => {
 }, MARQUEE_STEP_MS);
 marqueeTimer.unref();
 
-function log(message) { console.log('[Music Deck Bridge]', message); }
+function log(message) {
+  console.log('[Music Deck Bridge]', message);
+  streamDeck?.logger.info(message);
+}
 function clip(value, max = 140) { return String(value ?? '').replace(/[\x00-\x1f\x7f]/g, ' ').trim().slice(0, max); }
 function limit(x, min, max) { return Math.max(min, Math.min(max, x)); }
 function actionName(id) { return id.slice(PLUGIN_ID.length + 1); }
@@ -133,6 +141,8 @@ function resetSession() {
   candidates.clear();
   selectedSignature = '';
   lastExtensionContactAt = 0;
+  pairingRequired = false;
+  lastCommandError = '';
   cachedCoverUrl = ''; cachedCoverData = '';
   drawSoon();
 }
@@ -144,6 +154,11 @@ function safeEqual(a, b) {
 }
 function authorized(body, origin) {
   return auth && origin === auth.origin && safeEqual(body.token, auth.token);
+}
+function extensionOnline() {
+  return Boolean(auth) && !pairingRequired && (Boolean(browserWaiter) ||
+    [...listenWaiters.values()].some(waiters => waiters.size) ||
+    Date.now() - lastExtensionContactAt < EXTENSION_ONLINE_MS);
 }
 function sendHttp(res, status, data, origin) {
   const headers = { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };
@@ -262,17 +277,17 @@ function listenForCommands(clientId, res, origin) {
   });
 }
 function scheduleNativeLaunch() {
-  if (!browserRequests.size || nativeLaunchStarted || nativeLaunchTimer ||
+  if (pairingRequired || !browserRequests.size || nativeLaunchStarted || nativeLaunchTimer ||
       [...browserRequests.values()].some(request => request.delivered)) return;
   nativeLaunchTimer = setTimeout(async () => {
     nativeLaunchTimer = null;
-    if (!browserRequests.size || [...browserRequests.values()].some(request => request.delivered)) return;
+    if (pairingRequired || !browserRequests.size || [...browserRequests.values()].some(request => request.delivered)) return;
     nativeLaunchStarted = true;
     nativeTabPending = true;
     const session = auth;
     const requests = [...browserRequests.values()];
     try {
-      if (!IS_TEST) await launchChrome();
+      if (!IS_TEST) await launchChrome({ openMusic: !session });
       // Without credentials only opening is possible; never bypass PIN pairing.
       if (!session && auth === session) for (const request of requests) request.finish(request.type === 'open');
     } catch (error) {
@@ -313,6 +328,7 @@ function listenForBrowser(res, origin) {
 }
 async function requestPlayerCommand(type, amount = 0) {
   if (!['open', 'toggle', 'prev', 'next', 'mute', 'volume_delta', 'like', 'dislike'].includes(type)) return false;
+  if (pairingRequired) { lastCommandError = 'pairing-required'; return false; }
   // Keep existing controls available when paired with a legacy extension.
   if (type !== 'open' && !browserCapable && selectedEntry()) return addCommand(type, amount);
   if (type === 'open') {
@@ -329,7 +345,11 @@ async function requestPlayerCommand(type, amount = 0) {
     expiresAt: Date.now() + 45000, preferredTabId: entry ? Number(entry[0]) : null,
     trackKey: (type === 'like' || type === 'dislike') && state?.title ?
       state.trackId || JSON.stringify([state.title, state.artist]) : null,
-    finish(ok) {
+    finish(ok, reason = 'command-failed') {
+      if (request.completed) return;
+      request.completed = true;
+      lastCommandError = ok ? '' : (COMMAND_ERRORS.has(reason) ? reason : 'command-failed');
+      if (!ok) log(`Browser command ${type} failed: ${lastCommandError}`);
       clearTimeout(request.timer);
       browserRequests.delete(request.id);
       resolve(ok);
@@ -342,7 +362,8 @@ async function requestPlayerCommand(type, amount = 0) {
       scheduleNativeLaunch();
     },
   };
-  request.timer = setTimeout(() => request.finish(false), 45000);
+  request.timer = setTimeout(() => request.finish(false,
+    request.delivered ? 'command-timeout' : 'extension-unavailable'), 45000);
   browserRequests.set(request.id, request);
   flushBrowserRequest();
   scheduleNativeLaunch();
@@ -374,7 +395,19 @@ async function requestHandler(req, res) {
     drawSoon();
     return sendHttp(res, 200, { token }, origin);
   }
-  if (!authorized(body, origin)) return sendHttp(res, 401, { error: 'Not paired, or extension ID changed' }, origin);
+  if (!authorized(body, origin)) {
+    // A reinstalled extension can report absent credentials, but cannot revoke
+    // the stored pair or displace a live authenticated browser channel.
+    if (req.url === '/status' && body.token === '' && auth?.origin === origin && !browserWaiter) {
+      pairingRequired = true;
+      lastExtensionContactAt = 0;
+      if (![...browserRequests.values()].some(request => request.delivered)) {
+        for (const request of [...browserRequests.values()]) request.finish(false, 'pairing-required');
+      }
+    }
+    return sendHttp(res, 401, { error: 'Not paired, or extension ID changed' }, origin);
+  }
+  pairingRequired = false;
   lastExtensionContactAt = Date.now();
   if (req.url === '/unpair') {
     // Persist revocation before acknowledging it; retain auth if deletion fails.
@@ -392,7 +425,7 @@ async function requestHandler(req, res) {
     const chosen = selectedEntry();
     return sendHttp(res, 200, { paired: true, active: !!chosen,
       track: chosen ? chosen[1].title : '', standalone: chosen ? chosen[1].standalone : false,
-      extensionOnline: Date.now() - lastExtensionContactAt < EXTENSION_ONLINE_MS,
+      extensionOnline: extensionOnline(),
       playerStale: !!chosen && Date.now() - chosen[1].lastMediaSyncAt > PLAYER_STALE_MS,
       coverDetected: Boolean(chosen?.[1].cover),
       coverStatus: getCoverStatus(chosen?.[1].cover) }, origin);
@@ -400,7 +433,7 @@ async function requestHandler(req, res) {
   if (req.url === '/browser-listen') return listenForBrowser(res, origin);
   if (req.url === '/browser-result') {
     const request = browserRequests.get(body.id);
-    if (request?.delivered) request.finish(body.ok === true);
+    if (request?.delivered) request.finish(body.ok === true, body.reason);
     return sendHttp(res, 200, { ok: true }, origin);
   }
   if (req.url === '/listen') {
@@ -661,11 +694,11 @@ function handleDeckEvent(e) {
       const chosen = selectedEntry();
       sendStream({ event: 'sendToPropertyInspector', context: e.context,
         payload: { type: 'connection', paired: Boolean(auth),
-          extensionOnline: Boolean(auth) && Date.now() - lastExtensionContactAt < EXTENSION_ONLINE_MS,
+          extensionOnline: extensionOnline(),
           playerActive: !!chosen,
           playerStale: Boolean(chosen) && Date.now() - chosen[1].lastMediaSyncAt > PLAYER_STALE_MS,
           pin: available ? currentPin : '', expiresAt: available ? pinExpiresAt : 0,
-          serverPort: currentPort, bridgeOnline, portError } });
+          serverPort: currentPort, bridgeOnline, portError, lastCommandError } });
     }
     return;
   }

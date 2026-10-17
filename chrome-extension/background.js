@@ -40,45 +40,43 @@ async function pairedToken() {
 
 const MUSIC_URL = 'https://music.youtube.com/';
 let browserListening = false;
+let browserRetryTimer = null;
+let browserChannelAvailable = null;
 const PLAYER_COMMANDS = ['toggle', 'prev', 'next', 'mute', 'volume_delta', 'like', 'dislike'];
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-async function performBrowserCommand(command, stillPaired = async () => true) {
+async function performBrowserCommand(command, stillPaired = async () => true, diagnostic = {}) {
+  const failed = reason => { diagnostic.reason = reason; return false; };
   if (!['open', ...PLAYER_COMMANDS].includes(command?.type)) return false;
   const deadline = Math.min(Number(command.expiresAt) || Date.now() + 30000, Date.now() + 30000);
   const allowed = async (confirm = false) => Date.now() < deadline && await stillPaired(confirm) && Date.now() < deadline;
-  if (!await allowed()) return false;
+  const denied = () => failed(diagnostic.reason === 'bridge-unavailable' ? 'bridge-unavailable' :
+    Date.now() >= deadline ? 'command-timeout' : 'authorization-lost');
+  if (!await allowed()) return denied();
   const query = () => chrome.tabs.query({ url: MUSIC_URL + '*' });
   const select = tabs => tabs.find(tab => tab.id === command.preferredTabId) || tabs.find(tab => tab.active) || tabs[0];
   let tab = select(await query());
-  // Native Chrome startup may still be creating its requested music tab.
-  if (!tab && command.nativeLaunched) {
-    const openingUntil = Math.min(deadline, Date.now() + 5000);
-    while (!tab && Date.now() < openingUntil && await allowed()) {
-      await wait(200);
-      tab = select(await query());
-    }
-  }
   let opened = command.nativeLaunched === true;
   if (!tab) {
-    if (!await allowed(true)) return false;
+    if (!await allowed(true)) return denied();
     tab = await chrome.tabs.create({ url: MUSIC_URL, active: true });
     opened = true;
   }
   const resuming = tab.discarded || tab.frozen || tab.status === 'loading';
   if (command.type === 'open' || resuming) {
-    if (!await allowed(true)) return false;
+    if (!await allowed(true)) return denied();
     await chrome.tabs.update(tab.id, { active: true });
     if (Number.isInteger(tab.windowId)) await chrome.windows.update(tab.windowId, { focused: true });
     if (command.type === 'open') return true;
   }
   while (await allowed()) {
     // Injection can fail harmlessly while a tab is loading. Do not retry an
-    // ambiguously delivered input; only an explicit not-ready reply is retryable.
+    // ambiguously delivered input. Missing receivers and explicit not-ready
+    // replies are safe to retry because neither has performed the input.
     try {
       await chrome.scripting.executeScript({ target: { tabId: tab.id, frameIds: [0] },
         files: ['content.js'], world: 'ISOLATED' });
-    } catch { await wait(200); continue; }
-    if (!await allowed(true)) return false;
+    } catch { diagnostic.reason = 'injection-unavailable'; await wait(200); continue; }
+    if (!await allowed(true)) return denied();
     let result;
     try {
       const trackKey = !opened && !resuming ? command.trackKey : undefined;
@@ -87,47 +85,82 @@ async function performBrowserCommand(command, stillPaired = async () => true) {
           type: command.type === 'toggle' && opened ? 'play' : command.type,
           amount: command.amount, trackKey, allowCurrentTrack: !trackKey,
         } }, { frameId: 0 });
-    } catch { return false; }
+    } catch (error) {
+      // A new tab can navigate between injection and messaging. Chrome's
+      // missing-receiver error guarantees that this input was not delivered.
+      // A closed/lost reply after delivery remains ambiguous and is not retried.
+      if (String(error?.message).includes('Receiving end does not exist')) {
+        diagnostic.reason = 'receiver-unavailable';
+        await wait(200);
+        continue;
+      }
+      return failed('delivery-uncertain');
+    }
     if (result?.ok) return true;
-    if (result?.retry !== true) return false;
+    if (result?.retry !== true) return failed('player-rejected');
+    diagnostic.reason = 'player-not-ready';
     await wait(200);
   }
-  return false;
+  return failed(diagnostic.reason || 'command-timeout');
 }
 async function startBrowserListener() {
   if (browserListening || !chrome.tabs?.query) return;
+  if (browserRetryTimer) clearTimeout(browserRetryTimer);
+  browserRetryTimer = null;
   browserListening = true;
   let listeningToken;
+  let retry = false;
   try {
     while (true) {
       const token = await pairedToken();
       listeningToken = token;
-      if (!token) return;
-      const result = await post('/browser-listen', { token }, 15500);
+      if (!token) {
+        // Notify only about missing credentials; this never authenticates or
+        // deletes the plugin's stored pair. It also suppresses blind launching.
+        await post('/status', { token: '' }).catch(() => {});
+        return;
+      }
+      let result;
+      try { result = await post('/browser-listen', { token }, 15500); }
+      catch (error) {
+        if (error.httpStatus === 404) browserChannelAvailable = false;
+        throw error;
+      }
+      browserChannelAvailable = true;
       if (!Array.isArray(result.commands)) return;
       // Re-pairing/unpairing must invalidate already received browser commands.
       if (await pairedToken() !== token) continue;
       for (const command of result.commands) {
         let ok = false;
+        const diagnostic = {};
         try {
           ok = await performBrowserCommand(command, async confirm => {
             if (await pairedToken() !== token) return false;
             // A different extension/profile may have replaced this pairing while
             // the page was loading; local storage alone cannot detect that.
             if (confirm) {
-              try { await post('/status', { token }); } catch { return false; }
+              try { await post('/status', { token }); }
+              catch (error) {
+                diagnostic.reason = error.httpStatus === 401 ? 'authorization-lost' : 'bridge-unavailable';
+                return false;
+              }
             }
             return await pairedToken() === token;
-          });
-        } catch { /* Report failure to the key. */ }
-        await post('/browser-result', { token, id: command.id, ok });
+          }, diagnostic);
+        } catch { diagnostic.reason = 'browser-api-failed'; }
+        await post('/browser-result', { token, id: command.id, ok, ...(!ok ? { reason: diagnostic.reason } : {}) });
       }
     }
-  } catch { /* A startup, popup check or alarm restarts after host/network failure. */ }
+  } catch (error) {
+    // Host restart/temporary network failure must not leave a running browser
+    // disconnected until the next one-minute maintenance alarm.
+    retry = !error.httpStatus || error.httpStatus >= 500;
+  }
   finally {
     browserListening = false;
     const token = await pairedToken().catch(() => '');
     if (token && token !== listeningToken) void startBrowserListener();
+    else if (token && retry) browserRetryTimer = setTimeout(() => { void startBrowserListener(); }, 1000);
   }
 }
 
@@ -188,7 +221,10 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
   if (msg?.type === 'check' && !sender.tab) {
     (async () => {
       const token = await pairedToken();
-      if (!token) return { ok: false, error: (chrome.i18n?.getMessage?.('notPaired') || 'Not paired yet.') };
+      if (!token) {
+        await post('/status', { token: '' }).catch(() => {});
+        return { ok: false, error: (chrome.i18n?.getMessage?.('notPaired') || 'Not paired yet.') };
+      }
       let result;
       try { result = await post('/status', { token }); }
       catch (error) {
@@ -256,6 +292,13 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
     (async () => {
       const token = await pairedToken();
       if (!token) return { paired: false, commands: [] };
+      // The modern browser channel carries every input. Keeping a separate
+      // long poll per tab can exhaust Chrome's per-origin HTTP/1 connection
+      // pool and starve status checks/results, including after a tab closes.
+      // A 404 from older plugins enables the legacy tab channel instead.
+      if (msg.type === 'listen' && browserChannelAvailable !== false) {
+        return { paired: true, commands: [], idle: true };
+      }
       const result = msg.type === 'sync' ?
         await post('/sync', { token, clientId: sender.tab.id, state: msg.state }) :
         await post('/listen', { token, clientId: sender.tab.id }, 15500);

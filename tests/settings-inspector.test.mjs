@@ -9,7 +9,7 @@ const code = readFileSync(join(dir,'property-inspector','settings.js'),'utf8');
 const html = readFileSync(join(dir,'property-inspector','settings.html'),'utf8');
 function makeInspector(action='io.github.minjungw00.musicdeckbridge.nowplaying', language='ko') {
   const ids=['titleModeRow','optTruncate','optScroll','titleHint','volumeRow','volumeHint',
-    'pinRow','generatePin','pairHint','pairState','volumeStep','stepLabel','pinOutput',
+    'pinRow','generatePin','pairHint','pairState','commandStatus','volumeStep','stepLabel','pinOutput',
     'trackSection','volumeSection','portRow','serverPort','applyPort','portStatus'];
   const elems=Object.fromEntries(ids.map(id=>[id,{
     id, textContent:'',value:id==='volumeStep'?'4':'',listeners:{},attrs:{},dataset:{},
@@ -76,6 +76,17 @@ test('new PIN instructions take priority over a recently connected old extension
     paired:true,extensionOnline:true,playerActive:true}});
   assert.equal(pi.elems.pinOutput.textContent,'123456');
   assert.equal(pi.elems.pairState.textContent,'PIN 발급됨 · Chrome 확장 프로그램에 입력하세요.');
+});
+
+test('a failed browser command explains recovery and clears after a successful command', async () => {
+  const pi = makeInspector(); await pi.ready();
+  const status = { type: 'connection', paired: true, extensionOnline: true, playerActive: true };
+  pi.subscribers.connection({ payload: { ...status, lastCommandError: 'receiver-unavailable' } });
+  assert.match(pi.elems.commandStatus.textContent, /페이지와 재생할 곡/);
+  pi.subscribers.connection({ payload: { ...status, lastCommandError: 'pairing-required' } });
+  assert.match(pi.elems.commandStatus.textContent, /새 PIN/);
+  pi.subscribers.connection({ payload: { ...status, lastCommandError: '' } });
+  assert.equal(pi.elems.commandStatus.textContent, '');
 });
 
 test('native range saves actual first input and supports manual settings persistence', async()=>{

@@ -99,10 +99,10 @@ for (const protectedManifest of [false, true]) {
         error => { if (error) recordError(error); });
     }
     const origin = 'chrome-extension://' + 'a'.repeat(32);
-    async function post(route, body) {
+    async function post(route, body, timeout = 2000) {
       const response = await fetch('http://127.0.0.1:17864' + route, { method: 'POST',
         headers: { Origin: origin, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-        signal: AbortSignal.timeout(2000) });
+        signal: AbortSignal.timeout(timeout) });
       assert.equal(response.status, 200);
       return response.json();
     }
@@ -217,6 +217,41 @@ for (const protectedManifest of [false, true]) {
     assert.equal(launch.commands[0].type, 'toggle');
     assert.equal(launch.commands[0].preferredTabId, null);
     await post('/browser-result', { token: pair.token, id: launch.commands[0].id, ok: true });
+    async function connection() {
+      const start = messages.length;
+      send('sendToPlugin', 'nowplaying', { type: 'get-connection' });
+      return (await waitFor(() => messages.slice(start).find(m => m.event === 'sendToPropertyInspector'))).payload;
+    }
+    assert.equal((await connection()).extensionOnline, true);
+    // No action is needed to detect that a reinstalled extension lost its token.
+    const missing = await fetch('http://127.0.0.1:17864/status', { method: 'POST',
+      headers: { Origin: origin, 'Content-Type': 'application/json' }, body: JSON.stringify({ token: '' }) });
+    assert.equal(missing.status, 401);
+    const disconnected = await connection();
+    assert.equal(disconnected.paired, true, 'stored credentials are retained');
+    assert.equal(disconnected.extensionOnline, false, 'missing credentials override recent contact');
+    const beforePress = messages.length;
+    send('keyDown', 'next', {});
+    await waitFor(() => messages.slice(beforePress).some(m => m.event === 'showAlert'));
+    assert.equal((await connection()).lastCommandError, 'pairing-required');
+    // Only an authenticated request restores connectivity; the notice never
+    // deletes auth or authorizes its sender.
+    await post('/status', { token: pair.token });
+    assert.equal((await connection()).extensionOnline, true);
+    await new Promise(resolve => setTimeout(resolve, 3200));
+    assert.equal((await connection()).extensionOnline, false, 'old contact alone is not a live connection');
+    const activePoll = post('/browser-listen', { token: pair.token }, 15000);
+    await new Promise(resolve => setTimeout(resolve, 3200));
+    assert.equal((await connection()).extensionOnline, true, 'an idle authenticated long poll stays online');
+    const notice = await fetch('http://127.0.0.1:17864/status', { method: 'POST',
+      headers: { Origin: origin, 'Content-Type': 'application/json' }, body: JSON.stringify({ token: '' }) });
+    assert.equal(notice.status, 401);
+    assert.equal((await connection()).extensionOnline, true, 'an unauthenticated notice cannot displace a live pair');
+    send('keyDown', 'next', {});
+    const active = await activePoll;
+    await post('/browser-result', { token: pair.token, id: active.commands[0].id,
+      ok: false, reason: 'receiver-unavailable' });
+    assert.equal((await connection()).lastCommandError, 'receiver-unavailable');
     await closePeer(peer);
     assert.equal(peerClose?.code, 1000, diagnostics());
     assert.deepEqual(errors, [], diagnostics());

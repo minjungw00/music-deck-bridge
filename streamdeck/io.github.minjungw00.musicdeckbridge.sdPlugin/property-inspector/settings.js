@@ -20,6 +20,11 @@ const strings = {
     connected: '연결됨 · YouTube Music 제어 가능',
     pinIssued: 'PIN 발급됨 · Chrome 확장 프로그램에 입력하세요.',
     bridgeWait: 'Stream Deck 플러그인과 연결을 기다리는 중입니다.',
+    commandFailed: '마지막 명령을 완료하지 못했습니다.',
+    commandPairing: '새 PIN으로 확장 프로그램을 다시 연결하세요.',
+    commandExtension: '확장 프로그램이 연결된 Chrome 프로필과 포트를 확인하세요.',
+    commandPlayer: 'YouTube Music 페이지와 재생할 곡이 준비되었는지 확인하세요.',
+    commandDelivery: '실행 결과를 확인하지 못했습니다. YouTube Music의 현재 상태를 확인하세요.',
   },
   en: {
     titleRow: 'Title and artist', truncate: 'Truncate', scroll: 'Scroll left',
@@ -38,6 +43,11 @@ const strings = {
     connected: 'Connected · YouTube Music is ready',
     pinIssued: 'PIN generated · Enter it in the Chrome extension.',
     bridgeWait: 'Waiting for the Stream Deck plugin to respond.',
+    commandFailed: 'The last command did not complete.',
+    commandPairing: 'Pair the extension again with a new PIN.',
+    commandExtension: 'Check the paired Chrome profile and bridge port.',
+    commandPlayer: 'Check that YouTube Music and a playable track are ready.',
+    commandDelivery: 'Could not confirm execution. Check the current player state.',
   },
 };
 let language = 'en';
@@ -99,6 +109,11 @@ function updateVolumeLabel() {
 }
 function showConnection(payload) {
   currentStatus = payload;
+  const error = payload.lastCommandError;
+  const hint = ['pairing-required', 'authorization-lost'].includes(error) ? 'commandPairing' :
+    ['extension-unavailable', 'browser-api-failed', 'bridge-unavailable'].includes(error) ? 'commandExtension' :
+    error === 'delivery-uncertain' ? 'commandDelivery' : 'commandPlayer';
+  $('commandStatus').textContent = error ? `${t('commandFailed')} ${t(hint)} (${error})` : '';
   if (payload.pin && /^\d{6}$/.test(payload.pin)) {
     lastPin = payload.pin;
     lastPinExpiresAt = Number(payload.expiresAt) || 0;
@@ -208,7 +223,7 @@ void (async () => {
     responseTimer = setTimeout(() => { if (!currentStatus) $('pairState').textContent = t('bridgeWait'); }, 3500);
     await requestConnection();
     setTimeout(() => { if (!currentStatus) void requestConnection(); }, 700);
-    statusPoll = setInterval(() => { void requestConnection(); }, 5000);
+    statusPoll = setInterval(() => { void requestConnection(); }, 1000);
     setTimeout(updateVolumeLabel, 250);
   } catch {
     $('pairState').textContent = t('offline');
