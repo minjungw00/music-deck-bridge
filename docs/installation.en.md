@@ -11,13 +11,13 @@ Install **both** components on Windows 10/11. Use Chrome 116+ and Stream Deck 7.
 3. Copy the entire `streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin` folder into:
 
    ```text
-   C:\Users\username\AppData\Roaming\Elgato\StreamDeck\Plugins
+   %APPDATA%\Elgato\StreamDeck\Plugins
    ```
 
-   Replace `username` with your Windows account name. The installed manifest must be at:
+   `%APPDATA%` points to your Windows roaming application data folder. You can paste this path into the File Explorer address bar. The installed manifest must be at:
 
    ```text
-   C:\Users\username\AppData\Roaming\Elgato\StreamDeck\Plugins\io.github.minjungw00.musicdeckbridge.sdPlugin\manifest.json
+   %APPDATA%\Elgato\StreamDeck\Plugins\io.github.minjungw00.musicdeckbridge.sdPlugin\manifest.json
    ```
 
 4. Copy the repository's `LICENSE`, `NOTICE`, `THIRD_PARTY_NOTICES.md` and `PRIVACY.md` into the installed plugin folder.
@@ -54,6 +54,6 @@ Keep your Chrome unpacked folder at the same absolute path. After updating sourc
 
 ## Remove or reset
 
-Quit Stream Deck, then delete `io.github.minjungw00.musicdeckbridge.sdPlugin` from `C:\Users\username\AppData\Roaming\Elgato\StreamDeck\Plugins`. Remove the extension separately at `chrome://extensions`.
+Quit Stream Deck, then delete `io.github.minjungw00.musicdeckbridge.sdPlugin` from `%APPDATA%\Elgato\StreamDeck\Plugins`. Remove the extension separately at `chrome://extensions`.
 
 **Unpair** in the popup revokes both the server and Chrome tokens and closes pending command requests. Start Stream Deck and match the port before unpairing; if revocation fails, the token is retained for retry. The port setting remains. For a full reset, also delete `%APPDATA%\MusicDeckBridge\auth.json` and `config.json` while Stream Deck is stopped. See [privacy](../PRIVACY.md) for action settings and retention details.

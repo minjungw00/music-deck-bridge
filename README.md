@@ -29,7 +29,7 @@ Music Deck Bridge contains two components that must be installed together: a Str
 ## Install from source
 
 1. Download or clone this repository. Install Node.js 24, run `npm ci --ignore-scripts` and `npm run build:plugin` in the repository root, then quit Stream Deck from its system tray menu.
-2. Copy the `streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin` folder into `C:\Users\username\AppData\Roaming\Elgato\StreamDeck\Plugins`, replacing `username` with your Windows account name. Copy the root `LICENSE`, `NOTICE`, `THIRD_PARTY_NOTICES.md` and `PRIVACY.md` into the installed plugin folder, then start Stream Deck.
+2. Copy the `streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin` folder into `%APPDATA%\Elgato\StreamDeck\Plugins`. Copy the root `LICENSE`, `NOTICE`, `THIRD_PARTY_NOTICES.md` and `PRIVACY.md` into the installed plugin folder, then start Stream Deck.
 3. Open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**, and select `chrome-extension/`.
 4. Add a Music Deck Bridge action in Stream Deck. In its settings, select **Generate PIN**.
 5. Open the extension popup and enter the six-digit PIN within ten minutes. The default port is `17864`.
