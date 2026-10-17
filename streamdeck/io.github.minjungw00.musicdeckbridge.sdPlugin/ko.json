@@ -23,18 +23,18 @@
   },
   "io.github.minjungw00.musicdeckbridge.volume": {
     "Name": "볼륨 다이얼",
-    "Tooltip": "회전: 볼륨, 누르기: 음소거",
+    "Tooltip": "회전: 볼륨, 누르기·화면 터치: 음소거",
     "Encoder": {
       "TriggerDescription": {
         "Push": "음소거",
         "Rotate": "볼륨 조절",
-        "Touch": "재생/일시정지"
+        "Touch": "음소거"
       }
     }
   },
   "io.github.minjungw00.musicdeckbridge.trackdial": {
-    "Name": "곡 이동 다이얼",
-    "Tooltip": "회전: 곡 이동, 누르기: 재생/일시정지",
+    "Name": "현재 곡 다이얼",
+    "Tooltip": "회전: 이전/다음 곡, 누르기·화면 터치: 재생/일시정지. 곡 정보 또는 앨범 이미지를 표시합니다.",
     "Encoder": {
       "TriggerDescription": {
         "Push": "재생/일시정지",

@@ -6,6 +6,8 @@ const strings = {
   ko: {
     titleRow: '곡명 및 가수', truncate: '말줄임', scroll: '왼쪽으로 스크롤',
     titleHint: '긴 곡명과 가수명이 모두 왼쪽으로 스크롤됩니다.',
+    dialDisplayRow: '화면 표시', dialInfo: '아이콘 + 곡 이름', dialArtwork: '앨범 이미지',
+    dialDisplayHint: '누르기·화면 터치: 재생/일시정지, 회전: 이전/다음 곡. 앨범 이미지가 없으면 재생 상태 아이콘을 표시합니다.',
     volumeRow: '회전당 볼륨', volumeHint: '다이얼 1칸당 변경량:',
     pinRow: 'Chrome 연결', generate: 'PIN 발급', checking: '연결 상태 확인 중…',
     portRow: '로컬 서버 포트', applyPort: '적용', portHint: '모든 버튼·다이얼에 공통으로 적용됩니다. 연결된 Chrome은 자동으로 포트를 변경합니다.',
@@ -30,6 +32,8 @@ const strings = {
   en: {
     titleRow: 'Title and artist', truncate: 'Truncate', scroll: 'Scroll left',
     titleHint: 'Both long track titles and artist names scroll to the left.',
+    dialDisplayRow: 'Touch strip display', dialInfo: 'Icon + song name', dialArtwork: 'Album artwork',
+    dialDisplayHint: 'Push or touch to play/pause; turn for previous/next track. Without artwork, the playback icon is shown.',
     volumeRow: 'Volume per tick', volumeHint: 'Change per dial tick:',
     pinRow: 'Chrome connection', generate: 'Generate PIN', checking: 'Checking connection…',
     portRow: 'Local server port', applyPort: 'Apply', portHint: 'Shared by all buttons/dials. A connected Chrome extension follows the new port automatically.',
@@ -93,6 +97,10 @@ function localize() {
   $('optTruncate').textContent = t('truncate');
   $('optScroll').textContent = t('scroll');
   $('titleHint').textContent = t('titleHint');
+  $('dialDisplayRow').setAttribute('label', t('dialDisplayRow'));
+  $('optDialInfo').textContent = t('dialInfo');
+  $('optDialArtwork').textContent = t('dialArtwork');
+  $('dialDisplayHint').textContent = t('dialDisplayHint');
   $('volumeRow').setAttribute('label', t('volumeRow'));
   $('volumeStep').setAttribute('aria-label', t('volumeRow'));
   $('volumeHint').textContent = t('volumeHint');
@@ -165,7 +173,7 @@ client.sendToPropertyInspector.subscribe(msg => {
   }
 });
 client.didReceiveSettings.subscribe(msg => {
-  // Native range is manually synchronized; sdpi-select handles titleMode automatically.
+  // Native range is manually synchronized; sdpi-select persists titleMode/dialDisplay.
   syncSavedVolume(msg.payload?.settings);
 });
 $('generatePin').addEventListener('click', () => { lastPin = ''; void requestConnection('generate-pin'); });
@@ -221,6 +229,7 @@ void (async () => {
     localize();
     const action = actionInfo?.action || '';
     if (action.endsWith('.nowplaying')) $('trackSection').classList.remove('hidden');
+    if (action.endsWith('.trackdial')) $('dialSection').classList.remove('hidden');
     if (action.endsWith('.volume')) $('volumeSection').classList.remove('hidden');
     // Recover from races where the plugin answers before the inspector is ready.
     responseTimer = setTimeout(() => { if (!currentStatus) $('pairState').textContent = t('bridgeWait'); }, 3500);

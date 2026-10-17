@@ -23,6 +23,20 @@ test('manifest exposes the supported actions and shares the property inspector',
   }
 });
 
+test('dial names, default icons and touch descriptions match their controls', () => {
+  const dial = m.Actions.find(a => a.UUID.endsWith('.trackdial'));
+  const volume = m.Actions.find(a => a.UUID.endsWith('.volume'));
+  assert.equal(dial.Name, 'Current Track Dial');
+  assert.equal(dial.Icon, 'imgs/actions/toggle/icon');
+  assert.equal(dial.Encoder.layout, '$A1');
+  assert.equal(volume.Encoder.TriggerDescription.Touch, 'Mute');
+  const ko = JSON.parse(readFileSync(join(root, 'ko.json'), 'utf8'));
+  assert.equal(ko[dial.UUID].Name, '현재 곡 다이얼');
+  assert.equal(ko[volume.UUID].Encoder.TriggerDescription.Touch, '음소거');
+  const art = JSON.parse(readFileSync(join(root, 'layouts/current-track-artwork.json'), 'utf8'));
+  assert.deepEqual(art.items[0].rect, [50, 0, 100, 100], 'square art fits inside the 200×100 strip');
+});
+
 test('marquee scrolls long titles and artists leftwards and preserves Unicode graphemes',()=>{
   const start=script.indexOf('const segmenter =');
   const end=script.indexOf('const COVERS =',start);

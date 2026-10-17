@@ -23,7 +23,7 @@ Install **both** the Stream Deck plugin (which runs the local bridge) and the Ch
 | Windows | 10 / 11 |
 | Google Chrome | 116+ |
 | Stream Deck software | 7.1+; includes the plugin's Node.js 24 runtime |
-| Device | Key actions target Stream Deck key models; volume/track dials require Stream Deck + |
+| Device | Key actions target Stream Deck key models; Volume/Current Track dials require Stream Deck + |
 
 ## Method 1: GitHub Releases
 
@@ -104,7 +104,7 @@ The stores may launch separately. For example, once the Chrome listing is availa
 2. Select that action and choose **Generate PIN** in its settings.
 3. Open the Chrome extension popup, enter the six-digit PIN, then select **Connect**. The PIN expires in ten minutes and can be used once.
 4. Open [YouTube Music](https://music.youtube.com/), start a track, then use **Check status** in the popup.
-5. Try play/pause, previous/next, mute and artwork. On Stream Deck +, try volume and track dials. Volume accepts 1–5 percentage points per tick; the track dial skips one track per tick, capped at five per event.
+5. Try play/pause, previous/next, mute and artwork. On Stream Deck +, try Volume and Current Track dials. Volume accepts 1–5 percentage points per tick; the Current Track Dial skips one track per tick, capped at five per event.
 
 The extension prefers an installed Chrome YouTube Music app if both it and a regular tab are open.
 
@@ -119,6 +119,13 @@ Add **Open YouTube Music**, **Like** and **Dislike** from the Music Deck Bridge 
 - **Like** and **Dislike** use the current song's own rating buttons. Press the same key again to remove that rating. A filled thumb reflects the site's confirmed selection, including changes made in Chrome. Ratings require an available signed-in player with working rating controls. Play/Pause, Like, Dislike and Open keys use icons without default titles.
 
 Install matching plugin and extension builds for these features. Keep the extension paired in the Chrome profile you use for YouTube Music. If Chrome is fully closed, the plugin starts Chrome from its standard Windows installation location; the paired extension selects an existing music tab or creates one. If the extension has no credentials, pair it again with a new PIN first. Other browsers and custom Chrome installation paths are not launch targets. Pending inputs expire after 45 seconds; a page without usable controls cannot complete them. Re-pairing cancels pending inputs.
+
+### Dial controls and display
+
+- **Volume Dial:** turn to adjust volume; push or touch its screen to toggle mute. Its icon follows the confirmed mute state.
+- **Current Track Dial:** turn for previous/next track; push or touch its screen to play/pause. Its playback icon follows the selected player.
+
+In Current Track Dial action settings, choose **Touch strip display → Icon + song name** or **Album artwork**. Each dial saves its own selection. Artwork appears as a centered square; unavailable/loading artwork falls back to the playback icon. Existing Track Dial actions retain their assignments and settings under the new name.
 
 ### Custom port
 

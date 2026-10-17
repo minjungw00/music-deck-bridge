@@ -85,8 +85,8 @@ let hasDrawing = false;
 const MARQUEE_STEP_MS = 380;
 const MARQUEE_WIDTH = 11;
 const STRINGS = {
-  ko: { unavailable: '연결 안 됨', offline: '오프라인', pause: '일시정지', play: '재생', muted: '음소거', absent: 'YTM 없음', next: '곡 이동', open: 'YTM 실행', like: '좋아요', dislike: '싫어요' },
-  en: { unavailable: 'Disconnected', offline: 'Offline', pause: 'Pause', play: 'Play', muted: 'Muted', absent: 'No YTM', next: 'Track', open: 'Open YTM', like: 'Like', dislike: 'Dislike' },
+  ko: { unavailable: '연결 안 됨', offline: '오프라인', pause: '일시정지', play: '재생', muted: '음소거', absent: 'YTM 없음', currentTrack: '현재 곡', open: 'YTM 실행', like: '좋아요', dislike: '싫어요' },
+  en: { unavailable: 'Disconnected', offline: 'Offline', pause: 'Pause', play: 'Play', muted: 'Muted', absent: 'No YTM', currentTrack: 'Current Track', open: 'Open YTM', like: 'Like', dislike: 'Dislike' },
 };
 const tr = key => STRINGS[locale]?.[key] || STRINGS.en[key];
 const marqueeTimer = setInterval(() => {
@@ -502,13 +502,40 @@ function sendStream(message) {
     if (message.event === 'setTitle') result = action.setTitle(message.payload.title);
     else if (message.event === 'setImage') result = action.setImage(message.payload.image);
     else if (message.event === 'setFeedback' && action.isDial()) result = action.setFeedback(message.payload);
+    else if (message.event === 'setFeedbackLayout' && action.isDial()) result = action.setFeedbackLayout(message.payload.layout);
     else if (message.event === 'showAlert') result = action.showAlert();
   }
   void result?.catch(error => log(`Stream Deck output error: ${error.message}`));
+  return result;
 }
 function setTitle(context, title) { sendStream({ event: 'setTitle', context, payload: { title } }); }
 function setImage(context, image) { sendStream({ event: 'setImage', context, payload: image ? { image } : {} }); }
-function setFeedback(context, feedback) { sendStream({ event: 'setFeedback', context, payload: feedback }); }
+function setFeedback(context, feedback) { return sendStream({ event: 'setFeedback', context, payload: feedback }); }
+function renderCurrentTrackDial(context, item, state) {
+  if (!sdOnline) return;
+  const icon = `imgs/actions/toggle/${state?.playing ? 'pause' : 'key'}@2x.png`;
+  if (item.lastImage !== icon) { setImage(context, icon); item.lastImage = icon; }
+  const artwork = item.settings?.dialDisplay === 'artwork';
+  const layout = artwork ? 'layouts/current-track-artwork.json' : '$A1';
+  const image = artwork && state?.cover && cachedCoverUrl === state.cover ? cachedCoverData : icon;
+  const title = artwork ? '' : tr('currentTrack');
+  const value = artwork ? '' : state ? ellipsis(state.title, 14) : tr('unavailable');
+  const signature = JSON.stringify([layout, title, value]);
+  if (item.dialSignature === signature && item.dialImage === image) return;
+  item.dialSignature = signature; item.dialImage = image;
+  const feedback = artwork ? { artwork: image } : { title, value, icon };
+  // Serialize layout and image updates so mode changes cannot send artwork to
+  // the previous layout, or leave a newly selected layout with stale content.
+  item.feedbackQueue = (item.feedbackQueue || Promise.resolve()).then(async () => {
+    if (displayed.get(context) !== item) return;
+    if (item.sentLayout !== layout) {
+      await sendStream({ event: 'setFeedbackLayout', context, payload: { layout } });
+      item.sentLayout = layout;
+    }
+    if (displayed.get(context) !== item) return;
+    await setFeedback(context, feedback);
+  }).catch(() => { item.dialSignature = null; });
+}
 function showAlert(context) { sendStream({ event: 'showAlert', context }); }
 function ellipsis(str, n = 11) {
   const chars = [...String(str || '')];
@@ -657,7 +684,7 @@ function paint() {
         setFeedback(context, { title: 'YouTube Music', icon, value: vol,
           indicator: { value: state?.volume ?? 0, range: { min: 0, max: 100 } } });
       } else if (kind === 'trackdial') {
-        setFeedback(context, { title: tr('next'), value: state ? ellipsis(state.title, 14) : tr('unavailable') });
+        renderCurrentTrackDial(context, item, state);
       }
     }
     if (state?.cover && validCover(state.cover) && cachedCoverUrl !== state.cover)
@@ -747,7 +774,7 @@ function handleDeckEvent(e) {
     const type = kind === 'volume' ? 'mute' : kind === 'trackdial' ? 'toggle' : null;
     if (type) controlPlayer(e.context, type);
   } else if (e.event === 'touchTap' && (kind === 'volume' || kind === 'trackdial')) {
-    controlPlayer(e.context, 'toggle');
+    controlPlayer(e.context, kind === 'volume' ? 'mute' : 'toggle');
   }
 }
 function connectDeck() {

@@ -35,11 +35,11 @@ Summary: Control the YouTube Music web player from Stream Deck keys and Stream D
 
 Description:
 
-Keep playback controls and current-track information on Stream Deck while YouTube Music runs in Chrome. Music Deck Bridge provides ten actions: Now Playing, Play / Pause, Previous Track, Next Track, Mute, Volume Dial, Track Dial, Open YouTube Music, Like and Dislike.
+Keep playback controls and current-track information on Stream Deck while YouTube Music runs in Chrome. Music Deck Bridge provides ten actions: Now Playing, Play / Pause, Previous Track, Next Track, Mute, Volume Dial, Current Track Dial, Open YouTube Music, Like and Dislike.
 
 The launch key opens or focuses YouTube Music in Chrome. Other controls open a missing player and perform their input once its controls are ready. A playback input starts a restored paused player; the dedicated launch key only opens or focuses the page. Like and Dislike keys show the selected rating and remove it when pressed again; a signed-in player with available rating controls is required.
 
-The Now Playing key shows artwork, title and artist and supports scrolling text. The volume dial adjusts YouTube Music by 1–5 percentage points per tick and mutes on push. The track dial skips on rotation and plays or pauses on push. Tap either dial's touch area to play or pause.
+The Now Playing key shows artwork, title and artist and supports scrolling text. The Volume Dial adjusts YouTube Music by 1–5 percentage points per tick and mutes on push or touch. The Current Track Dial skips on rotation and plays or pauses on push or touch. Choose its display as playback icon with song name or album artwork.
 
 Install the companion Chrome extension from the project installation guide, then generate a PIN in any action's settings and enter it in the extension popup. Both components must run on the same Windows computer. The default bridge port is 17864 and can be changed in either component. Unpair revokes the connection on both sides when the bridge is reachable.
 

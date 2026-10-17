@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schemas.elgato.com/streamdeck/plugins/layout.json",
+  "id": "current-track-artwork",
+  "controller": "Encoder",
+  "items": [
+    {
+      "key": "artwork",
+      "type": "pixmap",
+      "rect": [50, 0, 100, 100]
+    }
+  ]
+}

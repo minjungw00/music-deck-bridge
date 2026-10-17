@@ -48,6 +48,15 @@
     </sdpi-item>
     <p class="hint" id="titleHint">Both long titles and artist names will scroll.</p>
   </section>
+  <section id="dialSection" class="hidden">
+    <sdpi-item id="dialDisplayRow" label="Touch strip display">
+      <sdpi-select id="dialDisplay" setting="dialDisplay" default="info">
+        <option id="optDialInfo" value="info">Icon + song name</option>
+        <option id="optDialArtwork" value="artwork">Album artwork</option>
+      </sdpi-select>
+    </sdpi-item>
+    <p class="hint" id="dialDisplayHint">Push or touch to play/pause; turn for previous/next track. Without artwork, the playback icon is shown.</p>
+  </section>
   <section id="volumeSection" class="hidden">
     <sdpi-item id="volumeRow" label="Volume per tick">
       <div class="native-range">

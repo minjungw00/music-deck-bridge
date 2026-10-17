@@ -117,6 +117,9 @@ for (const protectedManifest of [false, true]) {
     const pauseImage = 'imgs/actions/toggle/pause@2x.png';
     // Before any player state is available, show Play with the offline title.
     await waitFor(() => toggleImage() === playImage);
+    const dialFeedback = () => messages.findLast(m => m.event === 'setFeedback' && m.context === 'trackdial')?.payload;
+    const dialLayout = () => messages.findLast(m => m.event === 'setFeedbackLayout' && m.context === 'trackdial')?.payload.layout;
+    await waitFor(() => dialLayout() === '$A1' && dialFeedback()?.icon === playImage);
     for (const name of ['toggle', 'like', 'dislike', 'open']) {
       await waitFor(() => messages.some(m => m.event === 'setTitle' && m.context === name && m.payload.title === ''));
     }
@@ -130,6 +133,13 @@ for (const protectedManifest of [false, true]) {
     const state = { title: 'SDK song', artist: 'Artist', playing: true, volume: 50, rating: 'INDIFFERENT' };
     await post('/sync', { token, clientId: 1, state });
     await waitFor(() => toggleImage() === pauseImage);
+    await waitFor(() => dialFeedback()?.icon === pauseImage && dialFeedback()?.value === state.title);
+    assert.equal(dialFeedback().title, '현재 곡');
+    send('didReceiveSettings', 'trackdial', { settings: { dialDisplay: 'artwork' } });
+    await waitFor(() => dialLayout() === 'layouts/current-track-artwork.json' && dialFeedback()?.artwork === pauseImage);
+    assert.deepEqual(Object.keys(dialFeedback()), ['artwork'], 'album mode does not retain text-mode fields');
+    send('didReceiveSettings', 'trackdial', { settings: { dialDisplay: 'info' } });
+    await waitFor(() => dialLayout() === '$A1' && dialFeedback()?.value === state.title);
     await post('/sync', { token, clientId: 2, state: { ...state, standalone: true, playing: false } });
     await waitFor(() => toggleImage() === playImage);
     await post('/player-closed', { token, clientId: 2 });
@@ -160,6 +170,7 @@ for (const protectedManifest of [false, true]) {
     state.playing = false;
     await post('/sync', { token, clientId: 1, state });
     await waitFor(() => toggleImage() === playImage && toggleImage('toggle-2') === playImage);
+    await waitFor(() => dialFeedback()?.icon === playImage);
     await waitFor(() => messages.findLast(m => m.event === 'setTitle' && m.context === 'toggle')?.payload.title === '');
     state.playing = true;
     await post('/sync', { token, clientId: 1, state });
@@ -175,7 +186,7 @@ for (const protectedManifest of [false, true]) {
     state.muted = false;
     await post('/sync', { token, clientId: 1, state });
     await waitFor(() => volumeFeedback()?.icon === 'imgs/actions/volume/key@2x.png');
-    await command('touchTap', 'volume', {}, { type: 'toggle', amount: 0 });
+    await command('touchTap', 'volume', {}, { type: 'mute', amount: 0 });
     await command('dialRotate', 'trackdial', { ticks: -1 }, { type: 'prev', amount: 0 });
     await command('dialRotate', 'trackdial', { ticks: 1 }, { type: 'next', amount: 0 });
     await command('dialRotate', 'trackdial', { ticks: 3 }, Array.from({ length: 3 }, () => ({ type: 'next', amount: 0 })));
@@ -183,6 +194,12 @@ for (const protectedManifest of [false, true]) {
     await command('dialRotate', 'trackdial', { ticks: 100 }, Array.from({ length: 5 }, () => ({ type: 'next', amount: 0 })));
     await command('dialDown', 'trackdial', {}, { type: 'toggle', amount: 0 });
     await command('touchTap', 'trackdial', {}, { type: 'toggle', amount: 0 });
+    send('willDisappear', 'trackdial');
+    send('willAppear', 'trackdial', { controller: 'Encoder', coordinates: { column: 1, row: 0 },
+      settings: { dialDisplay: 'artwork' }, state: 0 });
+    await waitFor(() => dialLayout() === 'layouts/current-track-artwork.json' && dialFeedback()?.artwork === pauseImage);
+    send('didReceiveSettings', 'trackdial', { settings: { dialDisplay: 'info' } });
+    await waitFor(() => dialLayout() === '$A1' && dialFeedback()?.icon === pauseImage);
     const ratingImage = kind => messages.findLast(m => m.event === 'setImage' && m.context === kind)?.payload.image;
     await waitFor(() => ratingImage('like') === 'imgs/actions/like/key@2x.png');
     state.rating = 'LIKE';

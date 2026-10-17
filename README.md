@@ -14,8 +14,8 @@ Music Deck Bridge contains two components that must be installed together: a Str
 - Play/pause, previous track, next track and mute keys.
 - Open YouTube Music from a dedicated key; other controls open a missing player and continue their requested action when ready.
 - Like/dislike the current song, with selected-state icons; press again to remove the rating.
-- Volume dial with 1–5 percentage points per tick and push to mute.
-- Track dial with one track per tick (up to five per event) and push to play/pause.
+- Volume dial with 1–5 percentage points per tick; push or touch to mute.
+- Current Track Dial: turn for previous/next track (up to five per event), push or touch to play/pause, and choose song info or album artwork.
 - English and Korean settings; truncated or scrolling track titles.
 - Six-digit PIN pairing, an authenticated loopback bridge and a configurable shared port.
 - Preference for an installed Chrome app when both an app and browser tab are open.

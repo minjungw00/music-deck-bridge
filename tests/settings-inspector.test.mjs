@@ -10,7 +10,8 @@ const html = readFileSync(join(dir,'property-inspector','settings.html'),'utf8')
 function makeInspector(action='io.github.minjungw00.musicdeckbridge.nowplaying', language='ko') {
   const ids=['titleModeRow','optTruncate','optScroll','titleHint','volumeRow','volumeHint',
     'pinRow','generatePin','pairHint','pairState','commandStatus','volumeStep','stepLabel','pinOutput',
-    'trackSection','volumeSection','portRow','serverPort','applyPort','portStatus'];
+    'trackSection','dialSection','dialDisplayRow','dialDisplay','optDialInfo','optDialArtwork','dialDisplayHint',
+    'volumeSection','portRow','serverPort','applyPort','portStatus'];
   const elems=Object.fromEntries(ids.map(id=>[id,{
     id, textContent:'',value:id==='volumeStep'?'4':'',listeners:{},attrs:{},dataset:{},
     setAttribute(k,v){this.attrs[k]=v},addEventListener(k,v){this.listeners[k]=v},
@@ -68,6 +69,18 @@ test('each action can generate a PIN, with real connection-state messages', asyn
     pi.subscribers.connection({payload:{type:'connection',pin:'123456',expiresAt:Date.now()+600000,paired:false,extensionOnline:false}});
     assert.equal(pi.elems.pinOutput.textContent,'123456');
   }
+});
+
+test('current-track dial exposes its localized persisted display selector only on that action', async () => {
+  for (const [language, label] of [['ko', '앨범 이미지'], ['en', 'Album artwork']]) {
+    const pi = makeInspector('io.github.minjungw00.musicdeckbridge.trackdial', language); await pi.ready();
+    assert.deepEqual(pi.elems.dialSection.classList.removed, ['hidden']);
+    assert.equal(pi.elems.optDialArtwork.textContent, label);
+    assert.match(pi.elems.dialDisplayHint.textContent, /재생\/일시정지|play\/pause/);
+    const other = makeInspector('io.github.minjungw00.musicdeckbridge.volume', language); await other.ready();
+    assert.deepEqual(other.elems.dialSection.classList.removed, []);
+  }
+  assert.match(html, /<sdpi-select[^>]+setting="dialDisplay"[^>]+default="info"/);
 });
 
 test('new PIN instructions take priority over a recently connected old extension', async()=>{

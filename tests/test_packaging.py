@@ -63,7 +63,8 @@ class PackagingTests(unittest.TestCase):
             packaging_tool.ROOT = original
         manifest = json.loads((staged / "manifest.json").read_text())
         for name in (*packaging_tool.LEGAL, manifest["CodePath"], manifest["PropertyInspectorPath"],
-                     "property-inspector/settings.js", "property-inspector/sdpi-components.js", "en.json", "ko.json"):
+                     "property-inspector/settings.js", "property-inspector/sdpi-components.js", "en.json", "ko.json",
+                     "layouts/current-track-artwork.json"):
             self.assertTrue((staged / name).is_file(), name)
         for action in manifest["Actions"]:
             for icon in (action["Icon"], *(state["Image"] for state in action["States"])):

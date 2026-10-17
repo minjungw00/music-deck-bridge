@@ -25,6 +25,7 @@ def stage(component, output):
                "_locales/en/messages.json", "_locales/ko/messages.json"] if component == "chrome" else [
         "bin/plugin.js", "property-inspector/settings.html",
         "property-inspector/settings.js", "property-inspector/sdpi-components.js", "en.json", "ko.json",
+        "layouts/current-track-artwork.json",
     ])
     for folder in folders:
         files.extend(str(p.relative_to(source)) for p in sorted((source / folder).rglob("*.png")))

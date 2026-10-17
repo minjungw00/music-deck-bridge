@@ -101,36 +101,36 @@
           "ShowTitle": true
         }
       ],
-      "Tooltip": "Turn to adjust volume, push to mute.",
+      "Tooltip": "Turn to adjust volume; push or touch to mute.",
       "Encoder": {
         "Icon": "imgs/actions/volume/key",
         "layout": "$B1",
         "TriggerDescription": {
           "Push": "Mute",
           "Rotate": "Adjust YouTube Music volume",
-          "Touch": "Play / Pause"
+          "Touch": "Mute"
         }
       }
     },
     {
-      "Name": "Track Dial",
+      "Name": "Current Track Dial",
       "UUID": "io.github.minjungw00.musicdeckbridge.trackdial",
-      "Icon": "imgs/actions/trackdial/icon",
+      "Icon": "imgs/actions/toggle/icon",
       "Controllers": [
         "Encoder"
       ],
       "States": [
         {
-          "Image": "imgs/actions/trackdial/key",
+          "Image": "imgs/actions/toggle/key",
           "TitleAlignment": "bottom",
           "FontSize": 12,
           "ShowTitle": true
         }
       ],
-      "Tooltip": "Turn to change tracks, push to play or pause.",
+      "Tooltip": "Turn for previous/next track; push or touch to play/pause. Show song info or album artwork.",
       "Encoder": {
-        "Icon": "imgs/actions/trackdial/key",
-        "layout": "$B1",
+        "Icon": "imgs/actions/toggle/key",
+        "layout": "$A1",
         "TriggerDescription": {
           "Push": "Play / Pause",
           "Rotate": "Previous / next track",

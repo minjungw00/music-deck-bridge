@@ -18,7 +18,7 @@ Music Deck Bridge connects the YouTube Music web player in Chrome to a Stream De
 | Last command failure code | Explain pairing, delivery or player readiness failures | Plugin memory until successful execution, pairing reset or process exit; bounded codes are also written to the SDK log |
 | Browser launch/playback request and acknowledgment | Open or focus YouTube Music, including when no player tab exists | Plugin memory; ordered inputs expire after 45 seconds or clear on completion/pairing reset; repeated Open requests coalesce |
 
-On Windows, plugin files are stored under `%APPDATA%\MusicDeckBridge\`. Chrome manages the extension's local storage inside the active browser profile; the extension does not use Chrome sync storage. Stream Deck separately stores action settings, including title display mode and dial step size, in its profiles.
+On Windows, plugin files are stored under `%APPDATA%\MusicDeckBridge\`. Chrome manages the extension's local storage inside the active browser profile; the extension does not use Chrome sync storage. Stream Deck separately stores action settings, including title display mode, dial step size and the Current Track Dial display mode, in its profiles.
 
 ## Network activity
 

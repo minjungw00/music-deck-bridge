@@ -23,11 +23,11 @@
   },
   "io.github.minjungw00.musicdeckbridge.volume": {
     "Name": "Volume Dial",
-    "Tooltip": "Turn to adjust volume, push to mute."
+    "Tooltip": "Turn to adjust volume; push or touch to mute."
   },
   "io.github.minjungw00.musicdeckbridge.trackdial": {
-    "Name": "Track Dial",
-    "Tooltip": "Turn to change tracks, push to play or pause."
+    "Name": "Current Track Dial",
+    "Tooltip": "Turn for previous/next track; push or touch to play/pause. Show song info or album artwork."
   },
   "io.github.minjungw00.musicdeckbridge.open": {
     "Name": "Open YouTube Music",
