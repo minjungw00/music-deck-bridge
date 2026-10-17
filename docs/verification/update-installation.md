@@ -16,7 +16,7 @@ The existing Windows host logs were read from WSL without stopping or changing t
 | Current Downloads installer | `1.0.1.0`, SHA-256 `1438f064a4f09a54e6adfe90e589b0f9df326ccfafb50713d50db89da0e0075e` — the previously supplied revised draft, not the final public archive |
 | Failed-attempt installer provenance | The log records the Downloads path but no package hash or before/after manifest versions; today's file cannot establish which bytes were present during each earlier attempt |
 
-The current draft installer and public v1.0.1 installer have identical file payloads; archive metadata accounts for different archive hashes. The public package is identified in [v1.0.1 verification](../release-readiness.md).
+The current draft installer and public v1.0.1 installer have identical file payloads; archive metadata accounts for different archive hashes. The public package is identified in [v1.0.1 verification](v1.0.1.md).
 
 ## Observed failure
 
@@ -58,10 +58,14 @@ Package structure and unchanged runtime bytes provide no evidence of a new runti
 | Restart after rejected update | Maintainer reported recovery of old version; reconnects also appear in host logs |
 | Restore backed-up plugin after failed replacement | Procedure documented; end-to-end rollback and retention measurements pending |
 | PIN token, Chrome identity, custom port, profiles and per-action settings retained | Storage locations are unchanged; separate before/after measurements still pending |
-| Maker Console processed build | Separate [DRM verification](../release-readiness.md); not tested here |
+| Maker Console processed build | Separate [DRM verification](marketplace-drm.md); not tested here |
 
 Use the [English](../installation.en.md#replacing-plugin-files) / [Korean](../installation.ko.md#replacing-plugin-files) replacement and recovery instructions. Before further testing, back up profiles, the plugin folder and `%APPDATA%\MusicDeckBridge` privately; never commit authentication files or raw logs. Keep the same Chrome profile, extension ID and absolute unpacked-extension path.
 
 For each controlled test, record installer SHA-256, source tag/run, installed manifest versions before/after, start/end timestamps, host running/fully exited state, removal method and result. Compare authentication/configuration privately while the host is stopped; after restart, verify the existing pairing without generating a PIN, matching custom port, profile actions, title mode, dial step and playback. Record failures as well as successes. A separate fresh pairing test belongs to the DRM matrix; it must not replace a retention check.
 
 P0 remains open until the normal update/recovery procedure and retention checks are measured. A v1.0.2 patch is conditional on further evidence; protocol changes remain a later v1.1.0 candidate.
+
+## Investigation-session automated checks
+
+The unchanged v1.0.1 runtime was rechecked on WSL/Linux (Node.js 24.19.0): `npm run check`, all 50 Node regression tests and both Python packaging tests passed. `npm audit` reported zero vulnerabilities. Both public release checksum inventories passed again, and release asset IDs/update timestamps/digests and both local annotated tag objects were unchanged at the final recheck. These are local checks and public-release preservation checks, not a new Windows/Ubuntu CI run or manual retention/DRM evidence.

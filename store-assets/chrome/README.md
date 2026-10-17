@@ -11,3 +11,5 @@ Publication status: pending; no public product install URL is recorded. After ap
 - Declare each permission and reconcile store data-use answers with `PRIVACY.md` and the submitted version.
 - Confirm support/privacy URLs, current screenshot/promotional dimensions and artwork rights.
 - Submit the Chrome ZIP with `manifest.json` at its root, rather than the repository ZIP.
+
+See the [shared submission status and actual screenshot plan](../README.md).
