@@ -2,6 +2,8 @@
 
 Evidence inspected October 18, 2026 (Asia/Seoul). **The third trace records a successful running-plugin update, including the old-root → `.sdPlugin.uninstall` rename that failed in the first trace. No official plugin-stop request preceded this update in the new host session.** Developer mode was enabled; the host and baseline installation had also changed, so developer mode is not isolated as the cause.
 
+Subsequent [normal-mode control at 03:07](update-procmon-normal-2026-10-18.md): a fresh-baseline running-plugin update also succeeds with the developer-mode setting absent, using the same host. The proposed mode comparison below has now been performed; developer mode is not a universal installation prerequisite, and the original denial's cause remains unconfirmed.
+
 ## Provenance and changed conditions
 
 | Field | Observed value |
