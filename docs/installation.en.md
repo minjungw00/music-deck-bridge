@@ -27,7 +27,7 @@ Install **both** the Stream Deck plugin (which runs the local bridge) and the Ch
 
 ## Method 1: GitHub Releases
 
-Use the [latest stable release](https://github.com/minjungw00/music-deck-bridge/releases/latest), starting with **v1.0.0**. No build tools are required:
+Use the [latest stable release](https://github.com/minjungw00/music-deck-bridge/releases/latest). No build tools are required:
 
 1. Open the most recent stable release, avoiding entries marked **Pre-release**, and download both assets from that same release:
    - `io.github.minjungw00.musicdeckbridge.streamDeckPlugin`
@@ -45,8 +45,8 @@ Development builds include recent changes and may be unstable. They require GitH
 
 1. Sign in to GitHub and open [CI runs](https://github.com/minjungw00/music-deck-bridge/actions/workflows/ci.yml).
 2. Select a recent **successful CI run for `main`**, with both Windows and Ubuntu jobs passed. Avoid pull request runs and builds from other branches.
-3. Under **Artifacts**, download `music-deck-bridge-dev-windows-<commit-sha>`. Older runs use `packages-windows-latest`; the SHA is on the run page. Ubuntu artifacts test packaging and are not a supported Linux installation.
-4. Extract the downloaded artifact ZIP. Inside are the `.streamDeckPlugin`, a separate `music-deck-bridge-chrome-<version>.zip`, `BUILD-INFO.json` and `SHA256SUMS.txt` in new builds. `BUILD-INFO.json` records the full commit, source ref, version, platform and run URL; confirm the ref is `refs/heads/main` and keep this file for bug reports.
+3. Under **Artifacts**, download `music-deck-bridge-dev-windows-<commit-sha>`. Ubuntu artifacts test packaging and are not a supported Linux installation.
+4. Extract the downloaded artifact ZIP. Inside are the `.streamDeckPlugin`, a separate `music-deck-bridge-chrome-<version>.zip`, `BUILD-INFO.json` and `SHA256SUMS.txt`. `BUILD-INFO.json` records the full commit, source ref, version, platform and run URL; confirm the ref is `refs/heads/main` and keep this file for bug reports.
 5. Double-click the `.streamDeckPlugin` to install it. Extract the **inner Chrome ZIP** into a permanent folder and load that folder at `chrome://extensions` with **Developer mode → Load unpacked**. Select the folder containing `manifest.json`, not the outer artifact folder.
 6. Complete [Pairing](#pairing) and check playback controls.
 
@@ -87,12 +87,12 @@ The files are written to `dist/` with the same names as release packages. Stream
 
 ## Method 4: Official stores
 
-**Elgato Marketplace v1.0.1 is Pending review**, as reported by the maintainer on October 17, 2026. No public store install links are active yet. Each component has its own release status:
+Public store installation links are not available yet. Use the GitHub packages:
 
-| Component | Store | Status |
+| Component | Store | Installation until available |
 | --- | --- | --- |
-| Stream Deck plugin | Elgato Marketplace | v1.0.1 uploaded, Pending review; use a GitHub Release package meanwhile |
-| Chrome extension | Chrome Web Store | Preparation pending; no submission recorded. Use an extracted Chrome ZIP meanwhile. |
+| Stream Deck plugin | Elgato Marketplace | Use a GitHub Release package |
+| Chrome extension | Chrome Web Store | Extract and load the Chrome ZIP |
 
 After each listing becomes public, its verified product URL will appear here. Install the plugin from Elgato Marketplace and add the extension from Chrome Web Store, then complete [Pairing](#pairing). Once both are available, stores become the first recommended method.
 
@@ -133,17 +133,13 @@ For an unpacked Chrome extension, replace the contents of its existing permanent
 2. Leave the existing plugin installed and double-click the newer `.streamDeckPlugin` package. Complete the installation in Stream Deck. Developer mode and a manual plugin stop are not routine requirements.
 3. Check that the installed plugin version changed to the intended version, then verify the existing pairing, shared port, actions and profiles. Update/reload Chrome in its existing folder as described above. Do not reset pairing to perform an ordinary update.
 
-Normal-mode 1.0.1 → 1.0.2 installation/startup passed in the maintainer's Windows/Stream Deck 7.6.0 environment, including a capture of the running 1.0.1 being replaced. Earlier directory-rename failures remain unresolved; this is not a guarantee for every installation or an itemized retention result. See the [evidence and assessment](verification/update-behavior-assessment.md).
-
 If Stream Deck rejects the package, record the error, installed version and host logs before using recovery below. Same-version or older packages may be reported as already installed; use backed-up replacement for intentional development rebuilds/downgrades.
 
 <a id="replacing-plugin-files"></a>
 
 ### Recover a rejected install by replacing plugin files
 
-Use this procedure after an installation rejection or when intentionally replacing a development build whose version is not newer. It is a recovery option rather than a requirement for every update. Historical failures and later normal-mode successes are retained in the [verification records](verification/update-behavior-assessment.md).
-
-Exact settings-retention and rollback measurements are still pending; use the backups below.
+Use this procedure after an installation rejection or when intentionally replacing a development build whose version is not newer. It is a recovery option rather than a requirement for every update.
 
 For a package update in this situation:
 
@@ -151,12 +147,12 @@ For a package update in this situation:
 2. **Quit Stream Deck from its system tray menu**, rather than just closing its window. Close Explorer windows and terminals opened inside the plugin folder. If moving the folder still gives access denied, stop and inspect open handles/permissions before retrying; do not delete the backups.
 3. Move only `%APPDATA%\Elgato\StreamDeck\Plugins\io.github.minjungw00.musicdeckbridge.sdPlugin` to a backup location **outside** the `Plugins` directory. Do not leave a renamed second copy inside `Plugins`.
 4. Keep `%APPDATA%\MusicDeckBridge\auth.json`, `config.json`, Stream Deck profiles and the existing Chrome extension. This is a file replacement, not a full reset: do not unpair or remove the extension.
-5. Start Stream Deck, then double-click the newly downloaded `.streamDeckPlugin`. Confirm installation and check that the installed manifest's `Version` is the intended version (`1.0.1.0` for 1.0.1). A completed download or restored old actions alone does not establish an update.
+5. Start Stream Deck, then double-click the newly downloaded `.streamDeckPlugin`. Confirm installation and check that the installed manifest's `Version` is the intended version (`X.Y.Z.0` for release `X.Y.Z`). A completed download or restored old actions alone does not establish an update.
 6. Reload the existing Chrome extension after updating its files. Confirm pairing, matching ports, saved action settings/profiles and playback controls.
 
 If installation fails, quit Stream Deck, move any incomplete new plugin folder out of `Plugins`, restore the backed-up plugin folder to its original path and restart. If needed, restore the matching Chrome files in the same extension folder and reload. Keep authentication/configuration and profiles. Record the actual installed version and inspect the host installation log; do not repeatedly reinstall or reset pairing to diagnose `Failed to fetch`.
 
-`Failed to fetch` means the extension did not obtain an HTTP response from the configured local bridge. After a rejected install, first restart Stream Deck and check whether the old version works again, then check matching ports. It does not by itself demonstrate invalid PIN authentication or a defect in the new plugin, which may never have been installed. The October 17 host logs identify an access-denied rename of the old plugin directory during removal. The process or permission blocking it is still unknown; see the [investigation and remaining retention checks](verification/update-installation.md).
+If the extension reports `Failed to fetch`, follow [Troubleshooting](troubleshooting.md). Check that Stream Deck is running, verify the installed plugin version and match the ports before changing pairing.
 
 ### Verify downloaded files
 

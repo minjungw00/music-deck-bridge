@@ -31,7 +31,7 @@
 
 ## 방법 1: GitHub Releases
 
-**v1.0.0**부터 제공하는 [최신 안정 릴리스](https://github.com/minjungw00/music-deck-bridge/releases/latest)를 사용하세요. 빌드 도구 없이 다음과 같이 설치합니다.
+[최신 안정 릴리스](https://github.com/minjungw00/music-deck-bridge/releases/latest)를 사용하세요. 빌드 도구 없이 다음과 같이 설치합니다.
 
 1. **Pre-release** 표시가 없는 최신 안정 릴리스를 열고 같은 릴리스의 두 파일을 다운로드합니다.
    - `io.github.minjungw00.musicdeckbridge.streamDeckPlugin`
@@ -51,8 +51,8 @@ GitHub가 자동 생성하는 **Source code** 압축 파일 대신 배포용 Chr
 
 1. GitHub에 로그인하고 [CI 실행 목록](https://github.com/minjungw00/music-deck-bridge/actions/workflows/ci.yml)을 엽니다.
 2. Windows와 Ubuntu 작업이 모두 통과한 **`main` 브랜치의 최근 성공한 CI 실행**을 선택합니다. Pull request 실행이나 다른 브랜치의 빌드를 선택하지 마세요.
-3. **Artifacts**에서 `music-deck-bridge-dev-windows-<commit-sha>`를 다운로드합니다. 이전 실행은 `packages-windows-latest`라는 이름을 사용하며 실행 페이지에서 SHA를 확인할 수 있습니다. Ubuntu 산출물은 패키징 검증용이며 Linux 설치를 지원한다는 뜻은 아닙니다.
-4. 다운로드한 산출물 ZIP을 해제합니다. 내부에는 `.streamDeckPlugin`과 별도의 `music-deck-bridge-chrome-<version>.zip`이 있으며, 새 빌드는 `BUILD-INFO.json`, `SHA256SUMS.txt`도 포함합니다. `BUILD-INFO.json`에는 전체 커밋 SHA, 소스 ref, 버전, 플랫폼, 실행 URL이 기록됩니다. ref가 `refs/heads/main`인지 확인하고 오류 보고를 위해 파일을 보관하세요.
+3. **Artifacts**에서 `music-deck-bridge-dev-windows-<commit-sha>`를 다운로드합니다. Ubuntu 산출물은 패키징 검증용이며 Linux 설치를 지원한다는 뜻은 아닙니다.
+4. 다운로드한 산출물 ZIP을 해제합니다. 내부에는 `.streamDeckPlugin`, 별도의 `music-deck-bridge-chrome-<version>.zip`, `BUILD-INFO.json`, `SHA256SUMS.txt`가 있습니다. `BUILD-INFO.json`에는 전체 커밋 SHA, 소스 ref, 버전, 플랫폼, 실행 URL이 기록됩니다. ref가 `refs/heads/main`인지 확인하고 오류 보고를 위해 파일을 보관하세요.
 5. `.streamDeckPlugin`을 더블클릭해 설치합니다. **내부 Chrome ZIP도 별도로 압축 해제**하여 고정 폴더에 두고, `chrome://extensions`에서 **개발자 모드 → 압축해제된 확장 프로그램 로드**로 설치합니다. 바깥 산출물 폴더 대신 `manifest.json`이 있는 폴더를 선택하세요.
 6. [PIN 연결](#pairing) 후 재생 제어를 확인합니다.
 
@@ -97,12 +97,12 @@ npm run build:chrome
 
 ## 방법 4: 공식 스토어
 
-**Elgato Marketplace v1.0.1은 업로드 후 Pending review 상태**입니다(2026년 10월 17일 개발자 보고). 공개 설치 링크는 아직 없습니다. 두 구성요소의 출시 상태는 각각 관리합니다.
+공개 스토어 설치 링크는 아직 없습니다. GitHub 패키지를 사용하세요.
 
-| 구성요소 | 스토어 | 상태 |
+| 구성요소 | 스토어 | 공개 전 설치 방법 |
 | --- | --- | --- |
-| Stream Deck 플러그인 | Elgato Marketplace | v1.0.1 업로드 완료, Pending review; 현재는 GitHub Release 패키지 사용 |
-| Chrome 확장 프로그램 | Chrome 웹 스토어 | 제출 준비 중, 제출 기록 없음; 현재는 Chrome ZIP 압축 해제 후 사용 |
+| Stream Deck 플러그인 | Elgato Marketplace | GitHub Release 패키지 사용 |
+| Chrome 확장 프로그램 | Chrome 웹 스토어 | Chrome ZIP 압축 해제 후 로드 |
 
 각 스토어에 공개된 뒤 검증한 제품 URL을 이 절에 추가합니다. Elgato Marketplace에서 플러그인을 설치하고 Chrome 웹 스토어에서 확장 프로그램을 추가한 뒤 [PIN 연결](#pairing)을 수행합니다. 양쪽 모두 출시되면 공식 스토어를 가장 먼저 안내합니다.
 
@@ -147,17 +147,13 @@ npm run build:chrome
 2. 기존 플러그인을 설치된 상태로 두고 더 높은 버전의 `.streamDeckPlugin`을 더블클릭합니다. Stream Deck에서 설치를 완료합니다. 일반 업데이트에 개발자 모드나 수동 플러그인 중지는 필수 절차가 아닙니다.
 3. 실제 설치 버전이 목표 버전으로 바뀌었는지 확인한 뒤 기존 페어링·공통 포트·액션·프로필을 확인합니다. Chrome은 위 안내대로 같은 폴더에서 갱신하고 새로고침합니다. 일반 업데이트를 위해 페어링을 초기화하지 마세요.
 
-개발자의 Windows·Stream Deck 7.6.0 환경에서 일반 모드의 1.0.1 → 1.0.2 설치·시작이 성공했으며, 실행 중인 1.0.1을 교체하는 과정도 기록됐습니다. 이전 폴더 이름 변경 오류의 원인은 미확정입니다. 모든 설치 환경이나 설정 보존 항목별 검증을 보장하는 결과는 아니며, [검증 근거와 평가](verification/update-behavior-assessment.md)를 참고하세요.
-
 패키지가 거부되면 오류·실제 설치 버전·호스트 로그를 기록한 뒤 아래 복구 절차를 사용하세요. 같은 버전이나 이전 버전의 패키지는 이미 설치된 것으로 처리될 수 있습니다. 의도적인 개발 빌드 교체나 다운그레이드에는 백업 후 파일 교체를 사용합니다.
 
 <a id="replacing-plugin-files"></a>
 
 ### 설치 실패 시 플러그인 파일 교체로 복구
 
-설치가 거부됐거나 버전이 더 높지 않은 개발 빌드를 의도적으로 교체할 때 사용하는 복구 절차입니다. 매번 업데이트할 때 필요한 절차는 아닙니다. 과거 실패와 이후 일반 모드 성공 결과는 [검증 기록](verification/update-behavior-assessment.md)에 보존합니다.
-
-설정 보존 항목별 측정과 롤백 실증은 아직 남아 있으므로 아래 백업을 먼저 수행하세요.
+설치가 거부됐거나 버전이 더 높지 않은 개발 빌드를 의도적으로 교체할 때 사용하는 복구 절차입니다. 매번 업데이트할 때 필요한 절차는 아닙니다.
 
 이 상황에서 패키지를 업데이트하려면 다음 절차를 사용하세요.
 
@@ -165,12 +161,12 @@ npm run build:chrome
 2. 창만 닫지 말고 **시스템 트레이 메뉴에서 Stream Deck을 완전히 종료**합니다. 플러그인 폴더를 연 탐색기·터미널도 닫으세요. 폴더 이동이 계속 접근 거부되면 반복 삭제하지 말고 열린 핸들·권한을 조사하며 백업을 유지합니다.
 3. `%APPDATA%\Elgato\StreamDeck\Plugins\io.github.minjungw00.musicdeckbridge.sdPlugin` 폴더만 **Plugins 밖의 백업 위치로 이동**합니다. 이름을 바꾼 복사본도 `Plugins` 안에는 남기지 않습니다.
 4. `%APPDATA%\MusicDeckBridge\auth.json`, `config.json`, Stream Deck 프로필과 기존 Chrome 확장 프로그램은 유지합니다. 파일 교체이므로 **연결 해제나 확장 프로그램 삭제·초기화를 하지 않습니다.**
-5. Stream Deck을 실행한 뒤 새로 받은 `.streamDeckPlugin`을 더블클릭합니다. 설치 성공을 확인하고, 설치된 매니페스트의 `Version`이 목표 버전인지 확인합니다(v1.0.1은 `1.0.1.0`). 다운로드 완료나 이전 액션의 복구만으로 업데이트 성공을 판단하지 마세요.
+5. Stream Deck을 실행한 뒤 새로 받은 `.streamDeckPlugin`을 더블클릭합니다. 설치 성공을 확인하고, 설치된 매니페스트의 `Version`이 목표 버전인지 확인합니다(릴리스 `X.Y.Z`는 `X.Y.Z.0`). 다운로드 완료나 이전 액션의 복구만으로 업데이트 성공을 판단하지 마세요.
 6. 같은 Chrome 확장 프로그램 폴더를 새 파일로 갱신하고 새로고침합니다. 기존 인증·양쪽 포트·액션 설정·프로필 유지와 재생 제어를 확인합니다.
 
 설치에 실패하면 Stream Deck을 완전히 종료하고, 불완전한 새 플러그인 폴더가 있으면 `Plugins` 밖으로 옮긴 뒤 백업 폴더를 원래 경로에 복원하고 재실행합니다. 필요하면 Chrome도 같은 확장 폴더에 이전 파일을 복원하고 새로고침합니다. 인증·포트·프로필은 유지하세요. 실제 설치 버전과 설치 로그를 확인하며, `Failed to fetch` 해결을 위해 반복 설치나 PIN 초기화부터 진행하지 마세요.
 
-`Failed to fetch`는 확장 프로그램이 설정된 로컬 브리지에서 HTTP 응답을 받지 못했다는 뜻입니다. 설치가 거부된 직후라면 Stream Deck 재실행으로 이전 버전이 복구되는지, 양쪽 포트가 같은지 먼저 확인하세요. 이 메시지만으로 PIN 오류나 새 플러그인의 결함을 확정할 수는 없습니다. 새 버전이 설치되지 않았을 수 있습니다. 10월 17일 실제 로그에서는 기존 플러그인 제거 중 폴더 이름 변경이 `Access is denied`로 실패했습니다. 이를 막은 프로세스나 권한은 미확인이며 [조사 기록과 남은 보존 검증](verification/update-installation.md)을 참고하세요.
+확장 프로그램에 `Failed to fetch`가 표시되면 [문제 해결](troubleshooting.md)을 따르세요. 페어링을 변경하기 전에 Stream Deck 실행 여부, 실제 설치 버전과 양쪽 포트를 확인합니다.
 
 ### 다운로드 파일 검증
 

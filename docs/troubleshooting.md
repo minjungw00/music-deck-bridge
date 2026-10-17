@@ -27,10 +27,10 @@ If tests cannot bind `127.0.0.1`, run them in an environment that permits local 
 
 For bug reports include OS, browser, extension, Stream Deck software/device versions, tab versus installed app, steps, expected/actual behavior and redacted diagnostics. Use [SECURITY.md](../SECURITY.md) for private vulnerability reports.
 
-## Logged plugin update rejection / 로그로 확인한 업데이트 거부
+## Installation logs / 설치 로그
 
-On October 17, Stream Deck 7.6.0.23012 on Windows 11 logged four `InstallError` failures because renaming the old plugin directory to `.sdPlugin.uninstall` returned `Access is denied`. It had already stopped the bridge, explaining the subsequent `Failed to fetch`. The lock owner or underlying permission problem is still unknown. Restarting can recover the existing plugin; confirm the installed manifest version before claiming an update succeeded. See the [redacted evidence and test matrix](verification/update-installation.md).
+Before retrying a rejected installation, save `%APPDATA%\Elgato\StreamDeck\logs\StreamDeck*.log`, matching JSON logs and the plugin's `logs` folder if present. Include the error time, actual installed version and package source/checksum in a bug report. Back up profiles, `%APPDATA%\MusicDeckBridge` and plugin files before following the [recovery procedure](installation.en.md#replacing-plugin-files). If moving the stopped plugin folder gives access denied, close windows/terminals using it and inspect open handles and permissions. Keep the same Chrome extension path/ID.
 
-10월 17일 Windows 11 / Stream Deck 7.6.0.23012 로그에서 기존 플러그인 폴더를 `.sdPlugin.uninstall`로 변경하지 못한 접근 거부와 `InstallError`가 네 차례 확인됐습니다. 브리지가 먼저 중지되어 `Failed to fetch`가 이어질 수 있습니다. 잠금 주체나 권한 문제의 세부 원인은 미확인입니다. 재실행으로 기존 버전을 복구한 뒤 실제 매니페스트 버전을 확인하고, [설정 보존 파일 교체](installation.ko.md#replacing-plugin-files) 절차를 따르세요.
+설치가 거부되면 재시도 전에 `%APPDATA%\Elgato\StreamDeck\logs\StreamDeck*.log`, 대응하는 JSON 로그와 플러그인의 `logs` 폴더가 있으면 보관하세요. 오류 발생 시각, 실제 설치 버전과 패키지 출처·체크섬을 오류 보고에 포함합니다. 프로필·`%APPDATA%\MusicDeckBridge`·플러그인 파일을 백업한 뒤 [복구 절차](installation.ko.md#replacing-plugin-files)를 따르세요. 중지한 플러그인 폴더를 이동할 때 접근이 거부되면 해당 폴더를 사용하는 창·터미널을 닫고 열린 핸들과 권한을 확인합니다. Chrome 확장 프로그램의 경로·ID는 유지하세요.
 
-Save `%APPDATA%\Elgato\StreamDeck\logs\StreamDeck*.log` and matching JSON logs before another attempt; newer host versions use `StreamDeck.log` and numbered rotations rather than only `StreamDeck0.log`. Include plugin-local logs if present. Close folder windows/terminals before moving the stopped plugin. Preserve profiles, a private backup of `%APPDATA%\MusicDeckBridge`, and the same Chrome extension path/ID. Do not reset PIN authentication to diagnose a host directory-rename failure. Raw host logs contain device and account identifiers; share only reviewed, redacted entries.
+Host logs can contain device and account identifiers. Share only reviewed, redacted entries. 호스트 로그에는 장치·계정 식별 정보가 포함될 수 있으므로 검토하고 가린 내용만 공유하세요.

@@ -1,13 +1,16 @@
-# Store submission status
+# Store submission guide
 
-As of October 17, 2026, the maintainer reports **Elgato Marketplace v1.0.1 uploaded and Pending review**. Chrome Web Store preparation remains pending, with no submission recorded. The Console media and submitted package hash have not been inspected; no actual product captures, processed-DRM test results, approvals or public installation URLs are recorded here. Complete the update/recovery and DRM P0 evidence before release sign-off or v1.1.0 feature development.
+This directory contains listing copy, artwork and submission checklists. Track submitted versions, Console identifiers, package hashes, review status and verification results in [release readiness](../docs/release-readiness.md) and its linked verification records.
 
-| Store | Prepared | Still required |
-| --- | --- | --- |
-| Elgato Marketplace | v1.0.1 Pending review (maintainer report); 288px app icon; [English](listing.en.md) and [Korean](listing.ko.md) copy | Submitted-file provenance, actual screenshot evidence, store-sized thumbnail/gallery exports, processed DRM execution, installer retention and approval |
-| Chrome Web Store | v1.0.1 magenta icons, permission explanations and public [privacy policy](https://github.com/minjungw00/music-deck-bridge/blob/main/PRIVACY.md) | Actual popup screenshots, final data-use declarations, unpacked-to-store migration with new pairing, review and approval |
+| Store | Assets and checklist |
+| --- | --- |
+| Elgato Marketplace | [Plugin submission guide](elgato/README.md), app icon, actual key/dial and settings screenshots |
+| Chrome Web Store | [Extension submission guide](chrome/README.md), extension icons, actual popup screenshots and promotional images |
+| Both | [English](listing.en.md) / [Korean](listing.ko.md) listing copy and public [privacy policy](https://github.com/minjungw00/music-deck-bridge/blob/main/PRIVACY.md) |
 
-The submissions and public installation URLs are independent. Activate each URL in README and both installation guides only after that product is approved, public and its store installation is verified.
+For each submission, match the package, listing claims and media to the same version. Preserve already submitted packages and record revisions separately. Check current Console requirements before exporting media. Reconcile the submitted extension's storage, scripting, alarms and host permissions with the privacy form; the plugin fetches artwork externally.
+
+The submissions and public installation URLs are independent. Activate each URL in README and both installation guides only after that product is approved, public and its store installation is verified. Record actual Maker Console package execution in the [DRM test record](../docs/verification/marketplace-drm.md).
 
 ## Screenshot capture plan
 
@@ -19,7 +22,4 @@ Use a clean Windows profile and dummy listening details. Capture each image from
 4. Action settings in English and Korean: title display mode and connection status. Hide live PINs, tokens and local identifying details.
 5. Verify current store dimensions and export the requested screenshot and promotional formats into the relevant store-assets subdirectory.
 
-
-See the [Elgato](elgato/README.md) / [Chrome](chrome/README.md) submission folders and [DRM test record](../docs/verification/marketplace-drm.md). Reconcile the submitted build's actual storage, scripting, alarms and host permissions with the privacy form; artwork is fetched externally by the plugin.
-
-The [supplied README thumbnail](../docs/assets/music-deck-bridge-thumbnail.png) is preserved unchanged. The new action family, state-linked toggle and popup colors are selected for the unpublished v1.0.2 candidate and do not alter the package currently in review. See the [candidate preparation record](../docs/verification/v1.0.2.md). Store-specific image sizes are recorded in the respective submission folders.
+The [supplied README thumbnail](../docs/assets/music-deck-bridge-thumbnail.png) is promotional artwork. Prepare store-specific sizes separately and use actual captures for product screenshots. See the [brand guide](../docs/branding.md) for icon design and reproduction.

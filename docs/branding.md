@@ -1,18 +1,10 @@
 # Music Deck Bridge branding
 
-The official project name is **Music Deck Bridge**. Version 1.0.1 introduces its magenta play-disc identity for both the Stream Deck plugin and Chrome extension. Store submissions should use these same generated assets.
+The official project name is **Music Deck Bridge**. Use its magenta play-disc identity for both the Stream Deck plugin and Chrome extension. Store submissions should use these same generated assets.
 
-## Icon history
+The main mark combines a large magenta disc, rounded white play triangle, paired left/right sound waves and a dark rounded square. Shapes are defined in the project renderer. See the [versioned branding history](verification/v1.0.1.md#branding-history) for earlier designs and their provenance.
 
-The earlier 0.5.1-era icons used a circular play mark and surrounding arcs. Their source artwork was not independently verified. Commit [`05e1785`](https://github.com/minjungw00/music-deck-bridge/commit/05e17852815d5c0c99f07e83bf01ebc7bcec2dfc) removed the supplied source mark and replaced the brand and action icons with reproducible geometric graphics. The 1.0.0 brand was three equalizer bars joined by a white bridge. Its Now Playing variant was retained in the released 1.0.1 action assets; development artwork now uses the play-disc identity below.
-
-The 1.0.1 brand follows the maintainer's supplied visual reference: a large magenta disc, rounded white play triangle, paired left/right sound waves and a dark rounded square. The initial unreleased candidate with offset signal bars and a bent bridge connection was rejected in design review and replaced. The revised shapes are defined in project code; the reference bitmap is not bundled or used as a rendering input. This documents the selected design rather than claiming trademark clearance or store approval.
-
-| 1.0.0 geometric brand, introduced by `05e1785` | 1.0.1 magenta play-disc brand |
-| --- | --- |
-| ![Previous equalizer and bridge icon](assets/brand-v1.0.0.png) | ![Magenta disc, rounded white play triangle and paired sound waves](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/plugin/icon.png) |
-
-The historical comparison PNG is copied unchanged from the `v1.0.0` tag. It shows the project's generated predecessor, rather than redistributing the earlier unverified artwork. The `v1.0.0` tag and release assets are preserved.
+![Magenta play-disc brand](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/plugin/icon.png)
 
 ## Palette and small sizes
 
@@ -38,11 +30,11 @@ Use the committed size-specific PNGs. The minimum colored size is **16×16**; th
 | Chrome representative and toolbar icons | `chrome-extension/icons/16.png`, `48.png`, `128.png` | 16×16, 48×48, 128×128 |
 | Marketplace app icon | `store-assets/elgato/app-icon.png` | 288×288 |
 
-The seven representative/category/Chrome PNGs remain byte-for-byte unchanged from public v1.0.1. The separate 288px Marketplace export uses the same renderer; its size follows the [Marketplace product guidelines](https://docs.elgato.com/guidelines/products/).
+The 288px Marketplace export uses the same renderer; its size follows the [Marketplace product guidelines](https://docs.elgato.com/guidelines/products/).
 
-## Unreleased action family
+## Action icons
 
-All seven actions now use the main icon's circular badge, gradient magenta, white symbol and dark rounded surface. Now Playing uses the main play-disc mark; the other six retain recognizable play/pause, previous/next, speaker/mute and dial symbols. The old pale-pink equalizer and blue-grey border are retired from development assets.
+All seven actions use the main icon's circular badge, gradient magenta, white symbol and dark rounded surface. Now Playing uses the main play-disc mark; the other six retain recognizable play/pause, previous/next, speaker/mute and dial symbols.
 
 | Now Playing | Play / Pause | Previous | Next | Mute | Volume Dial | Track Dial |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -55,8 +47,6 @@ The Play / Pause key has separate artwork for its next operation: Play when paus
 | Paused: Play | Playing: Pause |
 | --- | --- |
 | ![Play](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/toggle/key.png) | ![Pause](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/toggle/pause.png) |
-
-These assets are selected for the **unpublished v1.0.2 candidate**, separate from the fixed GitHub v1.0.1 packages and the v1.0.1 package the maintainer reports as Pending review in Marketplace. Source/Chrome versions are 1.0.2 and the plugin manifest is 1.0.2.0. No submitted package is replaced by a source change; use the [candidate verification record](verification/v1.0.2.md) before distribution.
 
 The [root README thumbnail](assets/music-deck-bridge-thumbnail.png) is the supplied promotional image, copied unchanged; its [provenance](assets/README.md) is separate from the generated icons. It is not a product screenshot.
 
@@ -76,6 +66,6 @@ Run the normal [development checks](development.md#local-checks). `tests/brand-a
 
 ## License and attribution
 
-The project's generator, generated icons and historical geometric comparison PNG are distributed under the repository's [Apache-2.0 license](../LICENSE). Keep applicable [NOTICE](../NOTICE) and [third-party notices](../THIRD_PARTY_NOTICES.md) with redistributions. Bundled third-party code retains its own licenses. This artwork statement does not extend to external album artwork, earlier unverified images or third-party trademarks.
+The project's generator and generated icons are distributed under the repository's [Apache-2.0 license](../LICENSE). Keep applicable [NOTICE](../NOTICE) and [third-party notices](../THIRD_PARTY_NOTICES.md) with redistributions. Bundled third-party code retains its own licenses. This artwork statement does not extend to external album artwork, earlier unverified images or third-party trademarks.
 
 Music Deck Bridge is independent and unofficial. It is not affiliated with or endorsed by Google, YouTube, Elgato or Corsair. Those names identify compatible products and remain their owners' trademarks. These project graphics do not represent store approval. Marketplace and Chrome Web Store install URLs belong in the installation guides only after the respective products are approved and publicly available.

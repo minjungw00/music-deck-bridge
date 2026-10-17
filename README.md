@@ -37,7 +37,7 @@ Music Deck Bridge contains two components that must be installed together: a Str
 | GitHub Releases | General users; stable prebuilt packages | [English](docs/installation.en.md#method-1-github-releases) / [한국어](docs/installation.ko.md#method-1-github-releases) |
 | GitHub Actions | Testers; latest development packages, stability not guaranteed; GitHub sign-in required | [English](docs/installation.en.md#method-2-github-actions) / [한국어](docs/installation.ko.md#method-2-github-actions) |
 | Build from source | Developers; requires Node.js 24 and npm, plus Python 3.10+ for packaging | [English](docs/installation.en.md#method-3-build-from-source) / [한국어](docs/installation.ko.md#method-3-build-from-source) |
-| Official stores | Elgato v1.0.1: Pending review; Chrome Web Store: preparation pending. No public install links yet. | [English](docs/installation.en.md#method-4-official-stores) / [한국어](docs/installation.ko.md#method-4-official-stores) |
+| Official stores | Public install links are not available yet; use GitHub packages | [English](docs/installation.en.md#method-4-official-stores) / [한국어](docs/installation.ko.md#method-4-official-stores) |
 
 See the guides for [PIN pairing](docs/installation.en.md#pairing), updates, switching installation methods and removal. Chrome ZIP packages must be extracted to a permanent folder and loaded unpacked in Developer mode.
 
@@ -51,7 +51,7 @@ npm run check
 npm test
 ```
 
-`npm run build:plugin` needs only Node.js and npm. Packaging uses Python 3.10+ (`python3`, `python`, or Windows `py`). See [development and release checks](docs/development.md) for source builds, tests and packaging.
+`npm run build:plugin` needs only Node.js and npm. Packaging uses Python 3.10+ (`python3`, `python`, or Windows `py`). See [development and release checks](docs/development.md) for source builds, tests and packaging. The [documentation index](docs/README.md) separates guides from release and verification records.
 
 ```text
 streamdeck/        Plugin source, bundle/resources and icon generator
@@ -66,6 +66,6 @@ store-assets/     Store submission assets and checklists
 
 Playback data travels between the extension and `127.0.0.1`; the plugin also downloads artwork from approved Google/YouTube image servers. See [privacy](PRIVACY.md), [security reporting](SECURITY.md), [third-party notices](THIRD_PARTY_NOTICES.md) and [contribution guidelines](CONTRIBUTING.md).
 
-Project code and generated project icons are licensed under [Apache-2.0](LICENSE). See the [brand guide and icon history](docs/branding.md) for artwork and reproduction details. Bundled third-party code retains its own license.
+Project code and generated project icons are licensed under [Apache-2.0](LICENSE). See the [brand guide](docs/branding.md) for artwork and reproduction details. Bundled third-party code retains its own license.
 
 This is an independent, unofficial project, unaffiliated with Google, YouTube, Elgato or Corsair. Their names identify compatible products and remain the property of their respective owners.

@@ -1,6 +1,6 @@
 # Store copy — English
 
-Draft for the unpublished 1.0.2 candidate; the existing Elgato submission remains v1.0.1 Pending review (maintainer report). Check every claim against the final submitted build. Screenshots and release approval are still pending; see [release readiness](../docs/release-readiness.md).
+Draft listing copy. Check every claim against the final submitted build and complete the [submission checklist](README.md). Track version-specific results and approval status in [release readiness](../docs/release-readiness.md).
 
 ## Chrome Web Store
 

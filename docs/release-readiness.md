@@ -27,11 +27,11 @@ The [expected-behavior assessment](verification/update-behavior-assessment.md) c
 | File removal/reinstallation | Maintainer report plus later AllOk/SDK connection | Exact steps, before/after retention and backup rollback still need measured evidence. |
 | Maker Console DRM | **Not tested** | [Actual processed-package checklist](verification/marketplace-drm.md); local packaging and opaque-manifest tests do not establish DRM compatibility. |
 | GitHub security | Verified enabled | Private reports, secret scanning, push protection, Dependabot alerts/fixes; read-only default Actions token. [Security evidence and limited history/artifact inspection](security-readiness.md). |
-| Store review/installations | Elgato v1.0.1 Pending review (maintainer report); Chrome preparation pending | [Submission status and actual screenshot plan](../store-assets/README.md). No public product install URLs activated. |
+| Store review/installations | Elgato v1.0.1 Pending review (maintainer report); Chrome preparation pending | [Review preparation](verification/review-preparation.md) and [screenshot plan](../store-assets/README.md#screenshot-capture-plan). No public product install URLs activated. |
 
 ## Review preparation in development
 
-The [supplied README thumbnail](assets/music-deck-bridge-thumbnail.png) is included unchanged. All seven action families now match the main icon; the new 288px Marketplace app icon, icon reproduction and asset/packaging checks support the next package. See [branding](branding.md#unreleased-action-family) and the [review-preparation checks and limits](verification/review-preparation.md). These source changes do not replace the v1.0.1 file currently in review.
+The [supplied README thumbnail](assets/music-deck-bridge-thumbnail.png) is included unchanged. All seven action families now match the main icon; the new 288px Marketplace app icon, icon reproduction and asset/packaging checks support the next package. See [branding](branding.md#action-icons) and the [review-preparation checks and limits](verification/review-preparation.md). These source changes do not replace the v1.0.1 file currently in review.
 
 October 18 development separates the toggle key into Play and Pause artwork driven by the selected player's reported playback state. Chrome-side changes, multiple visible keys, reappearance and offline fallback are exercised through the SDK round-trip fixtures; this is separate from installed-device and Maker Console DRM verification.
 
