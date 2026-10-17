@@ -15,11 +15,11 @@ const musicURL = 'https://music.youtube.com/';
 const fixture = `<!doctype html><html><body>
 <ytmusic-player-bar>
  <span class="title">Fixture song</span><span class="byline">Fixture artist</span>
- <audio></audio>
- <button class="play-pause-button" onclick="playing=!playing;record('toggle')">Play</button>
- <button class="previous-button" onclick="record('prev')">Previous</button>
- <button class="next-button" onclick="record('next')">Next</button>
- <button class="volume" onclick="record('mute')">Mute</button>
+ <audio></audio><div id="movie_player"></div>
+ <button class="play-pause-button" onclick="control('toggle')">Play</button>
+ <button class="previous-button" onclick="control('prev')">Previous</button>
+ <button class="next-button" onclick="control('next')">Next</button>
+ <button class="volume" onclick="muted=!muted;record('mute')">Mute</button>
  <div id="volume-slider" style="width:100px;height:20px" aria-valuenow="50"></div>
  <ytmusic-like-button-renderer like-status="INDIFFERENT">
   <div id="button-shape-like"><button onclick="record('like')">Like</button></div>
@@ -27,11 +27,24 @@ const fixture = `<!doctype html><html><body>
  </ytmusic-like-button-renderer>
 </ytmusic-player-bar>
 <script>
-let playing=false;
+let playing=false, muted=false, ready=false, index=2;
+const tracks=['aaaaaaaaaaa','bbbbbbbbbbb','ccccccccccc','ddddddddddd','eeeeeeeeeee'];
 function record(key){ document.body.dataset[key]=String(Number(document.body.dataset[key]||0)+1); }
+function control(type){
+ if(!ready){record('early');return;}
+ if(type==='toggle')playing=!playing;
+ if(type==='prev')index--;
+ if(type==='next')index++;
+ record(type);
+}
 Object.defineProperties(document.querySelector('audio'), {
- paused:{get:()=>!playing}, ended:{get:()=>false}, readyState:{get:()=>4}, duration:{get:()=>180}
+ paused:{get:()=>true}, ended:{get:()=>false}, readyState:{get:()=>ready?4:0}, duration:{get:()=>180},
+ currentSrc:{get:()=>tracks[index]}
 });
+const api=document.querySelector('#movie_player');
+api.isReady=()=>ready;api.getPlayerState=()=>playing?1:2;api.getVideoData=()=>({video_id:tracks[index]});
+api.isMuted=()=>muted;
+setTimeout(()=>{ready=true;},500);
 const slider=document.querySelector('#volume-slider');slider.value=50;
 slider.addEventListener('change',()=>{slider.setAttribute('aria-valuenow',slider.value);record('volume_delta');});
 </script></body></html>`;
@@ -87,9 +100,14 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     await chrome.storage.local.set({ bridgeToken: result.token });
     globalThis.acknowledgments = [];
     globalThis.legacyPollsStarted = 0;
+    globalThis.playerSnapshots = [];
     const original = fetch;
     globalThis.fetch = async (url, options) => {
       if (url.endsWith('/listen')) legacyPollsStarted++;
+      if (url.endsWith('/sync')) {
+        const { clientId, state } = JSON.parse(options.body);
+        playerSnapshots.push({ clientId, playing: state.playing, muted: state.muted });
+      }
       if (url.endsWith('/browser-result')) {
         const { ok, reason } = JSON.parse(options.body);
         acknowledgments.push({ ok, reason, legacyPollsStarted });
@@ -110,7 +128,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   };
   // Every input starts with zero music tabs. Real tab navigation, script injection,
   // runtime messaging, token validation and result ACKs are used without API mocks.
-  for (const type of ['toggle', 'prev', 'next', 'mute', 'like', 'dislike', 'volume_delta', 'open']) {
+  for (const type of ['toggle', 'nowplaying', 'prev', 'next', 'mute', 'like', 'dislike', 'volume_delta', 'open']) {
     for (const page of browser.pages()) if (page.url().startsWith(musicURL)) await page.close();
     const before = await worker.evaluate(() => acknowledgments.length);
     await postEvent(type);
@@ -118,7 +136,16 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     assert.equal(ack.ok, true, `${type}: ${JSON.stringify(ack)}; ${output}`);
     const page = await until(() => browser.pages().find(page => page.url().startsWith(musicURL)), 'music tab');
     await page.waitForLoadState();
-    if (type !== 'open') assert.equal(await page.evaluate(type => document.body.dataset[type], type), '1', type);
+    const effect = type === 'nowplaying' ? 'toggle' : type;
+    if (type !== 'open') assert.equal(await page.evaluate(type => document.body.dataset[type], effect), '1', type);
+    assert.equal(await page.evaluate(() => document.body.dataset.early), undefined, 'restored controls must wait for the player');
+    if (effect === 'toggle') {
+      await until(() => worker.evaluate(() => playerSnapshots.some(state => state.playing)), 'MAIN playback state reflected in sync');
+      assert.equal(await page.evaluate(() => document.querySelector('audio').paused), true, 'stale media node must not override the site player');
+    }
+    if (type === 'mute') {
+      await until(() => worker.evaluate(() => playerSnapshots.some(state => state.muted)), 'MAIN mute state reflected in sync');
+    }
     assert.equal(browser.pages().filter(page => page.url().startsWith(musicURL)).length, 1);
   }
   // A second launch reuses the existing music tab; a normal input keeps working.
@@ -149,5 +176,5 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   assert.ok(navigation.calls >= 2);
   const music = browser.pages().find(page => page.url().startsWith(musicURL));
   assert.equal(await music.evaluate(() => document.body.dataset.next), '1', 'no duplicate effect after navigation');
-  t.diagnostic(`Chromium ${browser.browser().version()}; 8 cold-tab inputs and replaced-receiver recovery passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
+  t.diagnostic(`Chromium ${browser.browser().version()}; 9 cold-tab actions, delayed readiness, MAIN state sync and replaced-receiver recovery passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
 });

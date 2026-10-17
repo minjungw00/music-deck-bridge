@@ -216,7 +216,7 @@ test('revoking pairing after a response prevents the received browser command fr
     return { ok: true, json: async () => ({ commands: [{ id: 'request', type: 'open' }] }) };
   };
   await h.api.startBrowserListener();
-  assert.equal(h.calls.length, 0);
+  assert.equal(h.calls.some(c => ['create', 'message', 'update'].includes(c[0])), false);
 });
 
 test('server-side revocation during startup prevents input even when local credentials remain', async () => {

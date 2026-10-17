@@ -42,6 +42,8 @@ const MUSIC_URL = 'https://music.youtube.com/';
 let browserListening = false;
 let browserRetryTimer = null;
 let browserChannelAvailable = null;
+const removedTabs = new Set();
+const synchronizations = new Map();
 const PLAYER_COMMANDS = ['toggle', 'prev', 'next', 'mute', 'volume_delta', 'like', 'dislike'];
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function performBrowserCommand(command, stillPaired = async () => true, diagnostic = {}) {
@@ -97,7 +99,7 @@ async function performBrowserCommand(command, stillPaired = async () => true, di
       return failed('delivery-uncertain');
     }
     if (result?.ok) return true;
-    if (result?.retry !== true) return failed('player-rejected');
+    if (result?.retry !== true) return failed(result?.reason || 'player-rejected');
     diagnostic.reason = 'player-not-ready';
     await wait(200);
   }
@@ -121,7 +123,10 @@ async function startBrowserListener() {
         return;
       }
       let result;
-      try { result = await post('/browser-listen', { token }, 15500); }
+      try {
+        const tabs = await chrome.tabs.query({ url: MUSIC_URL + '*' });
+        result = await post('/browser-listen', { token, clientIds: tabs.map(tab => tab.id) }, 15500);
+      }
       catch (error) {
         if (error.httpStatus === 404) browserChannelAvailable = false;
         throw error;
@@ -164,6 +169,85 @@ async function startBrowserListener() {
   }
 }
 
+// Runs in MAIN: a restored title/button can precede the actual player and queue.
+// Read only playback state; never return the site's response or account data.
+async function playerPlayback(type, expiresAt) {
+  const read = () => {
+    const bar = document.querySelector('ytmusic-player-bar');
+    const candidates = [bar?.playerApi, document.querySelector('#movie_player')];
+    const api = candidates.find(item => typeof item?.getPlayerState === 'function');
+    const all = [...document.querySelectorAll('video, audio')];
+    const media = all.find(item => item.readyState > 0 && !item.paused) ||
+      all.find(item => item.readyState > 0 && Number.isFinite(item.duration)) || all[0];
+    let state, videoId = '', ready = false, muted, time;
+    try {
+      state = api?.getPlayerState();
+      videoId = api?.getVideoData?.()?.video_id || '';
+      muted = api?.isMuted?.();
+      time = api?.getCurrentTime?.();
+      ready = api ? (typeof api.isReady !== 'function' || api.isReady()) &&
+        Number.isFinite(state) && Boolean(videoId || media?.readyState > 0) : media?.readyState > 0;
+      const status = api?.getPlayerResponse?.()?.playabilityStatus?.status;
+      if (status && status !== 'OK') ready = false;
+    } catch { ready = false; }
+    const queue = bar?.queue;
+    let index;
+    try {
+      if (typeof queue?.getItems === 'function' && !queue.getItems()?.length) ready = false;
+      index = queue?.getCurrentItemIndex?.();
+    } catch { ready = false; }
+    const playing = Number.isFinite(state) ? state === 1 || state === 3 :
+      Boolean(media && !media.paused && !media.ended);
+    return { bar, api, media, ready, playing, state, index,
+      muted: typeof muted === 'boolean' ? muted : Boolean(media?.muted),
+      key: videoId || media?.currentSrc || media?.src || '',
+      time: Number.isFinite(time) ? time : media?.currentTime || 0 };
+  };
+  const before = read();
+  if (type === 'state') return { playing: before.playing, muted: before.muted };
+  if (!['play', 'toggle', 'next', 'prev'].includes(type)) return { ok: false };
+  if (!before.ready) return { ok: false, retry: true };
+  if (Number.isFinite(expiresAt) && Date.now() >= expiresAt) return { ok: false, reason: 'command-timeout' };
+  if (type === 'play' && before.playing) return { ok: true };
+  const desiredPlaying = type === 'play' || !before.playing;
+  const selector = ({ play: '.play-pause-button', toggle: '.play-pause-button',
+    next: '.next-button', prev: '.previous-button' })[type];
+  const button = document.querySelector('ytmusic-player-bar ' + selector);
+  if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true' ||
+      button.closest?.('[disabled], [aria-disabled="true"]')) return { ok: false, retry: true };
+  let blocked = false, playerError = false;
+  const onBlocked = () => { blocked = true; };
+  const onError = () => { playerError = true; };
+  before.api?.addEventListener?.('onAutoplayBlocked', onBlocked);
+  before.api?.addEventListener?.('onError', onError);
+  try {
+    // Use the site's own control path only after its media/queue is initialized.
+    button.click();
+    const deadline = Math.min(Number(expiresAt) || Infinity, Date.now() + 10000);
+    do {
+      const after = read();
+      if (blocked) return { ok: false, reason: 'autoplay-blocked' };
+      if (playerError || after.media?.error) return { ok: false, reason: 'player-error' };
+      if (type === 'play' || type === 'toggle') {
+        const started = Number.isFinite(after.state) ? after.state === 1 :
+          after.playing && after.media?.readyState >= 2;
+        if (desiredPlaying ? started : !after.playing) return { ok: true };
+      } else if ((before.key && after.key && before.key !== after.key) ||
+          (Number.isInteger(before.index) && Number.isInteger(after.index) && before.index !== after.index) ||
+          (type === 'prev' && before.time > 5 && after.time < 2)) return { ok: true };
+      await new Promise(resolve => setTimeout(resolve, 80));
+    } while (Date.now() < deadline);
+    // A dispatched click with no observed result is ambiguous. Never retry it:
+    // a delayed Next/Previous could otherwise skip more than one track.
+    return { ok: false, reason: 'playback-unconfirmed' };
+  } catch (error) {
+    return { ok: false, reason: error?.name === 'NotAllowedError' ? 'autoplay-blocked' : 'player-error' };
+  } finally {
+    before.api?.removeEventListener?.('onAutoplayBlocked', onBlocked);
+    before.api?.removeEventListener?.('onError', onError);
+  }
+}
+
 // Runs in the page's MAIN world: Polymer slider properties belong to the site,
 // and are not visible through the content script's isolated DOM wrappers.
 function controlPlayerVolume(type, amount) {
@@ -192,6 +276,15 @@ function controlPlayerVolume(type, amount) {
 }
 
 chrome.runtime.onMessage.addListener((msg, sender, respond) => {
+  if (msg?.type === 'player-playback' && Number.isInteger(sender.tab?.id) && sender.frameId === 0 &&
+      sender.url?.startsWith('https://music.youtube.com/')) {
+    if (!['play', 'toggle', 'next', 'prev'].includes(msg.command)) { respond({ ok: false }); return false; }
+    chrome.scripting.executeScript({ target: { tabId: sender.tab.id, frameIds: [0] }, world: 'MAIN',
+      func: playerPlayback, args: [msg.command, msg.expiresAt] })
+      .then(results => respond(results[0]?.result || { ok: false }))
+      .catch(() => respond({ ok: false, reason: 'playback-unconfirmed' }));
+    return true;
+  }
   if (msg?.type === 'player-volume' && Number.isInteger(sender.tab?.id) && sender.frameId === 0 &&
       sender.url?.startsWith('https://music.youtube.com/')) {
     if (!['volume_delta', 'mute'].includes(msg.command) ||
@@ -299,9 +392,21 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
       if (msg.type === 'listen' && browserChannelAvailable !== false) {
         return { paired: true, commands: [], idle: true };
       }
-      const result = msg.type === 'sync' ?
-        await post('/sync', { token, clientId: sender.tab.id, state: msg.state }) :
-        await post('/listen', { token, clientId: sender.tab.id }, 15500);
+      let state = msg.state;
+      if (msg.type === 'sync' && sender.frameId === 0) {
+        try {
+          const observed = await chrome.scripting.executeScript({ target: { tabId: sender.tab.id, frameIds: [0] },
+            world: 'MAIN', func: playerPlayback, args: ['state'] });
+          if (observed[0]?.result) state = { ...state, ...observed[0].result };
+        } catch { /* Keep the DOM snapshot if the page is navigating. */ }
+      }
+      if (removedTabs.has(sender.tab.id)) return { paired: true, commands: [] };
+      const request = msg.type === 'sync' ? post('/sync', { token, clientId: sender.tab.id, state }) :
+        post('/listen', { token, clientId: sender.tab.id }, 15500);
+      if (msg.type === 'sync') synchronizations.set(sender.tab.id, request);
+      let result;
+      try { result = await request; }
+      finally { if (synchronizations.get(sender.tab.id) === request) synchronizations.delete(sender.tab.id); }
       void startBrowserListener();
       return { paired: true, commands: result.commands || [], idle: result.idle === true };
     })().then(respond).catch(() => respond({ paired: false, commands: [] }));
@@ -340,6 +445,16 @@ chrome.alarms.onAlarm.addListener(alarm => {
     void ensureMusicScripts();
     void startBrowserListener();
   }
+});
+chrome.tabs?.onRemoved?.addListener(tabId => {
+  removedTabs.add(tabId);
+  if (removedTabs.size > 1024) removedTabs.delete(removedTabs.values().next().value);
+  const pending = synchronizations.get(tabId);
+  void (async () => {
+    await pending?.catch(() => {});
+    const token = await pairedToken();
+    if (token) await post('/player-closed', { token, clientId: tabId });
+  })().catch(() => {});
 });
 // Listen even when no YouTube Music content script exists.
 void startBrowserListener();

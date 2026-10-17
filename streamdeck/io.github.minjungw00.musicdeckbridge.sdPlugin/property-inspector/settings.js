@@ -25,6 +25,7 @@ const strings = {
     commandExtension: '확장 프로그램이 연결된 Chrome 프로필과 포트를 확인하세요.',
     commandPlayer: 'YouTube Music 페이지와 재생할 곡이 준비되었는지 확인하세요.',
     commandDelivery: '실행 결과를 확인하지 못했습니다. YouTube Music의 현재 상태를 확인하세요.',
+    commandAutoplay: 'Chrome이 자동 재생을 차단했습니다. YouTube Music 창에서 재생을 허용한 뒤 다시 시도하세요.',
   },
   en: {
     titleRow: 'Title and artist', truncate: 'Truncate', scroll: 'Scroll left',
@@ -48,6 +49,7 @@ const strings = {
     commandExtension: 'Check the paired Chrome profile and bridge port.',
     commandPlayer: 'Check that YouTube Music and a playable track are ready.',
     commandDelivery: 'Could not confirm execution. Check the current player state.',
+    commandAutoplay: 'Chrome blocked autoplay. Allow playback in YouTube Music, then try again.',
   },
 };
 let language = 'en';
@@ -110,9 +112,10 @@ function updateVolumeLabel() {
 function showConnection(payload) {
   currentStatus = payload;
   const error = payload.lastCommandError;
-  const hint = ['pairing-required', 'authorization-lost'].includes(error) ? 'commandPairing' :
+  const hint = error === 'autoplay-blocked' ? 'commandAutoplay' :
+    ['pairing-required', 'authorization-lost'].includes(error) ? 'commandPairing' :
     ['extension-unavailable', 'browser-api-failed', 'bridge-unavailable'].includes(error) ? 'commandExtension' :
-    error === 'delivery-uncertain' ? 'commandDelivery' : 'commandPlayer';
+    ['delivery-uncertain', 'playback-unconfirmed'].includes(error) ? 'commandDelivery' : 'commandPlayer';
   $('commandStatus').textContent = error ? `${t('commandFailed')} ${t(hint)} (${error})` : '';
   if (payload.pin && /^\d{6}$/.test(payload.pin)) {
     lastPin = payload.pin;

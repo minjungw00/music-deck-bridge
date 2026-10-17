@@ -17,7 +17,7 @@ async function scenario(useMediaSession=false, { commands, manualVolume, compact
   const { audio } = player;
   audio.paused = initiallyPaused;
   const playBtn = {click(){playClicks++;audio.paused=!audio.paused;},disabled:false,getAttribute(){return null;}};
-  const nextBtn = {click(){nextClicks++;},disabled:false,getAttribute(){return null;}};
+  const nextBtn = {click(){nextClicks++;audio.currentSrc='fixture://next-'+nextClicks;},disabled:false,getAttribute(){return null;}};
   const img = { matches(){return true;}, currentSrc:'https://lh5.googleusercontent.com/cover=w120-h120-rj',src:'' };
   const thumb = { matches(){return false;},querySelectorAll(){return useMediaSession?[]:[img];},style:{} };
   const eventHandlers = {};
@@ -57,7 +57,7 @@ async function scenario(useMediaSession=false, { commands, manualVolume, compact
       },
     },
     chrome:{runtime:{id:'this-extension',onMessage:{addListener(fn){eventHandlers.runtimeMessage=fn;}},async sendMessage(data){
-      if(data.type==='player-volume') return player.send(data);
+      if(data.type==='player-volume' || data.type==='player-playback') return player.send(data);
       if(data.type==='listen') return {paired:false,commands:[]};
       if(data.type==='sync') {
         lastState=data.state; syncCount++;
@@ -73,6 +73,7 @@ async function scenario(useMediaSession=false, { commands, manualVolume, compact
     setTimeout,clearTimeout,addEventListener(event,handler){eventHandlers[event]=handler;},
     console,URL,Date,Promise,
   };
+  player.setDocument(sandbox.document);
   vm.runInNewContext(source,sandbox);
   await new Promise(resolve => setTimeout(resolve,170));
   if (manualVolume !== undefined) {

@@ -41,7 +41,7 @@ Keep the root/lockfile at `X.Y.Z-dev` during development. Chrome uses numeric `X
 
 `npm test` runs the Node/SDK/HTTP fixtures. To exercise the actual MV3 runtime on Linux, install Chromium once with `npx playwright install --with-deps chromium`, then run `npm run test:browser`. OpenSSL is required to generate an ephemeral test certificate. Ubuntu CI runs this check automatically.
 
-The browser test uses a fresh temporary profile and a local HTTPS fixture mapped to `music.youtube.com`. Certificate validation is disabled only in that test browser. It exercises real extension storage, authenticated loopback requests, cold-tab navigation, script injection, command/result messages and existing-tab reuse. It checks all eight input types in sequence and replaces a receiver during navigation. It does not establish actual YouTube Music selectors/account behavior, Windows native process startup or Marketplace DRM.
+The browser test uses a fresh temporary profile and a local HTTPS fixture mapped to `music.youtube.com`. Certificate validation is disabled only in that test browser. It exercises real extension storage, authenticated loopback requests, cold-tab navigation, script injection, command/result messages and existing-tab reuse. It checks all eight input types in sequence, including the Current Track key's playback input, delays player readiness after visible controls, models stale media-element state and replaces a receiver during navigation. It does not establish actual YouTube Music selectors/account behavior, Windows native process startup or Marketplace DRM.
 
 ## Packaging
 

@@ -7,7 +7,8 @@ export const musicSender = { tab: { id: 55 }, frameId: 0, url: 'https://music.yo
 // Model the two site sliders and a deliberately nonlinear audio volume curve.
 // The isolated content script only sees shared DOM attributes, not page properties.
 export function playerHarness({ compact = false, available = true, delay = 0 } = {}) {
-  const audio = { readyState: 4, paused: false, ended: false, muted: false, volume: 0.25, duration: 120 };
+  const audio = { readyState: 4, paused: false, ended: false, muted: false, volume: 0.25, duration: 120,
+    currentSrc: 'fixture://initial', currentTime: 0 };
   const state = { savedVolume: 50, changes: [], muteClicks: 0 };
   const sliders = ['volume-slider', 'expand-volume-slider'].map((id, index) => ({
     id, step: 5, disabled: false, _value: 50,
@@ -39,7 +40,8 @@ export function playerHarness({ compact = false, available = true, delay = 0 } =
     querySelector: selector => selector === '.volume, #expand-volume' ? button : null,
     querySelectorAll: selector => available && selector === '#volume-slider, #expand-volume-slider' ? sliders : [],
   };
-  const page = { document: { querySelector: selector => available && selector === 'ytmusic-player-bar' ? bar : null }, Event };
+  const page = { document: { querySelector: selector => available && selector === 'ytmusic-player-bar' ? bar : null }, Event,
+    setTimeout, Date };
   const scriptCalls = [];
   let listener;
   const chrome = {
@@ -52,13 +54,15 @@ export function playerHarness({ compact = false, available = true, delay = 0 } =
     scripting: { async executeScript(options) {
       scriptCalls.push(options);
       if (delay) await new Promise(resolve => setTimeout(resolve, delay));
-      const result = vm.runInNewContext(`(${options.func.toString()})(...args)`, { ...page, args: options.args });
+      const result = await vm.runInNewContext(`(${options.func.toString()})(...args)`, { ...page, args: options.args });
       return [{ result }];
     } },
   };
   vm.runInNewContext(background, { chrome });
   return {
     audio, sliders, state, scriptCalls, setSiteVolume,
+    setDocument(document) { page.document = { ...document,
+      querySelector: selector => selector === 'ytmusic-player-bar' ? bar : document.querySelector(selector) }; },
     contentSliders: available ? sliders.map(slider => ({
       getAttribute: name => name === 'aria-valuenow' ? String(slider.value) : null,
       getClientRects: () => slider.getClientRects(),

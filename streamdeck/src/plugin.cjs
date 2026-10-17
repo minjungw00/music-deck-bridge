@@ -75,7 +75,8 @@ let pairingRequired = false;
 let lastCommandError = '';
 const COMMAND_ERRORS = new Set(['pairing-required', 'extension-unavailable', 'command-timeout',
   'authorization-lost', 'injection-unavailable', 'receiver-unavailable', 'delivery-uncertain',
-  'player-rejected', 'player-not-ready', 'browser-api-failed', 'bridge-unavailable', 'command-failed']);
+  'player-rejected', 'player-not-ready', 'browser-api-failed', 'bridge-unavailable', 'command-failed',
+  'autoplay-blocked', 'player-error', 'playback-unconfirmed']);
 let locale = 'en';
 let streamDeck;
 let sdOnline = false;
@@ -430,7 +431,29 @@ async function requestHandler(req, res) {
       coverDetected: Boolean(chosen?.[1].cover),
       coverStatus: getCoverStatus(chosen?.[1].cover) }, origin);
   }
-  if (req.url === '/browser-listen') return listenForBrowser(res, origin);
+  if (req.url === '/browser-listen') {
+    // Reconcile after Chrome/worker restart too: tab-close notifications can be
+    // lost when the whole browser exits, leaving a closed PWA preferred
+    // until its old metadata lease expires.
+    if (body.clientIds !== undefined) {
+      if (!Array.isArray(body.clientIds) || body.clientIds.length > 1024 ||
+          !body.clientIds.every(id => Number.isSafeInteger(id) && id >= 0 && id < 1e12)) {
+        return sendHttp(res, 400, { error: 'Invalid clients' }, origin);
+      }
+      const present = new Set(body.clientIds.map(String));
+      for (const id of candidates.keys()) if (!present.has(id)) candidates.delete(id);
+      drawSoon();
+    }
+    return listenForBrowser(res, origin);
+  }
+  if (req.url === '/player-closed') {
+    const clientId = String(body.clientId ?? '');
+    if (!/^\d{1,12}$/.test(clientId)) return sendHttp(res, 400, { error: 'Invalid client' }, origin);
+    candidates.delete(clientId);
+    for (const waiter of [...(listenWaiters.get(clientId) || [])]) waiter.reply({ commands: [], idle: true });
+    drawSoon();
+    return sendHttp(res, 200, { ok: true }, origin);
+  }
   if (req.url === '/browser-result') {
     const request = browserRequests.get(body.id);
     if (request?.delivered) request.finish(body.ok === true, body.reason);
@@ -630,7 +653,9 @@ function paint() {
         if (item.lastTitle !== '') { setTitle(context, ''); item.lastTitle = ''; }
       } else if (kind === 'volume') {
         const vol = state ? `${state.muted ? tr('muted') + ' ' : ''}${state.volume}%` : tr('absent');
-        setFeedback(context, { title: 'YouTube Music', value: vol, indicator: { value: state?.volume ?? 0, range: { min: 0, max: 100 } } });
+        const icon = `imgs/actions/${state?.muted ? 'mute' : 'volume'}/key@2x.png`;
+        setFeedback(context, { title: 'YouTube Music', icon, value: vol,
+          indicator: { value: state?.volume ?? 0, range: { min: 0, max: 100 } } });
       } else if (kind === 'trackdial') {
         setFeedback(context, { title: tr('next'), value: state ? ellipsis(state.title, 14) : tr('unavailable') });
       }

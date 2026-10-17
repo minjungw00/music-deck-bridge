@@ -138,33 +138,19 @@
         window.matchMedia('(display-mode: window-controls-overlay)').matches,
     };
   }
-  function press(selector) {
-    const el = document.querySelector('ytmusic-player-bar ' + selector);
-    if (!el || el.disabled || el.getAttribute('aria-disabled') === 'true') return false;
-    el.click(); return true;
-  }
   async function command(message) {
     if (!message || typeof message.type !== 'string' || !active) return { ok: false };
     const el = media();
     let result = { ok: false };
     switch (message.type) {
       case 'play':
-        if (el && !el.paused && !el.ended) { result = { ok: true }; break; }
-        // An offline Play key means start playback, never pause a restored player.
-        if (press('.play-pause-button')) result = { ok: true };
-        else if (el && typeof el.play === 'function') {
-          try { await el.play(); result = { ok: true }; } catch { result = { ok: false }; }
-        } else result = { ok: false, retry: true };
-        break;
       case 'toggle':
-        if (press('.play-pause-button')) result = { ok: true };
-        else if (el && typeof el.play === 'function' && typeof el.pause === 'function') {
-          try { if (el.paused) await el.play(); else el.pause(); result = { ok: true }; }
-          catch { result = { ok: false }; }
-        } else result = { ok: false, retry: true };
+      case 'next':
+      case 'prev':
+        result = await chrome.runtime.sendMessage({ type: 'player-playback', command: message.type,
+          expiresAt: message.expiresAt });
+        result = result || { ok: false, reason: 'playback-unconfirmed' };
         break;
-      case 'next': result = { ok: press('.next-button') }; result.retry = !result.ok; break;
-      case 'prev': result = { ok: press('.previous-button') }; result.retry = !result.ok; break;
       case 'like':
       case 'dislike': {
         const state = current();
@@ -217,7 +203,7 @@
     const id = typeof message.id === 'string' ? message.id : null;
     let operation = id && browserCommands.get(id);
     if (!operation) {
-      operation = command(input).catch(() => ({ ok: false }));
+      operation = command({ ...input, expiresAt: message.expiresAt }).catch(() => ({ ok: false }));
       if (id) {
         browserCommands.set(id, operation);
         operation.then(result => { if (result.retry) browserCommands.delete(id); });

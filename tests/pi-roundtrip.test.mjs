@@ -130,6 +130,10 @@ for (const protectedManifest of [false, true]) {
     const state = { title: 'SDK song', artist: 'Artist', playing: true, volume: 50, rating: 'INDIFFERENT' };
     await post('/sync', { token, clientId: 1, state });
     await waitFor(() => toggleImage() === pauseImage);
+    await post('/sync', { token, clientId: 2, state: { ...state, standalone: true, playing: false } });
+    await waitFor(() => toggleImage() === playImage);
+    await post('/player-closed', { token, clientId: 2 });
+    await waitFor(() => toggleImage() === pauseImage, 'closed PWA state must not override the remaining player');
     await waitFor(() => messages.some(m => m.event === 'setTitle' && m.context === 'toggle' && m.payload.title === ''));
     await waitFor(() => messages.some(m => m.event === 'setFeedback' && m.context === 'volume' && m.payload.value === '50%'));
     await waitFor(() => messages.some(m => m.event === 'setImage' && m.context === 'nowplaying'));
@@ -163,6 +167,14 @@ for (const protectedManifest of [false, true]) {
     send('didReceiveSettings', 'volume', { settings: { volumeStep: 2 } });
     await command('dialRotate', 'volume', { ticks: 2 }, { type: 'volume_delta', amount: 4 });
     await command('dialDown', 'volume', {}, { type: 'mute', amount: 0 });
+    const volumeFeedback = () => messages.findLast(m => m.event === 'setFeedback' && m.context === 'volume')?.payload;
+    assert.equal(volumeFeedback().icon, 'imgs/actions/volume/key@2x.png', 'press alone does not predict mute state');
+    state.muted = true;
+    await post('/sync', { token, clientId: 1, state });
+    await waitFor(() => volumeFeedback()?.icon === 'imgs/actions/mute/key@2x.png');
+    state.muted = false;
+    await post('/sync', { token, clientId: 1, state });
+    await waitFor(() => volumeFeedback()?.icon === 'imgs/actions/volume/key@2x.png');
     await command('touchTap', 'volume', {}, { type: 'toggle', amount: 0 });
     await command('dialRotate', 'trackdial', { ticks: -1 }, { type: 'prev', amount: 0 });
     await command('dialRotate', 'trackdial', { ticks: 1 }, { type: 'next', amount: 0 });
@@ -194,6 +206,16 @@ for (const protectedManifest of [false, true]) {
     }
     await browserCommand('open', 'open', 1);
     await browserCommand('toggle', 'toggle', 1);
+    // A whole-browser exit may lose tab-close notifications. Reconnecting with
+    // the current inventory must discard a formerly preferred PWA immediately.
+    await post('/sync', { token, clientId: 99, state: { ...state, standalone: true, playing: false } });
+    await waitFor(() => toggleImage() === playImage);
+    const reconciled = post('/browser-listen', { token, clientIds: [1] });
+    await waitFor(() => toggleImage() === pauseImage);
+    send('keyDown', 'next', {});
+    const resumed = await reconciled;
+    assert.equal(resumed.commands[0].preferredTabId, 1);
+    await post('/browser-result', { token, id: resumed.commands[0].id, ok: true });
     send('willDisappear', 'nowplaying', { controller: 'Keypad', settings: {}, coordinates: { column: 0, row: 0 }, state: 0 });
     const count = messages.length;
     state.title = 'Changed after disappearance';

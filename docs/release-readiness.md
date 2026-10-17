@@ -14,6 +14,7 @@ The [expected-behavior assessment](verification/update-behavior-assessment.md) c
 
 | Verification category | Current result | Evidence / limits |
 | --- | --- | --- |
+| Player readiness/state feedback (development) | Local Node and Chromium fixture checks passed; actual site/device retest pending | [Readiness evidence](verification/player-readiness-and-feedback.md): initialization gate, confirmed playback/track effects, canonical state, stale-PWA cleanup and mute dial icon. |
 | Browser connection/cold-tab recovery (development) | Reproduced defects fixed; local Node + actual Chromium fixture checks passed | [Recovery evidence](verification/browser-connection-recovery.md): stale connection labeling, competing polls and navigation receiver loss; actual Windows/YouTube Music retest remains pending. |
 | Release automation (Windows and Ubuntu) | Passed for public v1.0.1 source `a78f7de` | [CI run 39016914494](https://github.com/minjungw00/music-deck-bridge/actions/runs/39016914494): 50 Node tests, 2 Python tests, packaging, checksums, audit and artifact uploads. This is the released source's CI, not a run for later documentation commits. |
 | Public packages | Checksums reverified; v1.0.1 runtime unchanged from v1.0.0 | [v1.0.1 evidence](verification/v1.0.1.md); only manifest versions and seven brand PNGs differ. Installed baseline matched all 43 public files before the later successful 1.0.2 retry. |
@@ -57,6 +58,7 @@ The earlier 1.1.0/1.1.1 files were unpublished development builds whose labels w
 
 ## Detailed verification records
 
+- [Player readiness, playback state and mute dial feedback](verification/player-readiness-and-feedback.md)
 - [Browser connection and cold-tab recovery regression](verification/browser-connection-recovery.md)
 - [Development version/build identity separation and migration](verification/development-versioning.md)
 
