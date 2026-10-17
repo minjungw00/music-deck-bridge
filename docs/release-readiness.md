@@ -41,6 +41,8 @@ Local checks for that change passed: 52 Node tests, 2 Python packaging tests, al
 
 Current source is **1.0.2-dev**, with fixed Chrome **1.0.2** and Stream Deck **1.0.2.0** manifest values. Ordinary fixes and test builds no longer advance a release number. See [versioning](versioning.md) for build identity, local development packaging and explicit release promotion. Public v1.0.1 and the earlier fixed v1.0.2 comparison candidate remain distinct from current development.
 
+The [version-policy verification](verification/development-versioning.md) records 83 passing Node tests, two Python tests and successful dirty/clean local development builds with fixed version values.
+
 The earlier 1.1.0/1.1.1 files were unpublished development builds whose labels were advanced incorrectly. Their exact test histories remain in the [launch/rating](verification/player-launch-ratings.md) and [continuation](verification/launch-continuation-v1.1.1.md) records; they are not released versions. Current development includes those functionality and pairing/title changes. Real Windows/Chrome feature checks and explicit protocol negotiation remain pending.
 
 ## Remaining work, in priority order
@@ -53,6 +55,8 @@ The earlier 1.1.0/1.1.1 files were unpublished development builds whose labels w
 6. **P2 — remaining manual coverage:** record clean Windows install/uninstall/reset without separate Node/npm/Python, exact software/device/firmware versions, all actions in the selected build (including Track Dial 1–5 ticks), idle recovery, port conflict/change and normal-tab/PWA behavior. Run Windows/Ubuntu CI on each future code change and the final release source.
 
 ## Detailed verification records
+
+- [Development version/build identity separation and migration](verification/development-versioning.md)
 
 - [Historical development build: launch continuation, pairing guidance and title removal](verification/launch-continuation-v1.1.1.md)
 - [Historical development build: launch and rating checks](verification/player-launch-ratings.md)
