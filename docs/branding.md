@@ -1,0 +1,58 @@
+# Music Deck Bridge branding
+
+The official project name is **Music Deck Bridge**. Version 1.0.1 introduces its magenta play-disc identity for both the Stream Deck plugin and Chrome extension. Store submissions should use these same generated assets.
+
+## Icon history
+
+The earlier 0.5.1-era icons used a circular play mark and surrounding arcs. Their source artwork was not independently verified. Commit [`05e1785`](https://github.com/minjungw00/music-deck-bridge/commit/05e17852815d5c0c99f07e83bf01ebc7bcec2dfc) removed the supplied source mark and replaced the brand and action icons with reproducible geometric graphics. The 1.0.0 brand was three equalizer bars joined by a white bridge. Its Now Playing variant remains an action icon.
+
+The 1.0.1 brand restores the familiar disc and play triangle using newly drawn geometry. It adds two unequal signal bars above a bent bridge connection on the right. The offset bars and connection replace the earlier symmetric surrounding arcs. Visual differentiation comes from this complete silhouette as well as the magenta palette; changing color alone is not the design rationale.
+
+| 1.0.0 geometric brand, introduced by `05e1785` | 1.0.1 magenta play-disc brand |
+| --- | --- |
+| ![Previous equalizer and bridge icon](assets/brand-v1.0.0.png) | ![Magenta disc, white play triangle and offset bridge connection](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/plugin/icon.png) |
+
+The historical comparison PNG is copied unchanged from the `v1.0.0` tag. It shows the project's generated predecessor, rather than redistributing the earlier unverified artwork. The `v1.0.0` tag and release assets are preserved.
+
+## Palette and small sizes
+
+These solid colors were checked in the final 512px PNG; downsampled edges use antialiasing.
+
+| Role | Color |
+| --- | --- |
+| Primary Magenta — disc and signal bars | `#F72575` |
+| Deep Magenta — bridge connection | `#CF145A` |
+| Dark Background — rounded square | `#151923` |
+| White — play triangle | `#FFFFFF` |
+
+The colored icon has a dark rounded square with transparent outer corners. The category variant is white on transparency, with a transparent play-triangle cutout for use on Stream Deck's dark interface. It contains no colored background.
+
+Use the committed size-specific PNGs. The minimum colored size is **16×16**; the minimum monochrome category size is **28×28**. At those sizes the play triangle must remain visible. Avoid adding text, extra rings or gradients. Inspect both native size and enlarged pixels when changing geometry; automated pixel checks support this review but do not replace checking the installed UI.
+
+| Destination | Path | Dimensions |
+| --- | --- | --- |
+| Stream Deck representative icon | `streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/plugin/icon.png`, `icon@2x.png` | 256×256, 512×512 |
+| Stream Deck category | `streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/plugin/category.png`, `category@2x.png` | 28×28, 56×56 |
+| Chrome representative and toolbar icons | `chrome-extension/icons/16.png`, `48.png`, `128.png` | 16×16, 48×48, 128×128 |
+
+The generator handles `brand` separately from `nowplaying`. All seven existing action icon families retain their geometry and colors in this release.
+
+## Reproduction and validation
+
+From the repository root, with Python 3.10+ and the optional renderer installed:
+
+```sh
+python -m pip install Pillow==12.0.0
+python streamdeck/generate_assets.py
+git diff --exit-code -- chrome-extension/icons streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs
+```
+
+Use `python3` on systems without a `python` alias. To review regeneration without overwriting tracked PNGs, pass `--output-root /path/to/temporary-output`. The generator defines every shape in a 512-unit coordinate system, then downsamples using Lanczos. It takes no external artwork, logo, font or source-image inputs. The pinned Pillow version reproduces the committed PNGs.
+
+Run the normal [development checks](development.md#local-checks). `tests/brand-assets.test.mjs` verifies the seven brand PNG dimensions, RGBA data, corner transparency, palette, minimum-size triangle shape and manifest references using Node's standard library. Python packaging tests verify that Chrome ZIP and Stream Deck staging preserve the brand PNG bytes. Pillow is required only for regeneration, not ordinary tests or packaging.
+
+## License and attribution
+
+The project's generator, generated icons and historical geometric comparison PNG are distributed under the repository's [Apache-2.0 license](../LICENSE). Keep applicable [NOTICE](../NOTICE) and [third-party notices](../THIRD_PARTY_NOTICES.md) with redistributions. Bundled third-party code retains its own licenses. This artwork statement does not extend to external album artwork, earlier unverified images or third-party trademarks.
+
+Music Deck Bridge is independent and unofficial. It is not affiliated with or endorsed by Google, YouTube, Elgato or Corsair. Those names identify compatible products and remain their owners' trademarks. These project graphics do not represent store approval. Marketplace and Chrome Web Store install URLs belong in the installation guides only after the respective products are approved and publicly available.

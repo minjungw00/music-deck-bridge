@@ -2,6 +2,8 @@
 
 Keep extension screenshots and promotional images here.
 
+Use the magenta 1.0.1 icons in `chrome-extension/icons/` for the submitted extension. See the [brand guide](../../docs/branding.md) for palette, size and reproduction details.
+
 Publication status: pending; no public product install URL is recorded. After approval and publication, verify the actual product URL and add it to README and both installation guides, even if Marketplace is still pending. Test switching from the unpacked extension with removal and new PIN pairing; until then use the [unpacked installation guide](../../docs/installation.en.md).
 
 - Capture English and Korean pairing/status screens without real PINs, tokens or personal listening details.

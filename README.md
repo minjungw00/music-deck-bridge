@@ -64,6 +64,6 @@ store-assets/     Store submission assets and checklists
 
 Playback data travels between the extension and `127.0.0.1`; the plugin also downloads artwork from approved Google/YouTube image servers. See [privacy](PRIVACY.md), [security reporting](SECURITY.md), [third-party notices](THIRD_PARTY_NOTICES.md) and [contribution guidelines](CONTRIBUTING.md).
 
-Project code is licensed under [Apache-2.0](LICENSE). Bundled third-party code retains its own license.
+Project code and generated project icons are licensed under [Apache-2.0](LICENSE). See the [brand guide and icon history](docs/branding.md) for artwork and reproduction details. Bundled third-party code retains its own license.
 
 This is an independent, unofficial project, unaffiliated with Google, YouTube, Elgato or Corsair. Their names identify compatible products and remain the property of their respective owners.

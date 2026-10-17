@@ -8,6 +8,6 @@ Publication status: pending; no public product install URL is recorded. After ap
 - Capture Now Playing artwork, key controls, Stream Deck + dial feedback and settings/PIN flow in English and Korean.
 - Use the prepared [English](../listing.en.md) / [Korean](../listing.ko.md) text; verify it against the submitted build.
 - Check current Maker Console image specifications and SDK/DRM requirements before export.
-- Project icons come from `streamdeck/generate_assets.py`; retain the project and bundled-library notices.
+- Use the magenta 1.0.1 representative icons from `streamdeck/generate_assets.py`; see the [brand guide](../../docs/branding.md). Retain the project and bundled-library notices.
 - Record hardware and Maker Console DRM results in [release readiness](../../docs/release-readiness.md).
 - Do not use the automated opaque-manifest fixture as evidence of actual DRM compatibility.
