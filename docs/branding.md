@@ -56,7 +56,7 @@ The Play / Pause key has separate artwork for its next operation: Play when paus
 | --- | --- |
 | ![Play](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/toggle/key.png) | ![Pause](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/toggle/pause.png) |
 
-These are **unreleased development assets**, separate from the fixed GitHub v1.0.1 packages and the v1.0.1 package the maintainer reports as Pending review in Marketplace. No submitted package is replaced by a source change. A future package needs its own source/version and verification record before distribution; program versions remain unchanged until that release is selected.
+These assets are selected for the **unpublished v1.0.2 candidate**, separate from the fixed GitHub v1.0.1 packages and the v1.0.1 package the maintainer reports as Pending review in Marketplace. Source/Chrome versions are 1.0.2 and the plugin manifest is 1.0.2.0. No submitted package is replaced by a source change; use the [candidate verification record](verification/v1.0.2.md) before distribution.
 
 The [root README thumbnail](assets/music-deck-bridge-thumbnail.png) is the supplied promotional image, copied unchanged; its [provenance](assets/README.md) is separate from the generated icons. It is not a product screenshot.
 

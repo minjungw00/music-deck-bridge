@@ -18,4 +18,4 @@ See the [shared submission status and actual screenshot plan](../README.md).
 
 The [Chrome listing instructions](https://developer.chrome.com/docs/webstore/cws-dashboard-listing) specify a 128×128 store icon, at least one 1280×800 screenshot (up to five), and a 440×280 small promotional tile. The 1400×560 marquee tile is optional. The committed `chrome-extension/icons/128.png` supplies the store icon. Capture the actual popup in both supported locales; the README banner is promotional artwork, not screenshot evidence. Prepare the required promo export separately and verify the final form against the uploaded ZIP and privacy policy.
 
-The popup palette changes on this branch are **Unreleased**. The existing public v1.0.1 Chrome ZIP and its main brand icons remain fixed.
+The popup palette changes are selected for the **unpublished v1.0.2 candidate**. The existing public v1.0.1 Chrome ZIP and its main brand icons remain fixed.

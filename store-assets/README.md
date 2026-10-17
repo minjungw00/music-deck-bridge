@@ -22,4 +22,4 @@ Use a clean Windows profile and dummy listening details. Capture each image from
 
 See the [Elgato](elgato/README.md) / [Chrome](chrome/README.md) submission folders and [DRM test record](../docs/verification/marketplace-drm.md). Reconcile the submitted build's actual storage, scripting, alarms and host permissions with the privacy form; artwork is fetched externally by the plugin.
 
-The [supplied README thumbnail](../docs/assets/music-deck-bridge-thumbnail.png) is preserved unchanged. The new action family and popup colors are Unreleased source changes and do not alter the package currently in review. Store-specific image sizes are recorded in the respective submission folders.
+The [supplied README thumbnail](../docs/assets/music-deck-bridge-thumbnail.png) is preserved unchanged. The new action family, state-linked toggle and popup colors are selected for the unpublished v1.0.2 candidate and do not alter the package currently in review. See the [candidate preparation record](../docs/verification/v1.0.2.md). Store-specific image sizes are recorded in the respective submission folders.
