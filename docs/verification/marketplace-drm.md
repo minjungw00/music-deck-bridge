@@ -1,27 +1,27 @@
 # Marketplace DRM verification
 
-Evidence date: October 17, 2026 (Asia/Seoul). **Not performed. Marketplace distribution is not ready for sign-off.** The GitHub package, general operational report and automated opaque-manifest fixture are separate evidence.
+Evidence date: October 17, 2026 (Asia/Seoul). **DRM execution not performed.** The maintainer reports v1.0.1 uploaded and **Pending review**; this is a submission milestone, not DRM execution or release sign-off. The GitHub package, general operational report and automated opaque-manifest fixture are separate evidence.
 
 ## Package provenance
 
 | Field | Value / status |
 | --- | --- |
-| Input release | [v1.0.1](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.0.1), source `a78f7de785b96aa9f5673bc41783e8d76f877933` |
+| Public reference release (uploaded-copy hash not supplied) | [v1.0.1](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.0.1), source `a78f7de785b96aa9f5673bc41783e8d76f877933` |
 | Input installer | `io.github.minjungw00.musicdeckbridge.streamDeckPlugin` |
 | Input SHA-256 | `ccaaf7233637ff5cf32f978e39145188b52f437fc1d5efdf22db60008bf1b49e` |
 | UUID / version | `io.github.minjungw00.musicdeckbridge` / `1.0.1.0` |
 | Maker Console product/version identifier | Not supplied |
-| Upload/processing date | Not performed in this session |
+| Upload / review status | October 17, 2026 maintainer report: v1.0.1 uploaded, Pending review; processing details not supplied |
 | Processed installer path / SHA-256 | Not supplied |
-| Publication | Must remain disabled during this test; no public store URL recorded |
+| Publication | No approval/public product URL reported; Publish after review setting not supplied. Keep publication disabled for any additional DRM-only test submission. |
 
 Static preparation matches the documented DRM prerequisites: SDK 3.0.2, manifest SDKVersion 3 and minimum Stream Deck 7.1. The application uses a constant plugin identifier and stores auth/config outside the distributed plugin folder. These observations do not establish behavior of an encrypted package.
 
 ## Obtain the actual processed package
 
-Follow Elgato's [DRM testing instructions](https://docs.elgato.com/streamdeck/sdk/introduction/distribution/#testing-with-drm): upload the fixed v1.0.1 installer with **Publish after review unselected**, open the product's **Versions** tab, select the uploaded version and download its processed installer. [Maker Console's version downloads](https://docs.elgato.com/maker-console/managing-products/#versions) apply DRM to compatible plugins. Local CLI packaging alone does not perform this processing.
+For the version already in review, open the product's **Versions** tab and download its processed installer when available. Do not re-upload v1.0.1 merely to repeat this step. Elgato's [DRM testing instructions](https://docs.elgato.com/streamdeck/sdk/introduction/distribution/#testing-with-drm) describe uploading with **Publish after review unselected** when an additional test submission is needed. [Maker Console's version downloads](https://docs.elgato.com/maker-console/managing-products/#versions) apply DRM to compatible plugins. Local CLI packaging alone does not perform this processing.
 
-Save the processed installer separately from the GitHub original and compute its SHA-256. Record Console version/status and timestamps; do not overwrite or re-upload published GitHub assets. No relevant Maker Console integration was found in the available plugin search, and no processed package was identified in the inspected Downloads installers. An authenticated Console session or a supplied processed package is required for the next step.
+Save the processed installer separately from the GitHub original and compute its SHA-256. Record Console version/status and timestamps; do not overwrite or re-upload published GitHub assets. No relevant Maker Console integration was found in the available plugin search, and the current Downloads installer still matches the public GitHub archive hash above and has a readable manifest; it does not establish that a Console-processed package has been downloaded. An authenticated Console session or a supplied processed package is required for the next step.
 
 ## Actual Windows test record
 

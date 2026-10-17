@@ -87,12 +87,12 @@ The files are written to `dist/` with the same names as release packages. Stream
 
 ## Method 4: Official stores
 
-**Pending approval/publication. No install links are active yet.** Each component has its own release status:
+**Elgato Marketplace v1.0.1 is Pending review**, as reported by the maintainer on October 17, 2026. No public store install links are active yet. Each component has its own release status:
 
 | Component | Store | Status |
 | --- | --- | --- |
-| Stream Deck plugin | Elgato Marketplace | Pending; use a GitHub Release package meanwhile |
-| Chrome extension | Chrome Web Store | Pending; use an extracted Chrome ZIP meanwhile |
+| Stream Deck plugin | Elgato Marketplace | v1.0.1 uploaded, Pending review; use a GitHub Release package meanwhile |
+| Chrome extension | Chrome Web Store | Preparation pending; no submission recorded. Use an extracted Chrome ZIP meanwhile. |
 
 After each listing becomes public, its verified product URL will appear here. Install the plugin from Elgato Marketplace and add the extension from Chrome Web Store, then complete [Pairing](#pairing). Once both are available, stores become the first recommended method.
 

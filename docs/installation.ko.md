@@ -97,12 +97,12 @@ npm run build:chrome
 
 ## 방법 4: 공식 스토어
 
-**승인·공개 준비 중이며 실제 설치 링크는 아직 없습니다.** 두 구성요소의 출시 상태는 각각 관리합니다.
+**Elgato Marketplace v1.0.1은 업로드 후 Pending review 상태**입니다(2026년 10월 17일 개발자 보고). 공개 설치 링크는 아직 없습니다. 두 구성요소의 출시 상태는 각각 관리합니다.
 
 | 구성요소 | 스토어 | 상태 |
 | --- | --- | --- |
-| Stream Deck 플러그인 | Elgato Marketplace | 준비 중; 현재는 GitHub Release 패키지 사용 |
-| Chrome 확장 프로그램 | Chrome 웹 스토어 | 준비 중; 현재는 Chrome ZIP 압축 해제 후 사용 |
+| Stream Deck 플러그인 | Elgato Marketplace | v1.0.1 업로드 완료, Pending review; 현재는 GitHub Release 패키지 사용 |
+| Chrome 확장 프로그램 | Chrome 웹 스토어 | 제출 준비 중, 제출 기록 없음; 현재는 Chrome ZIP 압축 해제 후 사용 |
 
 각 스토어에 공개된 뒤 검증한 제품 URL을 이 절에 추가합니다. Elgato Marketplace에서 플러그인을 설치하고 Chrome 웹 스토어에서 확장 프로그램을 추가한 뒤 [PIN 연결](#pairing)을 수행합니다. 양쪽 모두 출시되면 공식 스토어를 가장 먼저 안내합니다.
 
