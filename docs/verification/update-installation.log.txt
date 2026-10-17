@@ -1,0 +1,38 @@
+Redacted host installation evidence, collected 2026-10-17 (Asia/Seoul).
+Source: %APPDATA%\Elgato\StreamDeck\logs. Line numbers refer to original files.
+Original log hashes identify the files at inspection; rotating log filenames can change.
+
+StreamDeck.3.log
+SHA256: 6883500433e815293aed02e719f77ba99f04c9a30c7ff983d7fb5dc6455da314
+112: 2026-10-17T16:00:45.452+09:00  38988-22724  StreamDeck                    inf ESDTaskManagement::Task::finally::<lambda_6>::oper [installLocal:finished] (AllOk) Plugin 'Music Deck Bridge' [?][io.github.minjungw00.musicdeckbridge]
+115: 2026-10-17T16:00:45.523+09:00  38988-22724  SDK                           inf ESDCustomPlugin::onSessionConnected                [io.github.minjungw00.musicdeckbridge] Plugin connected
+162: 2026-10-17T16:58:39.687+09:00  38988-22724  SDK                           inf ESDCustomPluginHost::abort                         [io.github.minjungw00.musicdeckbridge] Aborting with reason 'Update plugin'
+163: 2026-10-17T16:58:40.004+09:00  38988-22724  SDK                           war ESDNativeRuntime::logProcessTermination            [io.github.minjungw00.musicdeckbridge] Process stopped (killed)
+164: 2026-10-17T16:58:40.004+09:00  38988-22724  SDK                           inf ESDCustomPlugin::onSessionEnded                    [io.github.minjungw00.musicdeckbridge] Plugin finished
+165: 2026-10-17T16:58:40.004+09:00  38988-22724  PLUGINS                       inf ESDPluginManager::UninstallPlugin                  Failed to uninstall 'io.github.minjungw00.musicdeckbridge': rename: Access is denied.: "%APPDATA%\Elgato\StreamDeck\Plugins\io.github.minjungw00.musicdeckbridge.sdPlugin", "%APPDATA%\Elgato\StreamDeck\Plugins\io.github.minjungw00.musicdeckbridge.sdPlugin.uninstall"
+166: 2026-10-17T16:58:40.004+09:00  38988-22724  StreamDeck                    err ESDTaskManagement::Task::finally::<lambda_6>::oper [installLocal:install] (InstallError) Plugin 'Music Deck Bridge' [?][io.github.minjungw00.musicdeckbridge] Error: 
+176: 2026-10-17T16:59:02.932+09:00  38988-22724  PLUGINS                       inf ESDPluginManager::UninstallPlugin                  Failed to uninstall 'io.github.minjungw00.musicdeckbridge': rename: Access is denied.: "%APPDATA%\Elgato\StreamDeck\Plugins\io.github.minjungw00.musicdeckbridge.sdPlugin", "%APPDATA%\Elgato\StreamDeck\Plugins\io.github.minjungw00.musicdeckbridge.sdPlugin.uninstall"
+177: 2026-10-17T16:59:02.932+09:00  38988-22724  StreamDeck                    err ESDTaskManagement::Task::finally::<lambda_6>::oper [installLocal:install] (InstallError) Plugin 'Music Deck Bridge' [?][io.github.minjungw00.musicdeckbridge] Error: 
+
+StreamDeck.2.log
+SHA256: a8b57c8e3a0571c205ab702acb48470f0cb78619bb4bf7d10bf7962f524bc905
+102: 2026-10-17T17:00:52.813+09:00  23212-45128  SDK                           inf ESDCustomPlugin::onSessionConnected                [io.github.minjungw00.musicdeckbridge] Plugin connected
+112: 2026-10-17T17:00:53.776+09:00  23212-45128  SDK                           inf ESDCustomPluginHost::abort                         [io.github.minjungw00.musicdeckbridge] Aborting with reason 'Update plugin'
+113: 2026-10-17T17:00:54.100+09:00  23212-45128  SDK                           war ESDNativeRuntime::logProcessTermination            [io.github.minjungw00.musicdeckbridge] Process stopped (killed)
+114: 2026-10-17T17:00:54.100+09:00  23212-45128  SDK                           inf ESDCustomPlugin::onSessionEnded                    [io.github.minjungw00.musicdeckbridge] Plugin finished
+115: 2026-10-17T17:00:54.101+09:00  23212-45128  PLUGINS                       inf ESDPluginManager::UninstallPlugin                  Failed to uninstall 'io.github.minjungw00.musicdeckbridge': rename: Access is denied.: "%APPDATA%\Elgato\StreamDeck\Plugins\io.github.minjungw00.musicdeckbridge.sdPlugin", "%APPDATA%\Elgato\StreamDeck\Plugins\io.github.minjungw00.musicdeckbridge.sdPlugin.uninstall"
+116: 2026-10-17T17:00:54.101+09:00  23212-45128  StreamDeck                    err ESDTaskManagement::Task::finally::<lambda_6>::oper [installLocal:install] (InstallError) Plugin 'Music Deck Bridge' [?][io.github.minjungw00.musicdeckbridge] Error: 
+177: 2026-10-17T17:05:19.894+09:00  23212-45128  PLUGINS                       inf ESDPluginManager::UninstallPlugin                  Failed to uninstall 'io.github.minjungw00.musicdeckbridge': rename: Access is denied.: "%APPDATA%\Elgato\StreamDeck\Plugins\io.github.minjungw00.musicdeckbridge.sdPlugin", "%APPDATA%\Elgato\StreamDeck\Plugins\io.github.minjungw00.musicdeckbridge.sdPlugin.uninstall"
+178: 2026-10-17T17:05:19.894+09:00  23212-45128  StreamDeck                    err ESDTaskManagement::Task::finally::<lambda_6>::oper [installLocal:install] (InstallError) Plugin 'Music Deck Bridge' [?][io.github.minjungw00.musicdeckbridge] Error: 
+
+StreamDeck.1.log
+SHA256: 8ecb8a3bd0ea5e46d1d60b35e5e8a46144a2bf907f8a2f19a87d7124e6d1d332
+92: 2026-10-17T17:05:54.752+09:00   2728-24340  SDK                           inf ESDCustomPlugin::onSessionConnected                [io.github.minjungw00.musicdeckbridge] Plugin connected
+184: 2026-10-17T17:14:27.671+09:00   2728-24340  SDK                           war ESDNativeRuntime::logProcessTermination            [io.github.minjungw00.musicdeckbridge] Process stopped (killed)
+185: 2026-10-17T17:14:27.671+09:00   2728-24340  SDK                           inf ESDCustomPlugin::onSessionEnded                    [io.github.minjungw00.musicdeckbridge] Plugin finished
+
+StreamDeck.log
+SHA256: 5f29293697785732a6aeaa7da63124b1fbdf73bc4969532d1161cb6908d92ae6
+110: 2026-10-17T17:15:34.319+09:00  52100-40324  StreamDeck                    inf ESDTaskManagement::Task::finally::<lambda_6>::oper [installLocal:finished] (AllOk) Plugin 'Music Deck Bridge' [?][io.github.minjungw00.musicdeckbridge]
+114: 2026-10-17T17:15:34.379+09:00  52100-40324  SDK                           inf ESDCustomPlugin::onSessionConnected                [io.github.minjungw00.musicdeckbridge] Plugin connected
+

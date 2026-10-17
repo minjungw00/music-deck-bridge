@@ -26,3 +26,11 @@ See the [English installation guide](installation.en.md#switching-installation-m
 If tests cannot bind `127.0.0.1`, run them in an environment that permits local TCP listeners. `npm test` runs test files serially because some baseline integration tests share port `17864`. Do not run a normal plugin instance on that port while testing.
 
 For bug reports include OS, browser, extension, Stream Deck software/device versions, tab versus installed app, steps, expected/actual behavior and redacted diagnostics. Use [SECURITY.md](../SECURITY.md) for private vulnerability reports.
+
+## Logged plugin update rejection / 로그로 확인한 업데이트 거부
+
+On October 17, Stream Deck 7.6.0.23012 on Windows 11 logged four `InstallError` failures because renaming the old plugin directory to `.sdPlugin.uninstall` returned `Access is denied`. It had already stopped the bridge, explaining the subsequent `Failed to fetch`. The lock owner or underlying permission problem is still unknown. Restarting can recover the existing plugin; confirm the installed manifest version before claiming an update succeeded. See the [redacted evidence and test matrix](verification/update-installation.md).
+
+10월 17일 Windows 11 / Stream Deck 7.6.0.23012 로그에서 기존 플러그인 폴더를 `.sdPlugin.uninstall`로 변경하지 못한 접근 거부와 `InstallError`가 네 차례 확인됐습니다. 브리지가 먼저 중지되어 `Failed to fetch`가 이어질 수 있습니다. 잠금 주체나 권한 문제의 세부 원인은 미확인입니다. 재실행으로 기존 버전을 복구한 뒤 실제 매니페스트 버전을 확인하고, [설정 보존 파일 교체](installation.ko.md#replacing-plugin-files) 절차를 따르세요.
+
+Save `%APPDATA%\Elgato\StreamDeck\logs\StreamDeck*.log` and matching JSON logs before another attempt; newer host versions use `StreamDeck.log` and numbered rotations rather than only `StreamDeck0.log`. Include plugin-local logs if present. Close folder windows/terminals before moving the stopped plugin. Preserve profiles, a private backup of `%APPDATA%\MusicDeckBridge`, and the same Chrome extension path/ID. Do not reset PIN authentication to diagnose a host directory-rename failure. Raw host logs contain device and account identifiers; share only reviewed, redacted entries.

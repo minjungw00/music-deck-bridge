@@ -131,10 +131,12 @@ For an unpacked Chrome extension, replace the contents of its existing permanent
 
 Installing a downloaded package over an existing plugin is not verified for this project. The maintainer's first 1.0.1 attempt showed “Unable to install plugin”; the old version resumed working only after Stream Deck restarted. The earlier 0.5.1 → 1.0.0 transition used removal of the old plugin files followed by reinstallation. Do not treat that result as a successful install over existing files.
 
+The later installation/SDK connection and maintainer report support file replacement as a recovery option. Exact settings-retention and rollback measurements are still pending; use the backups below.
+
 For a package update in this situation:
 
-1. Back up Stream Deck profiles and the installed plugin folder. If investigating an installation error, save `%APPDATA%\Elgato\StreamDeck\logs\StreamDeck0.log` and the plugin's `logs` folder before replacing files. Do not share PINs/tokens or unredacted personal data.
-2. **Quit Stream Deck from its system tray menu**, rather than just closing its window.
+1. Back up Stream Deck profiles and the installed plugin folder. Back up `%APPDATA%\MusicDeckBridge` privately as well. If investigating an installation error, save `%APPDATA%\Elgato\StreamDeck\logs\StreamDeck*.log` and matching JSON logs, plus the plugin's `logs` folder if present, before replacing files. Do not share PINs/tokens or unredacted personal data.
+2. **Quit Stream Deck from its system tray menu**, rather than just closing its window. Close Explorer windows and terminals opened inside the plugin folder. If moving the folder still gives access denied, stop and inspect open handles/permissions before retrying; do not delete the backups.
 3. Move only `%APPDATA%\Elgato\StreamDeck\Plugins\io.github.minjungw00.musicdeckbridge.sdPlugin` to a backup location **outside** the `Plugins` directory. Do not leave a renamed second copy inside `Plugins`.
 4. Keep `%APPDATA%\MusicDeckBridge\auth.json`, `config.json`, Stream Deck profiles and the existing Chrome extension. This is a file replacement, not a full reset: do not unpair or remove the extension.
 5. Start Stream Deck, then double-click the newly downloaded `.streamDeckPlugin`. Confirm installation and check that the installed manifest's `Version` is the intended version (`1.0.1.0` for 1.0.1). A completed download or restored old actions alone does not establish an update.
@@ -142,7 +144,7 @@ For a package update in this situation:
 
 If installation fails, quit Stream Deck, move any incomplete new plugin folder out of `Plugins`, restore the backed-up plugin folder to its original path and restart. If needed, restore the matching Chrome files in the same extension folder and reload. Keep authentication/configuration and profiles. Record the actual installed version and inspect the host installation log; do not repeatedly reinstall or reset pairing to diagnose `Failed to fetch`.
 
-`Failed to fetch` means the extension did not obtain an HTTP response from the configured local bridge. After a rejected install, first restart Stream Deck and check whether the old version works again, then check matching ports. It does not by itself demonstrate invalid PIN authentication or a defect in the new plugin, which may never have been installed. The exact reason for a host installer rejection requires its logs.
+`Failed to fetch` means the extension did not obtain an HTTP response from the configured local bridge. After a rejected install, first restart Stream Deck and check whether the old version works again, then check matching ports. It does not by itself demonstrate invalid PIN authentication or a defect in the new plugin, which may never have been installed. The October 17 host logs identify an access-denied rename of the old plugin directory during removal. The process or permission blocking it is still unknown; see the [investigation and remaining retention checks](verification/update-installation.md).
 
 ### Verify downloaded files
 
