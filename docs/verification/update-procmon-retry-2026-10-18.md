@@ -1,6 +1,6 @@
 # Successful stopped-plugin retry: v1.0.1 → v1.0.2
 
-Evidence inspected October 18, 2026 (Asia/Seoul). **Installation and SDK reconnection succeeded with Stream Deck still running, after the official plugin-stop request. All 45 installed candidate files match the selected package.** Playback, pairing/settings retention and rollback have not been individually verified by this inspection. The earlier [running-plugin update failure](update-procmon-2026-10-18.md) remains a failure.
+Evidence inspected October 18, 2026 (Asia/Seoul). **Installation and SDK reconnection succeeded with Stream Deck still running, after the official plugin-stop request. All 45 installed candidate files match the selected package.** The maintainer subsequently confirmed normal operation with plugin 1.0.2 and Chrome extension 1.0.1. Individual action checks, measured pairing/settings retention and rollback remain separate. The earlier [running-plugin update failure](update-procmon-2026-10-18.md) remains a failure.
 
 ## Provenance and conditions
 
@@ -38,6 +38,10 @@ Times are KST on October 18. PML indexes are zero-based event-offset indexes. `p
 | 02:45:25.828 | Host log | `Plugin connected`; SDK connection established. |
 
 The installer replaced the old folder itself. The trace does not show a successful old-root → `.sdPlugin.uninstall` rename; that operation was not used in this retry. No ACCESS DENIED or SHARING VIOLATION was decoded among the selected matching-path events. The initial nonempty-directory delete result is followed by successful recursive cleanup and installation, not an overall installation error.
+
+## Maintainer operational confirmation
+
+After this retry, the maintainer reported **“동작은 정상적으로 진행됩니다. chrome 확장 프로그램은 여전히 1.0.1입니다.”** on October 18. Record general normal operation for the measured plugin **1.0.2.0** with extension **1.0.1**. This is an observed mixed-version combination, not a test of Chrome 1.0.2 or a full independent-component compatibility matrix. The report does not individually itemize all seven actions, Play/Pause rendering cases, custom port, unchanged pairing, profiles/settings retention or rollback; do not mark those measurements complete or infer a new pairing/reset.
 
 ## Interpretation and remaining checks
 
