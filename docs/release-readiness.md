@@ -1,10 +1,41 @@
 # Release readiness
 
-Evidence date: October 17, 2026. Source version is **1.0.0** for the maintainer-requested GitHub release. This records development checks and outstanding release work; it is not a store approval or hardware certification.
+Evidence date: October 17, 2026. Source version is **1.0.1** (Stream Deck **1.0.1.0**); the published stable baseline is **1.0.0**. This records development checks and outstanding release work; it is not a store approval or hardware certification.
+
+## 1.0.1 brand release candidate
+
+This patch introduces the [magenta play-disc brand](branding.md) in seven representative/category PNGs. All 28 action PNGs reproduce byte-for-byte from 1.0.0. Playback, local communication and authentication code are unchanged; plugin/action UUIDs, permissions, configuration paths and settings formats are preserved. Protocol compatibility negotiation for independently updated components is deferred to a separate **1.1.0 candidate** feature.
+
+Local evidence on October 17, 2026 (Linux, Node.js 24.19.0, Python 3.12.3, optional Pillow 12.0.0, Elgato CLI 1.10.2):
+
+| Check | Result |
+| --- | --- |
+| Syntax, versions, manifests, resources, locales and basic secret checks | Passed |
+| Node regression tests, including PIN/auth, playback, ports, settings and SDK round trips | 50/50 passed |
+| Python packaging tests, including exact packaged brand PNG bytes | 2/2 passed |
+| Brand dimensions, RGBA/alpha, palette and manifest references | Passed for all seven PNGs |
+| 16px colored and 28px monochrome play triangle | Pixel checks and visual review passed; installed-UI review pending |
+| Reproducible icon generation | All 35 PNGs reproduced byte-for-byte; all 28 action PNGs match 1.0.0 |
+| Chrome ZIP and official Stream Deck validation/packaging | Passed |
+| Release SHA256SUMS.txt generation and verification | Passed locally; final CI downloads must be verified separately |
+| npm audit | 0 reported vulnerabilities |
+| Final commit Windows / Ubuntu CI and package downloads | Pending; record exact SHA/run and hashes in release notes |
+
+Required 1.0.1 manual evidence is separate from the completed 1.0.0 report below:
+
+| Check | Status | Evidence to record |
+| --- | --- | --- |
+| Plugin update 1.0.0.0 → 1.0.1.0 | Pending | Install the candidate installer over 1.0.0; record source SHA/run/hash, Windows, Stream Deck software, device/firmware and update result |
+| Chrome extension update 1.0.0 → 1.0.1 | Pending | Update the existing unpacked extension folder and reload it; preserve extension identity; record Chrome version, update result and visible new icon |
+| Existing PIN authentication, port, action settings and profiles retained | Pending on actual install | Keep existing data/profile; confirm existing pairing without reset, custom port, title/volume settings and all existing action instances |
+| Playback controls, keys/dials and installed icon rendering | Pending on actual hardware/UI | Confirm play/pause, previous/next, mute, volume/track dials as applicable; inspect representative/category/Chrome icons |
+| Public v1.0.1 GitHub Release | Pending the checks above | Use the exact commit's passing Windows/Ubuntu CI packages; verify downloaded checksums, inspect packaged manifests/resources and preserve v1.0.0 |
+
+Do not mark these manual checks complete from source equivalence or automated tests. Prepare a draft with the candidate packages for installation testing; publish the new tag's Release after the update/retention results are recorded. Maker Console DRM and each store approval remain separate pending checks and do not become complete with a GitHub Release.
 
 ## 1.0.0 GitHub release
 
-The maintainer requested a version change and GitHub release on October 17, 2026. Package and Chrome versions are 1.0.0; Stream Deck uses 1.0.0.0. Store copy now targets that source version. README and both installation guides use GitHub Releases as the default download route; store URLs remain inactive. The exact release commit passed both CI platforms before publication. Manual evidence is updated below from the maintainer report on October 17, 2026; unperformed checks remain pending.
+The maintainer requested a version change and GitHub release on October 17, 2026. The released package and Chrome versions are 1.0.0; Stream Deck uses 1.0.0.0. README and both installation guides use GitHub Releases as the default download route; store URLs remain inactive. The exact release commit passed both CI platforms before publication. Manual evidence is updated below from the maintainer report on October 17, 2026; unperformed checks remain pending.
 
 Local checks for 1.0.0 passed: `npm run check`, all 46 Node tests, both Python packaging tests, and `npm audit` (zero reported vulnerabilities). The [v1.0.0 release notes](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.0.0) record the exact release commit, final Windows/Ubuntu CI run and package hashes after remote verification.
 

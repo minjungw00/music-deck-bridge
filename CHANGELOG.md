@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## v1.0.1 — 2026-10-17
+
+- Introduce the magenta disc and white play-triangle brand with asymmetric signal bars and a bridge connection, shared by Stream Deck and Chrome. Keep the existing seven action icon families.
+- Validate brand PNG sizes, RGBA/transparency, palette, small-size play triangles, manifest references and packaged icon bytes.
+- Document the brand palette, icon history and reproducible generation; record the maintainer-reported v1.0.0 Release installation, manual verification and 0.5.1.0 → 1.0.0.0 upgrade.
+- Align package/Chrome versions at 1.0.1 and Stream Deck at 1.0.1.0. Preserve plugin/action UUIDs, playback and local protocol code, PIN authentication, ports and settings formats.
+- Track actual 1.0.0 → 1.0.1 device/extension updates and settings retention separately from automated regressions; see the release-readiness record for completed and pending checks.
+
 ## v1.0.0 — 2026-10-17
 
 - Publish the first GitHub Release with prebuilt Stream Deck and Chrome packages; align source/Chrome versions at 1.0.0 and the Stream Deck manifest at 1.0.0.0.
