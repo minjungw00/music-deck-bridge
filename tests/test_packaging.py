@@ -64,7 +64,10 @@ class PackagingTests(unittest.TestCase):
                      "property-inspector/settings.js", "property-inspector/sdpi-components.js", "en.json", "ko.json"):
             self.assertTrue((staged / name).is_file(), name)
         for action in manifest["Actions"]:
-            self.assertTrue((staged / (action["Icon"] + ".png")).is_file())
+            for icon in (action["Icon"], *(state["Image"] for state in action["States"])):
+                for suffix in (".png", "@2x.png"):
+                    name = icon + suffix
+                    self.assertEqual((staged / name).read_bytes(), (plugin / name).read_bytes())
         for icon in (manifest["Icon"], manifest["CategoryIcon"]):
             for suffix in (".png", "@2x.png"):
                 name = icon + suffix

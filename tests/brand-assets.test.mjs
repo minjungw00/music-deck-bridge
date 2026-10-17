@@ -12,6 +12,7 @@ const assets = [
   [plugin + 'imgs/plugin/category@2x.png', 56],
   ...[16, 48, 128].map(size => [`chrome-extension/icons/${size}.png`, size]),
 ];
+const actionFamilies = ['nowplaying', 'toggle', 'prev', 'next', 'mute', 'volume', 'trackdial'];
 
 // Decode our noninterlaced RGBA8 PNGs using only Node's standard library.
 // Testing committed pixels keeps Pillow optional for ordinary builds and CI.
@@ -55,8 +56,8 @@ async function png(path) {
   return { width, height, pixel, at: (x, y) => pixel(Math.floor(x * width), Math.floor(y * height)) };
 }
 
-test('all seven brand PNGs have the required dimensions, alpha and safe corner margins', async () => {
-  for (const [path, size] of assets) {
+test('brand and store PNGs have the required dimensions, alpha and safe corner margins', async () => {
+  for (const [path, size] of [...assets, ['store-assets/elgato/app-icon.png', 288]]) {
     const image = await png(path);
     assert.equal(image.width, size, path);
     assert.equal(image.height, size, path);
@@ -127,4 +128,38 @@ test('both manifests reference the complete brand asset family', async () => {
     referenced.push(...Object.values(icons).map(path => 'chrome-extension/' + path));
   }
   assert.deepEqual([...new Set(referenced)].sort(), assets.map(([path]) => path).sort());
+});
+
+test('action icons share the brand palette with distinct glyphs and monochrome list badges', async () => {
+  for (const [name, size, colored] of [['key', 72, true], ['key@2x', 144, true], ['icon', 20, false], ['icon@2x', 40, false]]) {
+    const files = new Set();
+    for (const family of actionFamilies) {
+      const path = `${plugin}imgs/actions/${family}/${name}.png`;
+      const data = await readFile(new URL(path, root));
+      files.add(data.toString('base64'));
+      const image = await png(path);
+      assert.equal(image.width, size, path);
+      assert.equal(image.height, size, path);
+      assert.ok(image.pixel(0, 0)[3] <= 4, `${path}: clipped corner`);
+      let white = 0, magenta = 0, cutout = 0;
+      for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+          const [r, g, b, a] = image.pixel(x, y);
+          if (Math.min(r, g, b) > 180 && a > 180) white++;
+          if (r > 200 && g < 65 && b > 100 && a > 240) magenta++;
+          if (!colored && a > 0) assert.deepEqual([r, g, b], [255, 255, 255], `${path}: tinted list badge`);
+          if (x > size * 0.3 && x < size * 0.7 && y > size * 0.3 && y < size * 0.7 && a < 64) cutout++;
+        }
+      }
+      assert.ok(white > size * size * 0.015, `${path}: unreadable glyph/badge`);
+      if (colored) {
+        assert.ok(magenta > size * size * 0.15, `${path}: missing magenta disc`);
+        const dark = image.at(0.5, 0.1);
+        assert.ok(Math.max(...dark.slice(0, 3)) < 45 && dark[3] > 240, `${path}: missing dark surface`);
+      } else {
+        assert.ok(cutout > 0, `${path}: missing action cutout`);
+      }
+    }
+    assert.equal(files.size, actionFamilies.length, `${name}: actions must have distinct glyphs`);
+  }
 });

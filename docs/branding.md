@@ -4,7 +4,7 @@ The official project name is **Music Deck Bridge**. Version 1.0.1 introduces its
 
 ## Icon history
 
-The earlier 0.5.1-era icons used a circular play mark and surrounding arcs. Their source artwork was not independently verified. Commit [`05e1785`](https://github.com/minjungw00/music-deck-bridge/commit/05e17852815d5c0c99f07e83bf01ebc7bcec2dfc) removed the supplied source mark and replaced the brand and action icons with reproducible geometric graphics. The 1.0.0 brand was three equalizer bars joined by a white bridge. Its Now Playing variant remains an action icon.
+The earlier 0.5.1-era icons used a circular play mark and surrounding arcs. Their source artwork was not independently verified. Commit [`05e1785`](https://github.com/minjungw00/music-deck-bridge/commit/05e17852815d5c0c99f07e83bf01ebc7bcec2dfc) removed the supplied source mark and replaced the brand and action icons with reproducible geometric graphics. The 1.0.0 brand was three equalizer bars joined by a white bridge. Its Now Playing variant was retained in the released 1.0.1 action assets; development artwork now uses the play-disc identity below.
 
 The 1.0.1 brand follows the maintainer's supplied visual reference: a large magenta disc, rounded white play triangle, paired left/right sound waves and a dark rounded square. The initial unreleased candidate with offset signal bars and a bent bridge connection was rejected in design review and replaced. The revised shapes are defined in project code; the reference bitmap is not bundled or used as a rendering input. This documents the selected design rather than claiming trademark clearance or store approval.
 
@@ -36,8 +36,23 @@ Use the committed size-specific PNGs. The minimum colored size is **16×16**; th
 | Stream Deck representative icon | `streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/plugin/icon.png`, `icon@2x.png` | 256×256, 512×512 |
 | Stream Deck category | `streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/plugin/category.png`, `category@2x.png` | 28×28, 56×56 |
 | Chrome representative and toolbar icons | `chrome-extension/icons/16.png`, `48.png`, `128.png` | 16×16, 48×48, 128×128 |
+| Marketplace app icon | `store-assets/elgato/app-icon.png` | 288×288 |
 
-The generator handles `brand` separately from `nowplaying`. All seven existing action icon families retain their geometry and colors in this release.
+The seven representative/category/Chrome PNGs remain byte-for-byte unchanged from public v1.0.1. The separate 288px Marketplace export uses the same renderer; its size follows the [Marketplace product guidelines](https://docs.elgato.com/guidelines/products/).
+
+## Unreleased action family
+
+All seven actions now use the main icon's circular badge, gradient magenta, white symbol and dark rounded surface. Now Playing uses the main play-disc mark; the other six retain recognizable play/pause, previous/next, speaker/mute and dial symbols. The old pale-pink equalizer and blue-grey border are retired from development assets.
+
+| Now Playing | Play / Pause | Previous | Next | Mute | Volume Dial | Track Dial |
+| --- | --- | --- | --- | --- | --- | --- |
+| ![Now Playing](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/nowplaying/key.png) | ![Play / Pause](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/toggle/key.png) | ![Previous](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/prev/key.png) | ![Next](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/next/key.png) | ![Mute](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/mute/key.png) | ![Volume Dial](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/volume/key.png) | ![Track Dial](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/trackdial/key.png) |
+
+Each family has a 72px key and 144px @2x key. The 20px/40px action-list badges use white with transparent symbol cutouts so they remain monochrome on Stream Deck's dark UI. All action exports use 4× supersampling before downsampling. The Chrome popup uses the same dark background, a deep-magenta primary button for white-text contrast and a magenta keyboard-focus outline. The property inspector retains the host's neutral SDPI style.
+
+These are **unreleased development assets**, separate from the fixed GitHub v1.0.1 packages and the v1.0.1 package the maintainer reports as Pending review in Marketplace. No submitted package is replaced by a source change. A future package needs its own source/version and verification record before distribution; program versions remain unchanged until that release is selected.
+
+The [root README thumbnail](assets/music-deck-bridge-thumbnail.png) is the supplied promotional image, copied unchanged; its [provenance](assets/README.md) is separate from the generated icons. It is not a product screenshot.
 
 ## Reproduction and validation
 
@@ -51,7 +66,7 @@ git diff --exit-code -- chrome-extension/icons streamdeck/io.github.minjungw00.m
 
 Use `python3` on systems without a `python` alias. To review regeneration without overwriting tracked PNGs, pass `--output-root /path/to/temporary-output`. The generator defines every shape in a 512-unit coordinate system. Brand shapes are rendered at 4× resolution and downsampled using Lanczos, including the 512px export. The generator takes no external artwork, logo, font or source-image inputs. The pinned Pillow version reproduces the committed PNGs.
 
-Run the normal [development checks](development.md#local-checks). `tests/brand-assets.test.mjs` verifies the seven brand PNG dimensions, RGBA data, corner transparency, palette, minimum-size triangle shape and manifest references using Node's standard library. Python packaging tests verify that Chrome ZIP and Stream Deck staging preserve the brand PNG bytes. Pillow is required only for regeneration, not ordinary tests or packaging.
+Run the normal [development checks](development.md#local-checks). `tests/brand-assets.test.mjs` verifies brand/store PNG dimensions, RGBA data, corner transparency, palette, minimum-size triangle shape and manifest references, plus all 28 action PNGs' dimensions, palette, distinct symbols and monochrome cutouts using Node's standard library. Python packaging tests verify that Chrome ZIP and Stream Deck staging preserve the brand and action PNG bytes. The generator produces 36 assets, including the store app icon. Pillow is required only for regeneration, not ordinary tests or packaging.
 
 ## License and attribution
 

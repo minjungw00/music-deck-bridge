@@ -4,8 +4,12 @@ import argparse
 import math
 from pathlib import Path
 
+MAGENTA = "#F72575"
+DARK = "#151923"
+WHITE = "#FFFFFF"
 
-def render_brand(size, background):
+
+def brand_canvas(size, background):
     from PIL import Image, ImageDraw
 
     # Supersample curved edges even for the 512px export.
@@ -18,7 +22,7 @@ def render_brand(size, background):
     if background:
         draw_mask.rounded_rectangle(box((8, 8, 504, 504)), radius=96 * scale, fill=255)
         # Gentle upper-left light, keeping the small-size background flat.
-        surface = Image.new("RGBA", (512, 512), "#151923")
+        surface = Image.new("RGBA", (512, 512), DARK)
         if size > 48:
             pixels = surface.load()
             for y in range(512):
@@ -29,7 +33,7 @@ def render_brand(size, background):
         image.paste(surface.resize(canvas, Image.Resampling.BICUBIC), mask=mask)
     draw_mask.rectangle((0, 0, *canvas), fill=0)
     draw_mask.ellipse(box((76, 72, 436, 432)), fill=255)
-    disc = Image.new("RGBA", (512, 512), "#F72575" if background else "white")
+    disc = Image.new("RGBA", (512, 512), MAGENTA if background else WHITE)
     if background and size > 48:
         draw_disc = ImageDraw.Draw(disc)
         stops = [(72, (255, 56, 209)), (232, (255, 0, 125)), (432, (208, 0, 164))]
@@ -39,6 +43,14 @@ def render_brand(size, background):
                 color = tuple(round(a + (b - a) * t) for a, b in zip(first, last))
                 draw_disc.line((0, y, 512, y), fill=color)
     image.paste(disc.resize(canvas, Image.Resampling.BICUBIC), mask=mask)
+    return image, scale
+
+
+def render_brand(size, background):
+    from PIL import Image, ImageDraw
+
+    image, scale = brand_canvas(size, background)
+    box = lambda values: tuple(value * scale for value in values)
     draw = ImageDraw.Draw(image)
     ink = "white" if background else (0, 0, 0, 0)
     # Rounded triangle and paired sound waves follow the maintainer's reference.
@@ -67,41 +79,52 @@ def render_brand(size, background):
 def render(kind, size, background):
     from PIL import Image, ImageDraw
 
-    if kind == "brand":
+    if kind in ("brand", "nowplaying"):
         return render_brand(size, background)
-    # Draw in a fixed 512-unit coordinate system, then downsample for small displays.
-    image = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(image)
-    white = "#ffffff"
-    if background:
-        draw.rounded_rectangle((12, 12, 500, 500), radius=112, fill="#202433")
-        draw.rounded_rectangle((30, 30, 482, 482), radius=96, outline="#414b64", width=8)
-    if kind == "nowplaying":
-        # Equalizer bars joined by a bridge deck: the project's own visual mark.
-        for x, top in [(128, 216), (224, 120), (320, 168)]:
-            draw.rounded_rectangle((x, top, x + 64, 368), radius=24, fill="#f36b83" if background else white)
-        draw.rounded_rectangle((104, 272, 408, 312), radius=16, fill=white)
-    elif kind == "toggle":
-        draw.polygon([(116, 144), (116, 368), (272, 256)], fill=white)
-        draw.rounded_rectangle((308, 144, 340, 368), radius=10, fill=white)
-        draw.rounded_rectangle((372, 144, 404, 368), radius=10, fill=white)
+    image, scale = brand_canvas(size, background)
+    box = lambda values: tuple(value * scale for value in values)
+    # Use one circular badge and the same palette/surface as the main icon.
+    # A mask makes action-list glyphs transparent cutouts in the white badge.
+    glyph = Image.new("L", image.size)
+    draw = ImageDraw.Draw(glyph)
+
+    def polygon(points):
+        draw.polygon([box(point) for point in points], fill=255)
+
+    def rectangle(bounds, radius=8):
+        draw.rounded_rectangle(box(bounds), radius=radius * scale, fill=255)
+
+    def line(points, width):
+        draw.line([box(point) for point in points], fill=255, width=width * scale)
+        half = width / 2
+        for x, y in (points[0], points[-1]):
+            draw.ellipse(box((x - half, y - half, x + half, y + half)), fill=255)
+
+    if kind == "toggle":
+        polygon([(154, 174), (154, 330), (252, 252)])
+        rectangle((280, 174, 308, 330))
+        rectangle((332, 174, 360, 330))
     elif kind in ("prev", "next", "trackdial"):
-        draw.polygon([(156, 156), (156, 356), (308, 256)], fill=white)
-        draw.rounded_rectangle((324, 156, 360, 356), radius=10, fill=white)
-        if kind == "prev":
-            image = image.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+        polygon([(170, 178), (170, 326), (286, 252)])
+        rectangle((310, 178, 340, 326))
         if kind == "trackdial":
-            draw.arc((80, 80, 432, 432), 200, 340, fill="#f36b83" if background else white, width=20)
-            draw.arc((80, 80, 432, 432), 20, 160, fill="#f36b83" if background else white, width=20)
+            for start, end in [(205, 335), (25, 155)]:
+                draw.arc(box((126, 122, 386, 382)), start, end, fill=255, width=16 * scale)
     elif kind in ("mute", "volume"):
-        draw.rounded_rectangle((104, 212, 184, 300), radius=12, fill=white)
-        draw.polygon([(164, 212), (260, 140), (260, 372), (164, 300)], fill=white)
+        rectangle((142, 224, 194, 280))
+        polygon([(180, 224), (244, 178), (244, 326), (180, 280)])
         if kind == "mute":
-            draw.line((316, 208, 400, 304), fill=white, width=24)
-            draw.line((400, 208, 316, 304), fill=white, width=24)
+            line([(284, 220), (344, 284)], 20)
+            line([(344, 220), (284, 284)], 20)
         else:
-            draw.arc((220, 172, 352, 340), -60, 60, fill=white, width=20)
-            draw.arc((188, 128, 416, 384), -60, 60, fill=white, width=20)
+            for bounds in [(232, 202, 312, 302), (208, 170, 360, 334)]:
+                draw.arc(box(bounds), -60, 60, fill=255, width=18 * scale)
+    else:
+        raise ValueError(f"Unknown icon kind: {kind}")
+    if kind == "prev":
+        # Mirror only the symbol, retaining the shared upper-left lighting.
+        glyph = glyph.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+    image.paste(WHITE if background else (0, 0, 0, 0), (0, 0), glyph)
     return image.resize((size, size), Image.Resampling.LANCZOS)
 
 
@@ -115,6 +138,7 @@ def main():
         parser.error("Install the optional renderer: python -m pip install Pillow==12.0.0")
     plugin = "streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs"
     outputs = {
+        "store-assets/elgato/app-icon.png": ("brand", 288, True),
         f"{plugin}/plugin/icon.png": ("brand", 256, True),
         f"{plugin}/plugin/icon@2x.png": ("brand", 512, True),
         f"{plugin}/plugin/category.png": ("brand", 28, False),
