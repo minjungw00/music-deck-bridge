@@ -38,7 +38,9 @@ class PackagingTests(unittest.TestCase):
             names = set(bundle.namelist())
             manifest = json.loads(bundle.read("manifest.json"))
             expected_version = json.loads((self.root / "package.json").read_text(encoding="utf-8"))["version"]
-            self.assertEqual(manifest["version"], expected_version)
+            self.assertEqual(manifest["version"], expected_version.removesuffix("-dev"))
+            if expected_version.endswith("-dev"):
+                self.assertEqual(manifest["version_name"], expected_version)
             for name in (*packaging_tool.LEGAL, "background.js", "content.js", "popup.js",
                          manifest["action"]["default_popup"], *manifest["icons"].values(),
                          "_locales/en/messages.json", "_locales/ko/messages.json"):

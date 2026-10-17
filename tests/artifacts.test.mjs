@@ -4,7 +4,7 @@ import { copyFile, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { buildInfo, packageNames, prepareDevelopment, prepareRelease, verifyRelease } from '../scripts/artifacts.mjs';
+import { buildInfo, localBuildInfo, packageNames, prepareDevelopment, prepareLocal, prepareRelease, verifyRelease } from '../scripts/artifacts.mjs';
 
 const version = '0.5.1';
 const env = {
@@ -29,6 +29,8 @@ test('development artifact records exact source and hashes the delivered files',
   const info = JSON.parse(await readFile(join(directory, 'BUILD-INFO.json'), 'utf8'));
   assert.deepEqual(info, {
     version, commit: env.GITHUB_SHA, ref: env.GITHUB_REF, event: 'push',
+    channel: 'development', packageVersion: version,
+    buildId: '0.5.1+gaaaaaaaaaaaa.run123.attempt2',
     platform: 'Windows', architecture: 'X64',
     runUrl: 'https://github.com/owner/repo/actions/runs/123', runAttempt: '2',
   });
@@ -101,4 +103,42 @@ test('release preparation refuses stale versions, development metadata and empty
   await rm(join(directory, 'BUILD-INFO.json'));
   await writeFile(join(directory, packageNames(version)[1]), '');
   await assert.rejects(prepareRelease(directory, version), /empty artifact/);
+});
+
+test('development package identity changes by source/build while its version stays fixed', async t => {
+  const dev = '1.0.2-dev';
+  const directory = await mkdtemp(join(tmpdir(), 'music-deck-dev-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  for (const name of packageNames(dev)) await writeFile(join(directory, name), 'development payload');
+  const first = buildInfo(dev, env);
+  const next = buildInfo(dev, { ...env, GITHUB_SHA: 'b'.repeat(40), GITHUB_RUN_ID: '124' });
+  assert.equal(first.version, next.version);
+  assert.equal(first.packageVersion, next.packageVersion);
+  assert.notEqual(first.buildId, next.buildId);
+  await prepareDevelopment(directory, dev, env);
+  assert.equal(JSON.parse(await readFile(join(directory, 'BUILD-INFO.json'), 'utf8')).channel, 'development');
+  await assert.rejects(prepareRelease(directory, dev), /Development versions/);
+  await assert.rejects(verifyRelease(directory, dev), /Development versions/);
+});
+
+test('local development metadata records dirty source and does not change package versions', async t => {
+  const dev = '1.0.2-dev';
+  const directory = await mkdtemp(join(tmpdir(), 'music-deck-local-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  for (const name of packageNames(dev)) await writeFile(join(directory, name), 'local payload');
+  const source = { commit: 'c'.repeat(40), ref: 'refs/heads/feature', dirty: true,
+    platform: 'linux', architecture: 'x64', builtAt: '2026-10-18T00:00:00Z' };
+  const info = await prepareLocal(directory, dev, source);
+  assert.equal(info.version, dev);
+  assert.equal(info.packageVersion, '1.0.2');
+  assert.equal(info.runUrl, null);
+  assert.equal(info.dirty, true);
+  assert.match(info.buildId, /\.dirty$/);
+  assert.throws(() => localBuildInfo('1.0.2', source), /require an X.Y.Z-dev/);
+  const lines = (await readFile(join(directory, 'SHA256SUMS.txt'), 'utf8')).trim().split('\n');
+  assert.equal(lines.length, 3);
+  for (const line of lines) {
+    const [digest, name] = line.split('  ');
+    assert.equal(digest, createHash('sha256').update(await readFile(join(directory, name))).digest('hex'));
+  }
 });

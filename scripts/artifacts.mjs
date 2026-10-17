@@ -3,9 +3,10 @@ import { createHash } from 'node:crypto';
 import { appendFile, lstat, readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { requireRelease, versionInfo } from './version.mjs';
 
 export function packageNames(version) {
-  assert.match(version, /^\d+\.\d+\.\d+$/, 'Expected an X.Y.Z package version');
+  versionInfo(version);
   return [
     'io.github.minjungw00.musicdeckbridge.streamDeckPlugin',
     `music-deck-bridge-chrome-${version}.zip`,
@@ -35,6 +36,9 @@ export function buildInfo(version, env) {
   }
   return {
     version,
+    channel: 'development',
+    packageVersion: versionInfo(version).numericVersion,
+    buildId: `${version}+g${env.GITHUB_SHA.slice(0, 12)}.run${env.GITHUB_RUN_ID}.attempt${env.GITHUB_RUN_ATTEMPT || '1'}`,
     commit: env.GITHUB_SHA,
     ref: env.GITHUB_REF,
     event: env.GITHUB_EVENT_NAME,
@@ -45,15 +49,37 @@ export function buildInfo(version, env) {
   };
 }
 
-export async function prepareDevelopment(directory, version, env) {
+async function prepareBuild(directory, version, info) {
   const names = packageNames(version);
-  const info = buildInfo(version, env);
   await inspect(directory, [...names, 'BUILD-INFO.json']);
   // Check both packages before writing metadata or checksums.
   const sums = await Promise.all(names.map(name => checksum(directory, name)));
   await writeFile(join(directory, 'BUILD-INFO.json'), JSON.stringify(info, null, 2) + '\n');
   sums.push(await checksum(directory, 'BUILD-INFO.json'));
   await writeFile(join(directory, 'SHA256SUMS.txt'), sums.join(''));
+}
+
+export function localBuildInfo(version, source) {
+  assert.equal(versionInfo(version).channel, 'development', 'Local development packages require an X.Y.Z-dev source');
+  assert.match(source.commit ?? '', /^[a-f0-9]{40}$/i, 'Expected a full local commit SHA');
+  assert.equal(typeof source.dirty, 'boolean', 'Record whether local changes are present');
+  assert.ok(source.ref && source.platform && source.architecture, 'Missing local source/platform information');
+  const builtAt = new Date(source.builtAt).toISOString();
+  return { version, channel: 'development', packageVersion: versionInfo(version).numericVersion,
+    buildId: `${version}+g${source.commit.slice(0, 12)}.local${builtAt.replace(/\D/g, '')}${source.dirty ? '.dirty' : ''}`,
+    commit: source.commit, ref: source.ref, dirty: source.dirty,
+    platform: source.platform, architecture: source.architecture, builtAt, runUrl: null };
+}
+
+export async function prepareLocal(directory, version, source) {
+  const info = localBuildInfo(version, source);
+  await prepareBuild(directory, version, info);
+  return info;
+}
+
+export async function prepareDevelopment(directory, version, env) {
+  const info = buildInfo(version, env);
+  await prepareBuild(directory, version, info);
   if (env.GITHUB_STEP_SUMMARY) {
     await appendFile(env.GITHUB_STEP_SUMMARY, [
       `### Development packages (${info.platform})`,
@@ -71,6 +97,7 @@ export async function prepareDevelopment(directory, version, env) {
 }
 
 export async function prepareRelease(directory, version) {
+  requireRelease(version);
   const names = packageNames(version);
   await inspect(directory, names);
   const sums = await Promise.all(names.map(name => checksum(directory, name)));
@@ -79,6 +106,7 @@ export async function prepareRelease(directory, version) {
 }
 
 export async function verifyRelease(directory, version) {
+  requireRelease(version);
   const names = packageNames(version);
   await inspect(directory, names);
   const expected = (await Promise.all(names.map(name => checksum(directory, name)))).join('');

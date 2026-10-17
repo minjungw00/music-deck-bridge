@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
+import { versionInfo } from '../scripts/version.mjs';
 
 const root=join(dirname(fileURLToPath(import.meta.url)),'..','streamdeck','io.github.minjungw00.musicdeckbridge.sdPlugin');
 const script=readFileSync(join(root,'..','src','plugin.cjs'),'utf8');
@@ -13,7 +14,7 @@ const version=JSON.parse(readFileSync(join(root,'..','..','package.json'),'utf8'
 test('manifest exposes the supported actions and shares the property inspector',()=>{
   assert.equal(m.UUID,'io.github.minjungw00.musicdeckbridge');
   assert.equal(m.PropertyInspectorPath,'property-inspector/settings.html');
-  assert.equal(m.Version,version+'.0');
+  assert.equal(m.Version,versionInfo(version).pluginVersion);
   assert.deepEqual(m.Actions.map(a=>a.UUID.slice(m.UUID.length+1)),
     ['nowplaying','toggle','prev','next','mute','volume','trackdial','open','like','dislike']);
   assert.ok(m.Actions.every(a=>!a.PropertyInspectorPath));

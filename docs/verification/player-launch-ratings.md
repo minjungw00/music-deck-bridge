@@ -1,5 +1,7 @@
 # Player launch and song rating verification
 
+Historical development-package record. The 1.1.0/1.1.1 labels below were never public releases and are retained only to identify the original test files. Current development follows the fixed-cycle [versioning policy](../versioning.md).
+
 Evidence date: October 18, 2026 (Asia/Seoul). Feature source: `1da3a46844b247cc10481458f86db9f986fc653b`, branch `feat/player-launch-ratings`. Source/Chrome version **1.1.0**, plugin **1.1.0.0**. Not published or submitted to a store. The fixed [v1.0.2 candidate](v1.0.2.md) remains separate.
 
 ## Scope

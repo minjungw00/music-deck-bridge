@@ -1,5 +1,7 @@
 # Launch continuation and pairing guidance — v1.1.1
 
+Historical development-package record. The 1.1.0/1.1.1 labels below were never public releases and are retained only to identify the original test files. Current development follows the fixed-cycle [versioning policy](../versioning.md).
+
 Evidence date: October 18, 2026 (Asia/Seoul). Source `926d34937f2098abd1c3f14cf711c71763037a34` on `feat/player-launch-ratings`; includes pairing-guidance commit `5e84654`. Source/Chrome **1.1.1**, plugin **1.1.1.0**. These are unpublished development packages following the [1.1.0 feature build](player-launch-ratings.md).
 
 ## Report and changes

@@ -50,7 +50,7 @@ Development builds include recent changes and may be unstable. They require GitH
 5. Double-click the `.streamDeckPlugin` to install it. Extract the **inner Chrome ZIP** into a permanent folder and load that folder at `chrome://extensions` with **Developer mode → Load unpacked**. Select the folder containing `manifest.json`, not the outer artifact folder.
 6. Complete [Pairing](#pairing) and check playback controls.
 
-Both package versions may remain unchanged across multiple development builds. Identify the build by its commit SHA and run URL. Install both components from the same run; development packages have no automatic updates.
+Development versions remain fixed at `X.Y.Z-dev` within a cycle; platform manifests retain fixed numeric values. Distinguish builds by their SHA and `BUILD-INFO.json`, not an incremented release number. See the [versioning policy](versioning.md). Both package versions may remain unchanged across multiple development builds. Identify the build by its commit SHA and run URL. Install both components from the same run; development packages have no automatic updates.
 
 ## Method 3: Build from source
 

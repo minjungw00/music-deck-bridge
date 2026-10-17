@@ -37,13 +37,13 @@ October 18 development separates the toggle key into Play and Pause artwork driv
 
 Local checks for that change passed: 52 Node tests, 2 Python packaging tests, all 38 PNG outputs reproduced byte-for-byte, and official Stream Deck validation/packaging (45 plugin files, including both pause PNG sizes). Windows/Ubuntu CI must match the source SHA of the development package selected for testing.
 
-## Player launch and ratings development
+## Current development version
 
-Feature source `1da3a46` on `feat/player-launch-ratings` prepares source/Chrome 1.1.0 and plugin 1.1.0.0 with Open YouTube Music, Like and Dislike keys, launch fallback from playback inputs, and confirmed rating-state icons. This does not change the fixed 1.0.2 candidate or pending-review 1.0.1 submission. Local checks passed 67 Node tests, two Python tests, 54 reproducible PNGs and official validation/packaging (61 plugin files). Local test packages and exact hashes are in the [feature verification record](verification/player-launch-ratings.md). Windows/Ubuntu CI for this source and actual Chrome/Windows launch/rating operation remain pending; protocol-version negotiation is still separate work.
+Current source is **1.0.2-dev**, with fixed Chrome **1.0.2** and Stream Deck **1.0.2.0** manifest values. Ordinary fixes and test builds no longer advance a release number. See [versioning](versioning.md) for build identity, local development packaging and explicit release promotion. Public v1.0.1 and the earlier fixed v1.0.2 comparison candidate remain distinct from current development.
+
+The earlier 1.1.0/1.1.1 files were unpublished development builds whose labels were advanced incorrectly. Their exact test histories remain in the [launch/rating](verification/player-launch-ratings.md) and [continuation](verification/launch-continuation-v1.1.1.md) records; they are not released versions. Current development includes those functionality and pairing/title changes. Real Windows/Chrome feature checks and explicit protocol negotiation remain pending.
 
 ## Remaining work, in priority order
-
-Latest launch/rating follow-up: source `926d349` prepares **1.1.1 / 1.1.1.0** with clarified reinstall pairing instructions, title-free control keys and original-input continuation after opening a missing player. Local checks pass 78 Node tests, two Python tests and official validation/packaging. The [1.1.1 record](verification/launch-continuation-v1.1.1.md) contains exact local package hashes and the outstanding Windows/Chrome manual matrix; no real-device execution or new store submission is claimed.
 
 1. **P0 — update and recovery:** the fresh-baseline running-plugin comparison now succeeds with developer mode enabled and absent; retain the original failure and official-stop retry rather than repeating equivalent passing installs. Investigate the original host/folder or transient failing state using existing traces and capture handles/effective permissions/filter evidence if it recurs, before resetting that state. Measure retained PIN pairing, custom port, profiles and action settings before/after replacement and rollback; compare further scenarios where they resolve a specific uncertainty. Follow the [English](installation.en.md#replacing-plugin-files) / [Korean](installation.ko.md#replacing-plugin-files) backup procedure. No runtime fix for the original denial is established.
 2. **P0 — DRM:** download the processed v1.0.1 installer from the existing Pending review Console version when available, record its hash/environment and test installation, startup, Chrome/PIN, all seven actions and both dials. Keep update and removal/reinstallation results separate. Marketplace readiness remains pending until this passes.
@@ -54,8 +54,8 @@ Latest launch/rating follow-up: source `926d349` prepares **1.1.1 / 1.1.1.0** wi
 
 ## Detailed verification records
 
-- [v1.1.1 launch continuation, pairing guidance and title removal](verification/launch-continuation-v1.1.1.md)
-- [Player launch and song ratings: local 1.1.0 feature checks and remaining manual matrix](verification/player-launch-ratings.md)
+- [Historical development build: launch continuation, pairing guidance and title removal](verification/launch-continuation-v1.1.1.md)
+- [Historical development build: launch and rating checks](verification/player-launch-ratings.md)
 - [v1.0.2 candidate and update-comparison preparation](verification/v1.0.2.md)
 - [v1.0.1 publication, package hashes and maintainer reports](verification/v1.0.1.md)
 - [v1.0.0 publication and maintainer verification](verification/v1.0.0.md)

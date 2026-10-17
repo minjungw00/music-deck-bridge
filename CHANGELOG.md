@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-- Prepare development patch 1.1.1 (Stream Deck 1.1.1.0). Distinguish stored credentials from an unconfirmed extension connection and explain new-PIN recovery after extension reinstallation.
+- Keep the current cycle at `1.0.2-dev`, with fixed Chrome `1.0.2` / Stream Deck `1.0.2.0` values. Identify development builds by SHA and build metadata rather than incrementing release versions. Add synchronized version selection/promotion, isolated local development packages and release guards that reject development versions.
+
+- Distinguish stored credentials from an unconfirmed extension connection and explain new-PIN recovery after extension reinstallation.
 - Hide default titles on Play/Pause, Like, Dislike and Open keys while retaining their state-driven icons.
 - Let every control open a missing player and complete its requested input after readiness, including native Chrome startup. Preserve input order, bound startup waits, cancel on pairing changes and deduplicate delivered request IDs. A new-player playback request starts playback without pausing a track that already resumed.
 

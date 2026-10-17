@@ -35,13 +35,15 @@ Use `io.github.minjungw00.musicdeckbridge` as the plugin UUID and action UUID pr
 
 `MUSIC_DECK_BRIDGE_DEV_TEST=1` exposes deterministic test controls and must never be used in ordinary installs.
 
-Keep the root and Chrome versions aligned, and append a fourth segment for the Stream Deck manifest: `X.Y.Z` becomes `X.Y.Z.0`.
+Keep the root/lockfile at `X.Y.Z-dev` during development. Chrome uses numeric `X.Y.Z` with `version_name: X.Y.Z-dev`; Stream Deck uses fixed `X.Y.Z.0`. Builds change identity through SHA and metadata, without incrementing release or manifest versions. Use the [versioning workflow](versioning.md) to synchronize or explicitly promote them.
 
 ## Packaging
 
+For local development packages, use `npm run build:dev`. It builds both components into a distinct `dist/development/<build-id>/` folder and includes local source metadata and checksums. See [development builds and replacement](versioning.md#build-and-test-development-packages). The individual commands below default to `dist/` and are also used by clean CI checkouts.
+
 CI keeps both Windows and Ubuntu checks, including PR builds. Downloadable development builds are identified as `music-deck-bridge-dev-<windows|ubuntu>-<full-commit-sha>`. Recommend only successful `main` runs with both jobs passed to users; Ubuntu artifacts are packaging evidence, not Linux runtime support.
 
-After both packages are built, `node scripts/artifacts.mjs development` records GitHub's source SHA/ref, version, platform/architecture, run URL and attempt in `dist/BUILD-INFO.json` and hashes both packages plus this metadata in `dist/SHA256SUMS.txt`. This command uses GitHub Actions environment variables. PR artifacts keep their merge ref and SHA, distinct from `main`. Metadata/checksums remain alongside the packages; nothing is injected into the plugin or extension. Artifact retention follows repository settings (90 days by default); users must sign in to download and update development packages manually.
+After both packages are built, `node scripts/artifacts.mjs development` records the development channel, source version, numeric package version, build ID, GitHub source SHA/ref, platform/architecture, run URL and attempt in `dist/BUILD-INFO.json` and hashes both packages plus this metadata in `dist/SHA256SUMS.txt`. This command uses GitHub Actions environment variables. PR artifacts keep their merge ref and SHA, distinct from `main`. Metadata/checksums remain alongside the packages; nothing is injected into the plugin or extension. Artifact retention follows repository settings (90 days by default); users must sign in to download and update development packages manually.
 
 Chrome:
 
@@ -81,7 +83,7 @@ For Marketplace distribution, review Elgato's [DRM compatibility requirements](h
 
 ## Release checklist
 
-Track the selected version, exact source SHA, package checksums, CI results and remaining manual checks in [release readiness](release-readiness.md) and the corresponding [verification record](README.md#release-and-verification-records). Keep released tags/assets and already submitted packages fixed; distribute changes as a new version.
+Keep the development target fixed while editing and testing; incrementing a released version requires a separate maintainer decision. Track the selected version, exact source SHA, package checksums, CI results and remaining manual checks in [release readiness](release-readiness.md) and the corresponding [verification record](README.md#release-and-verification-records). Keep released tags/assets and already submitted packages fixed; distribute changes as a new version.
 
 The manual **Draft release** workflow requires its readiness confirmation to be true only when the described checks have actually been completed. For a maintainer-requested direct GitHub release, use packages from a successful Windows/Ubuntu CI run for the exact tagged commit, verify their checksums, and describe outstanding manual checks in the release notes. GitHub publication and store approval are separate decisions.
 
@@ -91,7 +93,7 @@ The manual **Draft release** workflow requires its readiness confirmation to be 
 - Test Windows 10/11 install, uninstall, update and clean reset on actual Stream Deck hardware.
 - Check all key actions and Stream Deck + dials, en/ko UI, normal Chrome tab and installed app, artwork, idle recovery, extension reload/re-pairing and live port changes/conflict handling.
 - Capture actual screenshots/video; complete store descriptions, permissions, privacy declarations and assets.
-- Update versions and CHANGELOG, then create the matching `vX.Y.Z` tag.
+- When authorized to prepare the release, run `npm run version:release -- X.Y.Z` for the current target, update CHANGELOG, pass final checks and create the matching `vX.Y.Z` tag. Development versions cannot pass the release gate.
 - Ensure the tagged source includes the current artifact scripts. Manually run **Draft release** for an existing matching tag and confirm the readiness input. It reruns checks, builds both packages, generates checksums and verifies them again after transfer to the draft job. Only the three named release assets are attached. Review the draft files and notes before publishing manually.
 
 The workflow runs manually and creates a draft GitHub Release for review before publication.

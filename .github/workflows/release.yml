@@ -33,7 +33,7 @@ jobs:
       - name: Verify tag matches source version
         env:
           RELEASE_TAG: ${{ inputs.tag }}
-        run: node -e "if (process.env.RELEASE_TAG !== 'v' + require('./package.json').version) process.exit(1)"
+        run: node scripts/version.mjs verify-release-tag
       - run: npm ci --ignore-scripts
       - run: npm run check
       - run: npm test

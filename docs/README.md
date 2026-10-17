@@ -7,6 +7,7 @@
 | Installation, pairing, updates and removal | [English](installation.en.md) / [한국어](installation.ko.md) |
 | Symptoms, recovery and diagnostic logs | [Troubleshooting](troubleshooting.md) |
 | Builds, packaging, tests and release procedure | [Development](development.md) |
+| Development versions, build identity and release promotion | [Versioning](versioning.md) |
 | Components, protocol and storage | [Architecture](architecture.md) |
 | Icon design, palette and reproduction | [Branding](branding.md) |
 | Documentation artwork provenance | [Artwork](assets/README.md) |

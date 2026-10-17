@@ -42,9 +42,10 @@ def stage(component, output):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("component", choices=("chrome", "streamdeck"))
+    parser.add_argument("--output", type=Path, help="Separate output directory for a development build")
     args = parser.parse_args()
     version = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))["version"]
-    output = ROOT / "dist"
+    output = args.output.resolve() if args.output else ROOT / "dist"
     staged = output / "staging" / ("chrome-extension" if args.component == "chrome" else PLUGIN)
     stage(args.component, staged)
     if args.component == "chrome":
