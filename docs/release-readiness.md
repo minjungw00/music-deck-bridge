@@ -176,8 +176,8 @@ Automated checks are complete for `59f9321`; Windows hardware, store-installed p
 | Chrome unpacked and store-package install | Pending | First pairing, reload/update, browser restart, normal tab and installed app |
 | Idle recovery and port changes/conflicts | Pending | Sleep/reconnect and old-port grace behavior; retry after failed unpair |
 | Actual Maker Console DRM build | Pending | Upload with publishing disabled, download processed build, install and exercise all actions |
-| Private vulnerability reporting | Rechecked: disabled | Public GitHub API again returned `enabled: false` on October 17, 2026; maintainer must enable and verify the private reporting entry point |
-| Secret scanning and push protection | Unverified | Maintainer verifies repository settings and reviews repository history |
+| Private vulnerability reporting | Enabled and verified | Enabled October 17, 2026; API and public reporting entry checked. See [security verification](security-readiness.md). |
+| Secret scanning and push protection | Enabled and verified | API confirms both enabled; Dependabot alerts/fixes also enabled. Limited local history/artifact inspection found no matches; scope in [security verification](security-readiness.md). |
 | Store screenshots and promotional images | Pending | Actual en/ko popup, Now Playing, settings and dial captures; current store image specifications |
 | Store declarations, public privacy link and final listing | Pending | Review [English](../store-assets/listing.en.md)/[Korean](../store-assets/listing.ko.md) copy against final build and current forms |
 | Elgato Marketplace public install URL | Pending approval/publication | Verify the product URL and plugin install before activating it in README and both installation guides |
