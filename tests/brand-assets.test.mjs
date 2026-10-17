@@ -63,26 +63,31 @@ test('all seven brand PNGs have the required dimensions, alpha and safe corner m
     for (const [x, y] of [[0, 0], [size - 1, 0], [0, size - 1], [size - 1, size - 1]]) {
       assert.ok(image.pixel(x, y)[3] <= 4, `${path}: corner is clipped/opaque`);
     }
-    assert.ok(image.at(0.26, 0.48)[3] >= 250, `${path}: missing disc`);
+    assert.ok(image.at(0.5, 0.68)[3] >= 250, `${path}: missing disc`);
   }
 });
 
 test('colored brand assets preserve the magenta disc, white play triangle and dark background', async () => {
   for (const [path] of assets.filter(([path]) => !path.includes('category'))) {
     const image = await png(path);
-    const [r, g, b] = image.at(0.26, 0.48);
-    assert.ok(r > 235 && g < 55 && b > 100 && b < 135, `${path}: magenta`);
-    const play = image.at(0.42, 0.48);
+    const [r, g, b] = image.at(0.5, 0.68);
+    assert.ok(r > 200 && g < 65 && b > 100 && b < 190, `${path}: magenta`);
+    const play = image.at(0.5, 0.495);
     assert.ok(Math.min(...play.slice(0, 3)) > 180 && play[3] === 255, `${path}: white play`);
-    const dark = image.at(0.5, 0.15);
+    const dark = image.at(0.5, 0.1);
     assert.ok(Math.max(...dark.slice(0, 3)) < 45 && dark[3] >= 250, `${path}: dark background`);
+    for (const x of [0.22, 0.78]) {
+      assert.ok(Math.min(...image.at(x, 0.495).slice(0, 3)) > 180, `${path}: missing sound wave`);
+    }
   }
-  // Actual final PNG colors, without gradients, at the source resolution.
+  // Large exports retain the reference's top light and deeper lower magenta.
   const source = await png(assets[1][0]);
-  assert.deepEqual(source.at(0.26, 0.48), [247, 37, 117, 255]);
-  assert.deepEqual(source.at(0.83, 0.62), [207, 20, 90, 255]);
-  assert.deepEqual(source.at(0.42, 0.48), [255, 255, 255, 255]);
-  assert.deepEqual(source.at(0.5, 0.15), [21, 25, 35, 255]);
+  const top = source.at(0.5, 0.22), bottom = source.at(0.5, 0.75);
+  assert.ok(top[0] > bottom[0] && top[1] > bottom[1] && top[2] > bottom[2]);
+  assert.deepEqual(source.at(0.5, 0.495), [255, 255, 255, 255]);
+  // Toolbar exports use a flat disc for clarity; sample away from the symbols.
+  const small = await png(assets[4][0]);
+  assert.ok(small.at(0.5, 0.68).slice(0, 3).every((v, i) => Math.abs(v - [247, 37, 117][i]) <= 12));
 });
 
 test('16px color and 28px monochrome play triangles retain a wider base than tip', async () => {
@@ -96,10 +101,11 @@ test('16px color and 28px monochrome play triangles retain a wider base than tip
       }
       return count;
     };
-    assert.ok(columnHeight(0.41) >= (monochrome ? 7 : 4), `${path}: missing triangle base`);
-    assert.ok(columnHeight(0.52) >= 1, `${path}: missing triangle tip`);
-    assert.ok(columnHeight(0.41) > columnHeight(0.52), `${path}: triangle shape lost`);
+    assert.ok(columnHeight(0.44) >= (monochrome ? 6 : 3), `${path}: missing triangle base`);
+    assert.ok(columnHeight(0.56) >= 1, `${path}: missing triangle tip`);
+    assert.ok(columnHeight(0.44) > columnHeight(0.56), `${path}: triangle shape lost`);
     if (monochrome) {
+      for (const x of [0.22, 0.78]) assert.ok(image.at(x, 0.495)[3] < 64, `${path}: missing wave cutout`);
       for (let y = 0; y < image.height; y++) {
         for (let x = 0; x < image.width; x++) {
           const [r, g, b, a] = image.pixel(x, y);

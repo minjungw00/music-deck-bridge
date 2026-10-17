@@ -1,33 +1,78 @@
 """Render project icons from geometric primitives, without external artwork inputs."""
 
 import argparse
+import math
 from pathlib import Path
+
+
+def render_brand(size, background):
+    from PIL import Image, ImageDraw
+
+    # Supersample curved edges even for the 512px export.
+    scale = 4
+    canvas = (512 * scale, 512 * scale)
+    box = lambda values: tuple(value * scale for value in values)
+    image = Image.new("RGBA", canvas, (0, 0, 0, 0))
+    mask = Image.new("L", image.size)
+    draw_mask = ImageDraw.Draw(mask)
+    if background:
+        draw_mask.rounded_rectangle(box((8, 8, 504, 504)), radius=96 * scale, fill=255)
+        # Gentle upper-left light, keeping the small-size background flat.
+        surface = Image.new("RGBA", (512, 512), "#151923")
+        if size > 48:
+            pixels = surface.load()
+            for y in range(512):
+                for x in range(512):
+                    light = max(0, 1 - math.hypot(x - 120, y + 40) / 580)
+                    pixels[x, y] = (15 + round(13 * light), 16 + round(13 * light),
+                                    23 + round(15 * light), 255)
+        image.paste(surface.resize(canvas, Image.Resampling.BICUBIC), mask=mask)
+    draw_mask.rectangle((0, 0, *canvas), fill=0)
+    draw_mask.ellipse(box((76, 72, 436, 432)), fill=255)
+    disc = Image.new("RGBA", (512, 512), "#F72575" if background else "white")
+    if background and size > 48:
+        draw_disc = ImageDraw.Draw(disc)
+        stops = [(72, (255, 56, 209)), (232, (255, 0, 125)), (432, (208, 0, 164))]
+        for (start, first), (end, last) in zip(stops, stops[1:]):
+            for y in range(start, end + 1):
+                t = (y - start) / (end - start)
+                color = tuple(round(a + (b - a) * t) for a, b in zip(first, last))
+                draw_disc.line((0, y, 512, y), fill=color)
+    image.paste(disc.resize(canvas, Image.Resampling.BICUBIC), mask=mask)
+    draw = ImageDraw.Draw(image)
+    ink = "white" if background else (0, 0, 0, 0)
+    # Rounded triangle and paired sound waves follow the maintainer's reference.
+    triangle = [(228, 206), (302, 252), (228, 298)]
+    draw.polygon([box(point) for point in triangle], fill=ink)
+    draw.line([box(point) for point in triangle + [triangle[0]]], fill=ink,
+              width=28 * scale, joint="curve")
+    for x, y in triangle:
+        draw.ellipse(box((x - 14, y - 14, x + 14, y + 14)), fill=ink)
+    for radius, width, angle in [(154, 26, 45), (111, 22, 35)]:
+        # At 16px, one pair leaves more separation around the play triangle.
+        if size <= 16 and radius == 111:
+            continue
+        for start, end in [(-angle, angle), (180 - angle, 180 + angle)]:
+            draw.arc(box((256 - radius, 252 - radius, 256 + radius, 252 + radius)),
+                     start, end, fill=ink, width=width * scale)
+            for degrees in (start, end):
+                centerline = radius - width / 2
+                x = 256 + centerline * math.cos(math.radians(degrees))
+                y = 252 + centerline * math.sin(math.radians(degrees))
+                half = width / 2
+                draw.ellipse(box((x - half, y - half, x + half, y + half)), fill=ink)
+    return image.resize((size, size), Image.Resampling.LANCZOS)
 
 
 def render(kind, size, background):
     from PIL import Image, ImageDraw
 
+    if kind == "brand":
+        return render_brand(size, background)
     # Draw in a fixed 512-unit coordinate system, then downsample for small displays.
     image = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
     draw = ImageDraw.Draw(image)
     white = "#ffffff"
-    if kind == "brand":
-        # A play disc with an offset signal and a bent bridge connection.
-        # No surrounding rings: the silhouette must remain distinct at 16px.
-        magenta = "#F72575" if background else white
-        deep_magenta = "#CF145A" if background else white
-        if background:
-            draw.rounded_rectangle((12, 12, 500, 500), radius=112, fill="#151923")
-        draw.line([(280, 372), (340, 372), (388, 316), (444, 316)],
-                  fill=deep_magenta, width=28, joint="curve")
-        draw.ellipse((430, 302, 458, 330), fill=deep_magenta)
-        draw.rounded_rectangle((400, 104, 424, 212), radius=12, fill=magenta)
-        draw.rounded_rectangle((444, 144, 468, 212), radius=12, fill=magenta)
-        draw.ellipse((88, 100, 376, 388), fill=magenta)
-        # A transparent play cutout makes the category mark monochrome.
-        draw.polygon([(200, 158), (200, 330), (316, 244)],
-                     fill=white if background else (0, 0, 0, 0))
-        return image.resize((size, size), Image.Resampling.LANCZOS)
     if background:
         draw.rounded_rectangle((12, 12, 500, 500), radius=112, fill="#202433")
         draw.rounded_rectangle((30, 30, 482, 482), radius=96, outline="#414b64", width=8)

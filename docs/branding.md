@@ -6,28 +6,30 @@ The official project name is **Music Deck Bridge**. Version 1.0.1 introduces its
 
 The earlier 0.5.1-era icons used a circular play mark and surrounding arcs. Their source artwork was not independently verified. Commit [`05e1785`](https://github.com/minjungw00/music-deck-bridge/commit/05e17852815d5c0c99f07e83bf01ebc7bcec2dfc) removed the supplied source mark and replaced the brand and action icons with reproducible geometric graphics. The 1.0.0 brand was three equalizer bars joined by a white bridge. Its Now Playing variant remains an action icon.
 
-The 1.0.1 brand restores the familiar disc and play triangle using newly drawn geometry. It adds two unequal signal bars above a bent bridge connection on the right. The offset bars and connection replace the earlier symmetric surrounding arcs. Visual differentiation comes from this complete silhouette as well as the magenta palette; changing color alone is not the design rationale.
+The 1.0.1 brand follows the maintainer's supplied visual reference: a large magenta disc, rounded white play triangle, paired left/right sound waves and a dark rounded square. The initial unreleased candidate with offset signal bars and a bent bridge connection was rejected in design review and replaced. The revised shapes are defined in project code; the reference bitmap is not bundled or used as a rendering input. This documents the selected design rather than claiming trademark clearance or store approval.
 
 | 1.0.0 geometric brand, introduced by `05e1785` | 1.0.1 magenta play-disc brand |
 | --- | --- |
-| ![Previous equalizer and bridge icon](assets/brand-v1.0.0.png) | ![Magenta disc, white play triangle and offset bridge connection](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/plugin/icon.png) |
+| ![Previous equalizer and bridge icon](assets/brand-v1.0.0.png) | ![Magenta disc, rounded white play triangle and paired sound waves](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/plugin/icon.png) |
 
 The historical comparison PNG is copied unchanged from the `v1.0.0` tag. It shows the project's generated predecessor, rather than redistributing the earlier unverified artwork. The `v1.0.0` tag and release assets are preserved.
 
 ## Palette and small sizes
 
-These solid colors were checked in the final 512px PNG; downsampled edges use antialiasing.
+The renderer uses these colors. Large exports interpolate the disc gradient and subtly light the dark background; downsampled edges use antialiasing.
 
 | Role | Color |
 | --- | --- |
-| Primary Magenta — disc and signal bars | `#F72575` |
-| Deep Magenta — bridge connection | `#CF145A` |
-| Dark Background — rounded square | `#151923` |
-| White — play triangle | `#FFFFFF` |
+| Primary Magenta — flat 16px/48px disc | `#F72575` |
+| Highlight Magenta — large disc, top stop | `#FF38D1` |
+| Vivid Magenta — large disc, middle stop | `#FF007D` |
+| Deep Magenta — large disc, bottom stop | `#D000A4` |
+| Dark Background — flat small exports | `#151923` |
+| White — play triangle and sound waves | `#FFFFFF` |
 
-The colored icon has a dark rounded square with transparent outer corners. The category variant is white on transparency, with a transparent play-triangle cutout for use on Stream Deck's dark interface. It contains no colored background.
+The colored icon has a dark rounded square with transparent outer corners. The category variant is a white disc with transparent triangle and wave cutouts for use on Stream Deck's dark interface. It contains no colored background.
 
-Use the committed size-specific PNGs. The minimum colored size is **16×16**; the minimum monochrome category size is **28×28**. At those sizes the play triangle must remain visible. Avoid adding text, extra rings or gradients. Inspect both native size and enlarged pixels when changing geometry; automated pixel checks support this review but do not replace checking the installed UI.
+Use the committed size-specific PNGs. The minimum colored size is **16×16**; the minimum monochrome category size is **28×28**. At those sizes the play triangle must remain visible. The 16px icon simplifies the sound waves to one pair; other sizes retain two pairs. Colored 16px/48px exports use flat fills for clarity. Inspect both native size and enlarged pixels when changing geometry; automated pixel checks support this review but do not replace checking the installed UI.
 
 | Destination | Path | Dimensions |
 | --- | --- | --- |
@@ -47,7 +49,7 @@ python streamdeck/generate_assets.py
 git diff --exit-code -- chrome-extension/icons streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs
 ```
 
-Use `python3` on systems without a `python` alias. To review regeneration without overwriting tracked PNGs, pass `--output-root /path/to/temporary-output`. The generator defines every shape in a 512-unit coordinate system, then downsamples using Lanczos. It takes no external artwork, logo, font or source-image inputs. The pinned Pillow version reproduces the committed PNGs.
+Use `python3` on systems without a `python` alias. To review regeneration without overwriting tracked PNGs, pass `--output-root /path/to/temporary-output`. The generator defines every shape in a 512-unit coordinate system. Brand shapes are rendered at 4× resolution and downsampled using Lanczos, including the 512px export. The generator takes no external artwork, logo, font or source-image inputs. The pinned Pillow version reproduces the committed PNGs.
 
 Run the normal [development checks](development.md#local-checks). `tests/brand-assets.test.mjs` verifies the seven brand PNG dimensions, RGBA data, corner transparency, palette, minimum-size triangle shape and manifest references using Node's standard library. Python packaging tests verify that Chrome ZIP and Stream Deck staging preserve the brand PNG bytes. Pillow is required only for regeneration, not ordinary tests or packaging.
 
