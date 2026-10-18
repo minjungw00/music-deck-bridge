@@ -4,7 +4,7 @@
 
 Install **both** the Stream Deck plugin (which runs the local bridge) and the Chrome extension. All four methods use the same PIN pairing procedure and support a normal YouTube Music tab or the app installed through Chrome (PWA).
 
-**Recommended: [GitHub Releases](https://github.com/minjungw00/music-deck-bridge/releases/latest) for stable packages.** Actions provides development builds; approved store listings are still pending. Prebuilt packages need no separate Node.js, npm or Python installation.
+**Recommended: [GitHub Releases](https://github.com/minjungw00/music-deck-bridge/releases/latest) for stable packages.** Actions provides development builds. See [distribution status](release-readiness.md#distribution-status) for store availability. Prebuilt packages need no separate Node.js, npm or Python installation.
 
 - [Requirements](#requirements)
 - [Method 1: GitHub Releases](#method-1-github-releases)
@@ -12,6 +12,7 @@ Install **both** the Stream Deck plugin (which runs the local bridge) and the Ch
 - [Method 3: Build from source](#method-3-build-from-source)
 - [Method 4: Official stores](#method-4-official-stores)
 - [Pairing](#pairing)
+- [Controls and display](#controls-and-display)
 - [Updating](#updating)
 - [Switching installation methods](#switching-installation-methods)
 - [Uninstalling](#uninstalling)
@@ -50,7 +51,7 @@ Development builds include recent changes and may be unstable. They require GitH
 5. Double-click the `.streamDeckPlugin` to install it. Extract the **inner Chrome ZIP** into a permanent folder and load that folder at `chrome://extensions` with **Developer mode → Load unpacked**. Select the folder containing `manifest.json`, not the outer artifact folder.
 6. Complete [Pairing](#pairing) and check playback controls.
 
-Development versions remain fixed at `X.Y.Z-dev` within a cycle; platform manifests retain fixed numeric values. Distinguish builds by their SHA and `BUILD-INFO.json`, not an incremented release number. See the [versioning policy](versioning.md). Both package versions may remain unchanged across multiple development builds. Identify the build by its commit SHA and run URL. Install both components from the same run; development packages have no automatic updates.
+Development versions remain fixed at `X.Y.Z-dev` within a cycle; platform manifests retain fixed numeric values. Distinguish builds by their SHA and `BUILD-INFO.json`, not an incremented release number. See the [versioning policy](versioning.md). Install both components from the same run; development packages have no automatic updates.
 
 ## Method 3: Build from source
 
@@ -87,7 +88,7 @@ The files are written to `dist/` with the same names as release packages. Stream
 
 ## Method 4: Official stores
 
-Public store installation links are not available yet. Use the GitHub packages:
+Check [distribution status](release-readiness.md#distribution-status) for verified public store links. Until a store listing is public, use the corresponding GitHub package:
 
 | Component | Store | Installation until available |
 | --- | --- | --- |
@@ -103,12 +104,22 @@ The stores may launch separately. For example, once the Chrome listing is availa
 1. Drag a Music Deck Bridge key or dial action onto your Stream Deck.
 2. Select that action and choose **Generate PIN** in its settings.
 3. Open the Chrome extension popup, enter the six-digit PIN, then select **Connect**. The PIN expires in ten minutes and can be used once.
-4. Open [YouTube Music](https://music.youtube.com/), start a track, then use **Check status** in the popup.
+4. Open [YouTube Music](https://music.youtube.com/), start a track, then select **Status** in the popup.
 5. Try play/pause, previous/next, mute and artwork. On Stream Deck +, try Volume and Current Track dials. Volume accepts 1–5 percentage points per tick; the Current Track Dial skips one track per tick, capped at five per event.
 
 The extension prefers an installed Chrome YouTube Music app if both it and a regular tab are open.
 
 Reinstalling the Chrome extension removes its local pairing token even if the plugin still stores previous credentials. Generate a new PIN in the Stream Deck action settings and pair the reinstalled extension. If using a custom port, match it in the popup first. Updating files in the same unpacked folder and reloading avoids removing extension storage.
+
+### Version compatibility
+
+Connection status shows both application versions and the negotiated protocol. Different application versions can communicate when their protocols are compatible. If an incompatibility message appears, update the component named in the message. Compatible replacement reuses the existing credentials; protocol mismatch does not require a new PIN. See the [compatibility policy](protocol.md).
+
+### Custom port
+
+The default port is `17864`. Set an unused integer from `1024` to `65535` in any action's settings or the extension popup. All plugin actions share this port. A connected client follows a live port change; if disconnected or asleep, manually match both ports.
+
+## Controls and display
 
 ### Launch and song ratings
 
@@ -118,24 +129,41 @@ Add **Open YouTube Music**, **Like** and **Dislike** from the Music Deck Bridge 
 - **Now Playing**, **Play / Pause**, previous/next, mute, ratings and dial inputs open YouTube Music when no player exists, wait for its controls, and then perform the requested input. A playback input starts a newly opened paused player without pausing one that already resumed. **Open YouTube Music** only opens/focuses the page. Sign in and select a song if the site has no playable track to restore.
 - **Like** and **Dislike** use the current song's own rating buttons. Press the same key again to remove that rating. A filled thumb reflects the site's confirmed selection, including changes made in Chrome. Ratings require an available signed-in player with working rating controls. Play/Pause, Like, Dislike and Open keys use icons without default titles.
 
-Install matching plugin and extension builds for these features. Keep the extension paired in the Chrome profile you use for YouTube Music. If Chrome is fully closed, the plugin starts Chrome from its standard Windows installation location; the paired extension selects an existing music tab or creates one. If the extension has no credentials, pair it again with a new PIN first. Other browsers and custom Chrome installation paths are not launch targets. Pending inputs expire after 45 seconds; a page without usable controls cannot complete them. Re-pairing cancels pending inputs.
+Install matching plugin and extension builds for these features. Keep the extension paired in the Chrome profile you use for YouTube Music. If Chrome is fully closed, the plugin starts Chrome from its standard Windows installation location; the paired extension selects an existing music tab or creates one. If the extension has no credentials, pair it again with a new PIN first. Other browsers and custom Chrome installation paths are not launch targets.
+
+Pending inputs expire after 45 seconds; a page without usable controls cannot complete them. Re-pairing cancels pending inputs.
 
 ### Dial controls and display
 
 - **Volume Dial:** turn to adjust volume; push or touch its screen to toggle mute. Its icon follows the confirmed mute state.
 - **Current Track Dial:** turn for previous/next track; push or touch its screen to play/pause. Its playback icon follows the selected player.
 
-In Now Playing key settings, choose **Show song name**, **Show artist name** and **Show background** independently. Song and artist are shown by default; the background is off. **Artist position** supports **Below song name** (default) or **After song name**. Choose **Text display → Truncate** (default) or **Scroll left**. Enabling the background adds a black band behind the bottom-aligned key text.
+### Now Playing key text
 
-In Current Track Dial action settings, choose **Touch strip display → Icon + song name** or **Album artwork**. In artwork mode, choose **Artwork fit → Fit height** (default) or **Fit width**. Both preserve the original proportions; content outside the strip is cropped. Enable **Show song name** to overlay the title at the bottom; it is hidden by default. While showing the title, **Show artist name** and **Show background** can each be enabled independently (both default to off). When the artist is enabled, choose **Artist position → Below song name** or **After song name** (default). Choose **Text display → Truncate** (default) or **Scroll left** for long text. Each dial saves its own settings. Unavailable/loading artwork falls back to the playback icon. Existing Track Dial actions retain their assignments and settings under the new name.
+Configure each key independently in its action settings:
 
-### Version compatibility
+| Setting | Options | Default |
+| --- | --- | --- |
+| Show song name | On / off | On |
+| Show artist name | On / off | On |
+| Artist position | Below song name / After song name | Below song name |
+| Show background | Black band behind bottom-aligned text | Off |
+| Text display | Truncate / Scroll left | Truncate |
 
-Connection status shows both application versions and the negotiated protocol. Different application versions can communicate when their protocols are compatible. If an incompatibility message appears, update the component named in the message. Compatible replacement reuses the existing credentials; protocol mismatch does not require a new PIN. See the [compatibility policy](protocol.md).
+### Current Track Dial artwork
 
-### Custom port
+Choose **Touch strip display → Icon + song name** (default) or **Album artwork**. Artwork mode offers these settings per dial:
 
-The default port is `17864`. Set an unused integer from `1024` to `65535` in any action's settings or the extension popup. All plugin actions share this port. A connected client follows a live port change; if disconnected or asleep, manually match both ports.
+| Setting | Options | Default |
+| --- | --- | --- |
+| Artwork fit | Fit height / Fit width | Fit height |
+| Show song name | Title overlay at the bottom | Off |
+| Show artist name | Artist beside or below the title | Off |
+| Artist position | Below song name / After song name | After song name |
+| Show background | Black band behind the text | Off |
+| Text display | Truncate / Scroll left | Truncate |
+
+Both fit modes preserve the original proportions and crop content outside the screen. Enable **Show song name** to use the text options, and **Show artist name** to select artist placement. Unavailable/loading artwork falls back to the playback icon.
 
 ## Updating
 
