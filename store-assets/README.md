@@ -15,8 +15,8 @@ Use these maintainer-selected source images for README and listing media:
 | Image | Source |
 | --- | --- |
 | [Stream Deck +](elgato/screenshots/stream-deck-plus.png) | Actual maintainer capture with balanced outer margins |
-| [English Chrome popup](chrome/screenshots/popup-en.png) | Popup rendering with sample playback data |
-| [Korean Chrome popup](chrome/screenshots/popup-ko.png) | Popup rendering with sample playback data |
+| [English Chrome popup](chrome/screenshots/popup-en.png) | Version 1.1.1 popup rendering with sample playback data |
+| [Korean Chrome popup](chrome/screenshots/popup-ko.png) | Version 1.1.1 popup rendering with sample playback data |
 
 The actual Stream Deck capture takes precedence over the browser-rendered device approximation. The popup images are selected product visuals; their simulated connection status does not establish live-service validation. See the [image provenance record](../docs/verification/official-images-2026-10-18.md). Compose store-specific exports from these sources while preserving proportions and UI content.
 

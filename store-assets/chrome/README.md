@@ -2,7 +2,7 @@
 
 Keep extension screenshots and promotional images here.
 
-The selected popup images are [English](screenshots/popup-en.png) and [Korean](screenshots/popup-ko.png). Use these canonical sources for product media; they are sample-data renderings. See the [shared image inventory](../README.md#official-product-images) for provenance and selection.
+The selected popup images are [English](screenshots/popup-en.png) and [Korean](screenshots/popup-ko.png), rendered from version **1.1.1** with sample data. Use these canonical sources for product media. See the [shared image inventory](../README.md#official-product-images) for provenance and selection.
 
 Use the submitted version's magenta icons in `chrome-extension/icons/`. See the [brand guide](../../docs/branding.md) for palette, size and reproduction details.
 
