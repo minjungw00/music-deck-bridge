@@ -48,3 +48,11 @@ Select **Unpair** in the popup to revoke the server token, delete the plugin's `
 For a full reset, quit Stream Deck, delete `%APPDATA%\MusicDeckBridge\auth.json` and `config.json`, and remove the extension through `chrome://extensions` to delete its local storage. To uninstall the plugin, delete `io.github.minjungw00.musicdeckbridge.sdPlugin` from `%APPDATA%\Elgato\StreamDeck\Plugins`. Remove associated Stream Deck actions/profiles through Stream Deck if you also want to delete their settings.
 
 For questions use the [repository issues](https://github.com/minjungw00/music-deck-bridge/issues); for sensitive information follow [SECURITY.md](SECURITY.md). Before Chrome Web Store submission, review this document against the actual submitted version and its store privacy declarations.
+
+### Chrome Web Store Limited Use Disclosure
+
+Music Deck Bridge uses data accessed through Chrome APIs and the YouTube Music web player solely to provide its disclosed functionality: connecting YouTube Music to the companion Stream Deck plugin, displaying current-track information, and executing user-requested music controls.
+
+Music Deck Bridge's use and transfer of user data will adhere to the Chrome Web Store User Data Policy, including the Limited Use requirements.
+
+User data is not sold, used for personalized advertising, or transferred for unrelated purposes. The extension communicates with the companion plugin on the user's computer. The plugin may request album artwork from Google/YouTube image servers as necessary to display the current track.
