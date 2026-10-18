@@ -60,6 +60,13 @@ Evidence date: October 18, 2026 (Asia/Seoul). Runtime source: `d2e4c19`, on the 
 - A held layout followed by 20 updates submits only the in-flight frame and the latest pending frame, compared with 21 frames previously. Six new dial cases and the updated rapid-mode case cover layout-before-content ordering, latest artwork/text, rejected/skipped outputs, retry caching, returning to the in-flight state and disappearance during layout/feedback submission. The preceding implementation fails the coalescing and newer-success caching assertions. These are controlled SDK-output fixtures, not measurements of hardware latency.
 - Actual Chromium 156.0.8078.4 passed the existing nine-input MV3 integration fixture and the generated sample preview smoke, including rapid display-mode changes, artwork/title controls and Korean popup selection. Qt 6.10.3 text/backdrop checks passed using the renderer directly. Signed-in YouTube Music, Windows native startup, physical device output and installation/DRM were not independently rerun; historical maintainer confirmation below retains its original scope.
 
+### Extension management and popup ordering
+
+Evidence date: October 18, 2026 (Asia/Seoul). Runtime source: `a0f5877`, on the same `1.1.2-dev` branch.
+
+- All 154 Node tests, two Python packaging tests and syntax/JSON/manifest checks passed. Four new management cases cover unpair during first/replacement pairing, delayed credential writes, overlapping port changes with following reads and continuation after failed revocation. Seven new popup cases cover superseded success/error responses, startup reads, newer unsaved edits and validation superseding an older request. Before/after fixtures reproduce the pairing/port ordering and popup response failures in the preceding implementation; the updated cases pass.
+- Actual Chromium 156.0.8078.4 passed the existing nine-input local MV3 integration fixture. Separate English/Korean checks load the real popup HTML/JS in Chromium and inject delayed extension-message replies: a late pairing reply preserves the newer unpair result, and startup/save replies preserve newer port edits. These popup checks use mock messages; they do not establish actual network-race frequency or signed-in YouTube Music, Windows startup, physical-device or installation/DRM behavior. Historical maintainer confirmation below retains its original scope.
+
 ## Maintainer confirmation
 
 The maintainer confirmed the following development-build checks complete before requesting protocol negotiation:

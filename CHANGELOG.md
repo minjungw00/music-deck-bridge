@@ -2,6 +2,8 @@
 
 ## 1.1.2-dev — unreleased
 
+- Serialize extension pairing, unpairing, port changes and management reads through server responses and local persistence; failed operations allow subsequent requests to continue.
+- Ignore superseded popup responses and retain newer port edits when startup reads or save responses arrive late.
 - Preserve compatibility diagnostics, protocol blocking and pending commands when saving replacement pairing credentials fails.
 - Coalesce unsent dial feedback into the latest frame while preserving layout-before-content order; retry failed/skipped frames and discard pending content when an action disappears.
 - Wait for every overlapping tab-state request before sending its close notification, including when individual requests fail.
