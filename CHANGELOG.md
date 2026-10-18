@@ -2,9 +2,12 @@
 
 ## 1.1.2-dev — unreleased
 
+- Retry failed/skipped SDK image/title outputs on the next repaint and serialize pending field updates so older sends cannot replace the latest state.
 - Deduplicate overlapping album artwork downloads by source URL and retain independent pending status when tracks change.
 - Separate the plugin into domain policies, application services, transport/storage adapters and presentation modules. Model browser command delivery with explicit states and preserve ordered one-shot delivery.
-- Split the Chrome worker into bridge-client, browser-channel, message-router and page-control modules. Use the real worker import graph in fixtures and include its modules in packaging checks.
+- Split the Chrome worker into bridge-client, browser-channel, management, player-sync, message-router and page-control modules. Use the real worker import graph in fixtures and include its modules in packaging checks.
+- Separate content metadata/execution/lifecycle and inspector translations/volume editing state; load every content module through the same manifest list during reinjection.
+- Isolate integration tests with temporary ports and bounded child cleanup, allowing four test processes.
 - Reuse the presentation API directly in rendering tests and offline previews, replacing source-text extraction.
 
 ## v1.1.1 — 2026-10-18

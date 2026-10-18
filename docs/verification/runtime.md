@@ -35,6 +35,15 @@ Evidence date: October 18, 2026 (Asia/Seoul). Runtime source: `e67bca3`, branch 
 
 The first Node attempt during the preceding investigation was blocked by sandbox loopback-listener restrictions; these integration tests ran with local listeners allowed. Chromium and the missing ALSA library were supplied from temporary directories without changing system packages. These results establish local fixtures/rendering, not signed-in YouTube Music behavior, Windows native launch, hardware displays, Marketplace DRM or installation of the refactored development build. The historical maintainer confirmation below retains its original scope.
 
+### Follow-up service and output changes
+
+Evidence date: October 18, 2026 (Asia/Seoul). Runtime source: `97ac12f`, on the same `1.1.2-dev` branch. This is a separate revision of the development implementation above.
+
+- All 126 Node tests passed with four test processes. The shared bridge fixture uses temporary ports, bounds shutdown and awaits stdio closure. A targeted 15-test parallel HTTP/SDK run also passed. During the fixture migration a missed WebSocket-listening event was found and corrected by completing temporary-port allocation before creating that server; this was a test initialization issue.
+- Failure-injection regressions cover failed/skipped SDK image/title writes, serialized/coalesced updates and action disappearance. The SDK opaque/plain manifest fixtures pass. These assertions establish output submission/retry behavior, not device rendering or real SDK failure frequency.
+- Chromium 156.0.8078.4 passed the nine-input MV3 fixture with the new management/player-sync services and the complete content-module manifest/reinjection graph. The settings fixture retains immediate volume preview, delayed-setting protection and other saved fields. Two Python packaging tests check worker/content/inspector dependency inclusion.
+- The generated preview browser smoke and Qt 6.10.3 artwork/text/backdrop checks passed again. Windows/native Chrome, actual device/inspector operation, signed-in YouTube Music and installation/DRM remain outside this local run.
+
 ## Maintainer confirmation
 
 The maintainer confirmed the following development-build checks complete before requesting protocol negotiation:
