@@ -1,10 +1,10 @@
 # Release readiness
 
-Last updated: October 18, 2026 (Asia/Seoul). Latest stable GitHub release: **v1.1.0**, published at **14:52 KST** with all accumulated changes. Source/Chrome version is **1.1.0**, Stream Deck version **1.1.0.0**, wire protocol **1**. Public v1.0.0/v1.0.1 tags/assets and the submitted v1.0.1 Marketplace package remain fixed; the unpublished v1.0.2 candidate is superseded.
+Last updated: October 18, 2026 (Asia/Seoul). Latest stable GitHub release: **v1.1.1**, published at **16:16 KST**. Source/Chrome version is **1.1.1**, Stream Deck version **1.1.1.0**, wire protocol **1**. Earlier public tags/assets and the submitted v1.0.1 Marketplace package remain fixed; the unpublished v1.0.2 candidate is superseded by the v1.1.x releases.
 
-The exact release source, final Windows/Ubuntu CI run and package checksums are recorded on the [v1.1.0 GitHub Release](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.1.0). See the [v1.1.0 scope and verification record](verification/v1.1.0.md). GitHub publication and store approval are separate.
+The exact release source, final Windows/Ubuntu CI run and package checksums are recorded on the [v1.1.1 GitHub Release](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.1.1). See the [v1.1.1 scope and verification record](verification/v1.1.1.md) and the preceding [v1.1.0 record](verification/v1.1.0.md). GitHub publication and store approval are separate.
 
-Current release preparation: **v1.1.1**, explicitly requested by the maintainer. The selected **1.1.1-dev** cycle has been promoted to source/Chrome **1.1.1** and Stream Deck **1.1.1.0**, retaining protocol **1**. The [release verification record](verification/v1.1.1.md) tracks exact-source CI and publication; no next development target is selected automatically.
+The maintainer-selected **1.1.1-dev** cycle has been promoted and published as **v1.1.1**. No next development target is selected automatically; ordinary changes must follow an explicitly selected cycle under the [versioning policy](versioning.md).
 
 ## Current evidence
 
@@ -14,13 +14,15 @@ Current release preparation: **v1.1.1**, explicitly requested by the maintainer.
 | Actual Chrome/YouTube Music operation and pairing recovery | Complete by the same maintainer report; implementation evidence: [readiness](verification/player-readiness-and-feedback.md), [cold-tab recovery](verification/browser-connection-recovery.md) |
 | Ordinary-package update, settings retention and rollback | Retention/rollback complete by maintainer report. Later 1.0.2 development → public 1.1.0 root-rename failure reproduced; [Explorer-handle closure followed by successful same-host/package rename](verification/update-procmon-v1.1.0-2026-10-18.md), all 62 release files match. Earlier failures are not retroactively diagnosed |
 | Protocol compatibility | Implemented and locally verified: [117 Node tests, HTTP/SDK/worker matrix and actual Chromium fixture](verification/protocol-compatibility.md); newly introduced protocol behavior has no separate Windows device sign-off |
-| Release source and packages | Complete: `7eb20a58b22df782af6cd80a360c27cde5100264`, [main CI 39101874429](https://github.com/minjungw00/music-deck-bridge/actions/runs/39101874429) passed both OS jobs; draft/public asset checksums and byte equality verified. [Publication evidence](verification/v1.1.0.md) |
+| Release source and packages | Complete: `33b4757364e2e2c153cecc635027024662fffdbd`, [main CI 39106843325](https://github.com/minjungw00/music-deck-bridge/actions/runs/39106843325) passed both OS jobs; downloaded CI/draft/public checksums and byte equality verified. [Publication evidence](verification/v1.1.1.md) |
 | GitHub security | [Verified enabled](security-readiness.md): private reports, secret scanning, push protection and Dependabot; read-only default Actions token |
 | Maker Console DRM | [Not tested](verification/marketplace-drm.md); ordinary package and opaque-manifest fixture results do not establish DRM execution |
 | Store status | Last maintainer report: Elgato v1.0.1 Pending review; Chrome preparation pending. [Review preparation](verification/review-preparation.md); no public store install URLs activated |
 | Official product images | [Three images selected](verification/official-images-2026-10-18.md): actual Stream Deck capture with equal 48px margins, plus English/Korean sample-data popup renderings. Linked from README; final store-sized exports and final-package matching remain |
 
 ## Release scope
+
+v1.1.1 adds consistent English/Korean popup button sizing, the main icon beside its heading, the offline rendering-preview tool and selected official product media. It also records the later installation investigation without claiming an installer code fix. The popup correction has Chromium layout evidence; the stable source passed Windows/Ubuntu CI. See [v1.1.1 verification](verification/v1.1.1.md).
 
 v1.1.0 includes automatic player launch/continuation, Open/Like/Dislike keys, reliable browser connection/player readiness and confirmed playback/mute feedback. The Current Track Dial adds per-instance information/artwork modes, proportional width/height fitting, full-width scrolling and optional title/artist placement/background. The Now Playing key offers matching text options. Protocol negotiation separates component identities from compatible wire versions and preserves credentials during recovery.
 
