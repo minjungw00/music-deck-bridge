@@ -4,7 +4,7 @@ This directory contains listing copy, artwork and submission checklists. Track s
 
 | Store | Assets and checklist |
 | --- | --- |
-| Elgato Marketplace | [Plugin submission guide](elgato/README.md), app icon, actual key/dial and settings screenshots |
+| Elgato Marketplace | [Upload guide and sized exports](elgato/README.md#upload-files): 288px icon, 1920×960 thumbnail and three gallery images |
 | Chrome Web Store | [Upload guide and sized exports](chrome/README.md#upload-files): 128px icon, localized 1280×800 screenshots and 440×280 promotional tile |
 | Both | [English](listing.en.md) / [Korean](listing.ko.md) listing copy and public [privacy policy](https://github.com/minjungw00/music-deck-bridge/blob/main/PRIVACY.md) |
 
@@ -20,7 +20,7 @@ Use these maintainer-selected source images for README and listing media:
 
 The actual Stream Deck capture takes precedence over the browser-rendered device approximation. The popup images are selected product visuals; their simulated connection status does not establish live-service validation. See the [image provenance record](../docs/verification/official-images-2026-10-18.md). Compose store-specific exports from these sources while preserving proportions and UI content.
 
-The [Chrome Web Store upload set](chrome/README.md#upload-files) is exported from these approved sources. The original popup previews and Stream Deck capture remain unchanged.
+The [Chrome Web Store upload set](chrome/README.md#upload-files) and [Elgato Marketplace gallery set](elgato/README.md#upload-files) are exported from these approved sources. The original popup previews and Stream Deck capture remain unchanged.
 
 ## Submission workflow
 

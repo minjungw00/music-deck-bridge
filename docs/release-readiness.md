@@ -21,7 +21,7 @@ Source/Chrome version is **1.1.1**, Stream Deck version **1.1.1.0**, wire protoc
 | Actual Chrome operation and pairing recovery | Complete within that maintainer report; implementation evidence: [player readiness](verification/player-readiness-and-feedback.md), [cold-tab recovery](verification/browser-connection-recovery.md) |
 | Update, retention and rollback | Retention/rollback confirmed by the maintainer. A later installation denial was traced to an Explorer folder handle with a successful retry after closure; no installer code fix is claimed. [Investigation and limits](verification/update-procmon-v1.1.0-2026-10-18.md) |
 | Protocol compatibility | Automated/Chromium coverage complete; separate actual Windows sign-off remains. [Protocol verification](verification/protocol-compatibility.md) |
-| Popup and official product images | [English/Korean popup layout](verification/popup-button-layout.md) verified. [Official renderings](verification/official-images-2026-10-18.md) display **1.1.1**; the actual Stream Deck capture is unchanged. [Chrome store exports](verification/chrome-store-images-2026-10-18.md) are prepared and checked; actual uploaded media remains separate |
+| Popup and official product images | [English/Korean popup layout](verification/popup-button-layout.md) verified. [Official renderings](verification/official-images-2026-10-18.md) display **1.1.1**; the actual Stream Deck capture is unchanged. [Chrome](verification/chrome-store-images-2026-10-18.md) and [Marketplace](verification/elgato-store-images-2026-10-18.md) exports are prepared and checked; actual uploaded media remains separate |
 | Repository security | Settings and inspection scope recorded in [security readiness](security-readiness.md) |
 | Maker Console DRM | [Not tested](verification/marketplace-drm.md); submission/review and ordinary-package tests do not establish processed-package execution |
 
@@ -32,7 +32,7 @@ v1.1.1 adds consistent popup button sizing, the heading icon, the offline render
 ## Remaining work
 
 1. **Marketplace v1.1.1:** track the review result, Console version identifier and uploaded-file hash. Obtain and test that version's [Console-processed installer](verification/marketplace-drm.md).
-2. **Submission media and listing:** use the prepared [Chrome upload files](../store-assets/chrome/README.md#upload-files); check actual uploaded media, supported models/software and privacy declarations against the submitted package. Marketplace exports/uploaded media have separate verification.
+2. **Submission media and listing:** use the prepared [Chrome](../store-assets/chrome/README.md#upload-files) and [Marketplace upload files](../store-assets/elgato/README.md#upload-files); check actual uploaded media, supported models/software and privacy declarations against the submitted package.
 3. **Chrome Web Store:** complete its submission and unpacked-to-store migration checks independently of Marketplace. Verify each public install URL after approval/publication.
 4. **Windows protocol deployment:** confirm explicit component identities/status and retained pairing on the actual Windows component pair. Controlled compatibility fixtures already pass.
 5. **Additional environment coverage:** retain provenance for clean-environment install/uninstall/reset and idle/port-conflict checks outside the existing confirmed scope. Future wire-version changes require tests for their implemented ranges.
@@ -46,6 +46,7 @@ v1.1.1 adds consistent popup button sizing, the heading icon, the offline render
 - [v1.1.0 publication, exact-source CI and public package hashes](verification/v1.1.0.md)
 - [Selected official images, source provenance and lossless Stream Deck margin correction](verification/official-images-2026-10-18.md)
 - [Chrome Web Store upload image dimensions, sources and checksums](verification/chrome-store-images-2026-10-18.md)
+- [Elgato Marketplace icon, thumbnail and three gallery exports](verification/elgato-store-images-2026-10-18.md)
 - [Marketplace DRM test record (not performed)](verification/marketplace-drm.md)
 
 ### Device, browser and protocol verification

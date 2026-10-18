@@ -2,6 +2,24 @@
 
 Keep product screenshots and store artwork here.
 
+## Upload files
+
+Use the files in [listing/](listing/) for the Maker Console media fields:
+
+| Field | File | Dimensions |
+| --- | --- | --- |
+| App icon | [app-icon-288.png](listing/app-icon-288.png) | 288 × 288 |
+| Thumbnail | [thumbnail-1920x960.png](listing/thumbnail-1920x960.png) | 1920 × 960 |
+| Gallery 1 — key controls | [gallery-01-keys-1920x960.png](listing/gallery-01-keys-1920x960.png) | 1920 × 960 |
+| Gallery 2 — dial controls | [gallery-02-dials-1920x960.png](listing/gallery-02-dials-1920x960.png) | 1920 × 960 |
+| Gallery 3 — Chrome connection | [gallery-03-pairing-1920x960.png](listing/gallery-03-pairing-1920x960.png) | 1920 × 960 |
+
+Upload all three numbered gallery files in that order; the separate thumbnail does not replace a gallery item. All explanatory text is English, as required by Marketplace. The app icon is byte-identical to the canonical [app-icon.png](app-icon.png).
+
+The galleries use the approved actual Stream Deck capture at native pixel dimensions. The Chrome connection image also includes the approved English **1.1.1** popup rendering, labelled as sample playback data. Sources, export checks and hashes are recorded in the [Marketplace image record](../../docs/verification/elgato-store-images-2026-10-18.md).
+
+## Source images and submission
+
 Use the selected [Stream Deck + capture](screenshots/stream-deck-plus.png) for product media. Its outer margins are balanced without changing UI pixels. See the [shared image inventory](../README.md#official-product-images).
 
 Record the submitted version, package hash, Console product/version ID, processing settings and review result in [release readiness](../../docs/release-readiness.md). After approval and publication, verify the actual product URL and add it to README and both installation guides. Track this independently of the Chrome Web Store listing; until then use the [package installation guide](../../docs/installation.en.md).
@@ -18,8 +36,18 @@ See the [shared submission guide and screenshot plan](../README.md).
 
 ## Media requirements
 
-`app-icon.png` is the reproducible 288×288 PNG export of the main brand. The [product guidelines](https://docs.elgato.com/guidelines/products/) specify a 288×288 app icon, 1920×960 PNG thumbnail/gallery images and at least three gallery items. Review the actual Console fields when submitting media.
+The [product guidelines](https://docs.elgato.com/guidelines/products/) require a 288×288 PNG app icon, 1920×960 PNG thumbnail/gallery images, English text and at least three gallery items (up to ten). The prepared upload set includes the icon, a separate thumbnail and three gallery images. Review the actual Console fields when submitting media.
 
-The supplied [README thumbnail](../../docs/assets/music-deck-bridge-thumbnail.png) is 1672×941. Export a separate 1920×960 promotional image and capture key/dial, settings and PIN-flow screenshots from the submitted build.
+The supplied [README thumbnail](../../docs/assets/music-deck-bridge-thumbnail.png) is retained at its original 1672×941 size. Use the separate 1920×960 thumbnail in `listing/` for Marketplace. The smaller image in `screenshots/` is the canonical capture source, not the sized gallery upload.
 
 Download the selected Console version's processed package for the [DRM test](../../docs/verification/marketplace-drm.md). Match its hash and results to that submission, separately from local build checks.
+
+## Regenerate exports
+
+With repository dependencies and Playwright Chromium installed, run from the repository root:
+
+```sh
+node scripts/render-elgato-store.mjs
+```
+
+The script composes existing project artwork and approved capture PNGs without starting the bridge or reading credentials. It writes only the five listing PNGs. `ELGATO_STORE_BROWSER` can select an existing Chromium executable; `ELGATO_STORE_FONT_DIR` can supply local Windows Segoe UI fonts for rendering. No font files are distributed. Keep the approved popup source in sync when preparing media for a newer version.
