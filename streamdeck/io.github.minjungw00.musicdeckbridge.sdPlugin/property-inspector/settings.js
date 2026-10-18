@@ -34,6 +34,10 @@ const strings = {
     commandPlayer: 'YouTube Music 페이지와 재생할 곡이 준비되었는지 확인하세요.',
     commandDelivery: '실행 결과를 확인하지 못했습니다. YouTube Music의 현재 상태를 확인하세요.',
     commandAutoplay: 'Chrome이 자동 재생을 차단했습니다. YouTube Music 창에서 재생을 허용한 뒤 다시 시도하세요.',
+    updatePlugin: '통신 규약이 호환되지 않습니다. Stream Deck 플러그인을 업데이트하세요.',
+    updateExtension: '통신 규약이 호환되지 않습니다. Chrome 확장 프로그램을 업데이트하세요.',
+    protocolInvalid: '호환성 정보가 올바르지 않습니다. 플러그인과 확장 프로그램을 업데이트하고 다시 확인하세요.',
+    pluginLabel: '플러그인', extensionLabel: '확장', protocolLabel: '통신 규약', legacyProtocol: '기존 연결',
   },
   en: {
     titleRow: 'Text display', truncate: 'Truncate', scroll: 'Scroll left',
@@ -66,6 +70,10 @@ const strings = {
     commandPlayer: 'Check that YouTube Music and a playable track are ready.',
     commandDelivery: 'Could not confirm execution. Check the current player state.',
     commandAutoplay: 'Chrome blocked autoplay. Allow playback in YouTube Music, then try again.',
+    updatePlugin: 'Bridge protocols are incompatible. Update the Stream Deck plugin.',
+    updateExtension: 'Bridge protocols are incompatible. Update the Chrome extension.',
+    protocolInvalid: 'Invalid compatibility information. Update both components and check again.',
+    pluginLabel: 'Plugin', extensionLabel: 'Extension', protocolLabel: 'Protocol', legacyProtocol: 'legacy connection',
   },
 };
 let language = 'en';
@@ -170,6 +178,8 @@ function showConnection(payload) {
     ['extension-unavailable', 'browser-api-failed', 'bridge-unavailable'].includes(error) ? 'commandExtension' :
     ['delivery-uncertain', 'playback-unconfirmed'].includes(error) ? 'commandDelivery' : 'commandPlayer';
   $('commandStatus').textContent = error ? `${t('commandFailed')} ${t(hint)} (${error})` : '';
+  const compatibility = payload.compatibility;
+  $('versionInfo').textContent = `${t('pluginLabel')} ${payload.pluginVersion || '—'} · ${t('extensionLabel')} ${compatibility?.extensionVersion || '—'} · ${t('protocolLabel')} ${compatibility?.negotiatedProtocolVersion || '—'}${compatibility?.legacy ? ` (${t('legacyProtocol')})` : ''}`;
   if (payload.pin && /^\d{6}$/.test(payload.pin)) {
     lastPin = payload.pin;
     lastPinExpiresAt = Number(payload.expiresAt) || 0;
@@ -183,7 +193,11 @@ function showConnection(payload) {
   if (payload.bridgeOnline === false && payload.portError) {
     $('portStatus').textContent = `${t('portOffline')} ${payload.portError}`;
   }
-  if (payload.pin) {
+  if (compatibility?.compatible === false) {
+    const key = compatibility.updateRequired === 'plugin' ? 'updatePlugin' : compatibility.updateRequired === 'extension' ? 'updateExtension' : 'protocolInvalid';
+    $('pairState').textContent = t(key);
+    $('commandStatus').textContent = '';
+  } else if (payload.pin) {
     $('pairState').textContent = t('pinIssued');
   } else if (!payload.paired) {
     $('pairState').textContent = t('unpaired');

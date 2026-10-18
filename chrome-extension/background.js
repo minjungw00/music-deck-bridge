@@ -1,4 +1,23 @@
 'use strict';
+if (typeof importScripts === 'function') importScripts('protocol.js');
+const bridgeProtocol = globalThis.MusicDeckProtocol;
+const extensionManifest = chrome.runtime.getManifest?.() || {};
+const EXTENSION_VERSION = extensionManifest.version_name || extensionManifest.version || 'unknown';
+let bridgeCompatibility = null;
+const protocolBlocked = () => bridgeCompatibility?.compatible === false;
+function protocolInfo(data) {
+  return { ...bridgeProtocol.negotiate(data, 'extension'),
+    pluginVersion: bridgeProtocol.versionLabel(data.pluginVersion), extensionVersion: EXTENSION_VERSION,
+    peerProtocolVersion: Number.isSafeInteger(data.protocolVersion) ? data.protocolVersion : null };
+}
+function protocolMessage(info) {
+  const key = info.updateRequired === 'plugin' ? 'updatePlugin' : info.updateRequired === 'extension' ? 'updateExtension' : 'protocolInvalid';
+  return chrome.i18n?.getMessage?.(key) || ({ updatePlugin: 'Update the Stream Deck plugin to connect.',
+    updateExtension: 'Update the Chrome extension to connect.', protocolInvalid: 'Invalid compatibility information. Update both components and check again.' })[key];
+}
+function failure(error) {
+  return { ok: false, error: error.message, ...(error.compatibility ? { compatibility: error.compatibility } : {}) };
+}
 // Service worker; bearer token never leaves the extension background context.
 const storageReady = chrome.storage.local.setAccessLevel({ accessLevel: 'TRUSTED_CONTEXTS' });
 // Requests await this same promise and fail closed if the access restriction fails.
@@ -17,10 +36,24 @@ async function post(endpoint, payload, timeout = 3000) {
   const response = await fetch(`http://127.0.0.1:${port}${endpoint}`, {
     method: 'POST', mode: 'cors', cache: 'no-store',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ ...payload, ...bridgeProtocol.descriptor, extensionVersion: EXTENSION_VERSION }),
     signal: AbortSignal.timeout(timeout),
   });
   const data = await response.json();
+  if (endpoint !== '/unpair' && (response.ok || ['protocol-incompatible', 'invalid-protocol'].includes(data.errorCode))) {
+    const info = protocolInfo(data);
+    // A peer can reject a range even if its envelope is inconsistent. Never
+    // treat a protocol rejection as a transient network or pairing problem.
+    if (data.errorCode && info.compatible && ['protocol-incompatible', 'invalid-protocol'].includes(data.errorCode)) {
+      Object.assign(info, { compatible: false, errorCode: 'invalid-protocol', updateRequired: null, negotiatedProtocolVersion: null });
+    }
+    bridgeCompatibility = info;
+    if (!info.compatible) {
+      const error = new Error(protocolMessage(info));
+      error.httpStatus = response.status; error.compatibility = info;
+      throw error;
+    }
+  }
   if (!response.ok) {
     const error = new Error(data.error || `HTTP ${response.status}`);
     error.httpStatus = response.status;
@@ -50,8 +83,8 @@ async function performBrowserCommand(command, stillPaired = async () => true, di
   const failed = reason => { diagnostic.reason = reason; return false; };
   if (!['open', ...PLAYER_COMMANDS].includes(command?.type)) return false;
   const deadline = Math.min(Number(command.expiresAt) || Date.now() + 30000, Date.now() + 30000);
-  const allowed = async (confirm = false) => Date.now() < deadline && await stillPaired(confirm) && Date.now() < deadline;
-  const denied = () => failed(diagnostic.reason === 'bridge-unavailable' ? 'bridge-unavailable' :
+  const allowed = async (confirm = false) => !protocolBlocked() && Date.now() < deadline && await stillPaired(confirm) && !protocolBlocked() && Date.now() < deadline;
+  const denied = () => failed(protocolBlocked() ? 'protocol-incompatible' : diagnostic.reason === 'bridge-unavailable' ? 'bridge-unavailable' :
     Date.now() >= deadline ? 'command-timeout' : 'authorization-lost');
   if (!await allowed()) return denied();
   const query = () => chrome.tabs.query({ url: MUSIC_URL + '*' });
@@ -112,6 +145,7 @@ async function startBrowserListener() {
   browserListening = true;
   let listeningToken;
   let retry = false;
+  let retryDelay = 1000;
   try {
     while (true) {
       const token = await pairedToken();
@@ -159,13 +193,14 @@ async function startBrowserListener() {
   } catch (error) {
     // Host restart/temporary network failure must not leave a running browser
     // disconnected until the next one-minute maintenance alarm.
-    retry = !error.httpStatus || error.httpStatus >= 500;
+    retry = Boolean(error.compatibility) || !error.httpStatus || error.httpStatus >= 500;
+    if (error.compatibility) retryDelay = 5000;
   }
   finally {
     browserListening = false;
     const token = await pairedToken().catch(() => '');
     if (token && token !== listeningToken) void startBrowserListener();
-    else if (token && retry) browserRetryTimer = setTimeout(() => { void startBrowserListener(); }, 1000);
+    else if (token && retry) browserRetryTimer = setTimeout(() => { void startBrowserListener(); }, retryDelay);
   }
 }
 
@@ -276,6 +311,9 @@ function controlPlayerVolume(type, amount) {
 }
 
 chrome.runtime.onMessage.addListener((msg, sender, respond) => {
+  if (protocolBlocked() && ['player-playback', 'player-volume'].includes(msg?.type)) {
+    respond({ ok: false, reason: 'protocol-incompatible' }); return false;
+  }
   if (msg?.type === 'player-playback' && Number.isInteger(sender.tab?.id) && sender.frameId === 0 &&
       sender.url?.startsWith('https://music.youtube.com/')) {
     if (!['play', 'toggle', 'next', 'prev'].includes(msg.command)) { respond({ ok: false }); return false; }
@@ -307,8 +345,8 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
       const result = await post('/pair', { pin: msg.pin });
       await chrome.storage.local.set({ bridgeToken: result.token });
       void startBrowserListener();
-      return { ok: true };
-    })().then(respond).catch(e => respond({ ok: false, error: e.message }));
+      return { ok: true, compatibility: bridgeCompatibility };
+    })().then(respond).catch(e => respond(failure(e)));
     return true;
   }
   if (msg?.type === 'check' && !sender.tab) {
@@ -326,8 +364,8 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
         throw error;
       }
       void startBrowserListener();
-      return { ok: true, ...result };
-    })().then(respond).catch(e => respond({ ok: false, error: e.message }));
+      return { ok: true, ...result, compatibility: bridgeCompatibility };
+    })().then(respond).catch(e => respond(failure(e)));
     return true;
   }
   if (msg?.type === 'get-port' && !sender.tab) {
@@ -361,7 +399,7 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
           return { ok: true, port, localOnly: true };
         }
       }
-    })().then(respond).catch(e => respond({ ok: false, error: e.message }));
+    })().then(respond).catch(e => respond(failure(e)));
     return true;
   }
   if (msg?.type === 'unpair' && !sender.tab) {
@@ -376,8 +414,9 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
         }
       }
       await chrome.storage.local.remove('bridgeToken');
+      bridgeCompatibility = null;
       return { ok: true };
-    })().then(respond).catch(e => respond({ ok: false, error: e.message }));
+    })().then(respond).catch(e => respond(failure(e)));
     return true;
   }
   if ((msg?.type === 'sync' || msg?.type === 'listen') && sender.tab &&
@@ -385,6 +424,7 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
     (async () => {
       const token = await pairedToken();
       if (!token) return { paired: false, commands: [] };
+      if (protocolBlocked()) return { paired: true, commands: [], idle: true };
       // The modern browser channel carries every input. Keeping a separate
       // long poll per tab can exhaust Chrome's per-origin HTTP/1 connection
       // pool and starve status checks/results, including after a tab closes.

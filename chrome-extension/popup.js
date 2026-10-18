@@ -18,12 +18,16 @@ function info(message, ok = false) {
   $('status').textContent = message;
   $('status').style.color = ok ? '#8ceba2' : '#fbabb6';
 }
+function showVersions(value) {
+  $('versions').textContent = value ? `${chrome.i18n.getMessage('pluginLabel')} ${value.pluginVersion || '—'} · ${chrome.i18n.getMessage('extensionLabel')} ${value.extensionVersion || '—'}\n${chrome.i18n.getMessage('protocolLabel')}: ${value.negotiatedProtocolVersion || '—'}${value.legacy ? ` (${chrome.i18n.getMessage('legacyProtocol')})` : ''}` : '';
+}
 $('connect').addEventListener('click', async () => {
   const pin = $('pin').value.trim();
   if (!/^\d{6}$/.test(pin)) return info(text.invalid);
   info(text.checking);
   try {
     const response = await chrome.runtime.sendMessage({ type:'pair', pin });
+    showVersions(response?.compatibility);
     if (!response?.ok) return info(response?.error || text.fail);
     $('pin').value = '';
     info(text.connected, true);
@@ -32,6 +36,7 @@ $('connect').addEventListener('click', async () => {
 $('refresh').addEventListener('click', async () => {
   try {
     const r = await chrome.runtime.sendMessage({ type:'check' });
+    showVersions(r?.compatibility);
     if (!r?.ok) return info(r?.error || text.unknown);
     if (!r.active) return info(text.paired, true);
     const cover = coverMessages.get(r.coverStatus) || coverMessages.get('waiting');
@@ -43,6 +48,7 @@ $('forget').addEventListener('click', async () => {
   try {
     const result = await chrome.runtime.sendMessage({ type:'unpair' });
     if (!result?.ok) return info(result?.error || text.fail);
+    showVersions(null);
     info(text.removed, true);
   } catch (error) { info(error.message); }
 });

@@ -43,6 +43,11 @@ for (const locale of ['en', 'ko', 'fr']) {
     assert.equal(document.documentElement.lang, locale === 'ko' ? 'ko' : 'en');
     assert.equal(element('connect').textContent, catalog.connect.message);
     assert.equal(element('status').textContent, catalog.paired.message);
+    status = { ok: false, error: catalog.updateExtension.message, compatibility: {
+      compatible: false, pluginVersion: '2.0.0', extensionVersion: '1.0.2-dev', updateRequired: 'extension' } };
+    await element('refresh').click();
+    assert.equal(element('status').textContent, catalog.updateExtension.message);
+    assert.match(element('versions').textContent, /2\.0\.0.*1\.0\.2-dev/);
     for (const [code, key] of [
       ['missing', 'coverMissing'], ['blocked', 'coverBlocked'], ['ready', 'coverReady'],
       ['downloading', 'coverDownloading'], ['waiting', 'coverWaiting'], ['failed', 'coverFailed'],

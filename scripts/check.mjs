@@ -52,6 +52,7 @@ for (const messages of [en, ko]) {
 }
 for (const [, key] of JSON.stringify(chrome).matchAll(/__MSG_(\w+)__/g)) assert.ok(en[key], `Missing message: ${key}`);
 for (const file of [chrome.background.service_worker, chrome.action.default_popup,
+  'protocol.js',
   ...chrome.content_scripts.flatMap(script => script.js), ...Object.values(chrome.icons)]) {
   await exists(join(extension, file));
 }

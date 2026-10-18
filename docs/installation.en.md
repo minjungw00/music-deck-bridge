@@ -129,6 +129,10 @@ In Now Playing key settings, choose **Show song name**, **Show artist name** and
 
 In Current Track Dial action settings, choose **Touch strip display → Icon + song name** or **Album artwork**. In artwork mode, choose **Artwork fit → Fit height** (default) or **Fit width**. Both preserve the original proportions; content outside the strip is cropped. Enable **Show song name** to overlay the title at the bottom; it is hidden by default. While showing the title, **Show artist name** and **Show background** can each be enabled independently (both default to off). When the artist is enabled, choose **Artist position → Below song name** or **After song name** (default). Choose **Text display → Truncate** (default) or **Scroll left** for long text. Each dial saves its own settings. Unavailable/loading artwork falls back to the playback icon. Existing Track Dial actions retain their assignments and settings under the new name.
 
+### Version compatibility
+
+Connection status shows both application versions and the negotiated protocol. Different application versions can communicate when their protocols are compatible. If an incompatibility message appears, update the component named in the message. Compatible replacement reuses the existing credentials; protocol mismatch does not require a new PIN. See the [compatibility policy](protocol.md).
+
 ### Custom port
 
 The default port is `17864`. Set an unused integer from `1024` to `65535` in any action's settings or the extension popup. All plugin actions share this port. A connected client follows a live port change; if disconnected or asleep, manually match both ports.

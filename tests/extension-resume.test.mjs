@@ -5,7 +5,7 @@ import {join,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import vm from 'node:vm';
 const root=join(dirname(fileURLToPath(import.meta.url)),'..','chrome-extension');
-const bg=readFileSync(join(root,'background.js'),'utf8');
+const bg=readFileSync(new URL('../chrome-extension/protocol.js', import.meta.url), 'utf8') + '\n' + readFileSync(join(root,'background.js'),'utf8');
 const content=readFileSync(join(root,'content.js'),'utf8');
 test('extension update reinjects into already-open PWA but never into discarded tabs',async()=>{
   const callbacks={};const injected=[];

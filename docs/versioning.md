@@ -1,5 +1,7 @@
 # Versioning and development builds
 
+Application release numbers and [wire protocol versions](protocol.md) are independent. The plugin and extension report their own application identities; only intersecting protocol ranges determine communication compatibility. Ordinary application changes do not increment the protocol version.
+
 ## Development cycle
 
 Choose the intended release number once, then keep `package.json` and the lockfile at `X.Y.Z-dev` throughout development. Ordinary fixes, documentation changes, commits, CI runs and local test builds do not increment that number. A new intended release number is a maintainer decision, not an installer workaround.

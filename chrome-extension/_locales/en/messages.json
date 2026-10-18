@@ -112,5 +112,26 @@
   },
   "unpairFailed": {
     "message": "Could not unpair. Start Stream Deck, check the port and try again."
+  },
+  "updatePlugin": {
+    "message": "Bridge protocols are incompatible. Update the Stream Deck plugin."
+  },
+  "updateExtension": {
+    "message": "Bridge protocols are incompatible. Update the Chrome extension."
+  },
+  "protocolInvalid": {
+    "message": "Invalid compatibility information. Update both components and check again."
+  },
+  "pluginLabel": {
+    "message": "Plugin"
+  },
+  "extensionLabel": {
+    "message": "Extension"
+  },
+  "protocolLabel": {
+    "message": "Protocol"
+  },
+  "legacyProtocol": {
+    "message": "legacy connection"
   }
 }

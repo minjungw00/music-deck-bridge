@@ -31,6 +31,10 @@ For bug reports include OS, browser, extension, Stream Deck software/device vers
 
 ## Installation logs / 설치 로그
 
+For protocol incompatibility, update the plugin or extension named in the status message. Existing credentials and port are retained; do not reset PIN pairing to solve a protocol mismatch. Invalid compatibility information has separate guidance to update both components and check again. See [protocol compatibility](protocol.md).
+
+통신 규약 비호환 안내가 표시되면 안내된 플러그인 또는 확장 프로그램을 업데이트하세요. 기존 인증정보와 포트는 보존되며, 규약 불일치를 해결하기 위해 PIN 연결을 초기화할 필요는 없습니다. 호환성 정보 자체가 올바르지 않다는 안내는 양쪽을 업데이트한 뒤 다시 확인하세요.
+
 Before retrying a rejected installation, save `%APPDATA%\Elgato\StreamDeck\logs\StreamDeck*.log`, matching JSON logs and the plugin's `logs` folder if present. Include the error time, actual installed version and package source/checksum in a bug report. Back up profiles, `%APPDATA%\MusicDeckBridge` and plugin files before following the [recovery procedure](installation.en.md#replacing-plugin-files). If moving the stopped plugin folder gives access denied, close windows/terminals using it and inspect open handles and permissions. Keep the same Chrome extension path/ID.
 
 설치가 거부되면 재시도 전에 `%APPDATA%\Elgato\StreamDeck\logs\StreamDeck*.log`, 대응하는 JSON 로그와 플러그인의 `logs` 폴더가 있으면 보관하세요. 오류 발생 시각, 실제 설치 버전과 패키지 출처·체크섬을 오류 보고에 포함합니다. 프로필·`%APPDATA%\MusicDeckBridge`·플러그인 파일을 백업한 뒤 [복구 절차](installation.ko.md#replacing-plugin-files)를 따르세요. 중지한 플러그인 폴더를 이동할 때 접근이 거부되면 해당 폴더를 사용하는 창·터미널을 닫고 열린 핸들과 권한을 확인합니다. Chrome 확장 프로그램의 경로·ID는 유지하세요.

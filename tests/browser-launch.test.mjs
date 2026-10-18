@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
-const source = readFileSync(new URL('../chrome-extension/background.js', import.meta.url), 'utf8');
+const source = readFileSync(new URL('../chrome-extension/protocol.js', import.meta.url), 'utf8') + '\n' + readFileSync(new URL('../chrome-extension/background.js', import.meta.url), 'utf8');
 
 function harness({ tabs = [], response = true, injectionFailures = 0 } = {}) {
   const calls = [];

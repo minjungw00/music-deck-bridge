@@ -18,6 +18,8 @@ The Stream Deck manifest launches `streamdeck/io.github.minjungw00.musicdeckbrid
 3. A successful pairing creates a random 32-byte token. The plugin persists the token and extension origin; the extension stores the token locally. A new pairing replaces the old pair, rejects existing command polls with HTTP 401, and clears player state and queued commands. The new auth file is written through an atomic replacement.
 4. All subsequent routes require both the saved origin and token to access data or controls. A credential-free `/status` request still receives HTTP 401; from the saved origin, it can mark an absent extension credential record and cancel undelivered inputs when no authenticated browser poll is active. It cannot delete credentials, read state, execute commands or displace a live authenticated browser poll. Normal website origins are rejected. This boundary does not protect against malicious software already running as the same OS user.
 
+The [shared protocol contract](protocol.md) reports `pluginVersion` and `extensionVersion` separately from the wire range (`minProtocolVersion` through `protocolVersion`, currently 1–1). Application-version differences are allowed. Missing negotiation fields mean the known legacy-v1 contract; malformed explicit fields are rejected. After authentication/PIN validation, incompatibility returns HTTP 409, blocks launch/control delivery and discards pending inputs while retaining auth/port/settings. Compatible replacement restores communication without a new PIN; explicit unpair remains available. Both UIs identify the component that needs updating.
+
 | Route | Purpose |
 | --- | --- |
 | `/pair` | Exchange a PIN for a token |

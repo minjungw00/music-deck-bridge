@@ -176,5 +176,29 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   assert.ok(navigation.calls >= 2);
   const music = browser.pages().find(page => page.url().startsWith(musicURL));
   assert.equal(await music.evaluate(() => document.body.dataset.next), '1', 'no duplicate effect after navigation');
+  const compatibility = await worker.evaluate(async token => {
+    const current = await post('/status', { token });
+    const original = fetch;
+    try {
+      globalThis.fetch = async (...args) => {
+        const response = await original(...args);
+        if (!args[0].endsWith('/status')) return response;
+        return new Response(JSON.stringify({ ...await response.json(), pluginVersion: '2.0.0',
+          protocolVersion: 2, minProtocolVersion: 2 }), { status: 200 });
+      };
+      let blocked;
+      try { await post('/status', { token }); } catch (error) { blocked = error.compatibility; }
+      const executed = await performBrowserCommand({ id: 'incompatible', type: 'next' });
+      globalThis.fetch = original;
+      await post('/status', { token });
+      return { current: current.compatibility, blocked, executed, token: await pairedToken(), recovered: bridgeCompatibility };
+    } finally { globalThis.fetch = original; }
+  }, token);
+  assert.equal(compatibility.current.compatible, true);
+  assert.equal(compatibility.blocked.updateRequired, 'extension');
+  assert.equal(compatibility.executed, false);
+  assert.equal(compatibility.token, token);
+  assert.equal(compatibility.recovered.compatible, true);
+  assert.equal(await music.evaluate(() => document.body.dataset.next), '1', 'incompatible input had no page effect');
   t.diagnostic(`Chromium ${browser.browser().version()}; 9 cold-tab actions, delayed readiness, MAIN state sync and replaced-receiver recovery passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
 });

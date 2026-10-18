@@ -13,6 +13,7 @@ Music Deck Bridge connects the YouTube Music web player in Chrome to a Stream De
 | Six-digit pairing PIN | Authorize a new extension connection | Plugin memory; expires after ten minutes or successful pairing |
 | Random pairing token and extension origin/ID | Authenticate local requests | Plugin `auth.json`; extension token in `chrome.storage.local`; retained until replaced or deleted |
 | Local bridge port | Connect the two components | Plugin `config.json` and extension `chrome.storage.local` (`bridgePort`); retained until changed or deleted |
+| Plugin/extension application versions, supported protocol ranges and compatibility result | Decide whether local communication is supported and identify required updates | Exchanged over loopback and held in plugin/extension-worker memory; cleared on process/worker restart or pairing reset |
 | Artwork bytes and download errors | Show artwork and connection diagnostics | Plugin memory cache; cleared on plugin exit |
 | Queued playback/rating commands | Deliver button and dial input; bind ratings to the intended current track | Plugin memory; consumed on delivery or discarded after five seconds |
 | Last command failure code | Explain pairing, delivery or player readiness failures | Plugin memory until successful execution, pairing reset or process exit; bounded codes are also written to the SDK log |

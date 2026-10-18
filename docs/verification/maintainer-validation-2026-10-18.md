@@ -14,4 +14,4 @@ The latest package supplied before this confirmation was development source `896
 
 The historical ACCESS DENIED trace remains valid evidence of a past conditional failure, not evidence of a currently reproducible defect or a confirmed runtime fix. If it recurs, preserve that failing state and capture handles/effective permissions/filter evidence before reset. Do not keep repeating equivalent successful installs while no failing state is available.
 
-This sign-off predates the protocol-negotiation change requested in the same message. Validation of that new change is recorded separately in the protocol evidence. Maker Console DRM, store approvals/migration and final release CI were not among the three confirmed items and remain independent.
+This sign-off predates the protocol-negotiation change requested in the same message. Validation of that new change is recorded separately in the [protocol evidence](protocol-compatibility.md). Maker Console DRM, store approvals/migration and final release CI were not among the three confirmed items and remain independent.

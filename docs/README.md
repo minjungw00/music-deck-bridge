@@ -9,6 +9,7 @@
 | Builds, packaging, tests and release procedure | [Development](development.md) |
 | Development versions, build identity and release promotion | [Versioning](versioning.md) |
 | Components, protocol and storage | [Architecture](architecture.md) |
+| Application identities, legacy connections and protocol compatibility | [Protocol](protocol.md) |
 | Icon design, palette and reproduction | [Branding](branding.md) |
 | Documentation artwork provenance | [Artwork](assets/README.md) |
 | Store copy, media and submission procedure | [Store submission guide](../store-assets/README.md) |

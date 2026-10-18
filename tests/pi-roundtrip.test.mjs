@@ -321,6 +321,30 @@ for (const protectedManifest of [false, true]) {
     await post('/browser-result', { token: pair.token, id: active.commands[0].id,
       ok: false, reason: 'receiver-unavailable' });
     assert.equal((await connection()).lastCommandError, 'receiver-unavailable');
+    await post('/status', { token: pair.token, protocolVersion: 1, minProtocolVersion: 1, extensionVersion: '9.1.0' });
+    assert.equal((await connection()).compatibility.extensionVersion, '9.1.0');
+    assert.equal((await connection()).extensionOnline, true, 'different application versions share protocol 1');
+    const incompatible = await fetch('http://127.0.0.1:17864/status', { method: 'POST',
+      headers: { Origin: origin, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: pair.token, protocolVersion: 2, minProtocolVersion: 2, extensionVersion: '2.0.0' }) });
+    assert.equal(incompatible.status, 409);
+    const incompatibleState = await connection();
+    assert.equal(incompatibleState.paired, true);
+    assert.equal(incompatibleState.compatibility.updateRequired, 'plugin');
+    const blockedStart = messages.length;
+    send('keyDown', 'next', {});
+    await waitFor(() => messages.slice(blockedStart).some(m => m.event === 'showAlert'));
+    assert.equal((await connection()).lastCommandError, 'protocol-incompatible');
+    await post('/status', { token: pair.token, protocolVersion: 1, minProtocolVersion: 1 });
+    assert.equal((await connection()).lastCommandError, '');
+    assert.equal((await connection()).extensionOnline, true, 'compatible replacement reuses existing pairing');
+    await post('/sync', { token: pair.token, clientId: 1, state });
+    send('keyDown', 'next', {});
+    const legacyRecovery = await waitFor(async () => {
+      const result = await post('/sync', { token: pair.token, clientId: 1, state });
+      return result.commands.length ? result : null;
+    });
+    assert.deepEqual(legacyRecovery.commands, [{ type: 'next', amount: 0 }], 'legacy recovery must not retain modern-browser-only routing');
     await closePeer(peer);
     assert.equal(peerClose?.code, 1000, diagnostics());
     assert.deepEqual(errors, [], diagnostics());

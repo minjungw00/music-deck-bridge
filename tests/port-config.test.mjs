@@ -115,7 +115,7 @@ test('volume slider preview overrides stale didReceiveSettings before first phys
 });
 
 test('Chrome extension uses stored custom port and follows live port changes announced by local server',async()=>{
-  const source=readFileSync(join(base,'chrome-extension','background.js'),'utf8');
+  const source=readFileSync(new URL('../chrome-extension/protocol.js', import.meta.url), 'utf8') + '\n' + readFileSync(join(base,'chrome-extension','background.js'),'utf8');
   const storage={bridgePort:23111,bridgeToken:'test-token'};
   const requested=[];let listener;
   const chrome={

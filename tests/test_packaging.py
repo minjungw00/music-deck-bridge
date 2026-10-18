@@ -41,7 +41,7 @@ class PackagingTests(unittest.TestCase):
             self.assertEqual(manifest["version"], expected_version.removesuffix("-dev"))
             if expected_version.endswith("-dev"):
                 self.assertEqual(manifest["version_name"], expected_version)
-            for name in (*packaging_tool.LEGAL, "background.js", "content.js", "popup.js",
+            for name in (*packaging_tool.LEGAL, "background.js", "protocol.js", "content.js", "popup.js",
                          manifest["action"]["default_popup"], *manifest["icons"].values(),
                          "_locales/en/messages.json", "_locales/ko/messages.json"):
                 self.assertIn(name, names)

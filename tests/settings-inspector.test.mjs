@@ -10,7 +10,7 @@ const html = readFileSync(join(dir,'property-inspector','settings.html'),'utf8')
 function makeInspector(action='io.github.minjungw00.musicdeckbridge.nowplaying', language='ko') {
   const ids=['keyTitleRow','showTitle','keyArtistRow','showArtist','keyArtistPositionRow','artistPosition','optKeyArtistBelow','optKeyArtistInline','keyBackgroundRow','titleBackground',
     'artworkArtistPositionRow','artworkArtistPosition','optArtworkArtistBelow','optArtworkArtistInline','titleModeRow','optTruncate','optScroll','titleHint','volumeRow','volumeHint',
-    'pinRow','generatePin','pairHint','pairState','commandStatus','volumeStep','stepLabel','pinOutput',
+    'versionInfo','pinRow','generatePin','pairHint','pairState','commandStatus','volumeStep','stepLabel','pinOutput',
     'trackSection','dialSection','dialDisplayRow','dialDisplay','optDialInfo','optDialArtwork','dialDisplayHint',
     'artworkTextOptions','artworkArtistRow','artworkShowArtist','artworkBackgroundRow','artworkTitleBackground','artworkTitleModeRow','artworkTitleMode','optArtworkTruncate','optArtworkScroll',
     'artworkOptions','artworkFitRow','artworkFit','optArtworkHeight','optArtworkWidth','artworkFitHint','artworkTitleRow','artworkShowTitle',
@@ -139,6 +139,21 @@ test('new PIN instructions take priority over a recently connected old extension
     paired:true,extensionOnline:true,playerActive:true}});
   assert.equal(pi.elems.pinOutput.textContent,'123456');
   assert.equal(pi.elems.pairState.textContent,'PIN 발급됨 · Chrome 확장 프로그램에 입력하세요.');
+});
+
+test('protocol incompatibility has precise update guidance and compatible app-version differences stay connected', async () => {
+  const pi = makeInspector(); await pi.ready();
+  const payload = { type: 'connection', paired: true, extensionOnline: true, playerActive: true, pluginVersion: '1.0.2-dev',
+    compatibility: { compatible: true, extensionVersion: '9.0.0', negotiatedProtocolVersion: 1 } };
+  pi.subscribers.connection({ payload });
+  assert.equal(pi.elems.pairState.textContent, '연결됨 · YouTube Music 제어 가능');
+  assert.match(pi.elems.versionInfo.textContent, /1\.0\.2-dev.*9\.0\.0.*1/);
+  for (const [updateRequired, pattern] of [['plugin', /Stream Deck 플러그인을 업데이트/],
+    ['extension', /Chrome 확장 프로그램을 업데이트/], [null, /호환성 정보가 올바르지/]]) {
+    pi.subscribers.connection({ payload: { ...payload, compatibility: { compatible: false, updateRequired } } });
+    assert.match(pi.elems.pairState.textContent, pattern);
+    assert.doesNotMatch(pi.elems.pairState.textContent, /PIN|제어 가능/);
+  }
 });
 
 test('a failed browser command explains recovery and clears after a successful command', async () => {

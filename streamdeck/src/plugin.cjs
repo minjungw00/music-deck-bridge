@@ -13,6 +13,8 @@ const os = require('node:os');
 const { launchChrome } = require('./launch-chrome.cjs');
 const { fitDialArtwork } = require('./dial-artwork.cjs');
 const { keyTextBackground } = require('./key-background.cjs');
+const protocol = require('../../chrome-extension/protocol.js');
+const PLUGIN_VERSION = require('../../package.json').version;
 
 const PLUGIN_ID = 'io.github.minjungw00.musicdeckbridge';
 const LOCALHOST = '127.0.0.1';
@@ -75,10 +77,11 @@ let auth = null;
 let lastExtensionContactAt = 0;
 let pairingRequired = false;
 let lastCommandError = '';
+let compatibility = null;
 const COMMAND_ERRORS = new Set(['pairing-required', 'extension-unavailable', 'command-timeout',
   'authorization-lost', 'injection-unavailable', 'receiver-unavailable', 'delivery-uncertain',
   'player-rejected', 'player-not-ready', 'browser-api-failed', 'bridge-unavailable', 'command-failed',
-  'autoplay-blocked', 'player-error', 'playback-unconfirmed']);
+  'autoplay-blocked', 'player-error', 'playback-unconfirmed', 'protocol-incompatible', 'invalid-protocol']);
 let locale = 'en';
 let streamDeck;
 let sdOnline = false;
@@ -147,6 +150,7 @@ function resetSession() {
   lastExtensionContactAt = 0;
   pairingRequired = false;
   lastCommandError = '';
+  compatibility = null;
   cachedCoverUrl = ''; cachedCoverData = '';
   drawSoon();
 }
@@ -160,9 +164,32 @@ function authorized(body, origin) {
   return auth && origin === auth.origin && safeEqual(body.token, auth.token);
 }
 function extensionOnline() {
-  return Boolean(auth) && !pairingRequired && (Boolean(browserWaiter) ||
+  return Boolean(auth) && !pairingRequired && !protocolBlocked() && (Boolean(browserWaiter) ||
     [...listenWaiters.values()].some(waiters => waiters.size) ||
     Date.now() - lastExtensionContactAt < EXTENSION_ONLINE_MS);
+}
+function protocolBlocked() { return compatibility?.compatible === false; }
+function checkProtocol(body) {
+  compatibility = { ...protocol.negotiate(body, 'plugin'), pluginVersion: PLUGIN_VERSION,
+    extensionVersion: protocol.versionLabel(body.extensionVersion),
+    peerProtocolVersion: Number.isSafeInteger(body.protocolVersion) ? body.protocolVersion : null,
+    peerMinProtocolVersion: Number.isSafeInteger(body.minProtocolVersion) ? body.minProtocolVersion : null };
+  if (protocolBlocked()) {
+    lastCommandError = compatibility.errorCode;
+    browserCapable = false;
+    queue.length = 0; candidates.clear(); selectedSignature = '';
+    clearTimeout(nativeLaunchTimer); nativeLaunchTimer = null;
+    browserWaiter?.reply({ error: 'Incompatible bridge protocol', errorCode: compatibility.errorCode, compatibility }, 409);
+    for (const waiters of [...listenWaiters.values()]) {
+      for (const waiter of [...waiters]) waiter.reply({ error: 'Incompatible bridge protocol', errorCode: compatibility.errorCode, compatibility }, 409);
+    }
+    for (const request of [...browserRequests.values()]) request.finish(false, compatibility.errorCode);
+    cachedCoverUrl = ''; cachedCoverData = '';
+    drawSoon();
+    return false;
+  }
+  if (['protocol-incompatible', 'invalid-protocol'].includes(lastCommandError)) lastCommandError = '';
+  return true;
 }
 function sendHttp(res, status, data, origin) {
   const headers = { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };
@@ -173,8 +200,9 @@ function sendHttp(res, status, data, origin) {
     headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS';
   }
   res.writeHead(status, headers);
-  res.end(JSON.stringify(status >= 200 && status < 300 && validOrigin(origin) && data && typeof data === 'object' ?
-    { ...data, serverPort: currentPort } : data));
+  res.end(JSON.stringify(validOrigin(origin) && data && typeof data === 'object' ?
+    { ...data, pluginVersion: PLUGIN_VERSION, ...protocol.descriptor,
+      ...((status >= 200 && status < 300) || status === 409 ? { serverPort: currentPort } : {}) } : data));
 }
 function getBody(req) {
   return new Promise((resolve, reject) => {
@@ -215,6 +243,7 @@ function selectedEntry() {
   return live[0];
 }
 function addCommand(type, ticks = 0) {
+  if (protocolBlocked()) return false;
   const entry = selectedEntry();
   if (!entry) return false;
   const [clientId, state] = entry;
@@ -281,11 +310,11 @@ function listenForCommands(clientId, res, origin) {
   });
 }
 function scheduleNativeLaunch() {
-  if (pairingRequired || !browserRequests.size || nativeLaunchStarted || nativeLaunchTimer ||
+  if (protocolBlocked() || pairingRequired || !browserRequests.size || nativeLaunchStarted || nativeLaunchTimer ||
       [...browserRequests.values()].some(request => request.delivered)) return;
   nativeLaunchTimer = setTimeout(async () => {
     nativeLaunchTimer = null;
-    if (pairingRequired || !browserRequests.size || [...browserRequests.values()].some(request => request.delivered)) return;
+    if (protocolBlocked() || pairingRequired || !browserRequests.size || [...browserRequests.values()].some(request => request.delivered)) return;
     nativeLaunchStarted = true;
     nativeTabPending = true;
     const session = auth;
@@ -301,6 +330,7 @@ function scheduleNativeLaunch() {
   }, auth ? 2000 : 0);
 }
 function flushBrowserRequest() {
+  if (protocolBlocked()) return;
   const request = browserRequests.values().next().value;
   if (!browserWaiter || !request || request.delivered) return;
   request.delivered = true;
@@ -333,6 +363,7 @@ function listenForBrowser(res, origin) {
 async function requestPlayerCommand(type, amount = 0) {
   if (!['open', 'toggle', 'prev', 'next', 'mute', 'volume_delta', 'like', 'dislike'].includes(type)) return false;
   if (pairingRequired) { lastCommandError = 'pairing-required'; return false; }
+  if (protocolBlocked()) { lastCommandError = compatibility.errorCode; return false; }
   // Keep existing controls available when paired with a legacy extension.
   if (type !== 'open' && !browserCapable && selectedEntry()) return addCommand(type, amount);
   if (type === 'open') {
@@ -392,12 +423,16 @@ async function requestHandler(req, res) {
       failures.push(Date.now());
       return sendHttp(res, 403, { error: 'Incorrect or expired PIN' }, origin);
     }
+    if (!checkProtocol(body)) return sendHttp(res, 409, { error: 'Incompatible bridge protocol',
+      errorCode: compatibility.errorCode, compatibility }, origin);
+    const pairedCompatibility = compatibility;
     const token = crypto.randomBytes(32).toString('hex');
     saveAuth({ token, origin });
+    compatibility = pairedCompatibility;
     lastExtensionContactAt = Date.now();
     currentPin = ''; pinExpiresAt = 0; failures = [];
     drawSoon();
-    return sendHttp(res, 200, { token }, origin);
+    return sendHttp(res, 200, { token, compatibility }, origin);
   }
   if (!authorized(body, origin)) {
     // A reinstalled extension can report absent credentials, but cannot revoke
@@ -421,13 +456,15 @@ async function requestHandler(req, res) {
     resetSession();
     return sendHttp(res, 200, { ok: true }, origin);
   }
+  if (!checkProtocol(body)) return sendHttp(res, 409, { error: 'Incompatible bridge protocol',
+    errorCode: compatibility.errorCode, compatibility }, origin);
   if (req.url === '/configure-port') {
     const result = await changePort(body.port);
     return sendHttp(res, result.ok ? 200 : 409, result, origin);
   }
   if (req.url === '/status') {
     const chosen = selectedEntry();
-    return sendHttp(res, 200, { paired: true, active: !!chosen,
+    return sendHttp(res, 200, { paired: true, compatibility, active: !!chosen,
       track: chosen ? chosen[1].title : '', standalone: chosen ? chosen[1].standalone : false,
       extensionOnline: extensionOnline(),
       playerStale: !!chosen && Date.now() - chosen[1].lastMediaSyncAt > PLAYER_STALE_MS,
@@ -783,7 +820,8 @@ function handleDeckEvent(e) {
           playerActive: !!chosen,
           playerStale: Boolean(chosen) && Date.now() - chosen[1].lastMediaSyncAt > PLAYER_STALE_MS,
           pin: available ? currentPin : '', expiresAt: available ? pinExpiresAt : 0,
-          serverPort: currentPort, bridgeOnline, portError, lastCommandError } });
+          serverPort: currentPort, bridgeOnline, portError, lastCommandError,
+          pluginVersion: PLUGIN_VERSION, ...protocol.descriptor, compatibility } });
     }
     return;
   }

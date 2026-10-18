@@ -20,6 +20,7 @@ The [expected-behavior assessment](verification/update-behavior-assessment.md) c
 | Player readiness/state feedback (development) | Local tests passed; maintainer actual-site/device validation complete | [Readiness implementation](verification/player-readiness-and-feedback.md) and [maintainer confirmation](verification/maintainer-validation-2026-10-18.md). |
 | Browser connection/cold-tab recovery (development) | Local Node/Chromium checks passed; maintainer Chrome validation complete | [Recovery implementation](verification/browser-connection-recovery.md) and [maintainer confirmation](verification/maintainer-validation-2026-10-18.md). |
 | Update/settings retention and rollback (development) | Complete by maintainer report; historical conflict not reproduced | [Confirmed scope and limits](verification/maintainer-validation-2026-10-18.md). No original-cause or runtime-fix claim. |
+| Protocol compatibility (development) | Implemented; local HTTP, SDK, worker and actual Chromium fixtures passed | [Protocol evidence](verification/protocol-compatibility.md): independent identities, legacy-v1 support, update guidance, retained credentials and recovery. New-feature device check and final CI remain separate. |
 | Release automation (Windows and Ubuntu) | Passed for public v1.0.1 source `a78f7de` | [CI run 39016914494](https://github.com/minjungw00/music-deck-bridge/actions/runs/39016914494): 50 Node tests, 2 Python tests, packaging, checksums, audit and artifact uploads. This is the released source's CI, not a run for later documentation commits. |
 | Public packages | Checksums reverified; v1.0.1 runtime unchanged from v1.0.0 | [v1.0.1 evidence](verification/v1.0.1.md); only manifest versions and seven brand PNGs differ. Installed baseline matched all 43 public files before the later successful 1.0.2 retry. |
 | Developer installation/operation | Normal operation reported after file replacement/reinstallation guidance | General report only; detailed device/action/settings-retention measurements were not supplied. |
@@ -55,7 +56,7 @@ The earlier 1.1.0/1.1.1 files were unpublished development builds whose labels w
 
 1. **P0 — DRM:** obtain the processed installer from the existing Console version when available and validate installation, startup and controls. Marketplace DRM remains separate from the completed ordinary-package update/recovery checks.
 2. **P1 — stores:** finish actual en/ko screenshots, supported models/software, public privacy link and data-use declarations. Verify unpacked-to-Chrome-store migration and new pairing. Track both stores independently.
-3. **P1 — protocol compatibility:** implement and verify the requested range negotiation with legacy support, precise incompatible-version guidance and retained credentials. This new work is not covered by the preceding device sign-off.
+3. **P1 — protocol deployment check:** install the new plugin/extension development pair and confirm explicit version/status and retained pairing. The implementation and local compatibility matrix now pass; this new feature is outside the earlier device sign-off.
 4. **P2 — final release checks:** run Windows/Ubuntu CI for the final source and retain exact artifact identity. Complete clean-environment install/uninstall/reset and any remaining idle/port-conflict coverage outside the confirmed scope.
 
 The original installation failure remains a conditional investigation only if it recurs. Existing traces are retained; no confirmed original cause or runtime fix is claimed.
@@ -63,6 +64,7 @@ The original installation failure remains a conditional investigation only if it
 ## Detailed verification records
 
 - [October 18 maintainer validation of device, Chrome and update/recovery](verification/maintainer-validation-2026-10-18.md)
+- [Protocol range negotiation, legacy compatibility and recovery](verification/protocol-compatibility.md)
 - [Current Track Dial controls and display](verification/current-track-dial.md)
 - [Current Track Dial artwork fit and optional song name](verification/dial-artwork-options.md)
 - [Qt artwork rendering correction and configurable text](verification/dial-artwork-rendering.md)
