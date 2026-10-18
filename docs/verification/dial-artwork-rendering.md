@@ -2,6 +2,8 @@
 
 Evidence date: October 18, 2026 (Asia/Seoul). Development cycle remains **1.0.2-dev**, Stream Deck **1.0.2.0**, Chrome **1.0.2**. This is a plugin-only runtime change; the Chrome extension does not need replacement.
 
+Follow-up: [full-width text and shared key options](track-text-layout.md) replace the dial's fixed 14-grapheme scroll window and add below/inline artist placement. The results below describe the earlier build; the image-fitting correction is retained.
+
 ## Reproduction and correction
 
 The maintainer reported that both artwork fit choices stretched the image horizontally on the physical dial. The earlier [artwork-options verification](dial-artwork-options.md) checked Chromium rendering, which did not establish Qt rendering behavior.

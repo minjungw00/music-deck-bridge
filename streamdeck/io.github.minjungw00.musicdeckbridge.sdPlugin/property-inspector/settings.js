@@ -4,14 +4,15 @@ const client = SDPIComponents.streamDeckClient;
 const $ = id => document.getElementById(id);
 const strings = {
   ko: {
-    titleRow: '곡명 및 가수', truncate: '말줄임', scroll: '왼쪽으로 스크롤',
-    titleHint: '긴 곡명과 가수명이 모두 왼쪽으로 스크롤됩니다.',
+    titleRow: '텍스트 표시', truncate: '말줄임', scroll: '왼쪽으로 스크롤',
+    titleHint: '표시할 곡 이름·가수명과 배경을 선택하고, 긴 텍스트를 말줄임하거나 왼쪽으로 스크롤할 수 있습니다.',
+    artistPosition: '가수명 위치', artistBelow: '곡 이름 아래', artistInline: '곡 이름에 이어서',
     dialDisplayRow: '화면 표시', dialInfo: '아이콘 + 곡 이름', dialArtwork: '앨범 이미지',
     dialDisplayHint: '누르기·화면 터치: 재생/일시정지, 회전: 이전/다음 곡. 앨범 이미지가 없으면 재생 상태 아이콘을 표시합니다.',
     artworkFit: '이미지 맞춤', artworkWidth: '좌우에 맞추기', artworkHeight: '상하에 맞추기',
     artworkFitHint: '원본 비율을 유지하며 너비 또는 높이에 맞춥니다. 화면 밖으로 넘치는 부분은 잘립니다.',
     artworkTitle: '곡 이름', artworkShowTitle: '곡 이름 표시',
-    artworkArtist: '가수명', artworkShowArtist: '곡 이름 뒤에 가수명 표시',
+    artworkArtist: '가수명', artworkShowArtist: '가수명 표시',
     artworkBackground: '자막 배경', artworkShowBackground: '배경 표시', artworkTitleMode: '텍스트 표시',
     volumeRow: '회전당 볼륨', volumeHint: '다이얼 1칸당 변경량:',
     pinRow: 'Chrome 연결', generate: 'PIN 발급', checking: '연결 상태 확인 중…',
@@ -35,14 +36,15 @@ const strings = {
     commandAutoplay: 'Chrome이 자동 재생을 차단했습니다. YouTube Music 창에서 재생을 허용한 뒤 다시 시도하세요.',
   },
   en: {
-    titleRow: 'Title and artist', truncate: 'Truncate', scroll: 'Scroll left',
-    titleHint: 'Both long track titles and artist names scroll to the left.',
+    titleRow: 'Text display', truncate: 'Truncate', scroll: 'Scroll left',
+    titleHint: 'Choose song/artist visibility and background, then truncate or scroll long text to the left.',
+    artistPosition: 'Artist position', artistBelow: 'Below song name', artistInline: 'After song name',
     dialDisplayRow: 'Touch strip display', dialInfo: 'Icon + song name', dialArtwork: 'Album artwork',
     dialDisplayHint: 'Push or touch to play/pause; turn for previous/next track. Without artwork, the playback icon is shown.',
     artworkFit: 'Artwork fit', artworkWidth: 'Fit width', artworkHeight: 'Fit height',
     artworkFitHint: 'Fit the width or height while preserving the original proportions. Parts outside the screen are cropped.',
     artworkTitle: 'Song name', artworkShowTitle: 'Show song name',
-    artworkArtist: 'Artist', artworkShowArtist: 'Append artist name',
+    artworkArtist: 'Artist', artworkShowArtist: 'Show artist name',
     artworkBackground: 'Text background', artworkShowBackground: 'Show background', artworkTitleMode: 'Text display',
     volumeRow: 'Volume per tick', volumeHint: 'Change per dial tick:',
     pinRow: 'Chrome connection', generate: 'Generate PIN', checking: 'Checking connection…',
@@ -107,6 +109,17 @@ function localize() {
   $('optTruncate').textContent = t('truncate');
   $('optScroll').textContent = t('scroll');
   $('titleHint').textContent = t('titleHint');
+  $('keyTitleRow').setAttribute('label', t('artworkTitle'));
+  $('showTitle').setAttribute('label', t('artworkShowTitle'));
+  $('keyArtistRow').setAttribute('label', t('artworkArtist'));
+  $('showArtist').setAttribute('label', t('artworkShowArtist'));
+  $('keyBackgroundRow').setAttribute('label', t('artworkBackground'));
+  $('titleBackground').setAttribute('label', t('artworkShowBackground'));
+  for (const [row, below, inline] of [['keyArtistPositionRow', 'optKeyArtistBelow', 'optKeyArtistInline'],
+    ['artworkArtistPositionRow', 'optArtworkArtistBelow', 'optArtworkArtistInline']]) {
+    $(row).setAttribute('label', t('artistPosition'));
+    $(below).textContent = t('artistBelow'); $(inline).textContent = t('artistInline');
+  }
   $('dialDisplayRow').setAttribute('label', t('dialDisplayRow'));
   $('optDialInfo').textContent = t('dialInfo');
   $('optDialArtwork').textContent = t('dialArtwork');
@@ -140,12 +153,15 @@ function updateVolumeLabel() {
   const value = validVolume($('volumeStep').value) ?? 4;
   $('stepLabel').textContent = `${Number.isFinite(value) ? Math.max(1, Math.min(5, value)) : 4}%`;
 }
-function updateArtworkOptions(mode = $('dialDisplay').value, showTitle = $('artworkShowTitle').value) {
+function updateArtworkOptions(mode = $('dialDisplay').value, showTitle = $('artworkShowTitle').value, showArtist = $('artworkShowArtist').value) {
   $('artworkOptions').classList.toggle('hidden', mode !== 'artwork');
   $('artworkTextOptions').classList.toggle('hidden', mode !== 'artwork' || showTitle !== true);
+  $('artworkArtistPositionRow').classList.toggle('hidden', mode !== 'artwork' || showTitle !== true || showArtist !== true);
 }
 $('dialDisplay').addEventListener('valuechange', () => updateArtworkOptions());
 $('artworkShowTitle').addEventListener('valuechange', () => updateArtworkOptions());
+$('artworkShowArtist').addEventListener('valuechange', () => updateArtworkOptions());
+$('showArtist').addEventListener('valuechange', () => $('keyArtistPositionRow').classList.toggle('hidden', $('showArtist').value === false));
 function showConnection(payload) {
   currentStatus = payload;
   const error = payload.lastCommandError;
@@ -204,7 +220,8 @@ client.sendToPropertyInspector.subscribe(msg => {
 client.didReceiveSettings.subscribe(msg => {
   // Native range is manually synchronized; sdpi-select persists titleMode/dialDisplay.
   syncSavedVolume(msg.payload?.settings);
-  updateArtworkOptions(actionSettings.dialDisplay || 'info', actionSettings.artworkShowTitle === true);
+  updateArtworkOptions(actionSettings.dialDisplay || 'info', actionSettings.artworkShowTitle === true, actionSettings.artworkShowArtist === true);
+  $('keyArtistPositionRow').classList.toggle('hidden', actionSettings.showArtist === false);
 });
 $('generatePin').addEventListener('click', () => { lastPin = ''; void requestConnection('generate-pin'); });
 function sendVolumePreview(value) {
@@ -255,7 +272,8 @@ void (async () => {
     const { info, actionInfo } = await client.getConnectionInfo();
     connectedToHost = true;
     syncSavedVolume(actionInfo?.payload?.settings || {});
-    updateArtworkOptions(actionSettings.dialDisplay || 'info', actionSettings.artworkShowTitle === true);
+    updateArtworkOptions(actionSettings.dialDisplay || 'info', actionSettings.artworkShowTitle === true, actionSettings.artworkShowArtist === true);
+    $('keyArtistPositionRow').classList.toggle('hidden', actionSettings.showArtist === false);
     language = info?.application?.language === 'ko' ? 'ko' : 'en';
     localize();
     const action = actionInfo?.action || '';

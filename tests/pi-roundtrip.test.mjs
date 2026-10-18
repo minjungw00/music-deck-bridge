@@ -143,6 +143,11 @@ for (const protectedManifest of [false, true]) {
       artworkShowArtist: true, artworkTitleBackground: true } });
     await waitFor(() => dialFeedback()?.songName?.enabled === true && dialFeedback()?.songName?.value === state.title + ' — ' + state.artist);
     assert.equal(dialFeedback().songName.background, 'black');
+    send('didReceiveSettings', 'trackdial', { settings: { dialDisplay: 'artwork', artworkShowTitle: true,
+      artworkShowArtist: true, artworkArtistPosition: 'below' } });
+    await waitFor(() => dialFeedback()?.songArtist?.enabled === true && dialFeedback()?.songTitleAbove?.value === state.title);
+    assert.equal(dialFeedback().songArtist.value, state.artist);
+    assert.equal(dialFeedback().songName.enabled, false);
     send('didReceiveSettings', 'trackdial', { settings: { dialDisplay: 'artwork', artworkShowTitle: true, artworkTitleMode: 'scroll' } });
     await waitFor(() => dialFeedback()?.songName?.alignment === 'left' && dialFeedback()?.songName?.background === 'transparent');
     send('didReceiveSettings', 'trackdial', { settings: { dialDisplay: 'artwork', artworkShowTitle: false } });
@@ -156,6 +161,18 @@ for (const protectedManifest of [false, true]) {
     await waitFor(() => messages.some(m => m.event === 'setTitle' && m.context === 'toggle' && m.payload.title === ''));
     await waitFor(() => messages.some(m => m.event === 'setFeedback' && m.context === 'volume' && m.payload.value === '50%'));
     await waitFor(() => messages.some(m => m.event === 'setImage' && m.context === 'nowplaying'));
+    const keyTitle = () => messages.findLast(m => m.event === 'setTitle' && m.context === 'nowplaying')?.payload.title;
+    const keyImage = () => messages.findLast(m => m.event === 'setImage' && m.context === 'nowplaying')?.payload.image;
+    send('didReceiveSettings', 'nowplaying', { settings: { showTitle: false, showArtist: true, titleBackground: true } });
+    await waitFor(() => keyTitle() === state.artist && keyImage()?.startsWith('data:image/svg+xml;base64,'));
+    send('didReceiveSettings', 'nowplaying', { settings: { showTitle: true, showArtist: false } });
+    await waitFor(() => keyTitle() === state.title && !keyImage());
+    send('didReceiveSettings', 'nowplaying', { settings: { showTitle: false, showArtist: false, titleBackground: true } });
+    await waitFor(() => keyTitle() === '' && !keyImage());
+    send('didReceiveSettings', 'nowplaying', { settings: { artistPosition: 'inline' } });
+    await waitFor(() => keyTitle() === 'SDK song — …');
+    send('didReceiveSettings', 'nowplaying', { settings: {} });
+    await waitFor(() => keyTitle() === state.title + '\n' + state.artist);
     async function command(event, name, payload, expected) {
       send(event, name, payload);
       const result = await waitFor(async () => {

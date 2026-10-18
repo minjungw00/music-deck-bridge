@@ -8,7 +8,8 @@ const dir = join(dirname(fileURLToPath(import.meta.url)), '..', 'streamdeck', 'i
 const code = readFileSync(join(dir,'property-inspector','settings.js'),'utf8');
 const html = readFileSync(join(dir,'property-inspector','settings.html'),'utf8');
 function makeInspector(action='io.github.minjungw00.musicdeckbridge.nowplaying', language='ko') {
-  const ids=['titleModeRow','optTruncate','optScroll','titleHint','volumeRow','volumeHint',
+  const ids=['keyTitleRow','showTitle','keyArtistRow','showArtist','keyArtistPositionRow','artistPosition','optKeyArtistBelow','optKeyArtistInline','keyBackgroundRow','titleBackground',
+    'artworkArtistPositionRow','artworkArtistPosition','optArtworkArtistBelow','optArtworkArtistInline','titleModeRow','optTruncate','optScroll','titleHint','volumeRow','volumeHint',
     'pinRow','generatePin','pairHint','pairState','commandStatus','volumeStep','stepLabel','pinOutput',
     'trackSection','dialSection','dialDisplayRow','dialDisplay','optDialInfo','optDialArtwork','dialDisplayHint',
     'artworkTextOptions','artworkArtistRow','artworkShowArtist','artworkBackgroundRow','artworkTitleBackground','artworkTitleModeRow','artworkTitleMode','optArtworkTruncate','optArtworkScroll',
@@ -95,9 +96,14 @@ test('artwork-only settings have safe defaults and follow display changes', asyn
   assert.equal(pi.elems.artworkTextOptions.classList.hidden, true);
   pi.elems.artworkShowTitle.value = true; pi.elems.artworkShowTitle.listeners.valuechange();
   assert.equal(pi.elems.artworkTextOptions.classList.hidden, false);
-  assert.equal(pi.elems.artworkShowArtist.attrs.label, '곡 이름 뒤에 가수명 표시');
+  assert.equal(pi.elems.artworkShowArtist.attrs.label, '가수명 표시');
   assert.equal(pi.elems.artworkTitleBackground.attrs.label, '배경 표시');
   assert.equal(pi.elems.optArtworkScroll.textContent, '왼쪽으로 스크롤');
+  assert.equal(pi.elems.artworkArtistPositionRow.classList.hidden, true);
+  pi.elems.artworkShowArtist.value = true; pi.elems.artworkShowArtist.listeners.valuechange();
+  assert.equal(pi.elems.artworkArtistPositionRow.classList.hidden, false);
+  assert.equal(pi.elems.optArtworkArtistBelow.textContent, '곡 이름 아래');
+  assert.equal(pi.elems.optArtworkArtistInline.textContent, '곡 이름에 이어서');
   pi.subscribers.settings({ payload: { settings: { dialDisplay: 'info' } } });
   assert.equal(pi.elems.artworkOptions.classList.hidden, true);
   assert.equal(pi.elems.artworkTextOptions.classList.hidden, true);
@@ -107,6 +113,24 @@ test('artwork-only settings have safe defaults and follow display changes', asyn
   assert.match(html, /<sdpi-select[^>]+setting="artworkTitleMode"[^>]+default="truncate"/);
   assert.match(html, /<sdpi-select[^>]+setting="artworkFit"[^>]+default="height"/);
   assert.match(html, /<sdpi-checkbox[^>]+setting="artworkShowTitle"[^>]+default="false"/);
+  assert.match(html, /<sdpi-select[^>]+setting="artworkArtistPosition"[^>]+default="inline"/);
+});
+
+test('current-track key exposes independent visibility, artist placement and background controls with compatible defaults', async () => {
+  const pi = makeInspector(); await pi.ready();
+  assert.equal(pi.elems.showTitle.attrs.label, '곡 이름 표시');
+  assert.equal(pi.elems.showArtist.attrs.label, '가수명 표시');
+  assert.equal(pi.elems.titleBackground.attrs.label, '배경 표시');
+  assert.equal(pi.elems.keyArtistPositionRow.classList.hidden, false);
+  pi.elems.showArtist.value = false; pi.elems.showArtist.listeners.valuechange();
+  assert.equal(pi.elems.keyArtistPositionRow.classList.hidden, true);
+  pi.subscribers.settings({ payload: { settings: { showArtist: true } } });
+  assert.equal(pi.elems.keyArtistPositionRow.classList.hidden, false);
+  for (const name of ['showTitle', 'showArtist']) {
+    assert.match(html, new RegExp('<sdpi-checkbox[^>]+setting="' + name + '"[^>]+default="true"'));
+  }
+  assert.match(html, /<sdpi-checkbox[^>]+setting="titleBackground"[^>]+default="false"/);
+  assert.match(html, /<sdpi-select[^>]+setting="artistPosition"[^>]+default="below"/);
 });
 
 test('new PIN instructions take priority over a recently connected old extension', async()=>{

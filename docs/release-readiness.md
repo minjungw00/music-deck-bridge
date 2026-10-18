@@ -14,7 +14,7 @@ The [expected-behavior assessment](verification/update-behavior-assessment.md) c
 
 | Verification category | Current result | Evidence / limits |
 | --- | --- | --- |
-| Current Track Dial controls/display (development) | Reported image stretching reproduced/corrected in Qt; local SDK and packaging checks passed; device retest pending | [Dial evidence](verification/current-track-dial.md): renamed action, corrected volume touch, playback icons and per-dial modes. [Rendering correction](verification/dial-artwork-rendering.md): proportional width/height fitting, optional artist/background and text scrolling. |
+| Current-track key/dial controls and display (development) | Local Qt, SDK and packaging checks passed; physical device retest pending | [Dial controls](verification/current-track-dial.md), [proportional artwork](verification/dial-artwork-rendering.md), and [full-width scrolling / shared text options](verification/track-text-layout.md): below/inline artist placement and per-key visibility/background choices. |
 | Player readiness/state feedback (development) | Local Node and Chromium fixture checks passed; actual site/device retest pending | [Readiness evidence](verification/player-readiness-and-feedback.md): initialization gate, confirmed playback/track effects, canonical state, stale-PWA cleanup and mute dial icon. |
 | Browser connection/cold-tab recovery (development) | Reproduced defects fixed; local Node + actual Chromium fixture checks passed | [Recovery evidence](verification/browser-connection-recovery.md): stale connection labeling, competing polls and navigation receiver loss; actual Windows/YouTube Music retest remains pending. |
 | Release automation (Windows and Ubuntu) | Passed for public v1.0.1 source `a78f7de` | [CI run 39016914494](https://github.com/minjungw00/music-deck-bridge/actions/runs/39016914494): 50 Node tests, 2 Python tests, packaging, checksums, audit and artifact uploads. This is the released source's CI, not a run for later documentation commits. |
@@ -62,6 +62,7 @@ The earlier 1.1.0/1.1.1 files were unpublished development builds whose labels w
 - [Current Track Dial controls and display](verification/current-track-dial.md)
 - [Current Track Dial artwork fit and optional song name](verification/dial-artwork-options.md)
 - [Qt artwork rendering correction and configurable text](verification/dial-artwork-rendering.md)
+- [Full-width dial scrolling, artist placement and key text options](verification/track-text-layout.md)
 - [Player readiness, playback state and mute dial feedback](verification/player-readiness-and-feedback.md)
 - [Browser connection and cold-tab recovery regression](verification/browser-connection-recovery.md)
 - [Development version/build identity separation and migration](verification/development-versioning.md)

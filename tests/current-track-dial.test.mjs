@@ -117,11 +117,11 @@ test('artist and background are optional and scrolling updates only text, with t
   assert.equal(h.calls.at(-1).feedback.artwork, undefined);
   item.settings.artworkTitleMode = 'scroll';
   await h.paint('dial', item, state);
-  assert.equal(h.calls.at(-1).feedback.songName.value, '가나다라마바사아자차카타파하');
+  assert.equal(h.calls.at(-1).feedback.songName.value, state.title + ' — 가수');
   assert.equal(h.calls.at(-1).feedback.songName.alignment, 'left');
   h.context.Date.now = () => 1000 + 4 * 380;
   await h.paint('dial', item, state);
-  assert.equal(h.calls.at(-1).feedback.songName.value, '나다라마바사아자차카타파하🇰🇷');
+  assert.equal(h.calls.at(-1).feedback.songName.value, [...new Intl.Segmenter('ko', { granularity: 'grapheme' }).segment(state.title + ' — 가수')].slice(1).map(x => x.segment).join('') + '   가');
   assert.equal(h.calls.at(-1).feedback.artwork, undefined, 'scroll frames never retransmit the image');
   await h.paint('dial', item, { ...state, title: '새 곡' });
   assert.equal(h.calls.at(-1).feedback.songName.value, '새 곡 — 가수');
@@ -146,6 +146,42 @@ test('the marquee timer includes visible artwork dials only when their text scro
   item.settings.artworkShowTitle = true; item.settings.dialDisplay = 'info'; tick(); assert.equal(draws, 1);
   item.settings.dialDisplay = 'artwork'; item.settings.artworkTitleMode = 'truncate'; tick(); assert.equal(draws, 1);
   displayed.clear(); tick(); assert.equal(draws, 1);
+});
+
+test('dial scrolling fills the native full-width field rather than a fourteen-glyph window', async () => {
+  const h = harness(), item = h.add('dial', 'artwork');
+  Object.assign(item.settings, { artworkShowTitle: true, artworkTitleMode: 'scroll' });
+  const state = { title: 'abcdefghijklmnopqrstuvwxyz0123456789', playing: true };
+  await h.paint('dial', item, state);
+  assert.equal(h.calls.at(-1).feedback.songName.value, state.title);
+  h.context.Date.now = () => 1000 + 4 * 380;
+  await h.paint('dial', item, state);
+  assert.equal(h.calls.at(-1).feedback.songName.value, state.title.slice(1) + '   a');
+  assert.equal(h.calls.at(-1).feedback.songName['text-overflow'], 'clip');
+});
+
+test('artist position switches between separate full-width lines and the combined line without stale text', async () => {
+  const h = harness(), item = h.add('dial', 'artwork');
+  Object.assign(item.settings, { artworkShowTitle: true, artworkShowArtist: true, artworkArtistPosition: 'below' });
+  const state = { title: 'Song', artist: 'Artist', playing: true };
+  await h.paint('dial', item, state);
+  let feedback = h.calls.at(-1).feedback;
+  assert.equal(feedback.songName.enabled, false);
+  assert.equal(feedback.songTitleAbove.value, 'Song'); assert.equal(feedback.songTitleAbove.enabled, true);
+  assert.equal(feedback.songArtist.value, 'Artist'); assert.equal(feedback.songArtist.enabled, true);
+  item.settings.artworkArtistPosition = 'inline';
+  await h.paint('dial', item, state);
+  feedback = h.calls.at(-1).feedback;
+  assert.equal(feedback.songName.value, 'Song — Artist'); assert.equal(feedback.songName.enabled, true);
+  assert.equal(feedback.songTitleAbove.enabled, false); assert.equal(feedback.songArtist.enabled, false);
+  item.settings.artworkArtistPosition = 'below';
+  await h.paint('dial', item, { ...state, artist: '' });
+  assert.equal(h.calls.at(-1).feedback.songName.value, 'Song');
+  assert.equal(h.calls.at(-1).feedback.songArtist.enabled, false);
+  await h.paint('dial', item, null);
+  assert.equal(h.calls.at(-1).feedback.songName.enabled, false);
+  assert.equal(h.calls.at(-1).feedback.songTitleAbove.enabled, false);
+  assert.equal(h.calls.at(-1).feedback.songArtist.enabled, false);
 });
 
 test('rapid mode switches preserve layout-before-content order and a reappearing action repaints', async () => {

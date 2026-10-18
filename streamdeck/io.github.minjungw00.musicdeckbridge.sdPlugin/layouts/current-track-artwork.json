@@ -45,6 +45,46 @@
       "text-overflow": "ellipsis",
       "enabled": false,
       "zOrder": 2
+    },
+    {
+      "key": "songTitleAbove",
+      "type": "text",
+      "rect": [
+        0,
+        48,
+        200,
+        26
+      ],
+      "font": {
+        "size": 14,
+        "weight": 600
+      },
+      "alignment": "center",
+      "color": "white",
+      "background": "transparent",
+      "text-overflow": "ellipsis",
+      "enabled": false,
+      "zOrder": 3
+    },
+    {
+      "key": "songArtist",
+      "type": "text",
+      "rect": [
+        0,
+        74,
+        200,
+        26
+      ],
+      "font": {
+        "size": 14,
+        "weight": 600
+      },
+      "alignment": "center",
+      "color": "white",
+      "background": "transparent",
+      "text-overflow": "ellipsis",
+      "enabled": false,
+      "zOrder": 4
     }
   ]
 }

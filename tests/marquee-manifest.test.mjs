@@ -40,6 +40,8 @@ test('dial names, default icons and touch descriptions match their controls', ()
   assert.equal(name.enabled, false);
   assert.equal(name.background, 'transparent');
   assert.ok(name.zOrder > art.items[0].zOrder, 'song name overlays the artwork');
+  assert.deepEqual(art.items.find(item => item.key === 'songTitleAbove').rect, [0, 48, 200, 26]);
+  assert.deepEqual(art.items.find(item => item.key === 'songArtist').rect, [0, 74, 200, 26]);
 });
 
 test('marquee scrolls long titles and artists leftwards and preserves Unicode graphemes',()=>{
@@ -48,7 +50,6 @@ test('marquee scrolls long titles and artists leftwards and preserves Unicode gr
   const snippet=script.slice(start,end);
   const ctx={Intl,Date};
   vm.runInNewContext('const MARQUEE_STEP_MS=380;const MARQUEE_WIDTH=11;'+snippet+'\nthis.marquee=marquee;',ctx);
-  assert.match(script, /marquee\(state\.artist/,'artist must scroll when titleMode scrolls');
   const title='가나다라마바사아자차카타파하';
   assert.equal(ctx.marquee('짧은 노래',1000,1000),'짧은 노래');
   assert.equal(ctx.marquee(title,1000,1000),title.slice(0,11));

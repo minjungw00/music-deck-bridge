@@ -40,6 +40,21 @@
 </head>
 <body>
   <section id="trackSection" class="hidden">
+    <sdpi-item id="keyTitleRow" label="Song name">
+      <sdpi-checkbox id="showTitle" setting="showTitle" default="true" label="Show song name"></sdpi-checkbox>
+    </sdpi-item>
+    <sdpi-item id="keyArtistRow" label="Artist">
+      <sdpi-checkbox id="showArtist" setting="showArtist" default="true" label="Show artist name"></sdpi-checkbox>
+    </sdpi-item>
+    <sdpi-item id="keyArtistPositionRow" label="Artist position">
+      <sdpi-select id="artistPosition" setting="artistPosition" default="below">
+        <option id="optKeyArtistBelow" value="below">Below song name</option>
+        <option id="optKeyArtistInline" value="inline">After song name</option>
+      </sdpi-select>
+    </sdpi-item>
+    <sdpi-item id="keyBackgroundRow" label="Text background">
+      <sdpi-checkbox id="titleBackground" setting="titleBackground" default="false" label="Show background"></sdpi-checkbox>
+    </sdpi-item>
     <sdpi-item id="titleModeRow" label="Title and artist">
       <sdpi-select id="titleMode" setting="titleMode" default="truncate">
         <option id="optTruncate" value="truncate">Truncate</option>
@@ -69,7 +84,13 @@
       </sdpi-item>
       <div id="artworkTextOptions" class="hidden">
         <sdpi-item id="artworkArtistRow" label="Artist">
-          <sdpi-checkbox id="artworkShowArtist" setting="artworkShowArtist" default="false" label="Append artist name"></sdpi-checkbox>
+          <sdpi-checkbox id="artworkShowArtist" setting="artworkShowArtist" default="false" label="Show artist name"></sdpi-checkbox>
+        </sdpi-item>
+        <sdpi-item id="artworkArtistPositionRow" class="hidden" label="Artist position">
+          <sdpi-select id="artworkArtistPosition" setting="artworkArtistPosition" default="inline">
+            <option id="optArtworkArtistBelow" value="below">Below song name</option>
+            <option id="optArtworkArtistInline" value="inline">After song name</option>
+          </sdpi-select>
         </sdpi-item>
         <sdpi-item id="artworkBackgroundRow" label="Text background">
           <sdpi-checkbox id="artworkTitleBackground" setting="artworkTitleBackground" default="false" label="Show background"></sdpi-checkbox>

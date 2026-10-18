@@ -12,6 +12,7 @@ const path = require('node:path');
 const os = require('node:os');
 const { launchChrome } = require('./launch-chrome.cjs');
 const { fitDialArtwork } = require('./dial-artwork.cjs');
+const { keyTextBackground } = require('./key-background.cjs');
 
 const PLUGIN_ID = 'io.github.minjungw00.musicdeckbridge';
 const LOCALHOST = '127.0.0.1';
@@ -527,14 +528,16 @@ function renderCurrentTrackDial(context, item, state) {
   const fitted = cover ? fitDialArtwork(cover, fit) : '';
   const image = fitted || icon;
   const text = showName && state?.title ? state.title +
-    (item.settings?.artworkShowArtist === true && state.artist ? ` — ${state.artist}` : '') : '';
-  const trackSignature = JSON.stringify([state?.title, state?.artist, item.settings?.artworkShowArtist, showName, scroll]);
+    (item.settings?.artworkShowArtist === true && state.artist && item.settings?.artworkArtistPosition !== 'below' ? ` — ${state.artist}` : '') : '';
+  const below = showName && item.settings?.artworkShowArtist === true && item.settings?.artworkArtistPosition === 'below' && Boolean(state?.artist);
+  const trackSignature = JSON.stringify([state?.title, state?.artist, item.settings?.artworkShowArtist, item.settings?.artworkArtistPosition, showName, scroll]);
   if (item.artworkTrackSignature !== trackSignature) {
     item.artworkTrackSignature = trackSignature; item.artworkMarqueeStart = Date.now();
   }
-  const title = artwork ? scroll ? marquee(text, item.artworkMarqueeStart, Date.now(), 14) : text : tr('currentTrack');
+  const title = artwork ? scroll ? marquee(text, item.artworkMarqueeStart, Date.now(), 14, true) : text : tr('currentTrack');
+  const artist = below ? scroll ? marquee(state.artist, item.artworkMarqueeStart + 600, Date.now(), 14, true) : state.artist : '';
   const value = artwork ? '' : state ? ellipsis(state.title, 14) : tr('unavailable');
-  const signature = JSON.stringify([layout, title, value, fit, showName, scroll, background]);
+  const signature = JSON.stringify([layout, title, artist, below, value, fit, showName, scroll, background]);
   if (item.dialSignature === signature && item.dialImage === image) return;
   item.dialSignature = signature; item.dialImage = image;
   // Serialize layout and image updates so mode changes cannot send artwork to
@@ -547,8 +550,10 @@ function renderCurrentTrackDial(context, item, state) {
       item.sentLayout = layout;
     }
     if (displayed.get(context) !== item) return;
-    const feedback = artwork ? { songName: { value: title, enabled: showName && Boolean(title),
-      background, alignment: scroll ? 'left' : 'center', 'text-overflow': scroll ? 'clip' : 'ellipsis' } } : { title, value, icon };
+    const line = (value, enabled) => ({ value, enabled: Boolean(enabled), background,
+      alignment: scroll ? 'left' : 'center', 'text-overflow': scroll ? 'clip' : 'ellipsis' });
+    const feedback = artwork ? { songName: line(title, showName && title && !below),
+      songTitleAbove: line(title, below && title), songArtist: line(artist, below && artist) } : { title, value, icon };
     if (artwork && (changedLayout || item.sentDialImage !== image || item.sentArtworkFit !== fit)) {
       feedback.artwork = { value: fitted, enabled: Boolean(fitted) };
       feedback.fallback = { value: icon, enabled: !fitted };
@@ -568,15 +573,35 @@ function glyphs(value) {
   const text = String(value || '');
   return [...segmenter.segment(text)].map(s => s.segment);
 }
-function marquee(value, started, now = Date.now(), width = MARQUEE_WIDTH) {
+function marquee(value, started, now = Date.now(), width = MARQUEE_WIDTH, fullLine = false) {
   const characters = glyphs(value);
   if (characters.length <= width) return characters.join('');
   const progress = Math.floor((now - started) / MARQUEE_STEP_MS);
-  if (progress < 3) return characters.slice(0, width).join('');
+  if (progress < 3) return fullLine ? characters.join('') : characters.slice(0, width).join('');
   const gap = [' ', ' ', ' '];
   const loop = [...characters, ...gap];
   const start = (progress - 3) % loop.length;
-  return Array.from({ length: width }, (_, i) => loop[(start + i) % loop.length]).join('');
+  // Dial fields clip to their full pixel width. Sending a fixed 14-character
+  // window left half of the field empty for narrow Latin glyphs.
+  return Array.from({ length: fullLine ? loop.length : width }, (_, i) => loop[(start + i) % loop.length]).join('');
+}
+function renderCurrentTrackKey(context, item, state) {
+  const settings = item.settings || {};
+  const showTitle = settings.showTitle !== false, showArtist = settings.showArtist !== false;
+  const below = settings.artistPosition !== 'inline';
+  const sig = JSON.stringify([state?.title, state?.artist, showTitle, showArtist, below, settings.titleMode]);
+  if (item.trackSignature !== sig) { item.trackSignature = sig; item.marqueeStart = Date.now(); }
+  const rawTitle = showTitle ? state ? state.title || 'YouTube Music' : 'YouTube Music' : '';
+  const rawArtist = showArtist ? state ? state.artist || '' : tr('unavailable') : '';
+  const format = (value, width, delay = 0) => settings.titleMode === 'scroll' ?
+    marquee(value, item.marqueeStart + delay) : ellipsis(value, width);
+  const text = below ? [format(rawTitle, 12), format(rawArtist, 11, 600)].filter(Boolean).join('\n') :
+    format([rawTitle, rawArtist].filter(Boolean).join(' — '), 12);
+  if (item.lastTitle !== text) { setTitle(context, text); item.lastTitle = text; }
+  const cover = state?.cover && cachedCoverUrl === state.cover ? cachedCoverData : null;
+  const lines = settings.titleBackground === true && text ? below && rawTitle && rawArtist ? 2 : 1 : 0;
+  const image = keyTextBackground(cover, lines);
+  if (item.lastImage !== image) { setImage(context, image); item.lastImage = image; }
 }
 const COVERS = new Set(['i.ytimg.com', 'img.youtube.com', 'yt3.ggpht.com', 'yt3.googleusercontent.com']);
 function validCover(str) {
@@ -672,20 +697,7 @@ function paint() {
     for (const [context, item] of displayed) {
       const kind = actionName(item.action);
       if (kind === 'nowplaying') {
-        const sig = state ? `${state.title}\u0000${state.artist}` : 'offline';
-        if (item.trackSignature !== sig || item.lastMode !== item.settings?.titleMode) {
-          item.trackSignature = sig;
-          item.lastMode = item.settings?.titleMode;
-          item.marqueeStart = Date.now();
-        }
-        const title = !state ? `YouTube Music\n${tr('unavailable')}` :
-          `${item.settings?.titleMode === 'scroll' ?
-            marquee(state.title || 'YouTube Music', item.marqueeStart) : ellipsis(state.title || 'YTM', 12)}\n${item.settings?.titleMode === 'scroll' ?
-              marquee(state.artist || '', item.marqueeStart + 600) : ellipsis(state.artist, 11)}`;
-        if (item.lastTitle !== title) { setTitle(context, title); item.lastTitle = title; }
-        const image = state?.cover && cachedCoverUrl === state.cover ? cachedCoverData : null;
-        // Do not continually transmit the same cover (may be several hundred KB).
-        if (item.lastImage !== image) { setImage(context, image); item.lastImage = image; }
+        renderCurrentTrackKey(context, item, state);
       } else if (kind === 'toggle') {
         // Reflect the selected player's confirmed state, including changes made
         // in Chrome. A key press alone must not optimistically flip the icon.
