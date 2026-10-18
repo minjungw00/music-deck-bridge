@@ -1,0 +1,44 @@
+* { box-sizing: border-box; }
+:root { color-scheme: dark; font: 14px/1.5 'Segoe UI', 'Malgun Gothic', sans-serif; background: #10131b; color: #f8f8fb; }
+body { max-width: 1400px; margin: auto; padding: 32px; }
+.page-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+h1 { font-size: clamp(22px, 3vw, 30px); line-height: 1.3; margin: 8px 0; }
+h2 { font-size: 15px; margin: 0 0 16px; color: #c9cedb; font-weight: 600; }
+p { margin: 6px 0; color: #aeb7ca; }
+.eyebrow { color: #ff66bc; font-size: 11px; letter-spacing: .14em; }
+.badge { padding: 6px 12px; border: 1px solid #55425c; border-radius: 30px; color: #efbde4; white-space: nowrap; font-size: 12px; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 18px; margin: 26px 0; border: 1px solid #303647; border-radius: 14px; background: #1a1e2a; }
+.toolbar label { display: grid; gap: 4px; color: #bfc7d8; font-size: 12px; }
+.toolbar .check { display: flex; align-items: center; gap: 6px; }
+select { padding: 7px 9px; border-radius: 6px; border: 1px solid #4c556b; background: #252b3a; color: white; font: inherit; }
+input { accent-color: #ef008c; }
+.previews { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 40px; align-items: start; }
+.popup-panel { width: 290px; }
+.deck-panel { min-width: 0; }
+iframe { display: block; width: 290px; height: 500px; border: 0; background: #151923; }
+.popup-capture { overflow: hidden; border-radius: 12px; width: 290px; }
+.deck-viewport { overflow: hidden; }
+.deck { width: 858px; padding: 28px; background: #2b2c30; border: 1px solid #41434b; border-radius: 28px; transform-origin: top left; }
+.deck-content { width: 800px; }
+.keys { display: grid; grid-template-columns: repeat(4, 1fr); row-gap: 22px; justify-items: center; }
+.key { width: 108px; height: 108px; position: relative; overflow: hidden; border: 3px solid #111218; border-radius: 18px; box-shadow: 0 0 0 2px #51525a; background: #11131a; }
+.key > img { width: 100%; height: 100%; display: block; }
+.key-title { position: absolute; bottom: 2px; left: 0; right: 0; white-space: pre; text-align: center; color: white; font-size: 12px; line-height: 1.2; font-weight: 600; text-shadow: 0 1px 2px black; }
+.touch-strip { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 26px; height: 100px; box-shadow: 0 0 0 3px #55565c; border-radius: 10px; background: black; overflow: hidden; }
+.feedback { position: relative; width: 200px; height: 100px; overflow: hidden; background: black; }
+.feedback-layer { position: absolute; overflow: hidden; white-space: nowrap; color: white; }
+.feedback-layer img { display: block; width: 100%; height: 100%; }
+.feedback-layer.text { font-weight: 600; }
+.feedback-layer[hidden] { display: none; }
+.a1-title { position: absolute; top: 8px; left: 4px; right: 4px; font-size: 14px; font-weight: 600; text-align: center; }
+.a1-icon { position: absolute; width: 64px; height: 64px; top: 30px; left: 8px; }
+.a1-value { position: absolute; left: 76px; right: 8px; top: 38px; font-size: 20px; font-weight: 600; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.meter { position: absolute; left: 80px; right: 8px; bottom: 14px; height: 6px; border-radius: 3px; background: #4b4b50; overflow: hidden; }
+.meter-fill { height: 100%; border-radius: 3px; background: white; }
+.dials { display: grid; grid-template-columns: repeat(4, 1fr); justify-items: center; margin-top: 26px; }
+.dial { border: 3px solid #55565c; border-radius: 50%; width: 100px; height: 100px; padding: 8px; background: #202127; }
+.dial img { width: 100%; height: 100%; border-radius: 50%; display: block; }
+.hint, footer { font-size: 12px; line-height: 1.6; color: #98a3b8; margin-top: 14px; }
+footer { border-top: 1px solid #303647; padding-top: 18px; margin-top: 28px; }
+a { color: #cfb7ed; text-underline-offset: 3px; }
+@media (max-width: 1000px) { .previews { grid-template-columns: minmax(0, 1fr); gap: 26px; } .page-heading { align-items: start; flex-direction: column; gap: 8px; } }

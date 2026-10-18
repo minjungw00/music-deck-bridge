@@ -23,3 +23,15 @@ Use a clean Windows profile and dummy listening details. Capture each image from
 5. Verify current store dimensions and export the requested screenshot and promotional formats into the relevant store-assets subdirectory.
 
 The [supplied README thumbnail](../docs/assets/music-deck-bridge-thumbnail.png) is promotional artwork. Prepare store-specific sizes separately and use actual captures for product screenshots. See the [brand guide](../docs/branding.md) for icon design and reproduction.
+
+## Local rendering preview
+
+Generate a local English/Korean popup and Stream Deck + layout preview with the fixture track **Prelude No. 1 in C major, BWV 846 — Kimiko Ishizaka**:
+
+```sh
+npm run preview:render -- --cover /path/to/album-cover.jpg
+```
+
+Open `dist/previews/prelude-bwv846/index.html` in a browser. This single HTML file embeds its cover, icons, styles and scripts and works offline. It includes language, playback, mute, volume, artwork-fit and text controls and can open the popup alone; `popup-en.html` and `popup-ko.html` are also exported separately. The generator never starts the bridge or reads pairing credentials. All generated files remain under ignored `dist/` and are excluded from product packages.
+
+The popup reuses the actual HTML, JavaScript and catalogs with in-memory sample responses. Track-key and dial content reuse the plugin's rendering functions and artwork layout. The device frame, native key text and built-in dial layout are browser approximations; these previews do not establish actual hardware or live-service behavior. Keep them labelled as previews and retain actual product captures for submission evidence. Supply cover artwork appropriate to the intended use; a recording's license does not by itself establish the cover's reuse terms.

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Music Deck Bridge · Prelude 렌더링 미리보기</title>
+  <link rel="stylesheet" href="preview.css" />
+</head>
+<body>
+  <header class="page-heading">
+    <div><p class="eyebrow">MUSIC DECK BRIDGE · RENDER PREVIEW</p><h1>Prelude No. 1 in C major, BWV 846</h1><p>Kimiko Ishizaka · Bach: Well-Tempered Clavier, Book 1</p></div>
+    <span class="badge">샘플 데이터 미리보기</span>
+  </header>
+  <form class="toolbar" onsubmit="return false">
+    <label>언어<select id="language"><option value="en">English</option><option value="ko">한국어</option></select></label>
+    <label>다이얼 화면<select id="display"><option value="artwork">앨범 이미지</option><option value="information">아이콘 + 곡 이름</option></select></label>
+    <label>이미지 맞춤<select id="fit"><option value="height">상하 맞춤</option><option value="width">좌우 맞춤</option></select></label>
+    <label>가수명<select id="artist"><option value="below">곡 이름 아래</option><option value="inline">곡 이름 뒤</option><option value="hidden">숨기기</option></select></label>
+    <label class="check"><input id="show-title" type="checkbox" checked />곡 이름</label>
+    <label class="check"><input id="background" type="checkbox" checked />텍스트 배경</label>
+    <label class="check"><input id="scroll" type="checkbox" />스크롤</label>
+    <label class="check"><input id="playing" type="checkbox" checked />재생 중</label>
+    <label class="check"><input id="muted" type="checkbox" />음소거</label>
+    <label>볼륨 <output id="volume-label">35%</output><input id="volume" type="range" min="0" max="100" value="35" /></label>
+  </form>
+  <main class="previews">
+    <section class="popup-panel"><h2>Chrome 확장 팝업</h2><div class="popup-capture"><iframe id="popup" title="Music Deck Bridge 확장 팝업"></iframe></div><p class="hint"><a id="popup-link" href="popup-en.html" target="_blank" rel="noopener">팝업만 새 창에서 열기 ↗</a></p></section>
+    <section class="deck-panel"><h2>Stream Deck + · 버튼과 다이얼</h2>
+      <div class="deck-viewport"><div class="deck" id="deck-capture"><div class="deck-content">
+        <div class="keys">
+          <div class="key" data-context="prev" role="img" aria-label="Previous track"><img alt="" /></div>
+          <div class="key" data-context="toggle" role="img" aria-label="Play / pause"><img alt="" /></div>
+          <div class="key" data-context="next" role="img" aria-label="Next track"><img alt="" /></div>
+          <div class="key" data-context="like" role="img" aria-label="Like"><img alt="" /></div>
+          <div class="key" data-context="open" role="img" aria-label="Open YouTube Music"><img alt="" /></div>
+          <div class="key" data-context="nowplaying" role="img" aria-label="Now playing"><img alt="" /><span class="key-title"></span></div>
+          <div class="key" data-context="mute" role="img" aria-label="Mute"><img alt="" /></div>
+          <div class="key" data-context="dislike" role="img" aria-label="Dislike"><img alt="" /></div>
+        </div>
+        <div class="touch-strip"><div class="feedback empty"></div><div class="feedback" id="volume-feedback"></div><div class="feedback" id="track-feedback"></div><div class="feedback empty"></div></div>
+        <div class="dials"><div class="dial empty"></div><div class="dial"><img id="volume-icon" alt="Volume dial" /></div><div class="dial"><img id="track-icon" alt="Current track dial" /></div><div class="dial empty"></div></div>
+      </div></div></div>
+      <p class="hint">버튼 아이콘과 곡 표시 함수는 저장소의 현재 코드를 사용합니다. 장치 프레임과 기본 다이얼 배치는 브라우저로 재구성한 미리보기입니다.</p>
+    </section>
+  </main>
+  <footer>실제 Chrome·YouTube Music 연결 또는 기기 캡처가 아닙니다. <span id="version"></span> · <a href="https://kimikoishizaka.bandcamp.com/album/bach-well-tempered-clavier-book-1" target="_blank" rel="noopener">음원·커버 출처</a> · 음원 CC0, 커버의 홍보용 재사용 조건은 별도 확인.</footer>
+  <script src="data.js"></script>
+  <script src="renderers.js"></script>
+  <script src="preview.js"></script>
+</body>
+</html>

@@ -23,6 +23,7 @@
     "precheck": "npm run build:plugin",
     "pretest": "npm run build:plugin",
     "prebuild:streamdeck": "npm run build:plugin",
+    "preview:render": "node scripts/render-preview.mjs",
     "version:dev": "node scripts/version.mjs development",
     "version:release": "node scripts/version.mjs release",
     "build:dev": "node scripts/build-development.mjs",
