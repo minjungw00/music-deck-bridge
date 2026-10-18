@@ -1,6 +1,6 @@
 # Popup button layout
 
-Verified October 18, 2026 (Asia/Seoul), development cycle **1.1.1-dev**.
+Verified October 18, 2026 (Asia/Seoul), initially during development cycle **1.1.1-dev**. The correction is now included in the published [v1.1.1 release](v1.1.1.md), whose stable source also passed the layout fixture.
 
 The 290px popup previously allowed the English “Check status” label to wrap. Flex alignment then stretched its neighboring buttons to the two-line height. The status label is now “Status”; buttons inherit the popup's 13px font, use a 20px line height, 36px minimum height and no wrapping. The three connection controls divide the available row equally. Korean labels remain unchanged.
 
@@ -22,4 +22,4 @@ Existing version-policy and extension-localization tests pass, including input v
 
 The popup now displays the bundled `icons/128.png` main icon at **28 × 28 CSS pixels**, to the left of the heading with an **8px** gap. The image has empty alternative text because the adjacent heading supplies the product name. The same English/Korean Chromium fixture verifies successful image loading, vertical centering and a single-line heading, while retaining the button measurements above and no horizontal overflow. Both updated previews were visually inspected; extension-localization and repository checks pass.
 
-Root/lockfile version is **1.1.1-dev**; Chrome numeric version **1.1.1**, display version **1.1.1-dev**; Stream Deck numeric version **1.1.1.0**. The public v1.1.0 release remains fixed. Development packages use commit/build metadata under the existing [versioning policy](../versioning.md).
+At initial verification, root/lockfile and Chrome's display label were **1.1.1-dev**, with Chrome numeric version **1.1.1** and Stream Deck **1.1.1.0**. Release promotion removed the development label. The [official popup images](official-images-2026-10-18.md) now render the stable **1.1.1** identity. Development build identities continue to follow the [versioning policy](../versioning.md).

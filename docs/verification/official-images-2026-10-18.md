@@ -31,7 +31,7 @@ The selected image is the exact rectangle **[75, 5, 733, 518)** from the origina
 
 Both current popup images were regenerated with `npm run preview:render` from the released **v1.1.1** popup HTML, JavaScript, catalogs and icon, using the same sample song and connection state. The relevant source files match tag `v1.1.1` (`33b4757364e2e2c153cecc635027024662fffdbd`). Chromium 156.0.8078.4 rendered at 1.5 device scale with temporary Windows Segoe UI/Malgun Gothic fonts, which are not distributed in the repository or extension.
 
-Each locale reports plugin **1.1.1**, extension **1.1.1**, protocol **1**, with no development label. Both images remain **435 × 678**; the 290px popup has no horizontal overflow, its connection buttons remain **80 × 36 CSS pixels**, and the heading icon loads. The Stream Deck image's checksum remains unchanged.
+Each locale reports plugin **1.1.1**, extension **1.1.1**, protocol **1**, with no development label. Both images remain **435 × 678**; the 290px popup has no horizontal overflow, its connection buttons remain **80 × 36 CSS pixels**, and the heading icon loads. Decoded-pixel comparison with the initially selected popup files confirms that only the version footer changed. The Stream Deck image's checksum remains unchanged.
 
 ## Use and limits
 
