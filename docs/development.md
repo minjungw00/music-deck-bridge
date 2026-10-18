@@ -25,10 +25,10 @@ Node integration tests use temporary APPDATA directories and local TCP/WebSocket
 
 ## Source files
 
-- `streamdeck/src/plugin.cjs`: plugin source.
+- `streamdeck/src/plugin.cjs`: plugin composition root; `domain/`, `application/`, `adapters/` and `presentation/` hold its role-specific modules. See [code boundaries](architecture.md#code-boundaries).
 - `streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/`: plugin resources and generated executable; deployable after `npm run build:plugin`.
 - `streamdeck/generate_assets.py`: source for all project brand/action icons, drawn from geometric primitives without external artwork. Optional regeneration requires Pillow 12.0.0 (`python -m pip install Pillow==12.0.0`), then `python streamdeck/generate_assets.py`. No Python packages are required to build or package the committed PNG files.
-- `chrome-extension/`: load unpacked directly in Chrome. User-facing popup/manifest strings live in `_locales/en` and `_locales/ko`.
+- `chrome-extension/`: load unpacked directly in Chrome. `background.js` assembles the classic worker modules under `background/`; add every new runtime file to the packaging allowlist in `scripts/package.py`. User-facing popup/manifest strings live in `_locales/en` and `_locales/ko`.
 - `store-assets/`: listing copy, permission explanations, approved captures/popup previews and sized upload images. Source provenance and rendering limits are recorded in the linked [media verification records](release-readiness.md#releases-submissions-and-media).
 
 Use `io.github.minjungw00.musicdeckbridge` as the plugin UUID and action UUID prefix. Keep package paths, runtime routing, localized action keys, packaging scripts and tests in sync when changing identifiers. Authentication and port files are stored in `%APPDATA%\MusicDeckBridge`.

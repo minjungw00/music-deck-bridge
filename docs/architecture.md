@@ -9,7 +9,24 @@ flowchart LR
   P -->|HTTPS artwork download| CDN[Google and YouTube image servers]
 ```
 
-The Stream Deck manifest launches `streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/bin/plugin.js` with the local WebSocket registration arguments. It bundles the official `@elgato/streamdeck` 3.0.2 SDK, which owns registration, event routing and display/inspector output. The ten `SingletonAction` registrations forward events to the existing local bridge. The runtime does not load the manifest itself; the SDK handles protected manifests. Source is in `streamdeck/src/plugin.cjs`; esbuild produces the standalone deployed bundle. The property inspector bundles sdpi-components v4.0.1 locally for offline settings UI. Stream Deck passes its language to the plugin/settings; Chrome resolves the extension's en/ko catalogs independently.
+The Stream Deck manifest launches `streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/bin/plugin.js` with the local WebSocket registration arguments. It bundles the official `@elgato/streamdeck` 3.0.2 SDK, which owns registration, event routing and display/inspector output. The ten `SingletonAction` registrations forward events to the existing local bridge. The runtime does not load the manifest itself; the SDK handles protected manifests. The entry point is `streamdeck/src/plugin.cjs`; esbuild produces the standalone deployed bundle. The property inspector bundles sdpi-components v4.0.1 locally for offline settings UI. Stream Deck passes its language to the plugin/settings; Chrome resolves the extension's en/ko catalogs independently.
+
+## Code boundaries
+
+The plugin uses ports and adapters with explicit factories. [plugin.cjs](../streamdeck/src/plugin.cjs) is the composition root: it connects services and starts the HTTP server, SDK and display timers. Importing the supporting modules starts no servers or timers.
+
+| Layer | Responsibility |
+| --- | --- |
+| [Domain](../streamdeck/src/domain/) | Player normalization/selection, action identities, credential comparison and value validation; no network or file access |
+| [Application](../streamdeck/src/application/) | Pairing sessions, player leases, ordered command delivery, port changes and key/dial input handling |
+| [Adapters](../streamdeck/src/adapters/) | Loopback HTTP, Stream Deck SDK, atomic file persistence and artwork fetching/cache |
+| [Presentation](../streamdeck/src/presentation/) | Key/dial rendering and grapheme-aware text formatting through injected output/artwork ports |
+
+The command service owns `queued → delivered → succeeded/failed/expired` transitions. Its channel port exposes only `reply` and `onClose`; HTTP request/response objects stay in the transport adapter. A delivered command is not replayed after a missing result. Session replacement cancels polls and pending inputs; credential writes/deletion must succeed before the active pairing is replaced/revoked. Player selection and command deadlines accept an injected clock for deterministic tests.
+
+[background.js](../chrome-extension/background.js) is the classic MV3 worker entry point. Its [background modules](../chrome-extension/background/) separate the authenticated bridge client, browser-wide command channel, message router and fixed page-control functions. The client owns credential access and protocol state; the channel owns polling/retry and tab delivery; the router validates message senders. `MAIN`-world functions remain self-contained because Chrome serializes them for execution in the page. The content script retains its isolated-world boundary.
+
+Rendering tests and the offline preview import the presentation API directly. The preview bundles that API for the browser with local artwork/output adapters. Worker fixtures follow the actual `importScripts` graph, and packaging checks require every imported worker file in the Chrome ZIP.
 
 ## Pairing and requests
 
@@ -62,7 +79,7 @@ Inspector connection state uses active authenticated polls or a three-second gap
 
 Port `17864` is the default; both components accept integers 1024–65535. On a live change the plugin binds the new port first, persists it, notifies clients and retains the old listener for two minutes. Sleeping/offline clients may need the port changed manually. No LAN listener is opened.
 
-Artwork downloads validate the HTTPS host, each redirect, content type and a 2 MB limit. `/status` returns a `coverStatus` code: `missing`, `blocked`, `ready`, `downloading`, `waiting` or `failed`. The Chrome popup translates these codes using its own en/ko catalog; unknown codes use the localized waiting message. See [privacy](../PRIVACY.md) for the allowlist and data lifecycle.
+Artwork downloads validate the HTTPS host, each redirect, content type and a 2 MB limit. The artwork store tracks in-flight promises per source URL, deduplicates overlapping requests and only updates the selected cover when its download completes. `/status` returns a `coverStatus` code: `missing`, `blocked`, `ready`, `downloading`, `waiting` or `failed`. The Chrome popup translates these codes using its own en/ko catalog; unknown codes use the localized waiting message. See [privacy](../PRIVACY.md) for the allowlist and data lifecycle.
 
 ## Plugin identity
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.2-dev — unreleased
+
+- Deduplicate overlapping album artwork downloads by source URL and retain independent pending status when tracks change.
+- Separate the plugin into domain policies, application services, transport/storage adapters and presentation modules. Model browser command delivery with explicit states and preserve ordered one-shot delivery.
+- Split the Chrome worker into bridge-client, browser-channel, message-router and page-control modules. Use the real worker import graph in fixtures and include its modules in packaging checks.
+- Reuse the presentation API directly in rendering tests and offline previews, replacing source-text extraction.
+
 ## v1.1.1 — 2026-10-18
 
 - Keep the English/Korean popup action buttons on one line with equal widths, explicit typography and consistent heights; shorten the English status button to “Status”.

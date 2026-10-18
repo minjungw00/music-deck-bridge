@@ -25,6 +25,16 @@ The [protocol contract](../protocol.md) passed shared-engine, real HTTP bridge, 
 
 Legacy tests model the prior contract; archived binaries were not installed. No production protocol-2 component exists, so the browser mismatch response was injected. **Separate actual Windows confirmation of explicit component identities/status and retained pairing remains outstanding.** A future wire change needs coverage for its implemented versions.
 
+## 1.1.2 development refactor
+
+Evidence date: October 18, 2026 (Asia/Seoul). Runtime source: `e67bca3`, branch `refactor/1.1.2-architecture`, version `1.1.2-dev` (Chrome numeric `1.1.2`, plugin `1.1.2.0`, protocol 1). This is local development evidence, separate from the published/submitted v1.1.1 packages.
+
+- Syntax/JSON/manifest checks passed. All 123 Node tests passed, including HTTP/SDK fixtures, one-shot command ordering/timeout/session cancellation, credential-persistence failure recovery and per-source concurrent artwork requests. Two Python packaging tests passed, including the worker module allowlist.
+- Actual Chromium 156.0.8078.4 passed the local MV3 fixture: nine cold-tab inputs, delayed readiness, MAIN-state sync, existing-tab reuse, receiver replacement and protocol mismatch/recovery. Worker fixtures load the real `importScripts` graph.
+- The generated sample preview passed a Chromium smoke check for artwork/information modes, fit/text controls and Korean popup selection without page errors. Qt 6.10.3 checks passed for 24 fitted artwork outputs, full-width text and one-/two-line key backdrops, using the presentation API directly.
+
+The first Node attempt during the preceding investigation was blocked by sandbox loopback-listener restrictions; these integration tests ran with local listeners allowed. Chromium and the missing ALSA library were supplied from temporary directories without changing system packages. These results establish local fixtures/rendering, not signed-in YouTube Music behavior, Windows native launch, hardware displays, Marketplace DRM or installation of the refactored development build. The historical maintainer confirmation below retains its original scope.
+
 ## Maintainer confirmation
 
 The maintainer confirmed the following development-build checks complete before requesting protocol negotiation:

@@ -10,7 +10,7 @@ Last updated: October 18, 2026 (Asia/Seoul). Current distribution status and rem
 | Elgato Marketplace | **v1.1.1**, registered, **Pending review** | [Store submissions](verification/stores.md) |
 | Chrome Web Store | **v1.1.1**, registered, **Pending review** | [Store submissions](verification/stores.md) |
 
-Source/Chrome **1.1.1**, plugin **1.1.1.0**, protocol **1**. No next development target has been selected under the [versioning policy](versioning.md). Public store install links await approval, publication and installation verification.
+The selected development target is **1.1.2-dev**: Chrome numeric version **1.1.2**, plugin **1.1.2.0**, protocol **1**. Its architectural refactor and local validation are recorded in [runtime verification](verification/runtime.md#112-development-refactor). The published/submitted v1.1.1 artifacts above remain separate and fixed under the [versioning policy](versioning.md). Public store install links await approval, publication and installation verification.
 
 ## Verified scope
 
