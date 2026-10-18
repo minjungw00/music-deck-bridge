@@ -1,18 +1,20 @@
 # Changelog
 
-## Unreleased
+## v1.1.0 — 2026-10-18
 
-- Keep the current cycle at `1.0.2-dev`, with fixed Chrome `1.0.2` / Stream Deck `1.0.2.0` values. Identify development builds by SHA and build metadata rather than incrementing release versions. Add synchronized version selection/promotion, isolated local development packages and release guards that reject development versions.
+- Add Open YouTube Music, Like and Dislike keys. All controls can open a missing player and complete the original input after readiness; reuse existing tabs/apps and preserve command order.
+- Recover Chrome connections after extension updates/reinstallation and distinguish retained credentials from a currently connected extension. Keep authentication, ports, UUIDs and profile settings intact.
+- Reflect confirmed browser playback in separate Play/Pause icons, and confirmed mute state on the Volume Dial. Wait for actual player readiness and observable playback/track effects before acknowledging commands.
+- Rename Track Dial to Current Track Dial without changing its UUID. Rotate for previous/next; press or touch for play/pause. Volume Dial press and touch both toggle mute.
+- Add per-dial information/artwork modes, proportional width/height fitting and full-width scrolling. Offer title visibility, optional artist below/inline placement and optional text background.
+- Add matching song/artist visibility, artist placement, background and text-mode options to the Now Playing key.
+- Introduce explicit protocol range negotiation with separate plugin/extension identities, legacy-v1 support, precise update guidance and recovery using existing credentials.
+- Refresh action artwork and popup colors to match the main magenta icon, and include the supplied project thumbnail in README. Hide default titles on Play/Pause, Like, Dislike and Open keys.
+- Separate development build identities from release numbers, add browser/Qt/SDK compatibility regressions and retain dated verification records.
+- Publish source/Chrome version 1.1.0 and Stream Deck version 1.1.0.0; retain protocol 1 and existing permissions/storage paths. The unpublished 1.0.2 candidate is superseded by this release.
+- Record maintainer-completed device, Chrome and update/settings-retention/rollback checks. The historical installation conflict was not reproduced; no confirmed original-cause fix is claimed. New protocol behavior passed local automated and Chromium fixtures; Maker Console DRM and store approval remain separate.
 
-- Distinguish stored credentials from an unconfirmed extension connection and explain new-PIN recovery after extension reinstallation.
-- Hide default titles on Play/Pause, Like, Dislike and Open keys while retaining their state-driven icons.
-- Let every control open a missing player and complete its requested input after readiness, including native Chrome startup. Preserve input order, bound startup waits, cancel on pairing changes and deduplicate delivered request IDs. A new-player playback request starts playback without pausing a track that already resumed.
-
-- Add Open YouTube Music, Like and Dislike keys with localized labels and matching magenta artwork. Rating keys display confirmed selection and toggle the site's current-song rating; stale commands for another song are discarded.
-- Open/focus an existing player from the launch key, or open a Chrome tab when no player exists. Playback inputs also launch when no player exists. Use an authenticated browser-wide channel and a fixed-URL Windows Chrome fallback without changing extension permissions or existing pairing/storage paths.
-- Preserve the separate 1.0.2 candidate; launch and rating development remains unpublished. Explicit protocol-version compatibility negotiation remains separate work.
-
-## v1.0.2 — release candidate (not published)
+## Historical v1.0.2 candidate — not published, superseded by v1.1.0
 
 - Show only Play on the toggle key when paused and only Pause while playing, following the selected player's reported state, including changes made directly in Chrome. Use Play with the offline title when no player is available.
 - Align all seven Stream Deck action families with the main magenta play-disc identity, using matching circular badges, white symbols and dark key backgrounds. Keep action-list icons monochrome and align the Chrome popup palette.

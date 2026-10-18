@@ -1,6 +1,6 @@
 # Bridge protocol compatibility
 
-Application identities are reported independently as `pluginVersion` and `extensionVersion`. These labels are diagnostic; they are never compared to decide whether a connection works. The current development cycle remains `1.0.2-dev`.
+Application identities are reported independently as `pluginVersion` and `extensionVersion`. These labels are diagnostic; they are never compared to decide whether a connection works. Release `1.1.0` supports protocol 1; application release numbers remain independent of wire compatibility.
 
 ## Wire contract
 
@@ -10,7 +10,7 @@ Each extension HTTP request adds:
 
 ```json
 {
-  "extensionVersion": "1.0.2-dev",
+  "extensionVersion": "1.1.0",
   "protocolVersion": 1,
   "minProtocolVersion": 1
 }

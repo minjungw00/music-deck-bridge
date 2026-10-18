@@ -10,10 +10,10 @@ Build identity is separate: `BUILD-INFO.json` records the full commit, build ID,
 
 | Field | Development example | Promoted release example |
 | --- | --- | --- |
-| Root and lockfile version | `1.0.2-dev` | `1.0.2` |
-| Chrome `version` | `1.0.2` | `1.0.2` |
-| Chrome `version_name` | `1.0.2-dev` | Omitted |
-| Stream Deck `Version` | `1.0.2.0` | `1.0.2.0` |
+| Root and lockfile version | `1.1.0-dev` | `1.1.0` |
+| Chrome `version` | `1.1.0` | `1.1.0` |
+| Chrome `version_name` | `1.1.0-dev` | Omitted |
+| Stream Deck `Version` | `1.1.0.0` | `1.1.0.0` |
 | Build identity | Commit SHA plus CI/local build information | Approved source tag and package checksums |
 
 Chrome requires a [numeric version and provides `version_name` for display](https://developer.chrome.com/docs/extensions/reference/manifest/version). Stream Deck requires [four numeric version components](https://docs.elgato.com/streamdeck/sdk/references/manifest/#manifest). These manifest numbers are fixed platform values, not evidence that a build has been released. Do not increment a fourth component per development build.

@@ -10,14 +10,14 @@ Music Deck Bridge contains two components that must be installed together: a Str
 
 ## Features
 
-- Current song, artist and album artwork on a key; press to play or pause.
+- Current song, artist and album artwork on a key; choose text visibility, artist placement, background and scrolling. Press to play or pause.
 - Play/pause, previous track, next track and mute keys.
 - Open YouTube Music from a dedicated key; other controls open a missing player and continue their requested action when ready.
 - Like/dislike the current song, with selected-state icons; press again to remove the rating.
 - Volume dial with 1–5 percentage points per tick; push or touch to mute.
-- Current Track Dial: turn for previous/next track (up to five per event), push or touch to play/pause, and choose song info or album artwork.
+- Current Track Dial: turn for previous/next track (up to five per event), push or touch to play/pause, and choose song info or fitted album artwork with optional song/artist text.
 - English and Korean settings; truncated or scrolling track titles.
-- Six-digit PIN pairing, an authenticated loopback bridge and a configurable shared port.
+- Six-digit PIN pairing, an authenticated loopback bridge, a configurable shared port and protocol compatibility checks with targeted update guidance.
 - Preference for an installed Chrome app when both an app and browser tab are open.
 
 ## Requirements
