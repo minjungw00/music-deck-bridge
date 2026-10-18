@@ -38,4 +38,4 @@ The field configuration follows the [official Elgato layout reference](https://d
 3. On the Now Playing key, independently toggle song/artist visibility, switch artist position, and enable/disable the background with a cover and fallback icon. Check the black band behind the default bottom-aligned title and removal when all text is hidden.
 4. Use different settings on several keys/dials, change profiles and restart Stream Deck. Verify restored settings and existing play/pause/rotation controls.
 
-These physical-device checks remain pending; local pixel/SDK tests do not establish their completion.
+Follow-up on October 18: the maintainer [confirmed the physical-device, Chrome and update/recovery checks complete](maintainer-validation-2026-10-18.md). The local checks above remain separate evidence; the device retest is now complete by maintainer report.
