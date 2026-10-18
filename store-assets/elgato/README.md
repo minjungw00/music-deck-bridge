@@ -2,6 +2,8 @@
 
 Keep product screenshots and store artwork here.
 
+Use the selected [Stream Deck + capture](screenshots/stream-deck-plus.png) for product media. Its outer margins are balanced without changing UI pixels. See the [shared image inventory](../README.md#official-product-images).
+
 Record the submitted version, package hash, Console product/version ID, processing settings and review result in [release readiness](../../docs/release-readiness.md). After approval and publication, verify the actual product URL and add it to README and both installation guides. Track this independently of the Chrome Web Store listing; until then use the [package installation guide](../../docs/installation.en.md).
 
 - Use publisher UUID `io.github.minjungw00.musicdeckbridge` and confirm supported device models.

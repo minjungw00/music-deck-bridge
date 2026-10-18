@@ -20,6 +20,19 @@ Music Deck Bridge contains two components that must be installed together: a Str
 - Six-digit PIN pairing, an authenticated loopback bridge, a configurable shared port and protocol compatibility checks with targeted update guidance.
 - Preference for an installed Chrome app when both an app and browser tab are open.
 
+## Product images
+
+Stream Deck + capture:
+
+![Music Deck Bridge on Stream Deck +](store-assets/elgato/screenshots/stream-deck-plus.png)
+
+English and Korean Chrome extension popup previews:
+
+<p>
+  <img src="store-assets/chrome/screenshots/popup-en.png" width="280" alt="Music Deck Bridge extension popup in English" />
+  <img src="store-assets/chrome/screenshots/popup-ko.png" width="280" alt="Music Deck Bridge extension popup in Korean" />
+</p>
+
 ## Requirements
 
 | Component | Supported target |

@@ -8,6 +8,20 @@ This directory contains listing copy, artwork and submission checklists. Track s
 | Chrome Web Store | [Extension submission guide](chrome/README.md), extension icons, actual popup screenshots and promotional images |
 | Both | [English](listing.en.md) / [Korean](listing.ko.md) listing copy and public [privacy policy](https://github.com/minjungw00/music-deck-bridge/blob/main/PRIVACY.md) |
 
+## Official product images
+
+Use these maintainer-selected source images for README and listing media:
+
+| Image | Source |
+| --- | --- |
+| [Stream Deck +](elgato/screenshots/stream-deck-plus.png) | Actual maintainer capture with balanced outer margins |
+| [English Chrome popup](chrome/screenshots/popup-en.png) | Popup rendering with sample playback data |
+| [Korean Chrome popup](chrome/screenshots/popup-ko.png) | Popup rendering with sample playback data |
+
+The actual Stream Deck capture takes precedence over the browser-rendered device approximation. The popup images are selected product visuals; their simulated connection status does not establish live-service validation. See the [image provenance record](../docs/verification/official-images-2026-10-18.md). Compose store-specific exports from these sources while preserving proportions and UI content.
+
+## Submission workflow
+
 For each submission, match the package, listing claims and media to the same version. Preserve already submitted packages and record revisions separately. Check current Console requirements before exporting media. Reconcile the submitted extension's storage, scripting, alarms and host permissions with the privacy form; the plugin fetches artwork externally.
 
 The submissions and public installation URLs are independent. Activate each URL in README and both installation guides only after that product is approved, public and its store installation is verified. Record actual Maker Console package execution in the [DRM test record](../docs/verification/marketplace-drm.md).

@@ -2,6 +2,8 @@
 
 Keep extension screenshots and promotional images here.
 
+The selected popup images are [English](screenshots/popup-en.png) and [Korean](screenshots/popup-ko.png). Use these canonical sources for product media; they are sample-data renderings. See the [shared image inventory](../README.md#official-product-images) for provenance and selection.
+
 Use the submitted version's magenta icons in `chrome-extension/icons/`. See the [brand guide](../../docs/branding.md) for palette, size and reproduction details.
 
 Record the submitted version, ZIP hash, listing identifier and review result in [release readiness](../../docs/release-readiness.md). After approval and publication, verify the actual product URL and add it to README and both installation guides independently of Marketplace. Test switching from the unpacked extension with removal and new PIN pairing; until then use the [unpacked installation guide](../../docs/installation.en.md).

@@ -18,6 +18,7 @@ Current development cycle: **1.1.1-dev**, explicitly selected by the maintainer.
 | GitHub security | [Verified enabled](security-readiness.md): private reports, secret scanning, push protection and Dependabot; read-only default Actions token |
 | Maker Console DRM | [Not tested](verification/marketplace-drm.md); ordinary package and opaque-manifest fixture results do not establish DRM execution |
 | Store status | Last maintainer report: Elgato v1.0.1 Pending review; Chrome preparation pending. [Review preparation](verification/review-preparation.md); no public store install URLs activated |
+| Official product images | [Three images selected](verification/official-images-2026-10-18.md): actual Stream Deck capture with equal 48px margins, plus English/Korean sample-data popup renderings. Linked from README; final store-sized exports and final-package matching remain |
 
 ## Release scope
 
@@ -28,7 +29,7 @@ Brand/action artwork, the supplied README thumbnail and locale-aware inspector/p
 ## Remaining work
 
 1. **Marketplace DRM:** obtain and test the Console-processed installer separately from GitHub packages; retain its own source/hash/environment evidence.
-2. **Stores:** finish actual en/ko captures, supported models/software, privacy declarations and unpacked-to-store migration; track the two approvals independently.
+2. **Stores:** use the [selected official source images](verification/official-images-2026-10-18.md) for final store-sized exports; complete final-package capture/appearance matching, supported models/software, privacy declarations and unpacked-to-store migration. Track the two approvals independently.
 3. **Protocol deployment:** verify the new explicit identity/status and retained pairing on the actual Windows component pair. Controlled incompatible/future-version fixtures already pass.
 4. **Final environment coverage:** retain CI/artifact provenance and complete clean-environment install/uninstall/reset or idle/port-conflict coverage outside the confirmed scope. A future wire version must add migration tests for its implemented ranges.
 
@@ -37,6 +38,7 @@ The ACCESS DENIED installation condition [recurred after publication](verificati
 ## Detailed verification records
 
 - [v1.1.0 publication, exact-source CI and public package hashes](verification/v1.1.0.md)
+- [Selected official images, source provenance and lossless Stream Deck margin correction](verification/official-images-2026-10-18.md)
 - [October 18 maintainer validation of device, Chrome and update/recovery](verification/maintainer-validation-2026-10-18.md)
 - [Protocol range negotiation, legacy compatibility and recovery](verification/protocol-compatibility.md)
 - [Current Track Dial controls and display](verification/current-track-dial.md)
