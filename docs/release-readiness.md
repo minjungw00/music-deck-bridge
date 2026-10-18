@@ -1,6 +1,6 @@
 # Release readiness
 
-Last updated: October 18, 2026 (Asia/Seoul). The maintainer has authorized **v1.1.0** with all accumulated changes. Source/Chrome version is **1.1.0**, Stream Deck version **1.1.0.0**, wire protocol **1**. Public v1.0.0/v1.0.1 tags/assets and the submitted v1.0.1 Marketplace package remain fixed; the unpublished v1.0.2 candidate is superseded.
+Last updated: October 18, 2026 (Asia/Seoul). Latest stable GitHub release: **v1.1.0**, published at **14:52 KST** with all accumulated changes. Source/Chrome version is **1.1.0**, Stream Deck version **1.1.0.0**, wire protocol **1**. Public v1.0.0/v1.0.1 tags/assets and the submitted v1.0.1 Marketplace package remain fixed; the unpublished v1.0.2 candidate is superseded.
 
 The exact release source, final Windows/Ubuntu CI run and package checksums are recorded on the [v1.1.0 GitHub Release](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.1.0). See the [v1.1.0 scope and verification record](verification/v1.1.0.md). GitHub publication and store approval are separate.
 
@@ -12,7 +12,7 @@ The exact release source, final Windows/Ubuntu CI run and package checksums are 
 | Actual Chrome/YouTube Music operation and pairing recovery | Complete by the same maintainer report; implementation evidence: [readiness](verification/player-readiness-and-feedback.md), [cold-tab recovery](verification/browser-connection-recovery.md) |
 | Ordinary-package update, settings retention and rollback | Complete by maintainer report; historical installation conflict not reproduced, original cause unconfirmed |
 | Protocol compatibility | Implemented and locally verified: [117 Node tests, HTTP/SDK/worker matrix and actual Chromium fixture](verification/protocol-compatibility.md); newly introduced protocol behavior has no separate Windows device sign-off |
-| Release source and packages | Stable version/tag agreement, exact-source Windows/Ubuntu CI, package inventories and downloaded checksums are the publication gates; final results live on the release page |
+| Release source and packages | Complete: `7eb20a58b22df782af6cd80a360c27cde5100264`, [main CI 39101874429](https://github.com/minjungw00/music-deck-bridge/actions/runs/39101874429) passed both OS jobs; draft/public asset checksums and byte equality verified. [Publication evidence](verification/v1.1.0.md) |
 | GitHub security | [Verified enabled](security-readiness.md): private reports, secret scanning, push protection and Dependabot; read-only default Actions token |
 | Maker Console DRM | [Not tested](verification/marketplace-drm.md); ordinary package and opaque-manifest fixture results do not establish DRM execution |
 | Store status | Last maintainer report: Elgato v1.0.1 Pending review; Chrome preparation pending. [Review preparation](verification/review-preparation.md); no public store install URLs activated |
@@ -34,6 +34,7 @@ The original ACCESS DENIED installation trace is retained. Investigate handles/e
 
 ## Detailed verification records
 
+- [v1.1.0 publication, exact-source CI and public package hashes](verification/v1.1.0.md)
 - [October 18 maintainer validation of device, Chrome and update/recovery](verification/maintainer-validation-2026-10-18.md)
 - [Protocol range negotiation, legacy compatibility and recovery](verification/protocol-compatibility.md)
 - [Current Track Dial controls and display](verification/current-track-dial.md)
