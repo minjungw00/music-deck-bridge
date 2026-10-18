@@ -43,6 +43,7 @@ test('storage is restricted on each worker start before any token read or reques
 test('storage restriction failure prevents authenticated requests', async () => {
   const h = harness({ access: Promise.reject(Error('Access restriction failed')) });
   assert.equal((await h.send({ type: 'check' })).ok, false);
+  assert.equal((await h.send({ type: 'get-port' })).ok, false, 'storage failure responds instead of leaving a rejected message promise');
   assert.deepEqual(h.events, [['restrict', 'TRUSTED_CONTEXTS']]);
 });
 
