@@ -2,7 +2,15 @@
 (function (root) {
   function createManagementService({ client, browserChannel, translate = () => '' }) {
     const { post, pairedToken, configuredPort, setLocalPort, validPort } = client;
-    return {
+    let pending = Promise.resolve();
+    function serialize(operation) {
+      return (...args) => {
+        const result = pending.then(() => operation(...args));
+        pending = result.then(() => undefined, () => undefined);
+        return result;
+      };
+    }
+    const operations = {
       async pair({ pin }) {
         if (!/^\d{6}$/.test(pin)) throw new Error((translate('invalid') || 'Enter a six-digit PIN.'));
         const result = await post('/pair', { pin });
@@ -69,6 +77,11 @@
       },
       async getPort() { return { ok: true, port: await configuredPort() }; },
     };
+    // Include reads: status can update compatibility/port, and both reads must
+    // see credentials and configuration after preceding writes have settled.
+    return { pair: serialize(operations.pair), unpair: serialize(operations.unpair),
+      setPort: serialize(operations.setPort), check: serialize(operations.check),
+      getPort: serialize(operations.getPort) };
   }
   root.MusicDeckManagementService = Object.freeze({ create: createManagementService });
 })(globalThis);
