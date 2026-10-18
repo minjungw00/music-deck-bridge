@@ -28,7 +28,8 @@ def stage(component, output):
                "icons/16.png", "icons/48.png", "icons/128.png",
                "_locales/en/messages.json", "_locales/ko/messages.json"] if component == "chrome" else [
         "bin/plugin.js", "property-inspector/settings.html",
-        "property-inspector/settings.js", "property-inspector/sdpi-components.js", "en.json", "ko.json",
+        "property-inspector/settings.js", "property-inspector/sdpi-components.js",
+        "property-inspector/locales.js", "property-inspector/volume-editor.js", "en.json", "ko.json",
         "layouts/current-track-artwork.json",
     ])
     for folder in folders:

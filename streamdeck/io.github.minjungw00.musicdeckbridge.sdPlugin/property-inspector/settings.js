@@ -2,80 +2,7 @@
 /* Property inspector using the official sdpi-components controls and Stream Deck client. */
 const client = SDPIComponents.streamDeckClient;
 const $ = id => document.getElementById(id);
-const strings = {
-  ko: {
-    titleRow: '텍스트 표시', truncate: '말줄임', scroll: '왼쪽으로 스크롤',
-    titleHint: '표시할 곡 이름·가수명과 배경을 선택하고, 긴 텍스트를 말줄임하거나 왼쪽으로 스크롤할 수 있습니다.',
-    artistPosition: '가수명 위치', artistBelow: '곡 이름 아래', artistInline: '곡 이름에 이어서',
-    dialDisplayRow: '화면 표시', dialInfo: '아이콘 + 곡 이름', dialArtwork: '앨범 이미지',
-    dialDisplayHint: '누르기·화면 터치: 재생/일시정지, 회전: 이전/다음 곡. 앨범 이미지가 없으면 재생 상태 아이콘을 표시합니다.',
-    artworkFit: '이미지 맞춤', artworkWidth: '좌우에 맞추기', artworkHeight: '상하에 맞추기',
-    artworkFitHint: '원본 비율을 유지하며 너비 또는 높이에 맞춥니다. 화면 밖으로 넘치는 부분은 잘립니다.',
-    artworkTitle: '곡 이름', artworkShowTitle: '곡 이름 표시',
-    artworkArtist: '가수명', artworkShowArtist: '가수명 표시',
-    artworkBackground: '자막 배경', artworkShowBackground: '배경 표시', artworkTitleMode: '텍스트 표시',
-    volumeRow: '회전당 볼륨', volumeHint: '다이얼 1칸당 변경량:',
-    pinRow: 'Chrome 연결', generate: 'PIN 발급', checking: '연결 상태 확인 중…',
-    portRow: '로컬 서버 포트', applyPort: '적용', portHint: '모든 버튼·다이얼에 공통으로 적용됩니다. 연결된 Chrome은 자동으로 포트를 변경합니다.',
-    portInvalid: '포트는 1024~65535 사이의 정수여야 합니다.', portSaved: '서버 포트 변경 완료:',
-    portFailed: '포트를 변경하지 못했습니다:', portOffline: '로컬 서버가 포트를 열지 못했습니다:',
-    pairHint: 'Chrome 확장 프로그램에 PIN을 입력하세요. 10분 동안 유효합니다.',
-    offline: 'Stream Deck 플러그인에서 응답이 없습니다. Stream Deck 앱을 다시 실행하세요.',
-    unpaired: '미연결 · PIN을 발급하여 Chrome 확장 프로그램에 입력하세요.',
-    extensionMissing: '확장 프로그램 연결 미확인 · 기존 인증 정보가 보관되어 있습니다. 확장을 재설치했다면 새 PIN을 발급하여 연결하세요.',
-    playerMissing: 'Chrome 확장 프로그램 연결됨 · YouTube Music 창을 확인하세요.',
-    sleeping: '연결됨 · YouTube Music이 유휴 상태이거나 응답이 지연되고 있습니다.',
-    connected: '연결됨 · YouTube Music 제어 가능',
-    pinIssued: 'PIN 발급됨 · Chrome 확장 프로그램에 입력하세요.',
-    bridgeWait: 'Stream Deck 플러그인과 연결을 기다리는 중입니다.',
-    commandFailed: '마지막 명령을 완료하지 못했습니다.',
-    commandPairing: '새 PIN으로 확장 프로그램을 다시 연결하세요.',
-    commandExtension: '확장 프로그램이 연결된 Chrome 프로필과 포트를 확인하세요.',
-    commandPlayer: 'YouTube Music 페이지와 재생할 곡이 준비되었는지 확인하세요.',
-    commandDelivery: '실행 결과를 확인하지 못했습니다. YouTube Music의 현재 상태를 확인하세요.',
-    commandAutoplay: 'Chrome이 자동 재생을 차단했습니다. YouTube Music 창에서 재생을 허용한 뒤 다시 시도하세요.',
-    updatePlugin: '통신 규약이 호환되지 않습니다. Stream Deck 플러그인을 업데이트하세요.',
-    updateExtension: '통신 규약이 호환되지 않습니다. Chrome 확장 프로그램을 업데이트하세요.',
-    protocolInvalid: '호환성 정보가 올바르지 않습니다. 플러그인과 확장 프로그램을 업데이트하고 다시 확인하세요.',
-    pluginLabel: '플러그인', extensionLabel: '확장', protocolLabel: '통신 규약', legacyProtocol: '기존 연결',
-  },
-  en: {
-    titleRow: 'Text display', truncate: 'Truncate', scroll: 'Scroll left',
-    titleHint: 'Choose song/artist visibility and background, then truncate or scroll long text to the left.',
-    artistPosition: 'Artist position', artistBelow: 'Below song name', artistInline: 'After song name',
-    dialDisplayRow: 'Touch strip display', dialInfo: 'Icon + song name', dialArtwork: 'Album artwork',
-    dialDisplayHint: 'Push or touch to play/pause; turn for previous/next track. Without artwork, the playback icon is shown.',
-    artworkFit: 'Artwork fit', artworkWidth: 'Fit width', artworkHeight: 'Fit height',
-    artworkFitHint: 'Fit the width or height while preserving the original proportions. Parts outside the screen are cropped.',
-    artworkTitle: 'Song name', artworkShowTitle: 'Show song name',
-    artworkArtist: 'Artist', artworkShowArtist: 'Show artist name',
-    artworkBackground: 'Text background', artworkShowBackground: 'Show background', artworkTitleMode: 'Text display',
-    volumeRow: 'Volume per tick', volumeHint: 'Change per dial tick:',
-    pinRow: 'Chrome connection', generate: 'Generate PIN', checking: 'Checking connection…',
-    portRow: 'Local server port', applyPort: 'Apply', portHint: 'Shared by all buttons/dials. A connected Chrome extension follows the new port automatically.',
-    portInvalid: 'Port must be an integer from 1024 to 65535.', portSaved: 'Server port changed to:',
-    portFailed: 'Could not change the port:', portOffline: 'Local server could not listen:',
-    pairHint: 'Enter the PIN in the Chrome extension popup. Valid for 10 minutes.',
-    offline: 'No response from the Stream Deck plugin. Restart the Stream Deck app.',
-    unpaired: 'Not paired · Generate a PIN and enter it in Chrome.',
-    extensionMissing: 'Extension connection unconfirmed · Previous credentials are stored. If you reinstalled the extension, generate a new PIN and pair again.',
-    playerMissing: 'Chrome extension connected · Open or refresh YouTube Music.',
-    sleeping: 'Connected · YouTube Music may be idle or temporarily unresponsive.',
-    connected: 'Connected · YouTube Music is ready',
-    pinIssued: 'PIN generated · Enter it in the Chrome extension.',
-    bridgeWait: 'Waiting for the Stream Deck plugin to respond.',
-    commandFailed: 'The last command did not complete.',
-    commandPairing: 'Pair the extension again with a new PIN.',
-    commandExtension: 'Check the paired Chrome profile and bridge port.',
-    commandPlayer: 'Check that YouTube Music and a playable track are ready.',
-    commandDelivery: 'Could not confirm execution. Check the current player state.',
-    commandAutoplay: 'Chrome blocked autoplay. Allow playback in YouTube Music, then try again.',
-    updatePlugin: 'Bridge protocols are incompatible. Update the Stream Deck plugin.',
-    updateExtension: 'Bridge protocols are incompatible. Update the Chrome extension.',
-    protocolInvalid: 'Invalid compatibility information. Update both components and check again.',
-    pluginLabel: 'Plugin', extensionLabel: 'Extension', protocolLabel: 'Protocol', legacyProtocol: 'legacy connection',
-  },
-};
+const strings = MusicDeckInspectorStrings;
 let language = 'en';
 let currentStatus = null;
 let statusPoll = null;
@@ -84,31 +11,16 @@ let connectedToHost = false;
 let lastPin = '';
 let lastPinExpiresAt = 0;
 let portIsDirty = false;
-// Read the native range value immediately while its persisted settings are pending.
-let actionSettings = {};
-let latestVolumeStep = 4;
-let volumeTouched = false;
-let volumeWasCommitted = false;
-function validVolume(value) {
-  const v = Number(value);
-  return Number.isInteger(v) && v >= 1 && v <= 5 ? v : null;
-}
-function syncSavedVolume(settings) {
-  if (!settings || typeof settings !== 'object') return;
-  const received = validVolume(settings.volumeStep);
-  actionSettings = { ...actionSettings, ...settings };
-  if (volumeTouched) {
-    // Ignore an out-of-order saved-settings notification while editing.
-    actionSettings.volumeStep = latestVolumeStep;
-    if (received === latestVolumeStep && volumeWasCommitted) volumeTouched = false;
-    return;
-  }
-  if (received !== null) {
-    latestVolumeStep = received;
-    $('volumeStep').value = String(received);
-    updateVolumeLabel();
-  }
-}
+const { validVolume, createVolumeEditor } = MusicDeckVolumeEditor;
+const editor = createVolumeEditor({
+  onValue(value) { $('volumeStep').value = String(value); updateVolumeLabel(); },
+  onPreview(value) {
+    if (connectedToHost) void client.send('sendToPlugin', { type: 'volume-preview', value }).catch(() => {});
+  },
+  onSave(settings) {
+    if (connectedToHost) void client.setSettings(settings).catch(() => {});
+  },
+});
 
 const t = key => strings[language][key];
 function localize() {
@@ -233,42 +145,14 @@ client.sendToPropertyInspector.subscribe(msg => {
 });
 client.didReceiveSettings.subscribe(msg => {
   // Native range is manually synchronized; sdpi-select persists titleMode/dialDisplay.
-  syncSavedVolume(msg.payload?.settings);
-  updateArtworkOptions(actionSettings.dialDisplay || 'info', actionSettings.artworkShowTitle === true, actionSettings.artworkShowArtist === true);
-  $('keyArtistPositionRow').classList.toggle('hidden', actionSettings.showArtist === false);
+  editor.receive(msg.payload?.settings);
+  updateArtworkOptions(editor.settings.dialDisplay || 'info', editor.settings.artworkShowTitle === true, editor.settings.artworkShowArtist === true);
+  $('keyArtistPositionRow').classList.toggle('hidden', editor.settings.showArtist === false);
 });
 $('generatePin').addEventListener('click', () => { lastPin = ''; void requestConnection('generate-pin'); });
-function sendVolumePreview(value) {
-  if (!connectedToHost) return;
-  // Preview is independent of persisted settings: the very first dial tick must
-  // use the currently visible slider value, even if Stream Deck is still saving.
-  void client.send('sendToPlugin', { type: 'volume-preview', value }).catch(() => {});
-}
-function onVolumeInput(event) {
-  // IMPORTANT: event.target is the native input, not a shadow-DOM wrapper.
-  const value = validVolume(event.target.value);
-  if (value === null) return;
-  latestVolumeStep = value;
-  volumeTouched = true;
-  volumeWasCommitted = false;
-  $('volumeStep').value = String(value);
-  updateVolumeLabel();
-  sendVolumePreview(value);
-}
-function onVolumeChange(event) {
-  const value = validVolume(event.target.value);
-  if (value === null) return;
-  if (!volumeTouched || latestVolumeStep !== value) onVolumeInput(event);
-  volumeWasCommitted = true;
-  actionSettings = { ...actionSettings, volumeStep: value };
-  if (connectedToHost) {
-    // Like the Elgato Discord plugin, explicitly persist the value received
-    // from the native range's change event. Preserve any other action settings.
-    void client.setSettings({ ...actionSettings }).catch(() => {});
-  }
-}
-$('volumeStep').addEventListener('input', onVolumeInput);
-$('volumeStep').addEventListener('change', onVolumeChange);
+// Read event.target.value from the native input while persistence is pending.
+$('volumeStep').addEventListener('input', event => editor.input(event.target.value));
+$('volumeStep').addEventListener('change', event => editor.change(event.target.value));
 $('serverPort').addEventListener('input', () => { portIsDirty = true; });
 $('applyPort').addEventListener('click', () => {
   const port = Number($('serverPort').value);
@@ -285,9 +169,9 @@ void (async () => {
   try {
     const { info, actionInfo } = await client.getConnectionInfo();
     connectedToHost = true;
-    syncSavedVolume(actionInfo?.payload?.settings || {});
-    updateArtworkOptions(actionSettings.dialDisplay || 'info', actionSettings.artworkShowTitle === true, actionSettings.artworkShowArtist === true);
-    $('keyArtistPositionRow').classList.toggle('hidden', actionSettings.showArtist === false);
+    editor.receive(actionInfo?.payload?.settings || {});
+    updateArtworkOptions(editor.settings.dialDisplay || 'info', editor.settings.artworkShowTitle === true, editor.settings.artworkShowArtist === true);
+    $('keyArtistPositionRow').classList.toggle('hidden', editor.settings.showArtist === false);
     language = info?.application?.language === 'ko' ? 'ko' : 'en';
     localize();
     const action = actionInfo?.action || '';

@@ -75,6 +75,11 @@ class PackagingTests(unittest.TestCase):
                      "property-inspector/settings.js", "property-inspector/sdpi-components.js", "en.json", "ko.json",
                      "layouts/current-track-artwork.json"):
             self.assertTrue((staged / name).is_file(), name)
+        inspector = staged / manifest["PropertyInspectorPath"]
+        for module in re.findall(r'<script src="([^"]+)"', inspector.read_text(encoding="utf-8")):
+            resource = inspector.parent / module
+            self.assertTrue(resource.is_file(), f"Missing inspector dependency: {module}")
+            self.assertEqual(resource.read_bytes(), (plugin / manifest["PropertyInspectorPath"]).parent.joinpath(module).read_bytes())
         for action in manifest["Actions"]:
             for icon in (action["Icon"], *(state["Image"] for state in action["States"])):
                 for suffix in (".png", "@2x.png"):

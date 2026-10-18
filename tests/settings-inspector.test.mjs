@@ -5,7 +5,6 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 const dir = join(dirname(fileURLToPath(import.meta.url)), '..', 'streamdeck', 'io.github.minjungw00.musicdeckbridge.sdPlugin');
-const code = readFileSync(join(dir,'property-inspector','settings.js'),'utf8');
 const html = readFileSync(join(dir,'property-inspector','settings.html'),'utf8');
 function makeInspector(action='io.github.minjungw00.musicdeckbridge.nowplaying', language='ko') {
   const ids=['keyTitleRow','showTitle','keyArtistRow','showArtist','keyArtistPositionRow','artistPosition','optKeyArtistBelow','optKeyArtistInline','keyBackgroundRow','titleBackground',
@@ -31,7 +30,11 @@ function makeInspector(action='io.github.minjungw00.musicdeckbridge.nowplaying',
     document:{getElementById:id=>elems[id],documentElement:{lang:''}},
     window:{addEventListener:()=>{}},Date,Number,Math,Promise,JSON,
     setTimeout:()=>1,clearTimeout:()=>{},setInterval:()=>1,clearInterval:()=>{}};
-  vm.runInNewContext(code,sandbox);
+  const context = vm.createContext(sandbox);
+  for (const [, file] of html.matchAll(/<script src="([^"]+)"/g)) {
+    if (file === 'sdpi-components.js') continue; // The host client is supplied by the fixture.
+    vm.runInContext(readFileSync(join(dir, 'property-inspector', file), 'utf8'), context, { filename: file });
+  }
   return {elems,calls,subscribers,sandbox,ready:async()=>{
     for(let i=0;i<10;i++)await Promise.resolve();
   }};
