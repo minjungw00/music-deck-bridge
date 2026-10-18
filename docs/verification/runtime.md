@@ -44,6 +44,14 @@ Evidence date: October 18, 2026 (Asia/Seoul). Runtime source: `97ac12f`, on the 
 - Chromium 156.0.8078.4 passed the nine-input MV3 fixture with the new management/player-sync services and the complete content-module manifest/reinjection graph. The settings fixture retains immediate volume preview, delayed-setting protection and other saved fields. Two Python packaging tests check worker/content/inspector dependency inclusion.
 - The generated preview browser smoke and Qt 6.10.3 artwork/text/backdrop checks passed again. Windows/native Chrome, actual device/inspector operation, signed-in YouTube Music and installation/DRM remain outside this local run.
 
+### Concurrent operations and page restoration
+
+Evidence date: October 18, 2026 (Asia/Seoul). Runtime source: `e8379fd`, on the same `1.1.2-dev` branch.
+
+- All 135 Node tests, two Python packaging tests and syntax/JSON/manifest checks passed. Nine new service/lifecycle cases cover overlapping sync completion and failure, tab closure during page observation, delayed/failed startup with queued port changes, repeated startup, persistence failure with listener grace expiry, repeated cached-page restoration and periodic sync without a DOM observer.
+- Controlled before/after fixtures reproduced early tab-close notification, startup/change interference and missing DOM observation after restoration in the preceding implementation. The updated cases pass with all submitted snapshots settling before closure, serialized listener operations and observation restarted on each restoration. Port grace expiry uses an injected clock; cached-page events use a VM fixture loading the complete content manifest graph.
+- Actual Chromium 156.0.8078.4 passed the existing nine-input MV3 integration fixture again, including delayed readiness, MAIN-state sync, receiver replacement and protocol recovery. This run does not independently establish real-browser back/forward-cache behavior, signed-in YouTube Music operation, Windows startup or device rendering. Historical maintainer confirmation below retains its original scope.
+
 ## Maintainer confirmation
 
 The maintainer confirmed the following development-build checks complete before requesting protocol negotiation:
