@@ -3,16 +3,22 @@ const { portNumber } = require('../domain/port.cjs');
 const LOCALHOST = '127.0.0.1';
 const PORT_GRACE_MS = 120000;
 
-function createPortService({ initialPort, savePort, bindPort, notifyPortChange, log }) {
+function createPortService({ initialPort, savePort, bindPort, notifyPortChange, log,
+  setTimeout = globalThis.setTimeout, clearTimeout = globalThis.clearTimeout }) {
   let currentPort = initialPort;
   let bridgeServer = null;
   let bridgeOnline = false;
   let portError = '';
-  let changingPort = Promise.resolve();
+  let pendingOperation = Promise.resolve();
   const retiringListeners = new Map();
+  function enqueue(task) {
+    const operation = pendingOperation.then(task);
+    pendingOperation = operation.then(() => undefined, () => undefined);
+    return operation;
+  }
   function changePort(value) {
-    // Serialize changes from multiple inspectors and/or the Chrome popup.
-    const operation = changingPort.then(async () => {
+    // Startup and changes from every inspector/popup share one listener lifecycle.
+    return enqueue(async () => {
       const next = portNumber(value);
       if (next === null) return { ok: false, error: 'Port must be an integer between 1024 and 65535.' };
       if (next === currentPort && bridgeOnline) return { ok: true, port: next, unchanged: true };
@@ -62,8 +68,6 @@ function createPortService({ initialPort, savePort, bindPort, notifyPortChange, 
       }
       return { ok: true, port: next };
     });
-    changingPort = operation.then(() => undefined, () => undefined);
-    return operation;
   }
 
   return {
@@ -71,16 +75,20 @@ function createPortService({ initialPort, savePort, bindPort, notifyPortChange, 
     get port() { return currentPort; },
     get online() { return bridgeOnline; },
     get error() { return portError; },
-    async start() {
-      try {
-        bridgeServer = await bindPort(currentPort);
-        bridgeOnline = true;
-        log(`Loopback bridge on ${LOCALHOST}:${currentPort}`);
-      } catch (error) {
-        bridgeOnline = false;
-        portError = `Port ${currentPort}: ${error.code || error.message}`;
-        log(`Bridge unavailable: ${portError}`);
-      }
+    start() {
+      return enqueue(async () => {
+        if (bridgeOnline) return;
+        try {
+          bridgeServer = await bindPort(currentPort);
+          bridgeOnline = true;
+          portError = '';
+          log(`Loopback bridge on ${LOCALHOST}:${currentPort}`);
+        } catch (error) {
+          bridgeOnline = false;
+          portError = `Port ${currentPort}: ${error.code || error.message}`;
+          log(`Bridge unavailable: ${portError}`);
+        }
+      });
     },
   };
 }
