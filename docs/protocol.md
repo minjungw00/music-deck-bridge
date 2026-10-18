@@ -6,11 +6,11 @@ Application identities are reported independently as `pluginVersion` and `extens
 
 The packaged `chrome-extension/protocol.js` is the single negotiation implementation. The classic MV3 worker loads it with a local `importScripts`; esbuild includes the same code in the standalone plugin.
 
-Each extension HTTP request adds:
+Each extension HTTP request adds these fields. The application version below is illustrative; the extension reports its installed version.
 
 ```json
 {
-  "extensionVersion": "1.1.1",
+  "extensionVersion": "1.1.2",
   "protocolVersion": 1,
   "minProtocolVersion": 1
 }
