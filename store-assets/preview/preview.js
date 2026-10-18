@@ -1,13 +1,13 @@
 'use strict';
 const data = globalThis.previewData;
 const $ = id => document.getElementById(id);
-let locale = 'en', sdOnline = true, hasDrawing = false;
+let locale = 'en';
+const { createRenderer, translate, MARQUEE_STEP_MS } = MusicDeckRendering;
 const displayed = new Map();
 const cachedCoverUrl = 'preview-cover', cachedCoverData = data.cover;
 const state = { title: data.title, artist: data.artist, cover: cachedCoverUrl, playing: true, muted: false, volume: 35 };
 const selectedEntry = () => ['preview', state];
 const actionName = action => action.split('.').at(-1);
-const validCover = () => false;
 const fitDialArtwork = (_, mode) => data.fits[mode];
 const keyTextBackground = (_, lines) => data.backdrops[lines];
 const imageSource = value => data.icons[value] || value;
@@ -56,6 +56,11 @@ async function setFeedback(context, payload) {
   }
 }
 
+const renderer = createRenderer({ displayed, selectedEntry, actionName,
+  tr: key => translate(locale, key), fitDialArtwork, keyTextBackground,
+  covers: { image: src => src === cachedCoverUrl ? cachedCoverData : '', load() {} },
+  output: { setImage, setTitle, setFeedback, sendStream } });
+
 let popupObserver, popupURL;
 function loadPopup() {
   const frame = $('popup'); frame.onload = () => {
@@ -78,7 +83,7 @@ function render() {
     artworkShowTitle: title, artworkShowArtist: artist !== 'hidden', artworkArtistPosition: artist,
     artworkTitleBackground: background, artworkTitleMode: $('scroll').checked ? 'scroll' : 'truncate' };
   if ($('display').value !== 'artwork') $('track-feedback').dataset.layout = 'information';
-  paint();
+  renderer.paint();
 }
 for (const context of ['prev', 'toggle', 'next', 'like', 'open', 'nowplaying', 'mute', 'dislike', 'volume', 'trackdial']) {
   displayed.set(context, { action: `io.github.minjungw00.musicdeckbridge.${context}`, settings: {} });

@@ -15,16 +15,13 @@ from PySide6.QtSvg import QSvgRenderer
 ROOT = Path(__file__).resolve().parents[2]
 app = QGuiApplication([])
 result = subprocess.run(['node', '-e', r"""
-const fs = require('node:fs'), vm = require('node:vm');
+const { createRenderer } = require('./streamdeck/src/presentation/renderer.cjs');
+const { marquee } = require('./streamdeck/src/presentation/track-text.cjs');
 const { keyTextBackground } = require('./streamdeck/src/key-background.cjs');
-const source = fs.readFileSync('streamdeck/src/plugin.cjs', 'utf8');
-const renderer = source.slice(source.indexOf('function renderCurrentTrackDial('), source.indexOf('function showAlert('));
-const text = source.slice(source.indexOf('const segmenter ='), source.indexOf('const COVERS ='));
 const displayed = new Map(); let feedback, clock = 1000;
-const ctx = vm.createContext({ Intl, Buffer, sdOnline: true, displayed, cachedCoverUrl: '', cachedCoverData: '',
-  fitDialArtwork: () => '', keyTextBackground, Date: { now: () => clock }, MARQUEE_WIDTH: 11, MARQUEE_STEP_MS: 380,
-  tr: x => x, ellipsis: x => x, setImage() {}, sendStream: async () => {}, setFeedback: async (_, value) => { feedback = value; } });
-vm.runInContext(text + renderer + '\nthis.render = renderCurrentTrackDial; this.marquee = marquee;', ctx);
+const renderer = createRenderer({ displayed, now: () => clock, tr: x => x,
+  fitDialArtwork: () => '', keyTextBackground, covers: { image: () => '' },
+  output: { setImage() {}, sendStream: async () => {}, setFeedback: async (_, value) => { feedback = value; } } });
 (async () => {
   const title = 'abcdefghijklmnopqrstuvwxyz0123456789'.repeat(2);
   const state = { title, artist: 'Artist ' + title };
@@ -34,11 +31,11 @@ vm.runInContext(text + renderer + '\nthis.render = renderCurrentTrackDial; this.
       artworkArtistPosition: position, artworkTitleMode: 'scroll' } };
     displayed.set('dial', item); clock = 1000;
     for (const at of [1000, 2520]) {
-      clock = at; ctx.render('dial', item, state); await item.feedbackQueue;
+      clock = at; renderer.renderCurrentTrackDial('dial', item, state); await item.feedbackQueue;
       frames.push(feedback);
     }
   }
-  console.log(JSON.stringify({ frames, old: ctx.marquee(title, 1000, 1000, 14),
+  console.log(JSON.stringify({ frames, old: marquee(title, 1000, 1000, 14),
     backdrops: [1, 2].map(lines => keyTextBackground(null, lines)) }));
 })().catch(e => { console.error(e); process.exitCode = 1; });
 """], cwd=ROOT, text=True, capture_output=True, check=True)

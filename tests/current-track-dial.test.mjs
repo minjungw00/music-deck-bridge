@@ -1,24 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import vm from 'node:vm';
+import { createRenderer, needsMarquee } from '../streamdeck/src/presentation/renderer.cjs';
 import { fitDialArtwork } from '../streamdeck/src/dial-artwork.cjs';
 
-const source = readFileSync(new URL('../streamdeck/src/plugin.cjs', import.meta.url), 'utf8');
-const render = source.slice(source.indexOf('function renderCurrentTrackDial('), source.indexOf('function showAlert('));
 const raster = 'data:image/png;base64,' + readFileSync(new URL('../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/plugin/icon.png', import.meta.url)).toString('base64');
-const marqueeSource = source.slice(source.indexOf('const segmenter ='), source.indexOf('const COVERS ='));
 const play = 'imgs/actions/toggle/key@2x.png';
 const pause = 'imgs/actions/toggle/pause@2x.png';
 function harness() {
   const calls = [], displayed = new Map();
-  const context = vm.createContext({ sdOnline: true, displayed, cachedCoverUrl: '', cachedCoverData: '', Buffer, fitDialArtwork, Date: { now: () => 1000 }, MARQUEE_STEP_MS: 380, MARQUEE_WIDTH: 11, Intl,
-    tr: key => key, ellipsis: text => text,
-    setImage: (id, image) => calls.push({ id, event: 'image', image }),
-    sendStream: async message => { calls.push({ id: message.context, event: 'layout', layout: message.payload.layout }); },
-    setFeedback: async (id, feedback) => { calls.push({ id, event: 'feedback', feedback }); },
-  });
-  vm.runInContext(marqueeSource + render + '\nthis.render = renderCurrentTrackDial;', context);
+  const context = { cachedCoverUrl: '', cachedCoverData: '', Date: { now: () => 1000 } };
+  const renderer = createRenderer({ displayed, now: () => context.Date.now(), tr: key => key, fitDialArtwork,
+    covers: { image: src => src === context.cachedCoverUrl ? context.cachedCoverData : '' },
+    output: {
+      setImage: (id, image) => calls.push({ id, event: 'image', image }),
+      sendStream: async message => { calls.push({ id: message.context, event: 'layout', layout: message.payload.layout }); },
+      setFeedback: async (id, feedback) => { calls.push({ id, event: 'feedback', feedback }); },
+    } });
+  context.render = renderer.renderCurrentTrackDial;
   return { context, calls, add(id, dialDisplay) {
     const item = { settings: { dialDisplay } }; displayed.set(id, item); return item;
   }, async paint(id, item, state) { context.render(id, item, state); await item.feedbackQueue; } };
@@ -135,12 +134,10 @@ test('artist and background are optional and scrolling updates only text, with t
 });
 
 test('the marquee timer includes visible artwork dials only when their text scrolls', () => {
-  const timerSource = source.slice(source.indexOf('const marqueeTimer ='), source.indexOf('marqueeTimer.unref();'));
-  let tick, draws = 0;
   const item = { action: 'trackdial', settings: { dialDisplay: 'artwork', artworkShowTitle: true, artworkTitleMode: 'scroll' } };
   const displayed = new Map([['dial', item]]);
-  vm.runInNewContext(timerSource, { displayed, actionName: name => name, MARQUEE_STEP_MS: 380,
-    setInterval: callback => { tick = callback; }, drawSoon: () => draws++ });
+  let draws = 0;
+  const tick = () => { if (needsMarquee(displayed, name => name)) draws++; };
   tick(); assert.equal(draws, 1);
   item.settings.artworkShowTitle = false; tick(); assert.equal(draws, 1);
   item.settings.artworkShowTitle = true; item.settings.dialDisplay = 'info'; tick(); assert.equal(draws, 1);

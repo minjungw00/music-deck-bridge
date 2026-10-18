@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { build } from 'esbuild';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
@@ -50,16 +51,10 @@ for (const locale of ['en', 'ko']) {
   data.popups[locale] = template.replace('src="icons/128.png"', `src="${icon}"`)
     .replace('<script src="popup.js"></script>', `<script>const previewFixture=${scriptJSON(settings)};\n${inline(fixtureJS)}\n${inline(popupJS)}</script>`);
 }
-// Reuse only rendering definitions: never evaluate the plugin's bridge/SDK startup.
-const source = await readFile(join(root, 'streamdeck/src/plugin.cjs'), 'utf8');
-function extract(start, end) {
-  const from = source.indexOf(start), to = source.indexOf(end, from);
-  assert.ok(from >= 0 && to > from, `Missing renderer boundary: ${start}`);
-  return source.slice(from, to);
-}
-const renderers = [extract('const MARQUEE_STEP_MS =', 'const marqueeTimer ='),
-  extract('function renderCurrentTrackDial(', 'function showAlert('),
-  extract('function ellipsis(', 'const COVERS ='), extract('function paint()', 'function drawSoon()')].join('\n');
+// Bundle the presentation API without importing the plugin's runtime entry point.
+const bundle = await build({ entryPoints: [join(root, 'streamdeck/src/presentation/renderer.cjs')],
+  bundle: true, write: false, platform: 'browser', format: 'iife', globalName: 'MusicDeckRendering' });
+const renderers = bundle.outputFiles[0].text;
 const output = join(root, 'dist/previews/prelude-bwv846');
 await mkdir(output, { recursive: true });
 let page = await readFile(join(root, 'store-assets/preview/index.html'), 'utf8');

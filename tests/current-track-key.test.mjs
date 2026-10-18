@@ -1,18 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import vm from 'node:vm';
+import { createRenderer } from '../streamdeck/src/presentation/renderer.cjs';
 import { keyTextBackground } from '../streamdeck/src/key-background.cjs';
 
-const source = readFileSync(new URL('../streamdeck/src/plugin.cjs', import.meta.url), 'utf8');
-const textSource = source.slice(source.indexOf('function ellipsis('), source.indexOf('const COVERS ='));
 const raster = 'data:image/png;base64,' + readFileSync(new URL('../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/plugin/icon.png', import.meta.url)).toString('base64');
 function harness(settings = {}) {
   const calls = [], item = { settings };
-  const context = vm.createContext({ Intl, Date: { now: () => 1000 }, Buffer, keyTextBackground,
-    cachedCoverUrl: 'cover', cachedCoverData: raster, MARQUEE_WIDTH: 11, MARQUEE_STEP_MS: 380,
-    tr: () => 'Disconnected', setTitle: (_, title) => calls.push({ title }), setImage: (_, image) => calls.push({ image }) });
-  vm.runInContext(textSource + '\nthis.render = renderCurrentTrackKey;', context);
+  const context = { Date: { now: () => 1000 } };
+  const renderer = createRenderer({ displayed: new Map(), now: () => context.Date.now(),
+    keyTextBackground, tr: () => 'Disconnected', covers: { image: src => src === 'cover' ? raster : '' },
+    output: { setTitle: (_, title) => calls.push({ title }), setImage: (_, image) => calls.push({ image }) } });
+  context.render = renderer.renderCurrentTrackKey;
   return { calls, item, context, paint: state => context.render('key', item, state) };
 }
 const state = { title: 'Song', artist: 'Artist', cover: 'cover' };

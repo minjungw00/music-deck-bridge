@@ -11,6 +11,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 const { launchChrome } = require('./launch-chrome.cjs');
+const { createCoverStore } = require('./adapters/cover-store.cjs');
+const { createRenderer, needsMarquee, translate, MARQUEE_STEP_MS } = require('./presentation/renderer.cjs');
 const { fitDialArtwork } = require('./dial-artwork.cjs');
 const { keyTextBackground } = require('./key-background.cjs');
 const protocol = require('../../chrome-extension/protocol.js');
@@ -57,8 +59,6 @@ const authFile = path.join(dataDir, 'auth.json');
 const candidates = new Map();
 const displayed = new Map();
 const queue = [];
-const coverCache = new Map();
-const coverFailures = new Map();
 const listenWaiters = new Map(); // active one-shot long polls per Chrome tab
 let browserWaiter = null;
 const browserRequests = new Map();
@@ -66,9 +66,6 @@ let nativeLaunchStarted = false;
 let nativeTabPending = false;
 let nativeLaunchTimer = null;
 let browserCapable = false;
-let cachedCoverUrl = '';
-let cachedCoverData = '';
-const coverDownloads = new Map();
 let selectedSignature = '';
 let currentPin = '';
 let pinExpiresAt = 0;
@@ -86,21 +83,7 @@ let locale = 'en';
 let streamDeck;
 let sdOnline = false;
 let updateTimer = null;
-let hasDrawing = false;
-const MARQUEE_STEP_MS = 380;
-const MARQUEE_WIDTH = 11;
-const STRINGS = {
-  ko: { unavailable: '연결 안 됨', offline: '오프라인', pause: '일시정지', play: '재생', muted: '음소거', absent: 'YTM 없음', currentTrack: '현재 곡', open: 'YTM 실행', like: '좋아요', dislike: '싫어요' },
-  en: { unavailable: 'Disconnected', offline: 'Offline', pause: 'Pause', play: 'Play', muted: 'Muted', absent: 'No YTM', currentTrack: 'Current Track', open: 'Open YTM', like: 'Like', dislike: 'Dislike' },
-};
-const tr = key => STRINGS[locale]?.[key] || STRINGS.en[key];
-const marqueeTimer = setInterval(() => {
-  if ([...displayed.values()].some(item =>
-    (actionName(item.action) === 'nowplaying' && item.settings?.titleMode === 'scroll') ||
-    (actionName(item.action) === 'trackdial' && item.settings?.dialDisplay === 'artwork' &&
-      item.settings?.artworkShowTitle === true && item.settings?.artworkTitleMode === 'scroll'))) drawSoon();
-}, MARQUEE_STEP_MS);
-marqueeTimer.unref();
+
 
 function log(message) {
   console.log('[Music Deck Bridge]', message);
@@ -151,7 +134,7 @@ function resetSession() {
   pairingRequired = false;
   lastCommandError = '';
   compatibility = null;
-  cachedCoverUrl = ''; cachedCoverData = '';
+  covers.resetSelection();
   drawSoon();
 }
 function validOrigin(origin) { return typeof origin === 'string' && /^chrome-extension:\/\/[a-p]{32}$/.test(origin); }
@@ -184,7 +167,7 @@ function checkProtocol(body) {
       for (const waiter of [...waiters]) waiter.reply({ error: 'Incompatible bridge protocol', errorCode: compatibility.errorCode, compatibility }, 409);
     }
     for (const request of [...browserRequests.values()]) request.finish(false, compatibility.errorCode);
-    cachedCoverUrl = ''; cachedCoverData = '';
+    covers.resetSelection();
     drawSoon();
     return false;
   }
@@ -469,7 +452,7 @@ async function requestHandler(req, res) {
       extensionOnline: extensionOnline(),
       playerStale: !!chosen && Date.now() - chosen[1].lastMediaSyncAt > PLAYER_STALE_MS,
       coverDetected: Boolean(chosen?.[1].cover),
-      coverStatus: getCoverStatus(chosen?.[1].cover) }, origin);
+      coverStatus: covers.status(chosen?.[1].cover) }, origin);
   }
   if (req.url === '/browser-listen') {
     // Reconcile after Chrome/worker restart too: tab-close notifications can be
@@ -551,223 +534,10 @@ function sendStream(message) {
 function setTitle(context, title) { sendStream({ event: 'setTitle', context, payload: { title } }); }
 function setImage(context, image) { sendStream({ event: 'setImage', context, payload: image ? { image } : {} }); }
 function setFeedback(context, feedback) { return sendStream({ event: 'setFeedback', context, payload: feedback }); }
-function renderCurrentTrackDial(context, item, state) {
-  if (!sdOnline) return;
-  const icon = `imgs/actions/toggle/${state?.playing ? 'pause' : 'key'}@2x.png`;
-  if (item.lastImage !== icon) { setImage(context, icon); item.lastImage = icon; }
-  const artwork = item.settings?.dialDisplay === 'artwork';
-  const fit = item.settings?.artworkFit === 'width' ? 'width' : 'height';
-  const showName = artwork && item.settings?.artworkShowTitle === true;
-  const scroll = item.settings?.artworkTitleMode === 'scroll';
-  const background = item.settings?.artworkTitleBackground === true ? 'black' : 'transparent';
-  const layout = artwork ? 'layouts/current-track-artwork.json' : '$A1';
-  const cover = artwork && state?.cover && cachedCoverUrl === state.cover ? cachedCoverData : '';
-  const fitted = cover ? fitDialArtwork(cover, fit) : '';
-  const image = fitted || icon;
-  const text = showName && state?.title ? state.title +
-    (item.settings?.artworkShowArtist === true && state.artist && item.settings?.artworkArtistPosition !== 'below' ? ` — ${state.artist}` : '') : '';
-  const below = showName && item.settings?.artworkShowArtist === true && item.settings?.artworkArtistPosition === 'below' && Boolean(state?.artist);
-  const trackSignature = JSON.stringify([state?.title, state?.artist, item.settings?.artworkShowArtist, item.settings?.artworkArtistPosition, showName, scroll]);
-  if (item.artworkTrackSignature !== trackSignature) {
-    item.artworkTrackSignature = trackSignature; item.artworkMarqueeStart = Date.now();
-  }
-  const title = artwork ? scroll ? marquee(text, item.artworkMarqueeStart, Date.now(), 14, true) : text : tr('currentTrack');
-  const artist = below ? scroll ? marquee(state.artist, item.artworkMarqueeStart + 600, Date.now(), 14, true) : state.artist : '';
-  const value = artwork ? '' : state ? ellipsis(state.title, 14) : tr('unavailable');
-  const signature = JSON.stringify([layout, title, artist, below, value, fit, showName, scroll, background]);
-  if (item.dialSignature === signature && item.dialImage === image) return;
-  item.dialSignature = signature; item.dialImage = image;
-  // Serialize layout and image updates so mode changes cannot send artwork to
-  // the previous layout, or leave a newly selected layout with stale content.
-  item.feedbackQueue = (item.feedbackQueue || Promise.resolve()).then(async () => {
-    if (displayed.get(context) !== item) return;
-    const changedLayout = item.sentLayout !== layout;
-    if (changedLayout) {
-      await sendStream({ event: 'setFeedbackLayout', context, payload: { layout } });
-      item.sentLayout = layout;
-    }
-    if (displayed.get(context) !== item) return;
-    const line = (value, enabled) => ({ value, enabled: Boolean(enabled), background,
-      alignment: scroll ? 'left' : 'center', 'text-overflow': scroll ? 'clip' : 'ellipsis' });
-    const feedback = artwork ? { songName: line(title, showName && title && !below),
-      songTitleAbove: line(title, below && title), songArtist: line(artist, below && artist) } : { title, value, icon };
-    if (artwork && (changedLayout || item.sentDialImage !== image || item.sentArtworkFit !== fit)) {
-      feedback.artwork = { value: fitted, enabled: Boolean(fitted) };
-      feedback.fallback = { value: icon, enabled: !fitted };
-    }
-    await setFeedback(context, feedback);
-    item.sentDialImage = image; item.sentArtworkFit = fit;
-  }).catch(() => { item.dialSignature = null; });
-}
 function showAlert(context) { sendStream({ event: 'showAlert', context }); }
-function ellipsis(str, n = 11) {
-  const chars = [...String(str || '')];
-  return chars.length > n ? chars.slice(0, n - 1).join('') + '…' : chars.join('');
-}
-// Grapheme-aware scrolling prevents cutting Hangul combining characters and emoji.
-const segmenter = new Intl.Segmenter('ko', { granularity: 'grapheme' });
-function glyphs(value) {
-  const text = String(value || '');
-  return [...segmenter.segment(text)].map(s => s.segment);
-}
-function marquee(value, started, now = Date.now(), width = MARQUEE_WIDTH, fullLine = false) {
-  const characters = glyphs(value);
-  if (characters.length <= width) return characters.join('');
-  const progress = Math.floor((now - started) / MARQUEE_STEP_MS);
-  if (progress < 3) return fullLine ? characters.join('') : characters.slice(0, width).join('');
-  const gap = [' ', ' ', ' '];
-  const loop = [...characters, ...gap];
-  const start = (progress - 3) % loop.length;
-  // Dial fields clip to their full pixel width. Sending a fixed 14-character
-  // window left half of the field empty for narrow Latin glyphs.
-  return Array.from({ length: fullLine ? loop.length : width }, (_, i) => loop[(start + i) % loop.length]).join('');
-}
-function renderCurrentTrackKey(context, item, state) {
-  const settings = item.settings || {};
-  const showTitle = settings.showTitle !== false, showArtist = settings.showArtist !== false;
-  const below = settings.artistPosition !== 'inline';
-  const sig = JSON.stringify([state?.title, state?.artist, showTitle, showArtist, below, settings.titleMode]);
-  if (item.trackSignature !== sig) { item.trackSignature = sig; item.marqueeStart = Date.now(); }
-  const rawTitle = showTitle ? state ? state.title || 'YouTube Music' : 'YouTube Music' : '';
-  const rawArtist = showArtist ? state ? state.artist || '' : tr('unavailable') : '';
-  const format = (value, width, delay = 0) => settings.titleMode === 'scroll' ?
-    marquee(value, item.marqueeStart + delay) : ellipsis(value, width);
-  const text = below ? [format(rawTitle, 12), format(rawArtist, 11, 600)].filter(Boolean).join('\n') :
-    format([rawTitle, rawArtist].filter(Boolean).join(' — '), 12);
-  if (item.lastTitle !== text) { setTitle(context, text); item.lastTitle = text; }
-  const cover = state?.cover && cachedCoverUrl === state.cover ? cachedCoverData : null;
-  const lines = settings.titleBackground === true && text ? below && rawTitle && rawArtist ? 2 : 1 : 0;
-  const image = keyTextBackground(cover, lines);
-  if (item.lastImage !== image) { setImage(context, image); item.lastImage = image; }
-}
-const COVERS = new Set(['i.ytimg.com', 'img.youtube.com', 'yt3.ggpht.com', 'yt3.googleusercontent.com']);
-function validCover(str) {
-  try {
-    const u = new URL(str);
-    return u.protocol === 'https:' && !u.username && !u.password && !u.port &&
-      (COVERS.has(u.hostname) || /^lh[0-9]+\.googleusercontent\.com$/.test(u.hostname));
-  } catch { return false; }
-}
-async function fetchCover(source) {
-  // Reject redirects off Google/YouTube image hosts; do not follow to arbitrary targets.
-  let url = source;
-  for (let redirect = 0; redirect <= 3; redirect++) {
-    if (!validCover(url)) throw new Error('이미지 호스트가 허용 목록에 없음');
-    const response = await fetch(url, {
-      redirect: 'manual',
-      headers: { 'Referer': 'https://music.youtube.com/' },
-      signal: AbortSignal.timeout(5000),
-    });
-    if ([301, 302, 303, 307, 308].includes(response.status)) {
-      const next = response.headers.get('location');
-      if (!next) throw new Error('리디렉션 주소 없음');
-      url = new URL(next, url).href;
-      continue;
-    }
-    if (!response.ok) throw new Error(`이미지 HTTP ${response.status}`);
-    const type = response.headers.get('content-type')?.split(';')[0]?.trim()?.toLowerCase();
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(type)) throw new Error(`지원하지 않는 이미지 형식: ${type || 'unknown'}`);
-    const size = Number(response.headers.get('content-length'));
-    if (size > 2000000) throw new Error('이미지 크기 제한 초과 (2MB)');
-    const reader = response.body?.getReader();
-    if (!reader) throw new Error('이미지 본문 없음');
-    const chunks = []; let total = 0;
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      total += value.byteLength;
-      if (total > 2000000) { await reader.cancel(); throw new Error('이미지 크기 제한 초과 (2MB)'); }
-      chunks.push(Buffer.from(value));
-    }
-    if (!total) throw new Error('비어 있는 이미지');
-    return `data:${type};base64,${Buffer.concat(chunks).toString('base64')}`;
-  }
-  throw new Error('이미지 리디렉션이 너무 많음');
-}
-function loadCover(src, fallback = '') {
-  if (!validCover(src)) return;
-  if (coverDownloads.has(src)) return coverDownloads.get(src);
-  if (coverCache.has(src)) {
-    cachedCoverUrl = src;
-    cachedCoverData = coverCache.get(src);
-    drawSoon();
-    return;
-  }
-  const failure = coverFailures.get(src);
-  if (failure && Date.now() - failure.time < 30000) return;
-  const operation = (async () => {
-    try {
-      let uri;
-      try { uri = await fetchCover(src); }
-      catch (error) {
-        // If the service rejects a requested high-resolution variant, retain the
-        // low-resolution cover instead of making the key permanently blank.
-        if (!fallback || fallback === src || !validCover(fallback)) throw error;
-        uri = await fetchCover(fallback);
-      }
-      coverCache.set(src, uri);
-      coverFailures.delete(src);
-      if (coverCache.size > 12) coverCache.delete(coverCache.keys().next().value);
-      if (selectedEntry()?.[1].cover === src) {
-        cachedCoverUrl = src;
-        cachedCoverData = uri;
-        drawSoon();
-      }
-    } catch (e) {
-      coverFailures.set(src, { time: Date.now(), reason: String(e.message || '다운로드 실패').slice(0, 120) });
-      if (coverFailures.size > 25) coverFailures.delete(coverFailures.keys().next().value);
-    } finally { coverDownloads.delete(src); }
-  })();
-  coverDownloads.set(src, operation);
-  return operation;
-}
-function getCoverStatus(src) {
-  if (!src) return 'missing';
-  if (!validCover(src)) return 'blocked';
-  if (cachedCoverUrl === src) return 'ready';
-  if (coverDownloads.has(src)) return 'downloading';
-  if (coverFailures.has(src)) return 'failed';
-  return 'waiting';
-}
-function paint() {
-  if (hasDrawing) return;
-  hasDrawing = true;
-  try {
-    const chosen = selectedEntry();
-    const state = chosen?.[1];
-    for (const [context, item] of displayed) {
-      const kind = actionName(item.action);
-      if (kind === 'nowplaying') {
-        renderCurrentTrackKey(context, item, state);
-      } else if (kind === 'toggle') {
-        // Reflect the selected player's confirmed state, including changes made
-        // in Chrome. A key press alone must not optimistically flip the icon.
-        const image = `imgs/actions/toggle/${state?.playing ? 'pause' : 'key'}@2x.png`;
-        if (item.lastImage !== image) { setImage(context, image); item.lastImage = image; }
-        if (item.lastTitle !== '') { setTitle(context, ''); item.lastTitle = ''; }
-      } else if (kind === 'open') {
-        if (item.lastTitle !== '') { setTitle(context, ''); item.lastTitle = ''; }
-      } else if (kind === 'like' || kind === 'dislike') {
-        const selected = state?.rating === kind.toUpperCase();
-        const image = `imgs/actions/${kind}/${selected ? 'selected' : 'key'}@2x.png`;
-        if (item.lastImage !== image) { setImage(context, image); item.lastImage = image; }
-        if (item.lastTitle !== '') { setTitle(context, ''); item.lastTitle = ''; }
-      } else if (kind === 'volume') {
-        const vol = state ? `${state.muted ? tr('muted') + ' ' : ''}${state.volume}%` : tr('absent');
-        const icon = `imgs/actions/${state?.muted ? 'mute' : 'volume'}/key@2x.png`;
-        setFeedback(context, { title: 'YouTube Music', icon, value: vol,
-          indicator: { value: state?.volume ?? 0, range: { min: 0, max: 100 } } });
-      } else if (kind === 'trackdial') {
-        renderCurrentTrackDial(context, item, state);
-      }
-    }
-    if (state?.cover && validCover(state.cover) && cachedCoverUrl !== state.cover)
-      void loadCover(state.cover, state.coverFallback);
-  } finally { hasDrawing = false; }
-}
 function drawSoon() {
   if (updateTimer) return;
-  updateTimer = setTimeout(() => { updateTimer = null; paint(); }, 120);
+  updateTimer = setTimeout(() => { updateTimer = null; renderer.paint(); }, 120);
 }
 function handleDeckEvent(e) {
   if (!e || !e.event) return;
@@ -958,6 +728,12 @@ function changePort(value) {
   return operation;
 }
 
+// Assemble ports only after their owning services have been declared.
+const covers = createCoverStore({ selectedSource: () => selectedEntry()?.[1].cover, onChange: drawSoon });
+const renderer = createRenderer({ displayed, covers, selectedEntry, actionName,
+  online: () => sdOnline, tr: key => translate(locale, key), fitDialArtwork, keyTextBackground,
+  output: { setTitle, setImage, setFeedback, sendStream } });
+
 // Startup
 try {
   auth = readAuth();
@@ -971,6 +747,10 @@ try {
     portError = `Port ${currentPort}: ${error.code || error.message}`;
     log(`Bridge unavailable: ${portError}`);
   });
+  const marqueeTimer = setInterval(() => {
+    if (needsMarquee(displayed, actionName)) drawSoon();
+  }, MARQUEE_STEP_MS);
+  marqueeTimer.unref();
   // Refresh displayed player state as inactive clients expire.
   setInterval(() => { if (displayed.size) drawSoon(); }, 2000).unref();
   connectDeck();
