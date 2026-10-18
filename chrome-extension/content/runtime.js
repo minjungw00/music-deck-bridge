@@ -68,7 +68,18 @@
         }
       }
     }
-    let clock = setInterval(synchronize, 800); // status fallback; browsers throttle idle tabs
+    let clock = null;
+    const observer = typeof MutationObserver === 'undefined' ? null :
+      new MutationObserver(() => scheduleSync(120));
+    function startSynchronization() {
+      // Re-query the player bar when a cached document resumes.
+      const bar = document.querySelector('ytmusic-player-bar');
+      if (bar) observer?.observe(bar, { childList: true, subtree: true, attributes: true,
+        attributeFilter: ['src', 'title', 'aria-label', 'style', 'aria-valuenow', 'aria-pressed', 'like-status'] });
+      clock = setInterval(synchronize, 800); // status fallback; browsers throttle idle tabs
+      void synchronize();
+      void listen();
+    }
     document.addEventListener('volumechange', () => scheduleSync(60), true);
     document.addEventListener('change', event => {
       if (event.target?.matches?.('#volume-slider, #expand-volume-slider')) scheduleSync(60);
@@ -76,16 +87,10 @@
     document.addEventListener('play', () => scheduleSync(60), true);
     document.addEventListener('pause', () => scheduleSync(60), true);
     document.addEventListener('ended', () => scheduleSync(60), true);
-    if (typeof MutationObserver !== 'undefined') {
-      const observer = new MutationObserver(() => scheduleSync(120));
-      const bar = document.querySelector('ytmusic-player-bar');
-      if (bar) observer.observe(bar, { childList: true, subtree: true, attributes: true,
-        attributeFilter: ['src', 'title', 'aria-label', 'style', 'aria-valuenow', 'aria-pressed', 'like-status'] });
-      events.addEventListener('pagehide', () => observer.disconnect(), { once: true });
-    }
     events.addEventListener('pagehide', () => {
       active = false;
       listenerGeneration++;
+      observer?.disconnect();
       clearInterval(clock);
       clearTimeout(syncTimer);
       syncTimer = null;
@@ -94,17 +99,14 @@
     events.addEventListener('pageshow', event => {
       if (event.persisted && !active) {
         active = true;
-        clock = setInterval(synchronize, 800);
-        void synchronize();
-        void listen();
+        startSynchronization();
       }
     });
     events.addEventListener('focus', () => scheduleSync(20));
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) scheduleSync(20);
     });
-    void synchronize();
-    void listen();
+    startSynchronization();
   }
   root.MusicDeckContentRuntime = Object.freeze({ start: startContentRuntime });
 })(globalThis);
