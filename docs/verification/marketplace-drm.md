@@ -1,16 +1,18 @@
 # Marketplace DRM verification
 
-Last updated: October 18, 2026 (Asia/Seoul). **Actual processed-package execution: not tested.** Review status is in [store submissions](stores.md); public source/package hashes are in [release verification](releases.md#v111).
+Last updated: October 18, 2026 (Asia/Seoul). **Console-processed package execution: not separately confirmed.** The maintainer directly confirmed operation of released 1.1.2 and updated both store submissions to that version, Pending review. That report does not identify the tested package as Console-processed. Review status is in [store submissions](stores.md); public source/package hashes are in [release verification](releases.md#v112).
 
 ## Required input
 
-Download the submitted **v1.1.1** version's processed installer from Maker Console and retain its version ID, processing status, download time and SHA-256 separately from the GitHub original. Neither the actual uploaded-file hash nor the processed package has been supplied. Do not replace published GitHub assets.
+For the submitted **v1.1.2** version, retain the Maker Console processed installer's version ID, processing status, download time and SHA-256 separately from the GitHub original. Neither the actual uploaded-file hash nor the processed package has been supplied. Do not replace published GitHub assets.
 
 The inspected source uses SDK 3.0.2, manifest SDKVersion 3, Stream Deck minimum 7.1, a constant UUID and state outside the plugin folder. Ordinary packaging and opaque-manifest fixtures cover those static paths; they do not verify encryption/integrity behavior.
 
 Refer to Elgato's [DRM testing instructions](https://docs.elgato.com/streamdeck/sdk/introduction/distribution/#testing-with-drm) and [Console version downloads](https://docs.elgato.com/maker-console/managing-products/#versions). If an additional DRM-only test submission is needed, follow the documented **Publish after review unselected** procedure.
 
 ## Windows execution record
+
+The matrix below concerns the Console-processed package only. It does not reopen the maintainer's completed normal-operation confirmation or the earlier itemized validation in [runtime verification](runtime.md#maintainer-confirmation).
 
 Record OS/Chrome/Stream Deck/device versions, extension ID/version, previous plugin version, original/processed package hashes and timestamps. Back up profiles and private auth/config; follow the [settings-preserving replacement guide](../installation.en.md#replacing-plugin-files). Keep one active extension and test retained pairing before creating a new PIN.
 

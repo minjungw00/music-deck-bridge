@@ -23,7 +23,7 @@ The [protocol contract](../protocol.md) passed shared-engine, real HTTP bridge, 
 - Pending poll/queue cleanup, no stale input replay, retained-token recovery, explicit unpair and English/Korean feedback.
 - Actual Chromium explicit-v1 identity exchange, injected future-protocol rejection and compatible recovery.
 
-Legacy tests model the prior contract; archived binaries were not installed. No production protocol-2 component exists, so the browser mismatch response was injected. **Separate actual Windows confirmation of explicit component identities/status and retained pairing remains outstanding.** A future wire change needs coverage for its implemented versions.
+Legacy tests model the prior contract; archived binaries were not installed. No production protocol-2 component exists, so the browser mismatch response was injected. The maintainer's direct normal-operation confirmation for released 1.1.2 is recorded below; it does not itemize a separate Windows identity/status and retained-pairing matrix. A future wire change needs coverage for its implemented versions.
 
 ## 1.1.2 development refactor
 
@@ -72,6 +72,8 @@ Evidence date: October 18, 2026 (Asia/Seoul). Runtime source: `a0f5877`, on the 
 ### 1.1.2 refactor
 
 On October 18, 2026 (Asia/Seoul), the maintainer confirmed normal operation after the completed refactor and requested release 1.1.2. The latest supplied development source was `5f0d3f4`; no itemized environment or installed-artifact identity was supplied. This is maintainer confirmation of normal operation, separate from automated fixtures and independent observation. It does not establish Console-processed Marketplace DRM execution or clean-environment installation coverage, and does not require a repeat solely to fill omitted metadata.
+
+After the [v1.1.2 publication](releases.md#v112), the maintainer directly confirmed operation of that version and reported updating both store submissions to 1.1.2, Pending review. This adds maintainer-confirmed released-version operation to the earlier development sign-off. The report does not separately identify a Console-processed package or store-installed build; approval/publication and those package identities remain distinct from this completed normal-operation confirmation.
 
 ### Earlier behavior confirmation
 

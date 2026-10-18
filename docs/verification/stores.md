@@ -1,17 +1,26 @@
-# Store submissions — v1.1.1
+# Store submissions
 
-Last updated: October 18, 2026 (Asia/Seoul). The maintainer reports **v1.1.1 registered in both stores, Pending review**. Approval/public availability has not been reported.
+Last updated: October 18, 2026 (Asia/Seoul). After directly confirming operation of released 1.1.2, the maintainer reports updating **both store submissions to v1.1.2, Pending review**. This is maintainer-reported submission/review status; store dashboards were not independently inspected. Approval/public availability has not been reported.
 
-| Store | Registered version | Actual submitted description supplied by the maintainer |
+| Store | Current submitted version | Review state |
 | --- | --- | --- |
-| Elgato Marketplace | 1.1.1 / plugin 1.1.1.0 | [English](../../store-assets/submitted/v1.1.1/elgato-en.md) |
+| Elgato Marketplace | 1.1.2 / plugin 1.1.2.0 | Pending review |
+| Chrome Web Store | 1.1.2 | Pending review |
+
+## Submitted description history
+
+Both stores were previously reported as registered at v1.1.1, Pending review, on October 18. The newer report updates their submitted version to 1.1.2; no approval outcome for the earlier revision was reported.
+
+| Store | Recorded description revision | Actual submitted text supplied by the maintainer |
+| --- | --- | --- |
+| Elgato Marketplace | 1.1.1 | [English](../../store-assets/submitted/v1.1.1/elgato-en.md) |
 | Chrome Web Store | 1.1.1 | [English](../../store-assets/submitted/v1.1.1/chrome-en.md) · [Korean](../../store-assets/submitted/v1.1.1/chrome-ko.md) |
 
-The three linked descriptions preserve the supplied text, including the temporary GitHub companion-download links and Elgato spacing. They replace the earlier reference descriptions as the record of submitted copy. Store dashboard contents were not independently inspected. Future revisions should be recorded separately rather than rewriting this snapshot.
+These three snapshots preserve the supplied text verbatim, including temporary GitHub companion-download links and Elgato spacing. Revised 1.1.2 descriptions were not supplied; the 1.1.1 snapshots are historical evidence, not confirmation of the current submitted copy. Record later supplied revisions separately rather than rewriting them.
 
 ## Package and media provenance
 
-The [public v1.1.1 reference](releases.md#v111) records source, CI and package hashes. Exact uploaded-file hashes, store product/version identifiers, uploaded media selections and publication settings have not been supplied; equality with the public packages/local exports is not independently established. No public product URL has been supplied. [Prepared media](media.md) and [actual DRM execution](marketplace-drm.md) have distinct verification scopes.
+The [public v1.1.2 reference](releases.md#v112) records source, CI and package hashes; the [v1.1.1 reference](releases.md#v111) retains the preceding release's identities. Exact uploaded-file hashes, store product/version identifiers, uploaded media selections and publication settings have not been supplied; equality with the public packages/local exports is not independently established. No public product URL has been supplied. [Prepared media](media.md), [maintainer-confirmed operation](runtime.md#112-refactor) and [Console-processed DRM execution](marketplace-drm.md) have distinct verification scopes.
 
 ## Follow-up
 

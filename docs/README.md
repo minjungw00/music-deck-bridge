@@ -25,7 +25,7 @@
 | Update failures, comparisons and diagnosis | [Installation](verification/installation.md) |
 | Official image sources and export checks | [Media](verification/media.md) |
 | Review status and actual submitted descriptions | [Store submissions](verification/stores.md) |
-| Processed-package execution still to perform | [Marketplace DRM](verification/marketplace-drm.md) |
+| Processed-package identity and execution | [Marketplace DRM](verification/marketplace-drm.md) |
 
 See also [security readiness](security-readiness.md) and the [changelog](../CHANGELOG.md).
 
