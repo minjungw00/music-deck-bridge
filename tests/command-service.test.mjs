@@ -5,7 +5,7 @@ import { createCommandService } from '../streamdeck/src/application/command-serv
 function harness() {
   let clock = 1000, id = 0;
   const timers = new Map(), launches = [];
-  const session = { auth: {}, blocked: false, pairingRequired: false };
+  const session = { paired: true, generation: 1, blocked: false, pairingRequired: false };
   const commands = createCommandService({ getSession: () => session, selectedEntry: () => null,
     now: () => clock, newId: () => String(++id), log() {},
     launch: async options => { launches.push(options); },

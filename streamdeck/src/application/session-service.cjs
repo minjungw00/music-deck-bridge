@@ -5,9 +5,10 @@ const { safeEqual } = require('../domain/credentials.cjs');
 const EXTENSION_ONLINE_MS = 3000;
 const PIN_LIFETIME_MS = 10 * 60 * 1000;
 
-function createSessionService({ storage, commands, resetPlayerState, onChange, version,
+function createSessionService({ storage, activity, transitions, onChange, version,
   testPin, now = Date.now }) {
   let auth = storage.readAuth(), currentPin = '', pinExpiresAt = 0, failures = [];
+  let generation = 0;
   let lastExtensionContactAt = 0, pairingRequired = false, compatibility = null;
   function generatePin() {
     currentPin = testPin ? testPin : String(crypto.randomInt(100000, 1000000));
@@ -15,11 +16,10 @@ function createSessionService({ storage, commands, resetPlayerState, onChange, v
     return currentPin;
   }
   function resetSession() {
-    commands.reset();
-    resetPlayerState();
+    generation++;
+    transitions.reset();
     lastExtensionContactAt = 0;
     pairingRequired = false;
-    commands.lastError = '';
     compatibility = null;
     onChange();
   }
@@ -27,7 +27,7 @@ function createSessionService({ storage, commands, resetPlayerState, onChange, v
     return auth && origin === auth.origin && safeEqual(body.token, auth.token);
   }
   function extensionOnline() {
-    return Boolean(auth) && !pairingRequired && !protocolBlocked() && (commands.polling ||
+    return Boolean(auth) && !pairingRequired && !protocolBlocked() && (activity.polling() ||
       now() - lastExtensionContactAt < EXTENSION_ONLINE_MS);
   }
   function protocolBlocked() { return compatibility?.compatible === false; }
@@ -37,27 +37,26 @@ function createSessionService({ storage, commands, resetPlayerState, onChange, v
       peerProtocolVersion: Number.isSafeInteger(body.protocolVersion) ? body.protocolVersion : null,
       peerMinProtocolVersion: Number.isSafeInteger(body.minProtocolVersion) ? body.minProtocolVersion : null };
     if (protocolBlocked()) {
-      commands.block(compatibility);
-      resetPlayerState();
+      transitions.blocked(compatibility);
       onChange();
       return false;
     }
-    if (['protocol-incompatible', 'invalid-protocol'].includes(commands.lastError)) commands.lastError = '';
+    transitions.compatible();
     return true;
   }
   return {
     generatePin, authorized, checkProtocol, extensionOnline,
     get compatibility() { return compatibility; },
     get paired() { return Boolean(auth); },
-    get snapshot() { return { auth, pairingRequired, compatibility, blocked: protocolBlocked() }; },
+    get access() { return { paired: Boolean(auth), generation, pairingRequired, blocked: protocolBlocked(), errorCode: compatibility?.errorCode }; },
     get pin() { return currentPin && now() < pinExpiresAt ? currentPin : ''; },
     get expiresAt() { return currentPin && now() < pinExpiresAt ? pinExpiresAt : 0; },
     contact() { pairingRequired = false; lastExtensionContactAt = now(); },
     missingCredentials(origin) {
-      if (auth?.origin !== origin || commands.browserPolling) return;
+      if (auth?.origin !== origin || activity.browserPolling()) return;
       pairingRequired = true;
       lastExtensionContactAt = 0;
-      commands.missingCredentials();
+      transitions.missingCredentials();
     },
     pair(body, origin) {
       failures = failures.filter(t => now() - t < 60000);

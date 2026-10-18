@@ -1,18 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createSessionService } from '../streamdeck/src/application/session-service.cjs';
+import { createSessionCoordinator } from '../streamdeck/src/application/session-coordinator.cjs';
 
 const origin = 'chrome-extension://' + 'a'.repeat(32);
 
 test('failed credential persistence keeps the existing pair and pending session intact', () => {
   const original = { token: 'old-token', origin };
   let saved = original, failWrite = true, failDelete = false, resets = 0;
-  const session = createSessionService({ version: '1.1.2-dev', testPin: '654321', now: () => 10000,
-    onChange() {}, resetPlayerState() {},
+  const session = createSessionCoordinator({ version: '1.1.2-dev', testPin: '654321', now: () => 10000,
+    onChange() {}, players: { reset() {} }, covers: { resetSelection() {} },
     storage: { readAuth: () => saved,
       saveAuth(value) { if (failWrite) throw Error('disk write failed'); saved = value; },
       removeAuth() { if (failDelete) throw Error('disk delete failed'); saved = null; } },
-    commands: { reset() { resets++; }, polling: false, lastError: '' } });
+    commands: { reset() { resets++; }, clearProtocolError() {}, polling: false, lastError: '' } });
   session.generatePin();
   assert.throws(() => session.pair({ pin: '654321' }, origin), /disk write failed/);
   assert.equal(session.authorized({ token: original.token }, origin), true);

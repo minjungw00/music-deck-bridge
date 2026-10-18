@@ -94,17 +94,17 @@ function createCommandService({ getSession, selectedEntry, launch, log,
       if (getSession().blocked || getSession().pairingRequired || !browserRequests.size || [...browserRequests.values()].some(request => request.state === 'delivered')) return;
       nativeLaunchStarted = true;
       nativeTabPending = true;
-      const credentials = getSession().auth;
+      const session = getSession();
       const requests = [...browserRequests.values()];
       try {
-        await launch({ openMusic: !credentials });
+        await launch({ openMusic: !session.paired });
         // Without credentials only opening is possible; never bypass PIN pairing.
-        if (!credentials && getSession().auth === credentials) for (const request of requests) request.finish(request.type === 'open');
+        if (!session.paired && getSession().generation === session.generation) for (const request of requests) request.finish(request.type === 'open');
       } catch (error) {
         log(`Chrome launch failed: ${error.message}`);
         for (const request of requests) request.finish(false);
       }
-    }, getSession().auth ? 2000 : 0);
+    }, getSession().paired ? 2000 : 0);
   }
   function flushBrowserRequest() {
     if (getSession().blocked) return;
@@ -140,7 +140,7 @@ function createCommandService({ getSession, selectedEntry, launch, log,
   async function requestPlayerCommand(type, amount = 0) {
     if (!['open', 'toggle', 'prev', 'next', 'mute', 'volume_delta', 'like', 'dislike'].includes(type)) return false;
     if (getSession().pairingRequired) { lastCommandError = 'pairing-required'; return false; }
-    if (getSession().blocked) { lastCommandError = getSession().compatibility.errorCode; return false; }
+    if (getSession().blocked) { lastCommandError = getSession().errorCode; return false; }
     // Keep existing controls available when paired with a legacy extension.
     if (type !== 'open' && !browserCapable && selectedEntry()) return addCommand(type, amount);
     if (type === 'open') {
@@ -200,7 +200,9 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     request: requestPlayerCommand, addLegacy: addCommand, dispatch,
     listen: listenForCommands, listenBrowser: listenForBrowser,
     get lastError() { return lastCommandError; },
-    set lastError(value) { lastCommandError = value; },
+    clearProtocolError() {
+      if (['protocol-incompatible', 'invalid-protocol'].includes(lastCommandError)) lastCommandError = '';
+    },
     get browserPolling() { return Boolean(browserWaiter); },
     get polling() { return Boolean(browserWaiter) || [...listenWaiters.values()].some(waiters => waiters.size); },
     reset() { cancel(); lastCommandError = ''; },

@@ -5,7 +5,7 @@ const { createHttpBridge } = require('./adapters/http-bridge.cjs');
 const { createDeckAdapter } = require('./adapters/streamdeck.cjs');
 const { createCoverStore } = require('./adapters/cover-store.cjs');
 const { createCommandService } = require('./application/command-service.cjs');
-const { createSessionService } = require('./application/session-service.cjs');
+const { createSessionCoordinator } = require('./application/session-coordinator.cjs');
 const { createPlayerRegistry } = require('./application/player-registry.cjs');
 const { createPortService } = require('./application/port-service.cjs');
 const { createDeckController } = require('./application/deck-controller.cjs');
@@ -31,11 +31,10 @@ function log(message) {
 const storage = createFileStore({ testPort: isTest ? process.env.MUSIC_DECK_BRIDGE_TEST_PORT : undefined });
 const players = createPlayerRegistry({ onChange: drawSoon });
 const commands = createCommandService({ selectedEntry: players.selected, log,
-  getSession: () => session.snapshot, launch: isTest ? async () => {} : launchChrome });
+  getSession: () => session.access, launch: isTest ? async () => {} : launchChrome });
 const covers = createCoverStore({ selectedSource: () => players.selected()?.[1].cover, onChange: drawSoon });
-const session = createSessionService({ storage, commands, version, onChange: drawSoon,
-  testPin: isTest ? process.env.MUSIC_DECK_BRIDGE_TEST_PIN : undefined,
-  resetPlayerState: () => { players.reset(); covers.resetSelection(); } });
+const session = createSessionCoordinator({ storage, commands, players, covers, version, onChange: drawSoon,
+  testPin: isTest ? process.env.MUSIC_DECK_BRIDGE_TEST_PIN : undefined });
 const deck = createDeckAdapter({ onEvent: event => controller.handle(event),
   onConnected: drawSoon, log, isTest });
 const transport = createHttpBridge({ session, players, commands, covers, version, isTest,
