@@ -1,49 +1,23 @@
-# Store copy — English
+# Store listing copy — English
 
-Reference copy for store listings and review-requested revisions. Confirm the actual dashboard text against the submitted build. Track submitted versions, review status and uploaded-copy provenance in [release readiness](../docs/release-readiness.md) and its linked records.
+## Submitted descriptions
 
-## Chrome Web Store
+The maintainer supplied these descriptions as the actual **v1.1.1** submissions. Preserve their wording; record later revisions separately. [Submission status and provenance](../docs/verification/stores.md) distinguishes these snapshots from package and media evidence.
 
-Name: **Music Deck Bridge**
+| Store | Submitted text |
+| --- | --- |
+| Elgato Marketplace | [English](submitted/v1.1.1/elgato-en.md) |
+| Chrome Web Store | [English](submitted/v1.1.1/chrome-en.md) · [Korean](submitted/v1.1.1/chrome-ko.md) |
 
-Short description: Control YouTube Music from Elgato Stream Deck using a Chrome extension.
-
-Full description:
-
-Music Deck Bridge connects the YouTube Music player in Google Chrome to a Stream Deck on the same Windows computer. Install the companion Music Deck Bridge Stream Deck plugin to use this extension.
-
-- Play or pause, skip tracks and toggle mute from Stream Deck keys.
-- Open or focus YouTube Music from a key; controls open a missing player and continue their requested action when ready.
-- Like or dislike the current song and press again to remove the rating.
-- Show the current song, artist and album artwork on a Now Playing key.
-- Use Stream Deck + dials to adjust volume or change tracks.
-- Connect using a six-digit PIN generated in the Stream Deck action settings.
-- Use a regular Chrome tab or YouTube Music installed as a Chrome app.
-- Choose English or Korean through your browser and Stream Deck language settings.
-
-Requires Windows 10/11, Google Chrome 116+, Stream Deck software 7.1+ and the companion plugin. Dial controls require Stream Deck +. YouTube Music playback and account requirements are governed by YouTube Music.
-
-Communication between the extension and plugin uses an authenticated local bridge. The plugin downloads album artwork from approved Google/YouTube image hosts. Music Deck Bridge has no project-operated server, analytics or advertising. See the privacy policy for exact data handling and retention.
-
-This is an independent, unofficial integration. It is not affiliated with or endorsed by Google, YouTube, Elgato or Corsair.
-
-## Elgato Marketplace
+## Metadata suggestions
 
 Name: **Music Deck Bridge**
 
-Summary: Control the YouTube Music web player from Stream Deck keys and Stream Deck + dials.
+Chrome short description: Control YouTube Music from Elgato Stream Deck using a Chrome extension.
 
-Description:
+Marketplace summary: Control the YouTube Music web player from Stream Deck keys and Stream Deck + dials.
 
-Control YouTube Music in Chrome from Stream Deck on Windows. Music Deck Bridge connects a Stream Deck plugin with a companion Chrome extension for playback keys, song information and Stream Deck + dials.
-
-Play, pause, skip tracks, mute, open YouTube Music, and like or dislike the current song. Controls can open a missing player and complete the requested input when ready. Press a rating key again to remove that rating; a signed-in player with working rating controls is required.
-
-The Now Playing key shows artwork, title and artist, with text visibility and scrolling options. The Volume Dial adjusts volume by 1–5 percentage points per tick and mutes on press or touch. The Current Track Dial skips on rotation and plays or pauses on press or touch. Choose song information or fitted album artwork with optional text.
-
-Requires Windows 10/11, Google Chrome 116+, Stream Deck 7.1+ and the companion Chrome extension. Dial controls require Stream Deck +. Install both components on the same PC and pair them with a six-digit PIN. The local bridge port is configurable. English and Korean are supported; normal Chrome tabs and the Chrome-installed YouTube Music app work.
-
-Independent, unofficial integration; not affiliated with or endorsed by Google, YouTube, Elgato or Corsair.
+These short-field suggestions and the permission explanations below are preparation guidance; actual submitted values for those fields were not supplied.
 
 ## Permission explanations
 

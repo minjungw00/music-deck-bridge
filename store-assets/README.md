@@ -2,13 +2,13 @@
 
 This directory contains listing copy, artwork and submission checklists. Track submitted versions, Console identifiers, package hashes, review status and verification results in [release readiness](../docs/release-readiness.md) and its linked verification records.
 
-For the current review state of each store, use the [distribution status table](../docs/release-readiness.md#distribution-status). The guides here describe preparing or revising a submission; they are not a record of the exact text or media uploaded to a dashboard.
+For the current review state of each store, use the [distribution status table](../docs/release-readiness.md#distribution-status). The guides here describe preparing or revising a submission; actual submitted descriptions are preserved separately in the [submission record](../docs/verification/stores.md). Uploaded-media selections are not yet recorded.
 
 | Store | Assets and checklist |
 | --- | --- |
 | Elgato Marketplace | [Upload guide and sized exports](elgato/README.md#upload-files): 288px icon, 1920×960 thumbnail and three gallery images |
 | Chrome Web Store | [Upload guide and sized exports](chrome/README.md#upload-files): 128px icon, localized 1280×800 screenshots and 440×280 promotional tile |
-| Both | [English](listing.en.md) / [Korean](listing.ko.md) listing copy and public [privacy policy](https://github.com/minjungw00/music-deck-bridge/blob/main/PRIVACY.md) |
+| Both | [Submitted descriptions and English guidance](listing.en.md) / [한국어](listing.ko.md) and public [privacy policy](https://github.com/minjungw00/music-deck-bridge/blob/main/PRIVACY.md) |
 
 ## Official product images
 
@@ -20,7 +20,7 @@ Use these maintainer-selected source images for README and listing media:
 | [English Chrome popup](chrome/screenshots/popup-en.png) | Version 1.1.1 popup rendering with sample playback data |
 | [Korean Chrome popup](chrome/screenshots/popup-ko.png) | Version 1.1.1 popup rendering with sample playback data |
 
-The actual Stream Deck capture takes precedence over the browser-rendered device approximation. The popup images are selected product visuals; their simulated connection status does not establish live-service validation. See the [image provenance record](../docs/verification/official-images-2026-10-18.md). Compose store-specific exports from these sources while preserving proportions and UI content.
+The actual Stream Deck capture takes precedence over the browser-rendered device approximation. The popup images are selected product visuals; their simulated connection status does not establish live-service validation. See the [image provenance record](../docs/verification/media.md). Compose store-specific exports from these sources while preserving proportions and UI content.
 
 The [Chrome Web Store upload set](chrome/README.md#upload-files) and [Elgato Marketplace gallery set](elgato/README.md#upload-files) are exported from these approved sources. The original popup previews and Stream Deck capture remain unchanged.
 
@@ -31,7 +31,7 @@ The [Chrome Web Store upload set](chrome/README.md#upload-files) and [Elgato Mar
 | Chrome Web Store | Marketplace gallery designs at 1280×800; its thumbnail as 440×280 and 1400×560 promotional tiles | [Marketplace-derived images](chrome/README.md#images-adapted-from-marketplace) |
 | Elgato Marketplace | Chrome English screenshot and promotional design at 1920×960 | [Chrome-derived images](elgato/README.md#images-adapted-from-chrome-web-store) |
 
-The common brand already has a [128px Chrome icon](chrome/listing/icon-128.png) and [288px Marketplace icon](elgato/listing/app-icon-288.png). Use the icon at the destination store's required size. The [adaptation record](../docs/verification/cross-store-images-2026-10-18.md) documents layout changes and verification.
+The common brand already has a [128px Chrome icon](chrome/listing/icon-128.png) and [288px Marketplace icon](elgato/listing/app-icon-288.png). Use the icon at the destination store's required size. The [adaptation record](../docs/verification/media.md#export-checks) documents layout changes and verification.
 
 ## Submission workflow
 

@@ -16,17 +16,23 @@
 
 ## Release and verification records
 
-- [Release readiness](release-readiness.md): current release/submission status, remaining work and links to detailed test records.
-- [Store reviews](verification/review-preparation.md): maintainer reports, submitted versions and package provenance for both stores; earlier preparation is explicitly archived.
-- [Official product images](verification/official-images-2026-10-18.md): canonical files, displayed versions and image provenance.
-- [Security readiness](security-readiness.md): repository settings, dated checks and inspection limits.
-- [Verification records](verification/): version-specific results, environment details, logs, observations and investigation history, indexed in [release readiness](release-readiness.md#detailed-verification-records).
-- [Changelog](../CHANGELOG.md): changes by version.
+[Release readiness](release-readiness.md) summarizes distribution status and remaining work. Six topic records retain the evidence:
+
+| Topic | Record |
+| --- | --- |
+| Publication, source, CI and package hashes | [Releases](verification/releases.md) |
+| Automated checks and maintainer confirmation | [Runtime](verification/runtime.md) |
+| Update failures, comparisons and diagnosis | [Installation](verification/installation.md) |
+| Official image sources and export checks | [Media](verification/media.md) |
+| Review status and actual submitted descriptions | [Store submissions](verification/stores.md) |
+| Processed-package execution still to perform | [Marketplace DRM](verification/marketplace-drm.md) |
+
+See also [security readiness](security-readiness.md) and the [changelog](../CHANGELOG.md).
 
 ## Maintaining documentation
 
-Keep guides focused on product behavior, requirements and repeatable procedures. Put dated observations, individual test outcomes, machine-specific details, source/package hashes and investigation conclusions in verification records. Keep current review status and outstanding release checks in release readiness rather than repeating them across guides or listing copy.
+Keep guides focused on product behavior and repeatable procedures. Consolidate dated outcomes, package identities and investigation conclusions in the relevant topic record; update the current summary rather than creating a file for each intermediate test. Remove superseded checklists and repeated observations. Git history retains detailed earlier measurements.
 
-When a new submission supersedes an earlier one, update the current status and retain earlier measurements as a clearly labelled historical record. Released tags, package hashes and dated test outcomes describe their original source; they must not be rewritten as evidence for a newer submission.
+Keep review status and outstanding release checks in release readiness and submission records. Preserve actual submitted copy under `store-assets/submitted/<version>/`; distinguish it from preparation guidance. Later revisions must not silently rewrite a submitted snapshot or released package identity.
 
-When an investigation changes a procedure, update the guide with the resulting instructions and keep the evidence, scope and uncertainty in the corresponding record. Preserve useful recovery steps without presenting one environment's result as a general guarantee. Update the English and Korean installation guides together.
+When an investigation changes a procedure, update both installation languages together and retain the evidence's scope and uncertainty in its topic record. A single environment's result is not a general guarantee.

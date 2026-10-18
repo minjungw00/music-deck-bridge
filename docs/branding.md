@@ -2,7 +2,7 @@
 
 The official project name is **Music Deck Bridge**. Use its magenta play-disc identity for both the Stream Deck plugin and Chrome extension. Store submissions should use these same generated assets.
 
-The main mark combines a large magenta disc, rounded white play triangle, paired left/right sound waves and a dark rounded square. Shapes are defined in the project renderer. See the [versioned branding history](verification/v1.0.1.md#branding-history) for earlier designs and their provenance.
+The main mark combines a large magenta disc, rounded white play triangle, paired left/right sound waves and a dark rounded square. Shapes are defined in the project renderer. See the [versioned branding history](verification/releases.md#earlier-history) for earlier designs and their provenance.
 
 ![Magenta play-disc brand](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/plugin/icon.png)
 

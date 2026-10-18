@@ -16,7 +16,7 @@ Use the files in [listing/](listing/) for the Maker Console media fields:
 
 Upload all three numbered gallery files in that order; the separate thumbnail does not replace a gallery item. All explanatory text is English, as required by Marketplace. The app icon is byte-identical to the canonical [app-icon.png](app-icon.png).
 
-The galleries use the approved actual Stream Deck capture at native pixel dimensions. The Chrome connection image also includes the approved English **1.1.1** popup rendering, labelled as sample playback data. Sources, export checks and hashes are recorded in the [Marketplace image record](../../docs/verification/elgato-store-images-2026-10-18.md).
+The galleries use the approved actual Stream Deck capture at native pixel dimensions. The Chrome connection image also includes the approved English **1.1.1** popup rendering, labelled as sample playback data. Sources, export checks and hashes are recorded in the [image verification record](../../docs/verification/media.md).
 
 ## Images adapted from Chrome Web Store
 
@@ -27,7 +27,7 @@ These alternative exports in [cross-store/](cross-store/) reuse the Chrome desig
 | Additional gallery image — extension and Stream Deck | [from-chrome-screenshot-en-1920x960.png](cross-store/from-chrome-screenshot-en-1920x960.png) | 1920 × 960 |
 | Alternative thumbnail — main mark and playback icons | [from-chrome-promo-1920x960.png](cross-store/from-chrome-promo-1920x960.png) | 1920 × 960 |
 
-Choose a thumbnail and retain at least three gallery items when selecting a combination. Keep [app-icon-288.png](listing/app-icon-288.png) as the app icon: both designs share the same brand. Marketplace exports use English text and the English popup; the Korean popup remains a Chrome-localized image. See the [adaptation record](../../docs/verification/cross-store-images-2026-10-18.md) for source mapping and checks.
+Choose a thumbnail and retain at least three gallery items when selecting a combination. Keep [app-icon-288.png](listing/app-icon-288.png) as the app icon: both designs share the same brand. Marketplace exports use English text and the English popup; the Korean popup remains a Chrome-localized image. See the [adaptation record](../../docs/verification/media.md#export-checks) for source mapping and checks.
 
 ## Source images and submission
 
@@ -37,7 +37,7 @@ Record the submitted version, package hash, Console product/version ID, processi
 
 - Use publisher UUID `io.github.minjungw00.musicdeckbridge` and confirm supported device models.
 - Capture Now Playing artwork, key controls, Stream Deck + dial feedback and settings/PIN flow in English and Korean.
-- Use the prepared [English](../listing.en.md) / [Korean](../listing.ko.md) text; verify it against the submitted build.
+- Use the [submitted English description](../submitted/v1.1.1/elgato-en.md) as the revision baseline; see [metadata and permission guidance](../listing.en.md) when preparing changes.
 - Check current Maker Console image specifications and SDK/DRM requirements before export.
 - Use the submitted version's magenta representative icons from `streamdeck/generate_assets.py`; see the [brand guide](../../docs/branding.md). Retain the project and bundled-library notices.
 - Record hardware and Maker Console DRM results in [release readiness](../../docs/release-readiness.md).

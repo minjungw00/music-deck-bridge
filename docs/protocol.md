@@ -42,4 +42,4 @@ The popup and action inspector show both application versions and negotiated pro
 
 Plugin identity comes from its bundled source package version, so opaque/DRM manifests are not read for it. Extension identity comes from `chrome.runtime.getManifest().version_name` or `.version`. Compatibility metadata is held in memory and exchanged only over the existing loopback connection; authentication tokens are not exposed in either UI.
 
-See the [verification record](verification/protocol-compatibility.md) for coverage and remaining release/device checks.
+See the [verification record](verification/runtime.md#protocol-compatibility) for coverage and remaining release/device checks.

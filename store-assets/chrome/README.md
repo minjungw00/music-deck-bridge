@@ -15,7 +15,7 @@ Use the files in [listing/](listing/) for the Chrome Web Store upload fields:
 
 Upload the English screenshot to the English/default listing and the Korean screenshot to the Korean localized listing. The promotional tile is shared across locales and contains no text. The icon has a 96 × 96 artwork area inside a transparent 16px border. Screenshots and the promotional tile are opaque RGB PNGs; screenshots fill the canvas with square outer corners.
 
-The screenshots combine the approved **1.1.1** popup rendering with the actual Stream Deck capture, both at native pixel dimensions, and state that the companion plugin is required. The popup uses sample playback data. Export verification and source hashes are recorded in the [Chrome store image record](../../docs/verification/chrome-store-images-2026-10-18.md).
+The screenshots combine the approved **1.1.1** popup rendering with the actual Stream Deck capture, both at native pixel dimensions, and state that the companion plugin is required. The popup uses sample playback data. Export verification and source hashes are recorded in the [image verification record](../../docs/verification/media.md).
 
 ## Images adapted from Marketplace
 
@@ -29,7 +29,7 @@ These alternative exports in [cross-store/](cross-store/) reuse the Marketplace 
 | Alternative small promotional tile | [from-elgato-thumbnail-small-440x280.png](cross-store/from-elgato-thumbnail-small-440x280.png) | 440 × 280 |
 | Optional marquee promotional tile | [from-elgato-thumbnail-marquee-1400x560.png](cross-store/from-elgato-thumbnail-marquee-1400x560.png) | 1400 × 560 |
 
-The three English screenshots can accompany the original English screenshot, within the five-screenshot limit. Choose one small promotional tile for that upload field; the marquee uses its own optional field. Keep [icon-128.png](listing/icon-128.png) as the store icon: both designs share the same brand. See the [adaptation record](../../docs/verification/cross-store-images-2026-10-18.md) for source mapping and checks.
+The three English screenshots can accompany the original English screenshot, within the five-screenshot limit. Choose one small promotional tile for that upload field; the marquee uses its own optional field. Keep [icon-128.png](listing/icon-128.png) as the store icon: both designs share the same brand. See the [adaptation record](../../docs/verification/media.md#export-checks) for source mapping and checks.
 
 ## Source images and submission
 
@@ -40,7 +40,7 @@ The listing icon and promotional tile use the existing magenta main mark and act
 Record the submitted version, ZIP hash, listing identifier and review result in [release readiness](../../docs/release-readiness.md). After approval and publication, verify the actual product URL and add it to README and both installation guides independently of Marketplace. Test switching from the unpacked extension with removal and new PIN pairing; until then use the [unpacked installation guide](../../docs/installation.en.md).
 
 - Capture English and Korean pairing/status screens without real PINs, tokens or personal listening details.
-- Use the prepared [English](../listing.en.md) / [Korean](../listing.ko.md) descriptions and permission explanations; verify them against the submitted ZIP.
+- Use the [submitted English](../submitted/v1.1.1/chrome-en.md) / [Korean](../submitted/v1.1.1/chrome-ko.md) descriptions as the revision baseline; see [permission guidance](../listing.en.md#permission-explanations) when preparing changes.
 - Declare each permission and reconcile store data-use answers with `PRIVACY.md` and the submitted version.
 - Confirm support/privacy URLs, current screenshot/promotional dimensions and artwork rights.
 - Submit the Chrome ZIP with `manifest.json` at its root, rather than the repository ZIP.
