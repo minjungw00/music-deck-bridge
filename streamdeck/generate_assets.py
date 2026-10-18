@@ -120,12 +120,9 @@ def render(kind, size, background):
         rectangle((158, 236, 194, 334), radius=5)
         if kind.startswith("dislike"):
             glyph = glyph.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
-    elif kind in ("prev", "next", "trackdial"):
+    elif kind in ("prev", "next"):
         polygon([(170, 178), (170, 326), (286, 252)])
         rectangle((310, 178, 340, 326))
-        if kind == "trackdial":
-            for start, end in [(205, 335), (25, 155)]:
-                draw.arc(box((126, 122, 386, 382)), start, end, fill=255, width=16 * scale)
     elif kind in ("mute", "volume"):
         rectangle((142, 224, 194, 280))
         polygon([(180, 224), (244, 178), (244, 326), (180, 280)])
@@ -162,7 +159,7 @@ def main():
     }
     for size in (16, 48, 128):
         outputs[f"chrome-extension/icons/{size}.png"] = ("brand", size, True)
-    for kind in ("nowplaying", "toggle", "prev", "next", "mute", "volume", "trackdial", "open", "like", "dislike"):
+    for kind in ("nowplaying", "toggle", "prev", "next", "mute", "volume", "open", "like", "dislike"):
         for name, size, background in [("icon", 20, False), ("key", 72, True)]:
             for suffix, scale in [("", 1), ("@2x", 2)]:
                 outputs[f"{plugin}/actions/{kind}/{name}{suffix}.png"] = (kind, size * scale, background)

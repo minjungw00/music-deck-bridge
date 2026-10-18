@@ -34,4 +34,4 @@ Scope: player launch/command continuation, ratings, connection recovery, playbac
 
 [v1.0.0](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.0.0) and [v1.0.1](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.0.1) were published October 17. Their tags/assets remain unchanged; their release pages retain package inventories. The unpublished v1.0.2 candidate was superseded by v1.1.0. Intermediate development labels do not represent additional public releases.
 
-The geometric red v1.0.0 mark is preserved in [brand-v1.0.0.png](../assets/brand-v1.0.0.png); v1.0.1 introduced the magenta play-disc mark, followed by matching action icons. Detailed intermediate measurements remain in Git history. Current behavior is described in the [changelog](../../CHANGELOG.md) and guides.
+v1.0.0 used a geometric red mark; v1.0.1 introduced the magenta play-disc mark, followed by matching action icons. Earlier artwork and detailed intermediate measurements remain in Git history. Current behavior is described in the [changelog](../../CHANGELOG.md) and guides.

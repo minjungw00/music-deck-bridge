@@ -12,7 +12,7 @@ const assets = [
   [plugin + 'imgs/plugin/category@2x.png', 56],
   ...[16, 48, 128].map(size => [`chrome-extension/icons/${size}.png`, size]),
 ];
-const actionFamilies = ['nowplaying', 'toggle', 'prev', 'next', 'mute', 'volume', 'trackdial', 'open', 'like', 'dislike'];
+const actionFamilies = ['nowplaying', 'toggle', 'prev', 'next', 'mute', 'volume', 'open', 'like', 'dislike'];
 
 // Decode our noninterlaced RGBA8 PNGs using only Node's standard library.
 // Testing committed pixels keeps Pillow optional for ordinary builds and CI.
