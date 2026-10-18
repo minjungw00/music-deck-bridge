@@ -52,6 +52,14 @@ Evidence date: October 18, 2026 (Asia/Seoul). Runtime source: `e8379fd`, on the 
 - Controlled before/after fixtures reproduced early tab-close notification, startup/change interference and missing DOM observation after restoration in the preceding implementation. The updated cases pass with all submitted snapshots settling before closure, serialized listener operations and observation restarted on each restoration. Port grace expiry uses an injected clock; cached-page events use a VM fixture loading the complete content manifest graph.
 - Actual Chromium 156.0.8078.4 passed the existing nine-input MV3 integration fixture again, including delayed readiness, MAIN-state sync, receiver replacement and protocol recovery. This run does not independently establish real-browser back/forward-cache behavior, signed-in YouTube Music operation, Windows startup or device rendering. Historical maintainer confirmation below retains its original scope.
 
+### Pairing persistence and bounded dial output
+
+Evidence date: October 18, 2026 (Asia/Seoul). Runtime source: `d2e4c19`, on the same `1.1.2-dev` branch.
+
+- All 143 Node tests, two Python packaging tests and syntax/JSON/manifest checks passed. Credential-write failure injection now checks both compatible and blocked existing sessions: authentication, generation, compatibility diagnostics, blocking, pending commands and PIN remain unchanged until a successful retry saves replacement credentials. The two new cases fail against the preceding session implementation and pass with protocol evaluation separated from state changes.
+- A held layout followed by 20 updates submits only the in-flight frame and the latest pending frame, compared with 21 frames previously. Six new dial cases and the updated rapid-mode case cover layout-before-content ordering, latest artwork/text, rejected/skipped outputs, retry caching, returning to the in-flight state and disappearance during layout/feedback submission. The preceding implementation fails the coalescing and newer-success caching assertions. These are controlled SDK-output fixtures, not measurements of hardware latency.
+- Actual Chromium 156.0.8078.4 passed the existing nine-input MV3 integration fixture and the generated sample preview smoke, including rapid display-mode changes, artwork/title controls and Korean popup selection. Qt 6.10.3 text/backdrop checks passed using the renderer directly. Signed-in YouTube Music, Windows native startup, physical device output and installation/DRM were not independently rerun; historical maintainer confirmation below retains its original scope.
+
 ## Maintainer confirmation
 
 The maintainer confirmed the following development-build checks complete before requesting protocol negotiation:

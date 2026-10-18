@@ -2,6 +2,8 @@
 
 ## 1.1.2-dev — unreleased
 
+- Preserve compatibility diagnostics, protocol blocking and pending commands when saving replacement pairing credentials fails.
+- Coalesce unsent dial feedback into the latest frame while preserving layout-before-content order; retry failed/skipped frames and discard pending content when an action disappears.
 - Wait for every overlapping tab-state request before sending its close notification, including when individual requests fail.
 - Serialize bridge startup and port changes; reuse an active listener on repeated startup and retain the port-change grace period after persistence failures.
 - Reattach player DOM observation after each cached-page restoration, alongside periodic synchronization and command listening.
