@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.1-dev — Unreleased
+
+- Keep the English/Korean popup action buttons on one line with equal widths, explicit typography and consistent heights; shorten the English status button to “Status”.
+
 ## v1.1.0 — 2026-10-18
 
 - Add Open YouTube Music, Like and Dislike keys. All controls can open a missing player and complete the original input after readiness; reuse existing tabs/apps and preserve command order.

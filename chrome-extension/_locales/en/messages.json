@@ -12,7 +12,7 @@
     "message": "Connect"
   },
   "refresh": {
-    "message": "Check status"
+    "message": "Status"
   },
   "forget": {
     "message": "Unpair"

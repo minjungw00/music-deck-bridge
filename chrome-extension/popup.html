@@ -12,14 +12,14 @@
     p { margin: 8px 0 12px; color: #bac0ce; }
     label { display: block; margin: 10px 0 5px; font-weight: 600; }
     input { width: 100%; padding: 9px; border: 1px solid #636a78; border-radius: 6px; background: #202433; color: white; letter-spacing: .3em; font-size: 16px; }
-    button { padding: 9px 13px; background: #d000a4; border: 0; border-radius: 6px; color: white; cursor: pointer; font-weight: 600; }
+    button { min-height: 36px; padding: 8px 10px; background: #d000a4; border: 0; border-radius: 6px; color: white; cursor: pointer; font: inherit; font-weight: 600; line-height: 20px; white-space: nowrap; }
     button.secondary { background: #414759; }
     input:focus-visible, button:focus-visible { outline: 2px solid #f72575; outline-offset: 2px; }
     .port-row { display: flex; gap: 8px; }
     .port-row input { flex: 1; min-width: 0; font-size: 13px; letter-spacing: 0; padding: 8px; }
-    .port-row button { white-space: nowrap; }
     .small-hint { font-size: 11px; line-height: 1.35; color: #abb3c5; margin: 4px 0 10px; }
     .controls { display: flex; gap: 8px; margin-top: 12px; }
+    .controls > button { flex: 1; min-width: 0; }
     #status { margin: 10px 0 0; min-height: 35px; white-space: pre-wrap; font-size: 12px; }
   </style>
 </head>
@@ -31,7 +31,7 @@
   <input id="pin" maxlength="6" inputmode="numeric" autocomplete="off" placeholder="000000" />
   <div class="controls">
     <button id="connect">Connect</button>
-    <button id="refresh" class="secondary">Check status</button>
+    <button id="refresh" class="secondary">Status</button>
     <button id="forget" class="secondary">Unpair</button>
   </div>
   <label id="portLabel" for="port">Local server port</label>

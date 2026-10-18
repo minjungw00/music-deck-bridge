@@ -4,6 +4,8 @@ Last updated: October 18, 2026 (Asia/Seoul). Latest stable GitHub release: **v1.
 
 The exact release source, final Windows/Ubuntu CI run and package checksums are recorded on the [v1.1.0 GitHub Release](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.1.0). See the [v1.1.0 scope and verification record](verification/v1.1.0.md). GitHub publication and store approval are separate.
 
+Current development cycle: **1.1.1-dev**, explicitly selected by the maintainer. The [popup button layout correction](verification/popup-button-layout.md) is unreleased; development builds retain that target and use separate build identities.
+
 ## Current evidence
 
 | Category | Result / evidence |
