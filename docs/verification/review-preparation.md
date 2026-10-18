@@ -30,11 +30,12 @@ The public reference hash identifies the GitHub package, not an independently in
 - v1.1.1 is published with exact-source Windows/Ubuntu CI, official packaging and verified public package checksums. Protocol negotiation and the previously planned controls/display features are included in the released source.
 - English and Korean official popup renderings now display plugin/extension **1.1.1**. The actual Stream Deck capture is retained unchanged. [Image sources and checksums](official-images-2026-10-18.md).
 - README and the [store asset inventory](../../store-assets/README.md#official-product-images) use the canonical images. [English](../../store-assets/listing.en.md) and [Korean](../../store-assets/listing.ko.md) listing copy and the public privacy policy are available.
+- [Chrome Web Store image exports](chrome-store-images-2026-10-18.md) provide the 128px store icon, English/Korean 1280×800 screenshots and required 440×280 promotional tile.
 - Device/Chrome checks, settings retention and installation diagnosis remain linked from [release readiness](../release-readiness.md), with their original scope and dates.
 
 ## Remaining submission work
 
 1. Track the v1.1.1 review result and record its Console version ID, uploaded-file hash and processing/publication settings when available.
 2. Download and test that version's Console-processed installer using the [DRM record](marketplace-drm.md).
-3. Check the actual submitted listing/media and supported models against the submitted package. The selected images are source assets; final store exports and the media actually uploaded have not been inspected here.
+3. Check the actual submitted listing/media and supported models against the submitted package. Chrome image exports are prepared and verified; Marketplace exports and the media actually uploaded to either store have separate verification.
 4. Complete Chrome Web Store preparation and unpacked-to-store migration testing independently. Activate each public store URL only after that product is approved, public and its installation is verified.

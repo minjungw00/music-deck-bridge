@@ -28,9 +28,12 @@ Use the committed size-specific PNGs. The minimum colored size is **16×16**; th
 | Stream Deck representative icon | `streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/plugin/icon.png`, `icon@2x.png` | 256×256, 512×512 |
 | Stream Deck category | `streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/plugin/category.png`, `category@2x.png` | 28×28, 56×56 |
 | Chrome representative and toolbar icons | `chrome-extension/icons/16.png`, `48.png`, `128.png` | 16×16, 48×48, 128×128 |
+| Chrome Web Store listing icon | `store-assets/chrome/listing/icon-128.png` | 128×128, 96px artwork area and transparent 16px border |
 | Marketplace app icon | `store-assets/elgato/app-icon.png` | 288×288 |
 
 The 288px Marketplace export uses the same renderer; its size follows the [Marketplace product guidelines](https://docs.elgato.com/guidelines/products/).
+
+The Chrome listing icon is a separate size-normalized export of the same main mark. The [Chrome media renderer](../scripts/render-chrome-store.mjs) prepares it alongside the store screenshots and promotional tile; see the [Chrome upload guide](../store-assets/chrome/README.md#upload-files).
 
 ## Action icons
 
