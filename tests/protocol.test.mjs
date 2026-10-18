@@ -1,14 +1,10 @@
+import { createBridgeFixture } from './helpers/bridge.mjs';
 import { loadExtension } from './helpers/extension.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, mkdtempSync, rmSync, existsSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { spawn } from 'node:child_process';
-import { once } from 'node:events';
-import { createServer } from 'node:net';
 import vm from 'node:vm';
-import { fileURLToPath } from 'node:url';
 import protocol from '../chrome-extension/protocol.js';
 
 const shared = readFileSync(new URL('../chrome-extension/protocol.js', import.meta.url), 'utf8');
@@ -44,22 +40,11 @@ test('malformed explicit protocol metadata never falls back to legacy compatibil
 });
 
 test('real bridge rejects incompatible input without changing credentials, preserves PIN and recovers without re-pairing', async t => {
-  const temp = mkdtempSync(join(tmpdir(), 'music-deck-protocol-'));
-  const socket = createServer(); await new Promise(resolve => socket.listen(0, '127.0.0.1', resolve));
-  const port = socket.address().port; await new Promise(resolve => socket.close(resolve));
-  const proc = spawn(process.execPath, [fileURLToPath(new URL('../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/bin/plugin.js', import.meta.url))],
-    { env: { ...process.env, APPDATA: temp, MUSIC_DECK_BRIDGE_DEV_TEST: '1', MUSIC_DECK_BRIDGE_TEST_PIN: '123456', MUSIC_DECK_BRIDGE_TEST_PORT: String(port) },
-      stdio: ['ignore', 'pipe', 'pipe'] });
-  const closed = once(proc, 'close');
-  t.after(async () => { proc.kill(); await closed; rmSync(temp, { recursive: true, force: true }); });
-  let output = ''; proc.stdout.on('data', chunk => { output += chunk; });
-  for (let i = 0; !output.includes('Loopback bridge on') && i < 100; i++) await new Promise(resolve => setTimeout(resolve, 20));
-  assert.match(output, /Loopback bridge on/);
+  const bridge = await createBridgeFixture(t, { pin: '123456', prefix: 'music-deck-protocol-' });
+  const temp = bridge.directory, port = bridge.port;
   const post = async (endpoint, body) => {
-    const response = await fetch(`http://127.0.0.1:${port}${endpoint}`, { method: 'POST',
-      headers: { Origin: 'chrome-extension://' + 'a'.repeat(32), 'Content-Type': 'application/json' },
-      body: JSON.stringify(body), signal: AbortSignal.timeout(15000) });
-    return { status: response.status, data: await response.json() };
+    const result = await bridge.post(endpoint, body, { timeout: 15000 });
+    return { status: result.status, data: result.body };
   };
   const future = { protocolVersion: 2, minProtocolVersion: 2, extensionVersion: '2.0.0' };
   assert.equal((await post('/pair', { pin: '000000', ...future })).status, 403, 'PIN is validated before negotiation');

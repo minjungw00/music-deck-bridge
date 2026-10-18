@@ -1,13 +1,12 @@
+import { freePort, manageChild } from '../helpers/bridge.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 import { createServer as httpsServer } from 'node:https';
-import { createServer } from 'node:net';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawn, execFileSync } from 'node:child_process';
-import { once } from 'node:events';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -60,10 +59,10 @@ async function until(check, label) {
 
 test('real MV3 worker retains cold-tab inputs and safely recovers a replaced receiver', { timeout: 90000 }, async t => {
   const temp = await mkdtemp(join(tmpdir(), 'music-deck-browser-'));
-  let browser, process, closed, site;
+  let browser, process, child, site;
   t.after(async () => {
     await browser?.close();
-    if (process) { process.kill(); await closed; }
+    if (child) await child.stop();
     if (site) { site.closeAllConnections(); await new Promise(resolve => site.close(resolve)); }
     await rm(temp, { recursive: true, force: true });
   });
@@ -73,19 +72,14 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   site = httpsServer({ key: await readFile(join(temp, 'key')), cert: await readFile(join(temp, 'cert')) },
     (_req, res) => { setTimeout(() => { res.setHeader('Content-Type', 'text/html'); res.end(fixture); }, 250); });
   await new Promise(resolve => site.listen(0, '127.0.0.1', resolve));
-  const probe = createServer();
-  await new Promise(resolve => probe.listen(0, '127.0.0.1', resolve));
-  const port = probe.address().port;
-  await new Promise(resolve => probe.close(resolve));
+  const port = await freePort();
   process = spawn(globalThis.process.execPath, [join(root, 'streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/bin/plugin.js')], {
     env: { ...globalThis.process.env, APPDATA: temp, MUSIC_DECK_BRIDGE_DEV_TEST: '1',
       MUSIC_DECK_BRIDGE_TEST_PORT: String(port), MUSIC_DECK_BRIDGE_TEST_PIN: '654321' },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
-  closed = once(process, 'close');
-  let output = '';
-  for (const stream of [process.stdout, process.stderr]) stream.on('data', chunk => { output += chunk; });
-  await until(() => output.includes('Loopback bridge on'), 'bridge startup');
+  child = manageChild(process);
+  await child.ready('Loopback bridge on');
   const extension = join(root, 'chrome-extension');
   browser = await chromium.launchPersistentContext(join(temp, 'profile'), {
     channel: 'chromium', headless: true,
@@ -133,7 +127,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     const before = await worker.evaluate(() => acknowledgments.length);
     await postEvent(type);
     const ack = await until(async () => (await worker.evaluate(() => acknowledgments))[before], `${type} ACK`);
-    assert.equal(ack.ok, true, `${type}: ${JSON.stringify(ack)}; ${output}`);
+    assert.equal(ack.ok, true, `${type}: ${JSON.stringify(ack)}; ${child.output}`);
     const page = await until(() => browser.pages().find(page => page.url().startsWith(musicURL)), 'music tab');
     await page.waitForLoadState();
     const effect = type === 'nowplaying' ? 'toggle' : type;

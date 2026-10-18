@@ -1,23 +1,12 @@
+import { createBridgeFixture, freePort } from './helpers/bridge.mjs';
 import { loadExtension } from './helpers/extension.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
 import { createServer } from 'node:net';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { tmpdir } from 'node:os';
-import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
-const base = join(dirname(fileURLToPath(import.meta.url)), '..');
-const plugin = join(base, 'streamdeck', 'io.github.minjungw00.musicdeckbridge.sdPlugin','bin','plugin.js');
 const origin = 'chrome-extension://' + 'a'.repeat(32);
-async function freePort() {
-  const server = createServer();
-  await new Promise((resolve, reject) => server.once('error', reject).listen(0, '127.0.0.1', resolve));
-  const port = server.address().port;
-  await new Promise(resolve => server.close(resolve));
-  return port;
-}
 async function post(port, route, data) {
   const response = await fetch(`http://127.0.0.1:${port}${route}`, {
     method:'POST',
@@ -26,28 +15,11 @@ async function post(port, route, data) {
   });
   return {status:response.status, body:await response.json()};
 }
-async function start(port, appdata, useOverride=true) {
-  const env = {...process.env, APPDATA:appdata, MUSIC_DECK_BRIDGE_DEV_TEST:'1', MUSIC_DECK_BRIDGE_TEST_PIN:'654321'};
-  if (useOverride) env.MUSIC_DECK_BRIDGE_TEST_PORT = String(port);
-  else delete env.MUSIC_DECK_BRIDGE_TEST_PORT;
-  const proc = spawn(process.execPath,[plugin],{env,stdio:['ignore','pipe','pipe']});
-  let log='';
-  for (const stream of [proc.stdout,proc.stderr]) stream.on('data', b => {log+=b.toString();});
-  for(let i=0;i<100;i++) {
-    if(log.includes(`Loopback bridge on 127.0.0.1:${port}`)) return proc;
-    if(proc.exitCode!==null) throw new Error(`Plugin exit: ${log}`);
-    await new Promise(r=>setTimeout(r,25));
-  }
-  proc.kill();
-  throw new Error(`Server failed to start: ${log}`);
-}
-
-test('global port changes live, keeps old listener temporarily, rejects occupied ports and persists after restart',async()=>{
-  const data=mkdtempSync(join(tmpdir(),'music-deck-bridge-port-'));
-  const oldPort=await freePort(), newPort=await freePort();
-  let pluginProc, blocker;
+test('global port changes live, keeps old listener temporarily, rejects occupied ports and persists after restart',async t=>{
+  const bridge = await createBridgeFixture(t, { prefix: 'music-deck-port-' });
+  const data = bridge.directory, oldPort = bridge.port, newPort = await freePort();
+  let blocker;
   try {
-    pluginProc=await start(oldPort,data);
     const pair=await post(oldPort,'/pair',{pin:'654321'});
     assert.equal(pair.status,200);
     const token=pair.body.token;
@@ -79,23 +51,20 @@ test('global port changes live, keeps old listener temporarily, rejects occupied
     assert.equal((await post(newPort,'/status',{token})).body.serverPort,newPort);
     assert.equal(JSON.parse(readFileSync(join(data,'MusicDeckBridge','config.json'),'utf8')).port,newPort);
 
-    pluginProc.kill();
-    await new Promise(r=>pluginProc.once('exit',r));
-    pluginProc=await start(newPort,data,false);
+    await bridge.stop();
+    await bridge.start({ port: newPort, useSavedPort: true });
     assert.equal((await post(newPort,'/status',{token})).status,200);
     assert.equal((await post(newPort,'/status',{token})).body.serverPort,newPort);
   } finally {
-    if (pluginProc?.exitCode===null) pluginProc.kill();
+    await bridge.stop();
     if (blocker?.listening) await new Promise(r=>blocker.close(r));
-    rmSync(data,{recursive:true,force:true});
   }
 });
 
-test('volume slider preview overrides stale didReceiveSettings before first physical dial turn',async()=>{
-  const data=mkdtempSync(join(tmpdir(),'music-deck-bridge-dial-'));
-  const port=await freePort();let proc;
+test('volume slider preview overrides stale didReceiveSettings before first physical dial turn',async t=>{
+  const bridge = await createBridgeFixture(t, { prefix: 'music-deck-dial-' });
+  const port = bridge.port;
   try {
-    proc=await start(port,data);
     const pair=await post(port,'/pair',{pin:'654321'});
     const token=pair.body.token;
     const state={volume:50,title:'Volume',standalone:true};
@@ -109,8 +78,7 @@ test('volume slider preview overrides stale didReceiveSettings before first phys
     const result=await post(port,'/sync',{token,clientId:101,state});
     assert.deepEqual(result.body.commands,[{type:'volume_delta',amount:5}]);
   } finally {
-    if(proc?.exitCode===null)proc.kill();
-    rmSync(data,{recursive:true,force:true});
+    await bridge.stop();
   }
 });
 

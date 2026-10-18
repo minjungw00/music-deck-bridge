@@ -1,46 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { once } from 'node:events';
-import { createServer } from 'node:net';
-import { fileURLToPath } from 'node:url';
-
-const plugin = fileURLToPath(new URL('../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/bin/plugin.js', import.meta.url));
+import { createBridgeFixture } from './helpers/bridge.mjs';
 const prefix = 'io.github.minjungw00.musicdeckbridge.';
-const origin = 'chrome-extension://' + 'a'.repeat(32);
 
 test('cold-start requests retain all button and dial inputs through startup and cancel on re-pairing', async t => {
-  const temp = mkdtempSync(join(tmpdir(), 'music-deck-launch-'));
-  const probe = createServer();
-  await new Promise(resolve => probe.listen(0, '127.0.0.1', resolve));
-  const port = probe.address().port;
-  await new Promise(resolve => probe.close(resolve));
-  const proc = spawn(process.execPath, [plugin], {
-    env: { ...process.env, APPDATA: temp, MUSIC_DECK_BRIDGE_DEV_TEST: '1',
-      MUSIC_DECK_BRIDGE_TEST_PORT: String(port), MUSIC_DECK_BRIDGE_TEST_PIN: '654321' },
-    stdio: ['ignore', 'pipe', 'pipe'],
-  });
-  const closed = once(proc, 'close');
-  t.after(async () => {
-    if (proc.exitCode === null && proc.signalCode === null) proc.kill();
-    await closed; rmSync(temp, { recursive: true, force: true });
-  });
-  let output = '';
-  for (const stream of [proc.stdout, proc.stderr]) stream.on('data', chunk => { output += chunk; });
-  for (let i = 0; !output.includes('Loopback bridge on'); i++) {
-    assert.ok(i < 200 && proc.exitCode === null, output);
-    await new Promise(resolve => setTimeout(resolve, 10));
-  }
-  async function post(route, body) {
-    const response = await fetch(`http://127.0.0.1:${port}${route}`, {
-      method: 'POST', headers: { Origin: origin, 'Content-Type': 'application/json' },
-      body: JSON.stringify(body), signal: AbortSignal.timeout(3000),
-    });
-    return { status: response.status, body: await response.json() };
-  }
+  const bridge = await createBridgeFixture(t, { prefix: 'music-deck-launch-' });
+  const post = bridge.post;
   let token = (await post('/pair', { pin: '654321' })).body.token;
   async function event(name, event = 'keyDown', payload = {}) {
     const result = await post('/__test/event', { token, event: {

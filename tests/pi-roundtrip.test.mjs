@@ -1,3 +1,4 @@
+import { freePort, manageChild } from './helpers/bridge.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { WebSocket, WebSocketServer } from 'ws';
@@ -28,11 +29,12 @@ for (const protectedManifest of [false, true]) {
     cpSync(join(dirname(plugin), '..'), installed, { recursive: true });
     // Exercise the SDK's opaque-manifest path; actual Maker Console DRM still needs a device test.
     if (protectedManifest) writeFileSync(join(installed, 'manifest.json'), 'opaque manifest fixture');
+    const bridgePort = await freePort();
     const server = new WebSocketServer({ host: '127.0.0.1', port: 0 });
     const messages = [];
     const lifecycle = [];
     const errors = [];
-    let peer, peerClose, proc, processClosed;
+    let peer, peerClose, proc, child;
     let output = '';
     function recordError(error) { errors.push(error); lifecycle.push(`error: ${error.stack || error}`); }
     server.on('error', recordError);
@@ -56,12 +58,7 @@ for (const protectedManifest of [false, true]) {
         await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
       } finally {
         if (proc) {
-          // Wait for stdio to close as well, before deleting the installed copy on Windows.
-          const timer = setTimeout(() => proc.kill('SIGKILL'), 2000);
-          try {
-            if (proc.exitCode === null && proc.signalCode === null) proc.kill();
-            await processClosed;
-          } finally { clearTimeout(timer); }
+          await child.stop();
         }
         rmSync(tmp, { recursive: true, force: true });
         if (!t.passed) t.diagnostic(diagnostics());
@@ -74,12 +71,12 @@ for (const protectedManifest of [false, true]) {
       plugin: { uuid: id, version: '0.5.1.0' } };
     proc = spawn(process.execPath, [join(installed, 'bin/plugin.js'), '-port', String(server.address().port),
       '-pluginUUID', id, '-registerEvent', 'registerPlugin', '-info', JSON.stringify(info)], {
-      cwd: installed, env: { ...process.env, APPDATA: tmp, MUSIC_DECK_BRIDGE_DEV_TEST: '1', MUSIC_DECK_BRIDGE_TEST_PIN: '654321' },
+      cwd: installed, env: { ...process.env, APPDATA: tmp, MUSIC_DECK_BRIDGE_DEV_TEST: '1', MUSIC_DECK_BRIDGE_TEST_PIN: '654321', MUSIC_DECK_BRIDGE_TEST_PORT: String(bridgePort) },
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     proc.on('error', recordError);
     proc.on('exit', (code, signal) => lifecycle.push(`Plugin exited: code=${code} signal=${signal}`));
-    processClosed = new Promise(resolve => proc.once('close', resolve));
+    child = manageChild(proc);
     for (const stream of [proc.stdout, proc.stderr]) stream.on('data', b => { output += b; });
     async function waitFor(predicate) {
       const deadline = Date.now() + 5000;
@@ -100,7 +97,7 @@ for (const protectedManifest of [false, true]) {
     }
     const origin = 'chrome-extension://' + 'a'.repeat(32);
     async function post(route, body, timeout = 2000) {
-      const response = await fetch('http://127.0.0.1:17864' + route, { method: 'POST',
+      const response = await fetch(`http://127.0.0.1:${bridgePort}` + route, { method: 'POST',
         headers: { Origin: origin, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
         signal: AbortSignal.timeout(timeout) });
       assert.equal(response.status, 200);
@@ -293,7 +290,7 @@ for (const protectedManifest of [false, true]) {
     }
     assert.equal((await connection()).extensionOnline, true);
     // No action is needed to detect that a reinstalled extension lost its token.
-    const missing = await fetch('http://127.0.0.1:17864/status', { method: 'POST',
+    const missing = await fetch(`http://127.0.0.1:${bridgePort}/status`, { method: 'POST',
       headers: { Origin: origin, 'Content-Type': 'application/json' }, body: JSON.stringify({ token: '' }) });
     assert.equal(missing.status, 401);
     const disconnected = await connection();
@@ -312,7 +309,7 @@ for (const protectedManifest of [false, true]) {
     const activePoll = post('/browser-listen', { token: pair.token }, 15000);
     await new Promise(resolve => setTimeout(resolve, 3200));
     assert.equal((await connection()).extensionOnline, true, 'an idle authenticated long poll stays online');
-    const notice = await fetch('http://127.0.0.1:17864/status', { method: 'POST',
+    const notice = await fetch(`http://127.0.0.1:${bridgePort}/status`, { method: 'POST',
       headers: { Origin: origin, 'Content-Type': 'application/json' }, body: JSON.stringify({ token: '' }) });
     assert.equal(notice.status, 401);
     assert.equal((await connection()).extensionOnline, true, 'an unauthenticated notice cannot displace a live pair');
@@ -324,7 +321,7 @@ for (const protectedManifest of [false, true]) {
     await post('/status', { token: pair.token, protocolVersion: 1, minProtocolVersion: 1, extensionVersion: '9.1.0' });
     assert.equal((await connection()).compatibility.extensionVersion, '9.1.0');
     assert.equal((await connection()).extensionOnline, true, 'different application versions share protocol 1');
-    const incompatible = await fetch('http://127.0.0.1:17864/status', { method: 'POST',
+    const incompatible = await fetch(`http://127.0.0.1:${bridgePort}/status`, { method: 'POST',
       headers: { Origin: origin, 'Content-Type': 'application/json' },
       body: JSON.stringify({ token: pair.token, protocolVersion: 2, minProtocolVersion: 2, extensionVersion: '2.0.0' }) });
     assert.equal(incompatible.status, 409);

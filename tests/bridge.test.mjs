@@ -1,45 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
-import { mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-
-const here = dirname(fileURLToPath(import.meta.url));
-const plugin = join(here, '..', 'streamdeck', 'io.github.minjungw00.musicdeckbridge.sdPlugin', 'bin', 'plugin.js');
-const ORIGIN = 'chrome-extension://' + 'a'.repeat(32);
+import { createBridgeFixture } from './helpers/bridge.mjs';
 const BAD_ORIGIN = 'https://music.youtube.com';
 const OTHER_EXTENSION = 'chrome-extension://' + 'b'.repeat(32);
-const HOST = 'http://127.0.0.1:17864';
-async function post(endpoint, body, origin=ORIGIN) {
-  const response = await fetch(`${HOST}${endpoint}`, {
-    method:'POST',
-    headers:{'Origin':origin,'Content-Type':'application/json'},
-    body:JSON.stringify(body),
-    signal:AbortSignal.timeout(1500),
-  });
-  return { code: response.status, json: await response.json() };
-}
-async function ready(process) {
-  let stdout = '';
-  process.stdout.on('data', chunk => { stdout += chunk.toString(); });
-  process.stderr.on('data', chunk => { stdout += chunk.toString(); });
-  for (let i=0;i<100;i++) {
-    if (stdout.includes('Loopback bridge')) return;
-    if (process.exitCode !== null) throw new Error('Bridge exited: '+stdout);
-    await new Promise(resolve => setTimeout(resolve, 40));
-  }
-  throw new Error('Bridge not ready: '+stdout);
-}
-test('local bridge pairing, auth, standalone prioritization and queue', async () => {
-  const temp = mkdtempSync(join(tmpdir(), 'music-deck-bridge-test-'));
-  const proc = spawn(process.execPath,[plugin],{
-    env:{ ...process.env, APPDATA:temp, MUSIC_DECK_BRIDGE_DEV_TEST:'1',MUSIC_DECK_BRIDGE_TEST_PIN:'456789' },
-    stdio:['ignore','pipe','pipe'],
-  });
+test('local bridge pairing, auth, standalone prioritization and queue', async t => {
+  const bridge = await createBridgeFixture(t, { pin: '456789' });
+  const post = async (route, body, origin) => {
+    const result = await bridge.post(route, body, { origin });
+    return { code: result.status, json: result.body };
+  };
   try {
-    await ready(proc);
     assert.equal((await post('/pair',{pin:'456789'},BAD_ORIGIN)).code,403,'web page must be denied');
     assert.equal((await post('/pair',{pin:'000000'})).code,403,'incorrect PIN denied');
     assert.equal((await post('/sync',{token:'invalid',clientId:1,state:{}})).code,401);
@@ -67,20 +37,16 @@ test('local bridge pairing, auth, standalone prioritization and queue', async ()
     assert.deepEqual(correct.json.commands,[{type:'volume_delta',amount:8}]);
     const twice = await post('/sync',{token,clientId:11,state:pwa});
     assert.deepEqual(twice.json.commands,[]);
-  } finally {
-    proc.kill();
-    rmSync(temp,{recursive:true,force:true});
-  }
+  } finally { await bridge.stop(); }
 });
 
-test('immediate long-poll delivery and configurable volume dial steps', async () => {
-  const temp = mkdtempSync(join(tmpdir(), 'music-deck-bridge-poll-'));
-  const proc = spawn(process.execPath,[plugin],{
-    env:{ ...process.env, APPDATA:temp, MUSIC_DECK_BRIDGE_DEV_TEST:'1',MUSIC_DECK_BRIDGE_TEST_PIN:'456789' },
-    stdio:['ignore','pipe','pipe'],
-  });
+test('immediate long-poll delivery and configurable volume dial steps', async t => {
+  const bridge = await createBridgeFixture(t, { pin: '456789' });
+  const post = async (route, body, origin) => {
+    const result = await bridge.post(route, body, { origin });
+    return { code: result.status, json: result.body };
+  };
   try {
-    await ready(proc);
     const paired=await post('/pair',{pin:'456789'});
     assert.equal(paired.code,200);
     const token=paired.json.token;
@@ -105,21 +71,16 @@ test('immediate long-poll delivery and configurable volume dial steps', async ()
       context:'dial1',action:'io.github.minjungw00.musicdeckbridge.volume',payload:{ticks:-2}}});
     assert.deepEqual((await post('/sync',{token,clientId:12,state})).json.commands,
       [{type:'volume_delta',amount:-6}]);
-  } finally {
-    proc.kill();
-    rmSync(temp,{recursive:true,force:true});
-  }
+  } finally { await bridge.stop(); }
 });
 
-test('track dial preserves tick counts and direction, caps bursts and ignores invalid ticks', async () => {
-  const temp = mkdtempSync(join(tmpdir(), 'music-deck-bridge-tracks-'));
-  const proc = spawn(process.execPath, [plugin], {
-    env: { ...process.env, APPDATA: temp, MUSIC_DECK_BRIDGE_DEV_TEST: '1', MUSIC_DECK_BRIDGE_TEST_PIN: '456789' },
-    stdio: ['ignore', 'pipe', 'pipe'],
-  });
-  const closed = new Promise(resolve => proc.once('close', resolve));
+test('track dial preserves tick counts and direction, caps bursts and ignores invalid ticks', async t => {
+  const bridge = await createBridgeFixture(t, { pin: '456789' });
+  const post = async (route, body, origin) => {
+    const result = await bridge.post(route, body, { origin });
+    return { code: result.status, json: result.body };
+  };
   try {
-    await ready(proc);
     const { json: { token } } = await post('/pair', { pin: '456789' });
     const state = { title: 'Example', playing: true };
     async function rotate(ticks) {
@@ -143,9 +104,5 @@ test('track dial preserves tick counts and direction, caps bursts and ignores in
     await rotate(-2);
     assert.deepEqual((await post('/sync', { token, clientId: 15, state })).json.commands,
       ['next', 'next', 'next', 'prev', 'prev'].map(type => ({ type, amount: 0 })));
-  } finally {
-    if (proc.exitCode === null && proc.signalCode === null) proc.kill();
-    await closed;
-    rmSync(temp, { recursive: true, force: true });
-  }
+  } finally { await bridge.stop(); }
 });
