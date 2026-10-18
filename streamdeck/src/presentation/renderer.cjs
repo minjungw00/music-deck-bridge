@@ -1,4 +1,5 @@
 'use strict';
+const { createOutputCache } = require('./output-cache.cjs');
 const { ellipsis, marquee, MARQUEE_STEP_MS } = require('./track-text.cjs');
 const STRINGS = {
   ko: { unavailable: '연결 안 됨', offline: '오프라인', pause: '일시정지', play: '재생', muted: '음소거', absent: 'YTM 없음', currentTrack: '현재 곡', open: 'YTM 실행', like: '좋아요', dislike: '싫어요' },
@@ -17,10 +18,14 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
   tr = key => translate('en', key), now = Date.now, fitDialArtwork, keyTextBackground,
   output: { setImage, setTitle, setFeedback, sendStream } }) {
   let hasDrawing = false;
+  const cache = createOutputCache({ isCurrent: (context, item) => displayed.get(context) === item });
+  const writeImage = (context, item, value) => cache.write(context, item, 'lastImage', value, next => setImage(context, next));
+  const writeTitle = (context, item, value) => cache.write(context, item, 'lastTitle', value, next => setTitle(context, next));
+
   function renderCurrentTrackDial(context, item, state) {
     if (!online()) return;
     const icon = `imgs/actions/toggle/${state?.playing ? 'pause' : 'key'}@2x.png`;
-    if (item.lastImage !== icon) { setImage(context, icon); item.lastImage = icon; }
+    writeImage(context, item, icon);
     const artwork = item.settings?.dialDisplay === 'artwork';
     const fit = item.settings?.artworkFit === 'width' ? 'width' : 'height';
     const showName = artwork && item.settings?.artworkShowTitle === true;
@@ -49,7 +54,7 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
       if (displayed.get(context) !== item) return;
       const changedLayout = item.sentLayout !== layout;
       if (changedLayout) {
-        await sendStream({ event: 'setFeedbackLayout', context, payload: { layout } });
+        if (await sendStream({ event: 'setFeedbackLayout', context, payload: { layout } }) === false) throw new Error('Layout output skipped');
         item.sentLayout = layout;
       }
       if (displayed.get(context) !== item) return;
@@ -61,7 +66,7 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
         feedback.artwork = { value: fitted, enabled: Boolean(fitted) };
         feedback.fallback = { value: icon, enabled: !fitted };
       }
-      await setFeedback(context, feedback);
+      if (await setFeedback(context, feedback) === false) throw new Error('Feedback output skipped');
       item.sentDialImage = image; item.sentArtworkFit = fit;
     }).catch(() => { item.dialSignature = null; });
   }
@@ -77,11 +82,11 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
       marquee(value, item.marqueeStart + delay, now()) : ellipsis(value, width);
     const text = below ? [format(rawTitle, 12), format(rawArtist, 11, 600)].filter(Boolean).join('\n') :
       format([rawTitle, rawArtist].filter(Boolean).join(' — '), 12);
-    if (item.lastTitle !== text) { setTitle(context, text); item.lastTitle = text; }
+    writeTitle(context, item, text);
     const cover = covers.image(state?.cover) || null;
     const lines = settings.titleBackground === true && text ? below && rawTitle && rawArtist ? 2 : 1 : 0;
     const image = keyTextBackground(cover, lines);
-    if (item.lastImage !== image) { setImage(context, image); item.lastImage = image; }
+    writeImage(context, item, image);
   }
   function paint() {
     if (hasDrawing) return;
@@ -97,15 +102,15 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
           // Reflect the selected player's confirmed state, including changes made
           // in Chrome. A key press alone must not optimistically flip the icon.
           const image = `imgs/actions/toggle/${state?.playing ? 'pause' : 'key'}@2x.png`;
-          if (item.lastImage !== image) { setImage(context, image); item.lastImage = image; }
-          if (item.lastTitle !== '') { setTitle(context, ''); item.lastTitle = ''; }
+          writeImage(context, item, image);
+          writeTitle(context, item, '');
         } else if (kind === 'open') {
-          if (item.lastTitle !== '') { setTitle(context, ''); item.lastTitle = ''; }
+          writeTitle(context, item, '');
         } else if (kind === 'like' || kind === 'dislike') {
           const selected = state?.rating === kind.toUpperCase();
           const image = `imgs/actions/${kind}/${selected ? 'selected' : 'key'}@2x.png`;
-          if (item.lastImage !== image) { setImage(context, image); item.lastImage = image; }
-          if (item.lastTitle !== '') { setTitle(context, ''); item.lastTitle = ''; }
+          writeImage(context, item, image);
+          writeTitle(context, item, '');
         } else if (kind === 'volume') {
           const vol = state ? `${state.muted ? tr('muted') + ' ' : ''}${state.volume}%` : tr('absent');
           const icon = `imgs/actions/${state?.muted ? 'mute' : 'volume'}/key@2x.png`;
@@ -119,6 +124,6 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
         void covers.load(state.cover, state.coverFallback);
     } finally { hasDrawing = false; }
   }
-  return { paint, renderCurrentTrackDial, renderCurrentTrackKey };
+  return { paint, renderCurrentTrackDial, renderCurrentTrackKey, settled: cache.settled };
 }
 module.exports = { createRenderer, needsMarquee, translate, MARQUEE_STEP_MS };

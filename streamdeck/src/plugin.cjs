@@ -48,8 +48,8 @@ const renderer = createRenderer({ displayed, covers, selectedEntry: players.sele
   online: () => deck.online, tr: key => translate(deck.locale, key), fitDialArtwork, keyTextBackground,
   output: {
     sendStream: deck.send,
-    setTitle: (context, title) => { deck.send({ event: 'setTitle', context, payload: { title } }); },
-    setImage: (context, image) => { deck.send({ event: 'setImage', context, payload: image ? { image } : {} }); },
+    setTitle: (context, title) => deck.send({ event: 'setTitle', context, payload: { title } }),
+    setImage: (context, image) => deck.send({ event: 'setImage', context, payload: image ? { image } : {} }),
     setFeedback: (context, payload) => deck.send({ event: 'setFeedback', context, payload }),
   } });
 

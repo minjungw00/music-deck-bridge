@@ -4,15 +4,15 @@ const { PLUGIN_ID, ACTION_NAMES } = require('../domain/actions.cjs');
 function createDeckAdapter({ onEvent, onConnected, log, isTest = false }) {
   let streamDeck, sdOnline = false, locale = 'en';
   function sendStream(message) {
-    if (!sdOnline) return;
+    if (!sdOnline) return false;
     let result;
     if (message.event === 'sendToPropertyInspector') {
       // A port change can finish after the user switches inspectors.
-      if (streamDeck.ui.action?.id !== message.context) return;
+      if (streamDeck.ui.action?.id !== message.context) return false;
       result = streamDeck.ui.sendToPropertyInspector(message.payload);
     } else {
       const action = streamDeck.actions.getActionById(message.context);
-      if (!action) return;
+      if (!action) return false;
       if (message.event === 'setTitle') result = action.setTitle(message.payload.title);
       else if (message.event === 'setImage') result = action.setImage(message.payload.image);
       else if (message.event === 'setFeedback' && action.isDial()) result = action.setFeedback(message.payload);
