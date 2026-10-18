@@ -34,7 +34,11 @@ test('dial names, default icons and touch descriptions match their controls', ()
   assert.equal(ko[dial.UUID].Name, '현재 곡 다이얼');
   assert.equal(ko[volume.UUID].Encoder.TriggerDescription.Touch, '음소거');
   const art = JSON.parse(readFileSync(join(root, 'layouts/current-track-artwork.json'), 'utf8'));
-  assert.deepEqual(art.items[0].rect, [50, 0, 100, 100], 'square art fits inside the 200×100 strip');
+  assert.deepEqual(art.items.find(item => item.key === 'artwork').rect, [0, 0, 200, 100]);
+  assert.deepEqual(art.items.find(item => item.key === 'fallback').rect, [50, 0, 100, 100]);
+  const name = art.items.find(item => item.key === 'songName');
+  assert.equal(name.enabled, false);
+  assert.ok(name.zOrder > art.items[0].zOrder, 'song name overlays the artwork');
 });
 
 test('marquee scrolls long titles and artists leftwards and preserves Unicode graphemes',()=>{

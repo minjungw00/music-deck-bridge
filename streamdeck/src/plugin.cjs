@@ -516,24 +516,42 @@ function renderCurrentTrackDial(context, item, state) {
   const icon = `imgs/actions/toggle/${state?.playing ? 'pause' : 'key'}@2x.png`;
   if (item.lastImage !== icon) { setImage(context, icon); item.lastImage = icon; }
   const artwork = item.settings?.dialDisplay === 'artwork';
+  const fit = item.settings?.artworkFit === 'width' ? 'width' : 'height';
+  const showName = artwork && item.settings?.artworkShowTitle === true;
   const layout = artwork ? 'layouts/current-track-artwork.json' : '$A1';
-  const image = artwork && state?.cover && cachedCoverUrl === state.cover ? cachedCoverData : icon;
-  const title = artwork ? '' : tr('currentTrack');
+  const cached = artwork && state?.cover && cachedCoverUrl === state.cover ? cachedCoverData : '';
+  const cover = /^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(cached) ? cached : '';
+  const image = cover || icon;
+  const title = artwork ? showName ? state?.title || '' : '' : tr('currentTrack');
   const value = artwork ? '' : state ? ellipsis(state.title, 14) : tr('unavailable');
-  const signature = JSON.stringify([layout, title, value]);
+  const signature = JSON.stringify([layout, title, value, fit, showName]);
   if (item.dialSignature === signature && item.dialImage === image) return;
   item.dialSignature = signature; item.dialImage = image;
-  const feedback = artwork ? { artwork: image } : { title, value, icon };
   // Serialize layout and image updates so mode changes cannot send artwork to
   // the previous layout, or leave a newly selected layout with stale content.
   item.feedbackQueue = (item.feedbackQueue || Promise.resolve()).then(async () => {
     if (displayed.get(context) !== item) return;
-    if (item.sentLayout !== layout) {
+    const changedLayout = item.sentLayout !== layout;
+    if (changedLayout) {
       await sendStream({ event: 'setFeedbackLayout', context, payload: { layout } });
       item.sentLayout = layout;
     }
     if (displayed.get(context) !== item) return;
+    const feedback = artwork ? { songName: { value: title, enabled: showName && Boolean(title) } } : { title, value, icon };
+    if (artwork && (changedLayout || item.sentDialImage !== image || item.sentArtworkFit !== fit)) {
+      // The SVG viewport crops width-fitted square covers and letterboxes
+      // height-fitted covers without stretching. Only embed cached raster data.
+      let fitted = '';
+      if (cover) {
+        const ratio = fit === 'width' ? 'slice' : 'meet';
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="100" viewBox="0 0 200 100"><image width="200" height="100" preserveAspectRatio="xMidYMid ${ratio}" xlink:href="${cover}"/></svg>`;
+        fitted = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+      }
+      feedback.artwork = { value: fitted, enabled: Boolean(fitted) };
+      feedback.fallback = { value: icon, enabled: !fitted };
+    }
     await setFeedback(context, feedback);
+    item.sentDialImage = image; item.sentArtworkFit = fit;
   }).catch(() => { item.dialSignature = null; });
 }
 function showAlert(context) { sendStream({ event: 'showAlert', context }); }

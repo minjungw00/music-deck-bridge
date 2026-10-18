@@ -11,11 +11,12 @@ function makeInspector(action='io.github.minjungw00.musicdeckbridge.nowplaying',
   const ids=['titleModeRow','optTruncate','optScroll','titleHint','volumeRow','volumeHint',
     'pinRow','generatePin','pairHint','pairState','commandStatus','volumeStep','stepLabel','pinOutput',
     'trackSection','dialSection','dialDisplayRow','dialDisplay','optDialInfo','optDialArtwork','dialDisplayHint',
+    'artworkOptions','artworkFitRow','artworkFit','optArtworkHeight','optArtworkWidth','artworkFitHint','artworkTitleRow','artworkShowTitle',
     'volumeSection','portRow','serverPort','applyPort','portStatus'];
   const elems=Object.fromEntries(ids.map(id=>[id,{
     id, textContent:'',value:id==='volumeStep'?'4':'',listeners:{},attrs:{},dataset:{},
     setAttribute(k,v){this.attrs[k]=v},addEventListener(k,v){this.listeners[k]=v},
-    classList:{removed:[],remove(k){this.removed.push(k)}},
+    classList:{removed:[],hidden:true,remove(k){this.removed.push(k)},toggle(k,value){this.hidden=value;return value;}},
   }]));
   const calls=[];const subscribers={};const client={
     sendToPropertyInspector:{subscribe:fn=>subscribers.connection=fn},
@@ -81,6 +82,19 @@ test('current-track dial exposes its localized persisted display selector only o
     assert.deepEqual(other.elems.dialSection.classList.removed, []);
   }
   assert.match(html, /<sdpi-select[^>]+setting="dialDisplay"[^>]+default="info"/);
+});
+
+test('artwork-only settings have safe defaults and follow display changes', async () => {
+  const pi = makeInspector('io.github.minjungw00.musicdeckbridge.trackdial'); await pi.ready();
+  assert.equal(pi.elems.artworkOptions.classList.hidden, true);
+  assert.equal(pi.elems.optArtworkWidth.textContent, '좌우에 맞추기');
+  assert.equal(pi.elems.optArtworkHeight.textContent, '상하에 맞추기');
+  pi.elems.dialDisplay.value = 'artwork'; pi.elems.dialDisplay.listeners.valuechange();
+  assert.equal(pi.elems.artworkOptions.classList.hidden, false);
+  pi.subscribers.settings({ payload: { settings: { dialDisplay: 'info' } } });
+  assert.equal(pi.elems.artworkOptions.classList.hidden, true);
+  assert.match(html, /<sdpi-select[^>]+setting="artworkFit"[^>]+default="height"/);
+  assert.match(html, /<sdpi-checkbox[^>]+setting="artworkShowTitle"[^>]+default="false"/);
 });
 
 test('new PIN instructions take priority over a recently connected old extension', async()=>{

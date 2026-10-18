@@ -56,6 +56,18 @@
       </sdpi-select>
     </sdpi-item>
     <p class="hint" id="dialDisplayHint">Push or touch to play/pause; turn for previous/next track. Without artwork, the playback icon is shown.</p>
+    <div id="artworkOptions" class="hidden">
+      <sdpi-item id="artworkFitRow" label="Artwork fit">
+        <sdpi-select id="artworkFit" setting="artworkFit" default="height">
+          <option id="optArtworkHeight" value="height">Fit height</option>
+          <option id="optArtworkWidth" value="width">Fit width</option>
+        </sdpi-select>
+      </sdpi-item>
+      <p id="artworkFitHint" class="hint">Fit width fills the screen and may crop the top and bottom. Fit height shows the full artwork.</p>
+      <sdpi-item id="artworkTitleRow" label="Song name">
+        <sdpi-checkbox id="artworkShowTitle" setting="artworkShowTitle" default="false" label="Show song name"></sdpi-checkbox>
+      </sdpi-item>
+    </div>
   </section>
   <section id="volumeSection" class="hidden">
     <sdpi-item id="volumeRow" label="Volume per tick">

@@ -6,7 +6,45 @@
     {
       "key": "artwork",
       "type": "pixmap",
-      "rect": [50, 0, 100, 100]
+      "rect": [
+        0,
+        0,
+        200,
+        100
+      ],
+      "enabled": false,
+      "zOrder": 0
+    },
+    {
+      "key": "fallback",
+      "type": "pixmap",
+      "rect": [
+        50,
+        0,
+        100,
+        100
+      ],
+      "zOrder": 1
+    },
+    {
+      "key": "songName",
+      "type": "text",
+      "rect": [
+        0,
+        74,
+        200,
+        26
+      ],
+      "font": {
+        "size": 14,
+        "weight": 600
+      },
+      "alignment": "center",
+      "color": "white",
+      "background": "black",
+      "text-overflow": "ellipsis",
+      "enabled": false,
+      "zOrder": 2
     }
   ]
 }
