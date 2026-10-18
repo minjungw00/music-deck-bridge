@@ -1,11 +1,12 @@
 # Changelog
 
-## v1.1.1-dev — Unreleased
+## v1.1.1 — 2026-10-18
 
 - Keep the English/Korean popup action buttons on one line with equal widths, explicit typography and consistent heights; shorten the English status button to “Status”.
 - Show the existing main icon beside the Music Deck Bridge popup heading.
 - Add an offline rendering-preview generator for the English/Korean popup and Stream Deck + layout with sample track metadata and selectable display states.
 - Select the English/Korean popup images and actual Stream Deck capture as official product media; balance the capture's outer margins without changing its UI pixels.
+- Publish source/Chrome version 1.1.1 and Stream Deck version 1.1.1.0; retain protocol 1, existing permissions, pairing and profile settings. Record the Explorer-folder-handle installation failure and successful retry separately; no installer code fix is claimed.
 
 ## v1.1.0 — 2026-10-18
 

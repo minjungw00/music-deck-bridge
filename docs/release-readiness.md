@@ -4,7 +4,7 @@ Last updated: October 18, 2026 (Asia/Seoul). Latest stable GitHub release: **v1.
 
 The exact release source, final Windows/Ubuntu CI run and package checksums are recorded on the [v1.1.0 GitHub Release](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.1.0). See the [v1.1.0 scope and verification record](verification/v1.1.0.md). GitHub publication and store approval are separate.
 
-Current development cycle: **1.1.1-dev**, explicitly selected by the maintainer. The [popup button layout correction](verification/popup-button-layout.md) is unreleased; development builds retain that target and use separate build identities.
+Current release preparation: **v1.1.1**, explicitly requested by the maintainer. The selected **1.1.1-dev** cycle has been promoted to source/Chrome **1.1.1** and Stream Deck **1.1.1.0**, retaining protocol **1**. The [release verification record](verification/v1.1.1.md) tracks exact-source CI and publication; no next development target is selected automatically.
 
 ## Current evidence
 
@@ -37,6 +37,7 @@ The ACCESS DENIED installation condition [recurred after publication](verificati
 
 ## Detailed verification records
 
+- [v1.1.1 popup corrections, product media and release verification](verification/v1.1.1.md)
 - [v1.1.0 publication, exact-source CI and public package hashes](verification/v1.1.0.md)
 - [Selected official images, source provenance and lossless Stream Deck margin correction](verification/official-images-2026-10-18.md)
 - [October 18 maintainer validation of device, Chrome and update/recovery](verification/maintainer-validation-2026-10-18.md)
