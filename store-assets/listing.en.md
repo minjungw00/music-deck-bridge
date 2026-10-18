@@ -1,6 +1,6 @@
 # Store copy — English
 
-Draft listing copy. Check every claim against the final submitted build and complete the [submission checklist](README.md). Track version-specific results and approval status in [release readiness](../docs/release-readiness.md).
+Reference copy for store listings and review-requested revisions. Confirm the actual dashboard text against the submitted build. Track submitted versions, review status and uploaded-copy provenance in [release readiness](../docs/release-readiness.md) and its linked records.
 
 ## Chrome Web Store
 
@@ -35,15 +35,13 @@ Summary: Control the YouTube Music web player from Stream Deck keys and Stream D
 
 Description:
 
-Keep playback controls and current-track information on Stream Deck while YouTube Music runs in Chrome. Music Deck Bridge provides ten actions: Now Playing, Play / Pause, Previous Track, Next Track, Mute, Volume Dial, Current Track Dial, Open YouTube Music, Like and Dislike.
+Control YouTube Music in Chrome from Stream Deck on Windows. Music Deck Bridge connects a Stream Deck plugin with a companion Chrome extension for playback keys, song information and Stream Deck + dials.
 
-The launch key opens or focuses YouTube Music in Chrome. Other controls open a missing player and perform their input once its controls are ready. A playback input starts a restored paused player; the dedicated launch key only opens or focuses the page. Like and Dislike keys show the selected rating and remove it when pressed again; a signed-in player with available rating controls is required.
+Play, pause, skip tracks, mute, open YouTube Music, and like or dislike the current song. Controls can open a missing player and complete the requested input when ready. Press a rating key again to remove that rating; a signed-in player with working rating controls is required.
 
-The Now Playing key shows artwork, title and artist and supports scrolling text. The Volume Dial adjusts YouTube Music by 1–5 percentage points per tick and mutes on push or touch. The Current Track Dial skips on rotation and plays or pauses on push or touch. Choose its display as playback icon with song name or album artwork.
+The Now Playing key shows artwork, title and artist, with text visibility and scrolling options. The Volume Dial adjusts volume by 1–5 percentage points per tick and mutes on press or touch. The Current Track Dial skips on rotation and plays or pauses on press or touch. Choose song information or fitted album artwork with optional text.
 
-Install the companion Chrome extension from the project installation guide, then generate a PIN in any action's settings and enter it in the extension popup. Both components must run on the same Windows computer. The default bridge port is 17864 and can be changed in either component. Unpair revokes the connection on both sides when the bridge is reachable.
-
-Requires Windows 10/11, Chrome 116+ and Stream Deck 7.1+. Key actions support Stream Deck key devices; the two dial actions require Stream Deck +. English and Korean are included. An installed YouTube Music Chrome app is preferred when both it and a regular player tab are open.
+Requires Windows 10/11, Google Chrome 116+, Stream Deck 7.1+ and the companion Chrome extension. Dial controls require Stream Deck +. Install both components on the same PC and pair them with a six-digit PIN. The local bridge port is configurable. English and Korean are supported; normal Chrome tabs and the Chrome-installed YouTube Music app work.
 
 Independent, unofficial integration; not affiliated with or endorsed by Google, YouTube, Elgato or Corsair.
 
@@ -64,4 +62,4 @@ Independent, unofficial integration; not affiliated with or endorsed by Google, 
 - Privacy: https://github.com/minjungw00/music-deck-bridge/blob/main/PRIVACY.md
 - License/notices: repository LICENSE and THIRD_PARTY_NOTICES.md, also included in packages.
 
-Before submission, ensure the public privacy URL matches the uploaded build and review store data-use declarations against PRIVACY.md. The extension handles song metadata, tab IDs and local authentication; the plugin makes external artwork requests. Do not describe all traffic as local. Fill the store's actual privacy form after reviewing its then-current categories.
+Before submitting or revising a listing, ensure the public privacy URL matches the uploaded build and review store data-use declarations against PRIVACY.md. The extension handles song metadata, tab IDs and local authentication; the plugin makes external artwork requests. Do not describe all traffic as local. Fill the store's actual privacy form after reviewing its then-current categories.

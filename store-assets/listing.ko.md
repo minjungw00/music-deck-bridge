@@ -1,6 +1,6 @@
 # 스토어 등록 문안 — 한국어
 
-스토어 등록 문안 초안입니다. 제출할 빌드에서 모든 기능을 확인하고 [제출 체크리스트](README.md)를 완료하세요. 버전별 검증 결과와 승인 상태는 [출시 준비 기록](../docs/release-readiness.md)에서 관리합니다.
+스토어 등록·심사 대응 수정에 사용할 참고 문안입니다. 실제 대시보드의 문안을 제출한 빌드와 대조하세요. 제출 버전·심사 상태·실제 제출본의 출처는 [출시 준비 기록](../docs/release-readiness.md)과 연결된 기록에서 관리합니다.
 
 ## Chrome 웹 스토어
 
@@ -28,6 +28,8 @@ Windows 10/11, Chrome 116 이상, Stream Deck 소프트웨어 7.1 이상과 동�
 Google, YouTube, Elgato, Corsair와 제휴하거나 이들의 승인을 받은 제품이 아닌 독립적인 비공식 연동 도구입니다.
 
 ## Elgato Marketplace
+
+아래는 검토용 번역입니다. Marketplace 제출 문안에는 [영문](listing.en.md#elgato-marketplace)을 사용하세요.
 
 이름: **Music Deck Bridge**
 
