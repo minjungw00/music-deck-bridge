@@ -7,8 +7,8 @@ Last updated: October 18, 2026 (Asia/Seoul). Use this document for current distr
 | Channel | Version and current state | Evidence |
 | --- | --- | --- |
 | GitHub | **v1.1.1**, published October 18 at 16:16 KST | [Release](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.1.1) · [Publication verification](verification/v1.1.1.md) |
-| Elgato Marketplace | **v1.1.1**, newly submitted and **Pending review** | [October 18 maintainer report and submission provenance](verification/review-preparation.md) |
-| Chrome Web Store | Preparation; no submission or public install URL reported | [Submission guide](../store-assets/chrome/README.md) |
+| Elgato Marketplace | **v1.1.1**, registered and **Pending review** | [October 18 maintainer report](verification/review-preparation.md) |
+| Chrome Web Store | **v1.1.1**, registered and **Pending review** | [October 18 maintainer report](verification/review-preparation.md) |
 
 Source/Chrome version is **1.1.1**, Stream Deck version **1.1.1.0**, wire protocol **1**. Public store install links remain inactive until approval, publication and installation verification. Earlier public GitHub tags/assets are unchanged. The **1.1.1-dev** cycle is complete; no next development target has been selected under the [versioning policy](versioning.md).
 
@@ -31,9 +31,9 @@ v1.1.1 adds consistent popup button sizing, the heading icon, the offline render
 
 ## Remaining work
 
-1. **Marketplace v1.1.1:** track the review result, Console version identifier and uploaded-file hash. Obtain and test that version's [Console-processed installer](verification/marketplace-drm.md).
-2. **Submission media and listing:** use the prepared [Chrome](../store-assets/chrome/README.md#upload-files) and [Marketplace upload files](../store-assets/elgato/README.md#upload-files); check actual uploaded media, supported models/software and privacy declarations against the submitted package.
-3. **Chrome Web Store:** complete its submission and unpacked-to-store migration checks independently of Marketplace. Verify each public install URL after approval/publication.
+1. **Both store reviews:** track each v1.1.1 review independently, respond to review requests and retain the store identifiers, submitted-file hashes and listing/media revisions in the [submission record](verification/review-preparation.md).
+2. **Marketplace execution:** obtain and test the v1.1.1 [Console-processed installer](verification/marketplace-drm.md). Ordinary GitHub-package checks and store registration do not establish DRM execution.
+3. **Store publication and migration:** after each listing is approved and public, verify its install URL and actual installation. Check unpacked-to-store Chrome migration/new PIN pairing and store-installed component operation before enabling the public links in installation guides.
 4. **Windows protocol deployment:** confirm explicit component identities/status and retained pairing on the actual Windows component pair. Controlled compatibility fixtures already pass.
 5. **Additional environment coverage:** retain provenance for clean-environment install/uninstall/reset and idle/port-conflict checks outside the existing confirmed scope. Future wire-version changes require tests for their implemented ranges.
 
@@ -41,7 +41,7 @@ v1.1.1 adds consistent popup button sizing, the heading icon, the offline render
 
 ### Releases, submissions and media
 
-- [Current Marketplace v1.1.1 review and submission provenance](verification/review-preparation.md)
+- [Both stores' v1.1.1 review status and submission provenance](verification/review-preparation.md)
 - [v1.1.1 popup corrections, product media and release verification](verification/v1.1.1.md)
 - [v1.1.0 publication, exact-source CI and public package hashes](verification/v1.1.0.md)
 - [Selected official images, source provenance and lossless Stream Deck margin correction](verification/official-images-2026-10-18.md)

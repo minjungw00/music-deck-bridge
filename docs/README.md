@@ -17,7 +17,7 @@
 ## Release and verification records
 
 - [Release readiness](release-readiness.md): current release/submission status, remaining work and links to detailed test records.
-- [Marketplace review](verification/review-preparation.md): current submission report and package provenance; earlier preparation is explicitly archived.
+- [Store reviews](verification/review-preparation.md): maintainer reports, submitted versions and package provenance for both stores; earlier preparation is explicitly archived.
 - [Official product images](verification/official-images-2026-10-18.md): canonical files, displayed versions and image provenance.
 - [Security readiness](security-readiness.md): repository settings, dated checks and inspection limits.
 - [Verification records](verification/): version-specific results, environment details, logs, observations and investigation history, indexed in [release readiness](release-readiness.md#detailed-verification-records).

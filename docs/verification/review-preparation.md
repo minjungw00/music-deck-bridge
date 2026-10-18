@@ -1,42 +1,40 @@
-# Marketplace review status and preparation
+# Store submissions and review — v1.1.1
 
-Last updated: October 18, 2026 (Asia/Seoul). The maintainer reports **v1.1.1 newly submitted to Elgato Marketplace and Pending review**. This replaces v1.0.1 as the current review target in project documentation. Approval, public availability and actual execution of a Console-processed package have not been reported.
+Last updated: October 18, 2026 (Asia/Seoul). The maintainer reports that **version 1.1.1 is registered in both Elgato Marketplace and Chrome Web Store, with both reviews pending**. This supersedes the earlier Chrome preparation status. Approval and public availability have not been reported.
 
-## Distribution status
+## Reported submissions
 
-| Channel | Current state | Evidence |
-| --- | --- | --- |
-| GitHub | v1.1.1 published | [Release and package verification](v1.1.1.md) |
-| Elgato Marketplace | v1.1.1 submitted, Pending review | October 18 maintainer report |
-| Chrome Web Store | Preparation; no submission or public URL reported | [Submission guide](../../store-assets/chrome/README.md) |
+| Store | Registered version | Review state | Evidence |
+| --- | --- | --- | --- |
+| Elgato Marketplace | 1.1.1; plugin numeric version 1.1.1.0 | Pending review | October 18 maintainer report |
+| Chrome Web Store | 1.1.1 | Pending review | October 18 maintainer report |
 
-Store approval and GitHub publication are independent. Keep the [release readiness summary](../release-readiness.md) as the entry point for current status and remaining work.
+The [release readiness summary](../release-readiness.md) is the entry point for current distribution status and remaining work. Store approvals, GitHub publication and actual store-installed operation are separate milestones.
 
-## Submission provenance
+## Package and listing provenance
 
-| Field | Value / status |
+The public reference is [GitHub v1.1.1](v1.1.1.md), tag source `33b4757364e2e2c153cecc635027024662fffdbd`:
+
+| Reference asset | SHA-256 |
 | --- | --- |
-| Reported Marketplace version | 1.1.1; plugin numeric version 1.1.1.0 |
-| Public reference source | Tag v1.1.1, commit `33b4757364e2e2c153cecc635027024662fffdbd` |
-| Public reference installer SHA-256 | `ffe7a11c3965d5b7da1169afd16f8f20792c8ae4c9c18bed3234ba46c8750aca` |
-| Actual uploaded-file hash | Not supplied; equality with the public reference is not independently established |
-| Maker Console product/version ID and processing/publication settings | Not supplied |
-| Processed installer and actual DRM execution | Not supplied / [not tested](marketplace-drm.md) |
+| `io.github.minjungw00.musicdeckbridge.streamDeckPlugin` | `ffe7a11c3965d5b7da1169afd16f8f20792c8ae4c9c18bed3234ba46c8750aca` |
+| `music-deck-bridge-chrome-1.1.1.zip` | `810ea1cc37db886483842aee8776cbd473d63129ddfb6375e4af0dc4336d25ad` |
 
-The public reference hash identifies the GitHub package, not an independently inspected Marketplace upload or processed download. Earlier v1.0.1 preparation measurements are retained in the [historical record](review-preparation-v1.0.1.md).
+These hashes identify the public reference files. The exact uploaded-file hashes, store product/version identifiers, submitted listing/media revisions and publication settings were not supplied. Registration is confirmed by the maintainer report; equality with those reference files and the local listing copy is not independently established. No public store install URL has been supplied.
 
-## Completed preparation
+The Console-processed installer and actual DRM execution remain [unverified](marketplace-drm.md). The [v1.0.1 preparation measurements](review-preparation-v1.0.1.md) remain historical and are not evidence for either current submission.
 
-- v1.1.1 is published with exact-source Windows/Ubuntu CI, official packaging and verified public package checksums. Protocol negotiation and the previously planned controls/display features are included in the released source.
-- English and Korean official popup renderings now display plugin/extension **1.1.1**. The actual Stream Deck capture is retained unchanged. [Image sources and checksums](official-images-2026-10-18.md).
-- README and the [store asset inventory](../../store-assets/README.md#official-product-images) use the canonical images. [English](../../store-assets/listing.en.md) and [Korean](../../store-assets/listing.ko.md) listing copy and the public privacy policy are available.
-- [Chrome Web Store image exports](chrome-store-images-2026-10-18.md) provide the 128px store icon, English/Korean 1280×800 screenshots and required 440×280 promotional tile.
-- [Marketplace image exports](elgato-store-images-2026-10-18.md) provide the 288px app icon, 1920×960 thumbnail and three English gallery images for key controls, dials and Chrome connection.
-- Device/Chrome checks, settings retention and installation diagnosis remain linked from [release readiness](../release-readiness.md), with their original scope and dates.
+## Available verification and media
 
-## Remaining submission work
+- [Stable release verification](v1.1.1.md): exact-source Windows/Ubuntu CI, official packaging and downloaded/public package checksums.
+- [Official source images](official-images-2026-10-18.md): stable 1.1.1 English/Korean sample-data popup renderings and the unchanged actual Stream Deck capture.
+- [Chrome upload media](chrome-store-images-2026-10-18.md): 128px icon, localized 1280×800 screenshots and 440×280 promotional tile.
+- [Marketplace upload media](elgato-store-images-2026-10-18.md): 288px app icon, 1920×960 thumbnail and three English gallery images.
+- [Maintainer device/Chrome validation](maintainer-validation-2026-10-18.md) and the [later installation investigation](update-procmon-v1.1.0-2026-10-18.md), each with its original scope and date.
 
-1. Track the v1.1.1 review result and record its Console version ID, uploaded-file hash and processing/publication settings when available.
-2. Download and test that version's Console-processed installer using the [DRM record](marketplace-drm.md).
-3. Check the actual submitted listing/media and supported models against the submitted package. Image exports for both stores are prepared and verified; the media actually uploaded to either store has separate verification.
-4. Complete Chrome Web Store preparation and unpacked-to-store migration testing independently. Activate each public store URL only after that product is approved, public and its installation is verified.
+## Review follow-up
+
+1. Track each store's decision independently. Record its product/version identifier, exact uploaded files and review-requested listing/media revisions when available.
+2. Test the Marketplace version's [Console-processed installer](marketplace-drm.md) separately from the GitHub package.
+3. After approval and publication, verify each product URL and store installation. Check Chrome unpacked-to-store migration/new PIN pairing and operation of the store-installed component pair.
+4. Add verified public links to README and both installation guides when each store becomes available. Continue linking GitHub packages while approval/public installation is pending.

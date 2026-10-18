@@ -2,6 +2,8 @@
 
 This directory contains listing copy, artwork and submission checklists. Track submitted versions, Console identifiers, package hashes, review status and verification results in [release readiness](../docs/release-readiness.md) and its linked verification records.
 
+For the current review state of each store, use the [distribution status table](../docs/release-readiness.md#distribution-status). The guides here describe preparing or revising a submission; they are not a record of the exact text or media uploaded to a dashboard.
+
 | Store | Assets and checklist |
 | --- | --- |
 | Elgato Marketplace | [Upload guide and sized exports](elgato/README.md#upload-files): 288px icon, 1920×960 thumbnail and three gallery images |
@@ -27,6 +29,8 @@ The [Chrome Web Store upload set](chrome/README.md#upload-files) and [Elgato Mar
 For each submission, match the package, listing claims and media to the same version. Preserve already submitted packages and record revisions separately. Check current Console requirements before exporting media. Reconcile the submitted extension's storage, scripting, alarms and host permissions with the privacy form; the plugin fetches artwork externally.
 
 The submissions and public installation URLs are independent. Activate each URL in README and both installation guides only after that product is approved, public and its store installation is verified. Record actual Maker Console package execution in the [DRM test record](../docs/verification/marketplace-drm.md).
+
+After submission, record review requests and any submitted revisions against that store's version. After approval, verify public installation and migration before adding the product URL to the installation guides. Keep the approved upload files and their hashes with the submission record.
 
 ## Screenshot capture plan
 
