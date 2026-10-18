@@ -31,11 +31,14 @@ function createSessionService({ storage, activity, transitions, onChange, versio
       now() - lastExtensionContactAt < EXTENSION_ONLINE_MS);
   }
   function protocolBlocked() { return compatibility?.compatible === false; }
-  function checkProtocol(body) {
-    compatibility = { ...protocol.negotiate(body, 'plugin'), pluginVersion: version,
+  function protocolInfo(body) {
+    return { ...protocol.negotiate(body, 'plugin'), pluginVersion: version,
       extensionVersion: protocol.versionLabel(body.extensionVersion),
       peerProtocolVersion: Number.isSafeInteger(body.protocolVersion) ? body.protocolVersion : null,
       peerMinProtocolVersion: Number.isSafeInteger(body.minProtocolVersion) ? body.minProtocolVersion : null };
+  }
+  function applyCompatibility(info) {
+    compatibility = info;
     if (protocolBlocked()) {
       transitions.blocked(compatibility);
       onChange();
@@ -45,7 +48,8 @@ function createSessionService({ storage, activity, transitions, onChange, versio
     return true;
   }
   return {
-    generatePin, authorized, checkProtocol, extensionOnline,
+    generatePin, authorized, extensionOnline,
+    checkProtocol: body => applyCompatibility(protocolInfo(body)),
     get compatibility() { return compatibility; },
     get paired() { return Boolean(auth); },
     get access() { return { paired: Boolean(auth), generation, pairingRequired, blocked: protocolBlocked(), errorCode: compatibility?.errorCode }; },
@@ -65,11 +69,15 @@ function createSessionService({ storage, activity, transitions, onChange, versio
         failures.push(now());
         return { status: 403, data: { error: 'Incorrect or expired PIN' } };
       }
-      if (!checkProtocol(body)) return { status: 409, data: {
-        error: 'Incompatible bridge protocol', errorCode: compatibility.errorCode, compatibility } };
-      const pairedCompatibility = compatibility;
+      const pairedCompatibility = protocolInfo(body);
+      if (!pairedCompatibility.compatible) {
+        applyCompatibility(pairedCompatibility);
+        return { status: 409, data: {
+          error: 'Incompatible bridge protocol', errorCode: compatibility.errorCode, compatibility } };
+      }
       const token = crypto.randomBytes(32).toString('hex');
       const credentials = { token, origin };
+      // A compatible candidate cannot change the active session until persisted.
       storage.saveAuth(credentials);
       resetSession();
       auth = credentials;
