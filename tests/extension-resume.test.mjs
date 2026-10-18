@@ -1,3 +1,4 @@
+import { loadExtension } from './helpers/extension.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -5,7 +6,6 @@ import {join,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import vm from 'node:vm';
 const root=join(dirname(fileURLToPath(import.meta.url)),'..','chrome-extension');
-const bg=readFileSync(new URL('../chrome-extension/protocol.js', import.meta.url), 'utf8') + '\n' + readFileSync(join(root,'background.js'),'utf8');
 const content=readFileSync(join(root,'content.js'),'utf8');
 test('extension update reinjects into already-open PWA but never into discarded tabs',async()=>{
   const callbacks={};const injected=[];
@@ -17,7 +17,7 @@ test('extension update reinjects into already-open PWA but never into discarded 
       onStartup:{addListener(fn){callbacks.onStartup=fn}}},
     alarms:{create:async()=>{},onAlarm:{addListener(fn){callbacks.onAlarm=fn}}},
   };
-  vm.runInNewContext(bg,{chrome,fetch,AbortSignal,JSON,Error,URL,Promise});
+  loadExtension({chrome,fetch,AbortSignal,JSON,Error,URL,Promise});
   callbacks.onInstalled();
   for(let i=0;i<15;i++)await Promise.resolve();
   assert.equal(injected.length,1);

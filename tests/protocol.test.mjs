@@ -1,3 +1,4 @@
+import { loadExtension } from './helpers/extension.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, mkdtempSync, rmSync, existsSync, writeFileSync } from 'node:fs';
@@ -11,7 +12,6 @@ import { fileURLToPath } from 'node:url';
 import protocol from '../chrome-extension/protocol.js';
 
 const shared = readFileSync(new URL('../chrome-extension/protocol.js', import.meta.url), 'utf8');
-const worker = readFileSync(new URL('../chrome-extension/background.js', import.meta.url), 'utf8');
 const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url)));
 const explicit = { protocolVersion: 1, minProtocolVersion: 1, extensionVersion: '9.9.9' };
 
@@ -112,7 +112,7 @@ function extensionHarness() {
     calls.push({ url, body: JSON.parse(options.body) });
     return { ok: responseStatus === 200, status: responseStatus, json: async () => reply };
   } });
-  vm.runInContext(shared + '\n' + worker, ctx);
+  loadExtension(ctx);
   return { storage, calls, ctx, setReply: (body, status = 200) => { reply = body; responseStatus = status; },
     send: (message, sender = {}) => new Promise(resolve => listener(message, sender, resolve)) };
 }
@@ -158,7 +158,7 @@ test('incompatible browser channels recheck after five seconds and recover witho
   h.setReply({ protocolVersion: 1, minProtocolVersion: 1 });
   timers[0].callback();
   await new Promise(resolve => setImmediate(resolve));
-  assert.equal(vm.runInContext('bridgeCompatibility.compatible', h.ctx), true);
+  assert.equal(vm.runInContext('bridgeClient.compatibility.compatible', h.ctx), true);
   assert.equal(timers.length, 1, 'compatible replacement does not schedule an error retry');
   assert.equal(h.storage.bridgeToken, 'existing-token');
 });

@@ -1,3 +1,4 @@
+import { loadExtension } from './helpers/extension.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
@@ -6,7 +7,6 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import vm from 'node:vm';
 
 const base = join(dirname(fileURLToPath(import.meta.url)), '..');
 const plugin = join(base, 'streamdeck', 'io.github.minjungw00.musicdeckbridge.sdPlugin','bin','plugin.js');
@@ -115,7 +115,6 @@ test('volume slider preview overrides stale didReceiveSettings before first phys
 });
 
 test('Chrome extension uses stored custom port and follows live port changes announced by local server',async()=>{
-  const source=readFileSync(new URL('../chrome-extension/protocol.js', import.meta.url), 'utf8') + '\n' + readFileSync(join(base,'chrome-extension','background.js'),'utf8');
   const storage={bridgePort:23111,bridgeToken:'test-token'};
   const requested=[];let listener;
   const chrome={
@@ -132,7 +131,7 @@ test('Chrome extension uses stored custom port and follows live port changes ann
     if(parsed.pathname==='/configure-port' && parsed.port==='23112') return {ok:true,status:200,json:async()=>({ok:true,port:23113,serverPort:23113})};
     return {ok:false,status:404,json:async()=>({error:'Unexpected endpoint'})};
   };
-  vm.runInNewContext(source,{chrome,fetch:fetchStub,AbortSignal,JSON,Number,Promise,Error,URL});
+  loadExtension({chrome,fetch:fetchStub,AbortSignal,JSON,Number,Promise,Error,URL});
   const send=msg=>new Promise(resolve=>listener(msg,{},resolve));
   const check=await send({type:'check'});
   assert.equal(check.ok,true);

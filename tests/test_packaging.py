@@ -2,6 +2,7 @@
 
 import importlib.util
 import json
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -45,6 +46,11 @@ class PackagingTests(unittest.TestCase):
                          manifest["action"]["default_popup"], *manifest["icons"].values(),
                          "_locales/en/messages.json", "_locales/ko/messages.json"):
                 self.assertIn(name, names)
+            worker = bundle.read(manifest["background"]["service_worker"]).decode("utf-8")
+            for arguments in re.findall(r"importScripts\((.*?)\)", worker, re.S):
+                for module in re.findall(r"['\"]([^'\"]+)['\"]", arguments):
+                    self.assertIn(module, names, f"Missing worker dependency: {module}")
+                    self.assertEqual(bundle.read(module), (self.root / "chrome-extension" / module).read_bytes())
             self.assertFalse(any("auth.json" in name or name.endswith(".pem") or ":" in name for name in names))
             self.assertFalse(any(name.startswith("chrome-extension/") for name in names))
             for name in manifest["icons"].values():

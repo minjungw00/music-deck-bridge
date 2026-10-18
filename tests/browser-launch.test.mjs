@@ -1,8 +1,7 @@
+import { loadExtension } from './helpers/extension.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
-const source = readFileSync(new URL('../chrome-extension/protocol.js', import.meta.url), 'utf8') + '\n' + readFileSync(new URL('../chrome-extension/background.js', import.meta.url), 'utf8');
 
 function harness({ tabs = [], response = true, injectionFailures = 0 } = {}) {
   const calls = [];
@@ -35,7 +34,8 @@ function harness({ tabs = [], response = true, injectionFailures = 0 } = {}) {
   };
   const context = vm.createContext({ chrome, AbortSignal, Date: { now: () => now },
     setTimeout(fn, ms) { now += ms; queueMicrotask(fn); } });
-  vm.runInContext(source + '\nthis.api = { performBrowserCommand, startBrowserListener };', context);
+  loadExtension(context);
+  vm.runInContext('this.api = { performBrowserCommand, startBrowserListener };', context);
   return { api: context.api, calls, storage, context,
     send: (message, sender) => new Promise(resolve => listener(message, sender, resolve)) };
 }
@@ -130,13 +130,16 @@ test('modern browser routing avoids per-tab HTTP polls, with fallback for older 
     const h = harness();
     await new Promise(resolve => setImmediate(resolve));
     h.storage.bridgeToken = 'paired-token';
-    vm.runInContext(`browserChannelAvailable = ${!legacy};`, h.context);
     const requests = [];
     h.context.fetch = async url => {
       requests.push(url);
-      if (url.endsWith('/browser-listen')) return { ok: false, status: 401, json: async () => ({ error: 'Stopped' }) };
+      if (url.endsWith('/browser-listen')) return legacy ?
+        { ok: false, status: 404, json: async () => ({ error: 'Legacy plugin' }) } :
+        { ok: true, json: async () => ({}) };
       return { ok: true, json: async () => ({ commands: [], idle: true }) };
     };
+    await h.api.startBrowserListener();
+    requests.length = 0;
     const result = await h.send({ type: 'listen' }, { tab: { id: 7 }, url: 'https://music.youtube.com/' });
     assert.equal(result.paired, true);
     assert.equal(requests.some(url => url.endsWith('/listen')), legacy);

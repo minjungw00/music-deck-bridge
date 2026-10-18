@@ -57,6 +57,12 @@ for (const file of [chrome.background.service_worker, chrome.action.default_popu
   await exists(join(extension, file));
 }
 
+// Classic-worker modules are runtime resources even though the manifest names only the entry point.
+const workerSource = await readFile(join(extension, chrome.background.service_worker), 'utf8');
+for (const [, argumentsText] of workerSource.matchAll(/importScripts\(([\s\S]*?)\)/g)) {
+  for (const [, file] of argumentsText.matchAll(/['"]([^'"]+)['"]/g)) await exists(join(extension, file));
+}
+
 // This is a basic accidental-secret check, not a replacement for GitHub secret scanning.
 const skip = new Set(['.git', 'node_modules', 'dist', '.venv', '__pycache__', 'coverage']);
 async function walk(dir) {

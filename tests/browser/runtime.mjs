@@ -191,7 +191,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
       const executed = await performBrowserCommand({ id: 'incompatible', type: 'next' });
       globalThis.fetch = original;
       await post('/status', { token });
-      return { current: current.compatibility, blocked, executed, token: await pairedToken(), recovered: bridgeCompatibility };
+      return { current: current.compatibility, blocked, executed, token: await pairedToken(), recovered: bridgeClient.compatibility };
     } finally { globalThis.fetch = original; }
   }, token);
   assert.equal(compatibility.current.compatible, true);

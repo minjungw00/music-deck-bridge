@@ -1,8 +1,6 @@
-import { readFileSync } from 'node:fs';
+import { loadExtension } from './extension.mjs';
 import vm from 'node:vm';
 
-const background = readFileSync(new URL('../../chrome-extension/protocol.js', import.meta.url), 'utf8') + '\n' +
-  readFileSync(new URL('../../chrome-extension/background.js', import.meta.url), 'utf8');
 export const musicSender = { tab: { id: 55 }, frameId: 0, url: 'https://music.youtube.com/' };
 
 // Model the two site sliders and a deliberately nonlinear audio volume curve.
@@ -59,7 +57,7 @@ export function playerHarness({ compact = false, available = true, delay = 0 } =
       return [{ result }];
     } },
   };
-  vm.runInNewContext(background, { chrome });
+  loadExtension({ chrome });
   return {
     audio, sliders, state, scriptCalls, setSiteVolume,
     setDocument(document) { page.document = { ...document,
