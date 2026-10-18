@@ -3,6 +3,7 @@
 ## v1.1.1-dev — Unreleased
 
 - Keep the English/Korean popup action buttons on one line with equal widths, explicit typography and consistent heights; shorten the English status button to “Status”.
+- Show the existing main icon beside the Music Deck Bridge popup heading.
 
 ## v1.1.0 — 2026-10-18
 

@@ -18,4 +18,8 @@ A one-off Playwright/Chromium fixture loaded the actual popup HTML/JavaScript wi
 
 Existing version-policy and extension-localization tests pass, including input validation and pairing/status handlers. Repository syntax, manifest resources, locales, version synchronization and basic secret checks pass. No runtime/protocol behavior changed.
 
+## Heading icon
+
+The popup now displays the bundled `icons/128.png` main icon at **28 × 28 CSS pixels**, to the left of the heading with an **8px** gap. The image has empty alternative text because the adjacent heading supplies the product name. The same English/Korean Chromium fixture verifies successful image loading, vertical centering and a single-line heading, while retaining the button measurements above and no horizontal overflow. Both updated previews were visually inspected; extension-localization and repository checks pass.
+
 Root/lockfile version is **1.1.1-dev**; Chrome numeric version **1.1.1**, display version **1.1.1-dev**; Stream Deck numeric version **1.1.1.0**. The public v1.1.0 release remains fixed. Development packages use commit/build metadata under the existing [versioning policy](../versioning.md).
