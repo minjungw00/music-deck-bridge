@@ -68,7 +68,7 @@ let nativeLaunchTimer = null;
 let browserCapable = false;
 let cachedCoverUrl = '';
 let cachedCoverData = '';
-let coverInFlight = '';
+const coverDownloads = new Map();
 let selectedSignature = '';
 let currentPin = '';
 let pinExpiresAt = 0;
@@ -684,8 +684,9 @@ async function fetchCover(source) {
   }
   throw new Error('이미지 리디렉션이 너무 많음');
 }
-async function loadCover(src, fallback = '') {
-  if (!validCover(src) || src === coverInFlight) return;
+function loadCover(src, fallback = '') {
+  if (!validCover(src)) return;
+  if (coverDownloads.has(src)) return coverDownloads.get(src);
   if (coverCache.has(src)) {
     cachedCoverUrl = src;
     cachedCoverData = coverCache.get(src);
@@ -694,34 +695,37 @@ async function loadCover(src, fallback = '') {
   }
   const failure = coverFailures.get(src);
   if (failure && Date.now() - failure.time < 30000) return;
-  coverInFlight = src;
-  try {
-    let uri;
-    try { uri = await fetchCover(src); }
-    catch (error) {
-      // If the service rejects a requested high-resolution variant, retain the
-      // low-resolution cover instead of making the key permanently blank.
-      if (!fallback || fallback === src || !validCover(fallback)) throw error;
-      uri = await fetchCover(fallback);
-    }
-    coverCache.set(src, uri);
-    coverFailures.delete(src);
-    if (coverCache.size > 12) coverCache.delete(coverCache.keys().next().value);
-    if (selectedEntry()?.[1].cover === src) {
-      cachedCoverUrl = src;
-      cachedCoverData = uri;
-      drawSoon();
-    }
-  } catch (e) {
-    coverFailures.set(src, { time: Date.now(), reason: String(e.message || '다운로드 실패').slice(0, 120) });
-    if (coverFailures.size > 25) coverFailures.delete(coverFailures.keys().next().value);
-  } finally { coverInFlight = ''; }
+  const operation = (async () => {
+    try {
+      let uri;
+      try { uri = await fetchCover(src); }
+      catch (error) {
+        // If the service rejects a requested high-resolution variant, retain the
+        // low-resolution cover instead of making the key permanently blank.
+        if (!fallback || fallback === src || !validCover(fallback)) throw error;
+        uri = await fetchCover(fallback);
+      }
+      coverCache.set(src, uri);
+      coverFailures.delete(src);
+      if (coverCache.size > 12) coverCache.delete(coverCache.keys().next().value);
+      if (selectedEntry()?.[1].cover === src) {
+        cachedCoverUrl = src;
+        cachedCoverData = uri;
+        drawSoon();
+      }
+    } catch (e) {
+      coverFailures.set(src, { time: Date.now(), reason: String(e.message || '다운로드 실패').slice(0, 120) });
+      if (coverFailures.size > 25) coverFailures.delete(coverFailures.keys().next().value);
+    } finally { coverDownloads.delete(src); }
+  })();
+  coverDownloads.set(src, operation);
+  return operation;
 }
 function getCoverStatus(src) {
   if (!src) return 'missing';
   if (!validCover(src)) return 'blocked';
   if (cachedCoverUrl === src) return 'ready';
-  if (coverInFlight === src) return 'downloading';
+  if (coverDownloads.has(src)) return 'downloading';
   if (coverFailures.has(src)) return 'failed';
   return 'waiting';
 }
