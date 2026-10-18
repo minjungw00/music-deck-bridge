@@ -7,7 +7,7 @@ import { fitDialArtwork } from '../streamdeck/src/dial-artwork.cjs';
 const raster = 'data:image/png;base64,' + readFileSync(new URL('../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/plugin/icon.png', import.meta.url)).toString('base64');
 const play = 'imgs/actions/toggle/key@2x.png';
 const pause = 'imgs/actions/toggle/pause@2x.png';
-function harness() {
+function harness(output = {}) {
   const calls = [], displayed = new Map();
   const context = { cachedCoverUrl: '', cachedCoverData: '', Date: { now: () => 1000 } };
   const renderer = createRenderer({ displayed, now: () => context.Date.now(), tr: key => key, fitDialArtwork,
@@ -16,9 +16,10 @@ function harness() {
       setImage: (id, image) => calls.push({ id, event: 'image', image }),
       sendStream: async message => { calls.push({ id: message.context, event: 'layout', layout: message.payload.layout }); },
       setFeedback: async (id, feedback) => { calls.push({ id, event: 'feedback', feedback }); },
+      ...output,
     } });
   context.render = renderer.renderCurrentTrackDial;
-  return { context, calls, add(id, dialDisplay) {
+  return { context, calls, displayed, add(id, dialDisplay) {
     const item = { settings: { dialDisplay } }; displayed.set(id, item); return item;
   }, async paint(id, item, state) { context.render(id, item, state); await item.feedbackQueue; } };
 }
@@ -189,10 +190,110 @@ test('rapid mode switches preserve layout-before-content order and a reappearing
   item.settings.dialDisplay = 'artwork'; h.context.render('dial', item, state);
   await item.feedbackQueue;
   assert.deepEqual(h.calls.filter(call => call.event !== 'image').map(call => call.event),
-    ['layout', 'feedback', 'layout', 'feedback', 'layout', 'feedback']);
+    ['layout', 'feedback'], 'unsent intermediate modes are coalesced into the final mode');
   assert.equal(h.calls.at(-1).feedback.fallback.value, play);
   const next = h.add('dial', 'info');
   await h.paint('dial', next, state);
   assert.equal(h.calls.at(-2).layout, '$A1');
   assert.equal(h.calls.at(-1).feedback.value, 'Song');
 });
+
+function deferred() {
+  let resolve, reject;
+  const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
+  return { promise, resolve, reject };
+}
+const flush = async () => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
+
+test('a delayed layout retains only the in-flight frame and the latest pending dial frame', async () => {
+  const layout = deferred(), values = [];
+  const h = harness({ sendStream: () => layout.promise,
+    setFeedback(_id, feedback) { values.push(feedback.value); } });
+  const item = h.add('dial', 'info');
+  h.context.render('dial', item, { title: 'First' }); await flush();
+  for (let i = 1; i <= 20; i++) h.context.render('dial', item, { title: `State ${i}` });
+  assert.deepEqual(values, [], 'content must wait for its layout');
+  layout.resolve(); await item.feedbackQueue;
+  assert.deepEqual(values, ['First', 'State 20']);
+});
+
+test('pending mode and artwork changes coalesce without sending content before its layout', async () => {
+  const feedback = deferred(), trace = [];
+  const h = harness({
+    sendStream(message) { trace.push(['layout', message.payload.layout]); },
+    setFeedback(_id, value) {
+      trace.push(['feedback', value]);
+      if (trace.length === 2) return feedback.promise;
+    } });
+  const item = h.add('dial', 'info');
+  h.context.render('dial', item, { title: 'First' }); await flush();
+  item.settings.dialDisplay = 'artwork'; h.context.render('dial', item, { title: 'Middle' });
+  item.settings.dialDisplay = 'info'; h.context.render('dial', item, { title: 'Skipped' });
+  Object.assign(item.settings, { dialDisplay: 'artwork', artworkShowTitle: true });
+  h.context.cachedCoverUrl = 'latest-cover'; h.context.cachedCoverData = raster;
+  h.context.render('dial', item, { title: 'Latest', cover: 'latest-cover', playing: true });
+  feedback.resolve(); await item.feedbackQueue;
+  assert.deepEqual(trace.map(([type]) => type), ['layout', 'feedback', 'layout', 'feedback']);
+  assert.equal(trace[2][1], 'layouts/current-track-artwork.json');
+  assert.equal(trace[3][1].songName.value, 'Latest');
+  assert.equal(trace[3][1].artwork.enabled, true);
+  await h.paint('dial', item, { title: 'Latest', cover: 'latest-cover', playing: true });
+  assert.equal(trace.length, 4, 'the successfully submitted latest state is cached');
+});
+
+test('failed or skipped dial outputs retry and a failed older frame does not invalidate a newer success', async () => {
+  for (const event of ['layout', 'feedback']) for (const skipped of [false, true]) {
+    let layouts = 0, feedbacks = 0;
+    const fail = () => skipped ? false : Promise.reject(Error('SDK failure'));
+    const h = harness({ sendStream() { if (++layouts === 1 && event === 'layout') return fail(); },
+      setFeedback() { if (++feedbacks === 1 && event === 'feedback') return fail(); } });
+    const item = h.add('dial', 'info');
+    await h.paint('dial', item, { title: 'Retry' });
+    await h.paint('dial', item, { title: 'Retry' });
+    const count = feedbacks;
+    await h.paint('dial', item, { title: 'Retry' });
+    assert.equal(feedbacks, count, 'successful retry is cached');
+    assert.equal(layouts, event === 'layout' ? 2 : 1);
+    assert.equal(feedbacks, event === 'feedback' ? 2 : 1);
+  }
+  for (const skipped of [false, true]) {
+    const first = deferred(), values = [];
+    const h = harness({ setFeedback(_id, value) {
+      values.push(value.value); if (values.length === 1) return first.promise;
+    } });
+    const item = h.add('dial', 'info');
+    h.context.render('dial', item, { title: 'Old' }); await flush();
+    h.context.render('dial', item, { title: 'New' });
+    if (skipped) first.resolve(false); else first.reject(Error('SDK failure'));
+    await item.feedbackQueue;
+    await h.paint('dial', item, { title: 'New' });
+    assert.deepEqual(values, ['Old', 'New']);
+  }
+});
+
+test('returning to the in-flight frame discards redundant intermediate dial states', async () => {
+  const first = deferred(), values = [];
+  const h = harness({ setFeedback(_id, value) {
+    values.push(value.value); if (values.length === 1) return first.promise;
+  } });
+  const item = h.add('dial', 'info');
+  h.context.render('dial', item, { title: 'First' }); await flush();
+  h.context.render('dial', item, { title: 'Middle' });
+  h.context.render('dial', item, { title: 'First' });
+  first.resolve(); await item.feedbackQueue;
+  assert.deepEqual(values, ['First']);
+});
+
+for (const stage of ['layout', 'feedback']) {
+  test(`a disappearing dial discards queued content while its ${stage} is pending`, async () => {
+    const first = deferred(), values = [];
+    const h = harness({ sendStream() { if (stage === 'layout') return first.promise; },
+      setFeedback(_id, value) { values.push(value.value); return first.promise; } });
+    const item = h.add('dial', 'info');
+    h.context.render('dial', item, { title: 'First' }); await flush();
+    h.context.render('dial', item, { title: 'Queued' });
+    h.displayed.delete('dial');
+    first.resolve(); await item.feedbackQueue;
+    assert.deepEqual(values, stage === 'layout' ? [] : ['First']);
+  });
+}

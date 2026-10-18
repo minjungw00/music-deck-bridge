@@ -22,6 +22,30 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
   const writeImage = (context, item, value) => cache.write(context, item, 'lastImage', value, next => setImage(context, next));
   const writeTitle = (context, item, value) => cache.write(context, item, 'lastTitle', value, next => setTitle(context, next));
 
+  function queueDialFeedback(context, item, frame) {
+    // Keep one in-flight frame and one replaceable pending frame per dial.
+    item.pendingFeedback = frame;
+    if (item.feedbackPending) return;
+    item.feedbackPending = true;
+    item.feedbackQueue = Promise.resolve().then(async () => {
+      try {
+        while (item.pendingFeedback && displayed.get(context) === item) {
+          const next = item.pendingFeedback;
+          item.pendingFeedback = null;
+          if (item.sentDialSignature === next.signature && item.sentDialImage === next.image) continue;
+          try { await next.send(); }
+          catch {
+            item.sentDialSignature = null;
+            if (!item.pendingFeedback) item.dialSignature = null;
+          }
+        }
+      } finally {
+        item.pendingFeedback = null;
+        item.feedbackPending = false;
+      }
+    });
+  }
+
   function renderCurrentTrackDial(context, item, state) {
     if (!online()) return;
     const icon = `imgs/actions/toggle/${state?.playing ? 'pause' : 'key'}@2x.png`;
@@ -50,7 +74,7 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     item.dialSignature = signature; item.dialImage = image;
     // Serialize layout and image updates so mode changes cannot send artwork to
     // the previous layout, or leave a newly selected layout with stale content.
-    item.feedbackQueue = (item.feedbackQueue || Promise.resolve()).then(async () => {
+    queueDialFeedback(context, item, { signature, image, send: async () => {
       if (displayed.get(context) !== item) return;
       const changedLayout = item.sentLayout !== layout;
       if (changedLayout) {
@@ -68,7 +92,8 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
       }
       if (await setFeedback(context, feedback) === false) throw new Error('Feedback output skipped');
       item.sentDialImage = image; item.sentArtworkFit = fit;
-    }).catch(() => { item.dialSignature = null; });
+      item.sentDialSignature = signature;
+    } });
   }
   function renderCurrentTrackKey(context, item, state) {
     const settings = item.settings || {};
