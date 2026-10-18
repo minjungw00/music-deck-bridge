@@ -2,6 +2,22 @@
 
 Evidence date: October 18, 2026 (Asia/Seoul). These are completed GitHub publication checks. Store submissions are recorded [separately](stores.md).
 
+## v1.1.2
+
+[Published](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.1.2) October 18 at 23:43 KST. Tag source: `0e0401f2f2635677c14cdb9f967410dda51bbe29`. Source/Chrome **1.1.2**, plugin **1.1.2.0**, protocol **1**.
+
+Scope: role-based plugin/extension/content/inspector modules, pairing persistence and management ordering, port lifecycle, bounded/retryable display output, artwork deduplication and tab/page recovery. The maintainer confirmed normal operation before release; that report and its limits are recorded in [runtime verification](runtime.md#112-refactor).
+
+[Exact-source main CI 39136965856](https://github.com/minjungw00/music-deck-bridge/actions/runs/39136965856) passed on Windows and Ubuntu: 154 Node tests, two Python packaging tests, syntax/resources/locales/version checks, audit with zero reported vulnerabilities and official Elgato validation/packaging. Ubuntu also passed the actual Chromium MV3 local fixture. Release-time API checks found no open Dependabot or secret-scanning alerts; existing reporting/scanning/protection settings remained enabled.
+
+Both downloaded OS artifacts matched source/run/version metadata and checksums. Their 60 plugin and 24 Chrome payload files were identical across OSes and matched the tagged source, accounting for the official CLI removing the plugin manifest's final newline. The release preserves Windows CI archive bytes. Draft downloads and anonymous public downloads matched all three prepared release files byte-for-byte; GitHub reports v1.1.2 as the latest, non-draft, non-prerelease release. Store submissions and Console-processed DRM execution remain separate.
+
+| Public asset | Bytes | SHA-256 |
+| --- | --- | --- |
+| `io.github.minjungw00.musicdeckbridge.streamDeckPlugin` | 466733 | `a7fb228da9a8eac454ddaa99834cce48c745839071d9ed2428c319fe79680590` |
+| `music-deck-bridge-chrome-1.1.2.zip` | 51884 | `024e81f54279b209c6c167225ca76516ceedb611c99084f1b8cbba3bbdfe2e1b` |
+| `SHA256SUMS.txt` | 221 | Covers exactly the two packages above |
+
 ## v1.1.1
 
 [Published](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.1.1) October 18 at 16:16 KST. Tag source: `33b4757364e2e2c153cecc635027024662fffdbd`. Source/Chrome **1.1.1**, plugin **1.1.1.0**, protocol **1**.
