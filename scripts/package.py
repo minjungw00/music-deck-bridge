@@ -23,7 +23,8 @@ def stage(component, output):
     files += (["background.js", "protocol.js",
                "background/bridge-client.js", "background/browser-channel.js",
                "background/page-controls.js", "background/message-router.js",
-               "background/management-service.js", "background/player-sync-service.js", "content.js", "popup.html", "popup.js",
+               "background/management-service.js", "background/player-sync-service.js",
+               "content/metadata.js", "content/commands.js", "content/runtime.js", "content.js", "popup.html", "popup.js",
                "icons/16.png", "icons/48.png", "icons/128.png",
                "_locales/en/messages.json", "_locales/ko/messages.json"] if component == "chrome" else [
         "bin/plugin.js", "property-inspector/settings.html",

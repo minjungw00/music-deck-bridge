@@ -7,7 +7,8 @@ if (typeof importScripts === 'function') importScripts('protocol.js',
 
 const bridgeClient = MusicDeckBridgeClient.create({ chrome, protocol: MusicDeckProtocol,
   fetch: (...args) => fetch(...args) });
-const browserChannel = MusicDeckBrowserChannel.create({ chrome, client: bridgeClient });
+const contentScripts = chrome.runtime.getManifest().content_scripts[0].js;
+const browserChannel = MusicDeckBrowserChannel.create({ chrome, client: bridgeClient, contentScripts });
 const management = MusicDeckManagementService.create({ client: bridgeClient, browserChannel,
   translate: key => chrome.i18n?.getMessage?.(key) || '' });
 const players = MusicDeckPlayerSyncService.create({ chrome, client: bridgeClient,
@@ -31,7 +32,7 @@ async function ensureMusicScripts() {
     for (const tab of tabs) {
       if (!Number.isInteger(tab.id) || tab.discarded) continue;
       try {
-        await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'], world: 'ISOLATED' });
+        await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: contentScripts, world: 'ISOLATED' });
       } catch { /* Permissions, navigation or a sleeping PWA can prevent reinjection. */ }
     }
   } catch { /* Chrome restarting or the extension host unavailable. */ }

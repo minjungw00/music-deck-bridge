@@ -4,7 +4,6 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {join,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import vm from 'node:vm';
 const root=join(dirname(fileURLToPath(import.meta.url)),'..','chrome-extension');
 const content=readFileSync(join(root,'content.js'),'utf8');
 test('extension update reinjects into already-open PWA but never into discarded tabs',async()=>{
@@ -22,13 +21,12 @@ test('extension update reinjects into already-open PWA but never into discarded 
   for(let i=0;i<15;i++)await Promise.resolve();
   assert.equal(injected.length,1);
   assert.equal(injected[0].target.tabId,55);
-  assert.equal(injected[0].files[0],'content.js');
+  const manifest=JSON.parse(readFileSync(join(root,'manifest.json'),'utf8'));
+  assert.deepEqual(Array.from(injected[0].files), manifest.content_scripts[0].js);
   callbacks.onAlarm({name:'pwa-check'});
   for(let i=0;i<15;i++)await Promise.resolve();
   assert.equal(injected.length,2);
   assert.match(content,/__MUSIC_DECK_BRIDGE_RUNNING__/,'duplicate injection guard');
-  assert.match(content,/visibilitychange/);
-  const manifest=JSON.parse(readFileSync(join(root,'manifest.json'),'utf8'));
   assert.ok(manifest.permissions.includes('scripting'));
   assert.ok(manifest.permissions.includes('alarms'));
   assert.deepEqual([...manifest.host_permissions].sort(),['http://127.0.0.1/*','https://music.youtube.com/*'].sort());

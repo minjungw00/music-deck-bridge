@@ -1,13 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import vm from 'node:vm';
+import { loadContent } from './helpers/content.mjs';
 import { playerHarness } from './helpers/player.mjs';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..', 'chrome-extension');
-const source = readFileSync(join(root, 'content.js'), 'utf8');
 
 async function scenario(useMediaSession=false, { commands, manualVolume, compact = false,
   rating = 'INDIFFERENT', ratingsAvailable = true, ratingsDisabled = false,
@@ -74,7 +69,7 @@ async function scenario(useMediaSession=false, { commands, manualVolume, compact
     console,URL,Date,Promise,
   };
   player.setDocument(sandbox.document);
-  vm.runInNewContext(source,sandbox);
+  loadContent(sandbox);
   await new Promise(resolve => setTimeout(resolve,170));
   if (manualVolume !== undefined) {
     player.setSiteVolume(manualVolume);

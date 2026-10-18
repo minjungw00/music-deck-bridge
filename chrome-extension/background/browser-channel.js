@@ -1,6 +1,6 @@
 'use strict';
 (function (root) {
-  function createBrowserChannel({ chrome, client }) {
+  function createBrowserChannel({ chrome, client, contentScripts }) {
     const { post, pairedToken } = client;
     const MUSIC_URL = 'https://music.youtube.com/';
     let browserListening = false;
@@ -38,7 +38,7 @@
         // replies are safe to retry because neither has performed the input.
         try {
           await chrome.scripting.executeScript({ target: { tabId: tab.id, frameIds: [0] },
-            files: ['content.js'], world: 'ISOLATED' });
+            files: contentScripts, world: 'ISOLATED' });
         } catch { diagnostic.reason = 'injection-unavailable'; await wait(200); continue; }
         if (!await allowed(true)) return denied();
         let result;

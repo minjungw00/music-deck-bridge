@@ -20,6 +20,9 @@
         "https://music.youtube.com/*"
       ],
       "js": [
+        "content/metadata.js",
+        "content/commands.js",
+        "content/runtime.js",
         "content.js"
       ],
       "run_at": "document_idle",

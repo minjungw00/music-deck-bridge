@@ -51,6 +51,9 @@ class PackagingTests(unittest.TestCase):
                 for module in re.findall(r"['\"]([^'\"]+)['\"]", arguments):
                     self.assertIn(module, names, f"Missing worker dependency: {module}")
                     self.assertEqual(bundle.read(module), (self.root / "chrome-extension" / module).read_bytes())
+            for script in manifest["content_scripts"]:
+                for module in script["js"]:
+                    self.assertIn(module, names, f"Missing content dependency: {module}")
             self.assertFalse(any("auth.json" in name or name.endswith(".pem") or ":" in name for name in names))
             self.assertFalse(any(name.startswith("chrome-extension/") for name in names))
             for name in manifest["icons"].values():
