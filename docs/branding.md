@@ -59,7 +59,7 @@ Open uses a window-and-arrow glyph. Like and Dislike use outlined thumbs before 
 | --- | --- | --- | --- | --- |
 | ![Open](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/open/key.png) | ![Like](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/like/key.png) | ![Liked](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/like/selected.png) | ![Dislike](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/dislike/key.png) | ![Disliked](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/dislike/selected.png) |
 
-The [root README thumbnail](assets/music-deck-bridge-thumbnail.png) is the supplied promotional image, copied unchanged; its [provenance](assets/README.md) is separate from the generated icons. It is not a product screenshot.
+The [root README thumbnail](../store-assets/elgato/listing/thumbnail-1920x960.png) shares the generated Marketplace design, using the main mark and five action icons. See its [provenance and regeneration guide](assets/README.md). It is promotional artwork rather than a product screenshot.
 
 ## Reproduction and validation
 

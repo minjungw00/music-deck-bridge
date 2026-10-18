@@ -1,6 +1,6 @@
 # Music Deck Bridge
 
-![Music Deck Bridge — Control YouTube Music with your Stream Deck](docs/assets/music-deck-bridge-thumbnail.png)
+![Music Deck Bridge — Control YouTube Music with your Stream Deck](store-assets/elgato/listing/thumbnail-1920x960.png)
 
 Control YouTube Music from Elgato Stream Deck using a Chrome extension.
 

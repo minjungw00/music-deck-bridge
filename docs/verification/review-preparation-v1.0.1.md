@@ -8,7 +8,7 @@ Subsequent development on October 18 separates the toggle key's Play/Pause artwo
 
 ## Completed in the development source
 
-- Root README uses the supplied 1672×941 thumbnail without altering its bytes. [Artwork provenance and checksum](../assets/README.md).
+- At this stage, root README used the supplied 1672×941 thumbnail without altering its bytes. [Historical artwork provenance and checksum](#historical-readme-thumbnail).
 - All 28 action PNGs use the main brand's magenta circular badge, white symbols and dark surface; action-list exports remain monochrome. Now Playing uses the play-disc mark. [Action preview and palette](../branding.md#action-icons).
 - The seven main v1.0.1 brand PNGs are byte-for-byte preserved. A reproducible 288px store app icon is prepared separately.
 - Chrome popup colors and keyboard focus match the brand; white text on the deep-magenta primary button has approximately 4.98:1 contrast. Playback, protocol, PIN/authentication, UUIDs, common port and storage paths are unchanged.
@@ -35,6 +35,10 @@ Local WSL/Linux, Node.js 24.19.0, Python 3.12.3, Pillow 12.0.0 for regeneration,
 Windows/Ubuntu CI must cover the exact preparation-branch commit, including packaging and source/hash metadata. Use the run attached to the branch in [CI](https://github.com/minjungw00/music-deck-bridge/actions/workflows/ci.yml) and match its full SHA; the historical release run does not validate these new assets. Downloaded development packages carry `BUILD-INFO.json` and must not be confused with the stable release sharing the current source version number.
 
 GitHub API rechecks confirm private vulnerability reporting, secret scanning, push protection and Dependabot security updates remain enabled, with read-only default workflow tokens. Public v1.0.0/v1.0.1 release identities, asset IDs/update times/digests and annotated tag objects were rechecked unchanged. The [security record](../security-readiness.md) describes the existing limited secret-inspection scope.
+
+## Historical README thumbnail
+
+The initial banner was copied unchanged from the maintainer-supplied `musicdeckbridge-thumbnail.png`. It measured **1672 × 941** with SHA-256 `c6a30fe057f46ec3a8ea75c0c3eae92a48c9ca0649b9e858a1997b820b9dbedb`. It was promotional artwork, not a product screenshot. After v1.1.1, the maintainer selected the generated Marketplace thumbnail for README and requested removal of the old banner from the current tree. See the [current artwork guide](../assets/README.md); this section preserves the earlier provenance only.
 
 ## Still requires external evidence
 

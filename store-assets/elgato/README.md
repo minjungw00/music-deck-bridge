@@ -49,7 +49,7 @@ See the [shared submission guide and screenshot plan](../README.md).
 
 The [product guidelines](https://docs.elgato.com/guidelines/products/) require a 288×288 PNG app icon, 1920×960 PNG thumbnail/gallery images, English text and at least three gallery items (up to ten). The prepared upload set includes the icon, a separate thumbnail and three gallery images. Review the actual Console fields when submitting media.
 
-The supplied [README thumbnail](../../docs/assets/music-deck-bridge-thumbnail.png) is retained at its original 1672×941 size. Use the separate 1920×960 thumbnail in `listing/` for Marketplace. The smaller image in `screenshots/` is the canonical capture source, not the sized gallery upload.
+The root README shares the [1920×960 Marketplace thumbnail](listing/thumbnail-1920x960.png). The smaller image in `screenshots/` is the canonical capture source, not the sized gallery upload.
 
 Download the selected Console version's processed package for the [DRM test](../../docs/verification/marketplace-drm.md). Match its hash and results to that submission, separately from local build checks.
 

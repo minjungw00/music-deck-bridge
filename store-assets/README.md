@@ -51,7 +51,7 @@ Use a clean Windows profile and dummy listening details. Capture each image from
 4. Action settings in English and Korean: title display mode and connection status. Hide live PINs, tokens and local identifying details.
 5. Verify current store dimensions and export the requested screenshot and promotional formats into the relevant store-assets subdirectory.
 
-The [supplied README thumbnail](../docs/assets/music-deck-bridge-thumbnail.png) is promotional artwork. Prepare store-specific sizes separately and use actual captures for product screenshots. See the [brand guide](../docs/branding.md) for icon design and reproduction.
+The [shared README and Marketplace thumbnail](elgato/listing/thumbnail-1920x960.png) is promotional artwork. Use the prepared store exports for upload and actual captures for device screenshots. See the [brand guide](../docs/branding.md) for icon design and reproduction.
 
 ## Local rendering preview
 
