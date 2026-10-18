@@ -5,7 +5,10 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
-const output = join(root, 'store-assets/chrome/listing');
+const args = process.argv.slice(2);
+const toElgato = args.length === 2 && args[0] === '--for' && args[1] === 'elgato';
+assert.ok(args.length === 0 || toElgato, 'Usage: render-chrome-store.mjs [--for elgato]');
+const output = join(root, toElgato ? 'store-assets/elgato/cross-store' : 'store-assets/chrome/listing');
 const asset = async path => 'data:image/png;base64,' + (await readFile(join(root, path))).toString('base64');
 const [brand, deck, previous, play, next, volume] = await Promise.all([
   'streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/plugin/icon@2x.png',
@@ -28,7 +31,7 @@ const browser = await chromium.launch({ headless: true,
   ...(process.env.CHROME_STORE_BROWSER ? { executablePath: process.env.CHROME_STORE_BROWSER } : {}) });
 await mkdir(output, { recursive: true });
 try {
-  const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
+  const page = await browser.newPage({ viewport: toElgato ? { width: 1920, height: 960 } : { width: 1280, height: 800 }, deviceScaleFactor: 1 });
   await page.route('**/*', route => route.abort());
   const style = `${fonts}
     *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}
@@ -41,16 +44,20 @@ try {
     .deck{position:absolute;left:48px;top:278px;width:658px;height:513px;border-radius:24px}
     .popup{position:absolute;left:770px;top:61px;width:435px;height:678px}
     .caption{position:absolute;left:770px;top:756px;margin:0;width:435px;font-size:15px;line-height:20px;color:#bfc5d5}
+    ${toElgato ? `.brand{left:112px;top:64px;gap:22px}.brand img{width:72px;height:72px}.brand span{font-size:44px}
+      h1{left:112px;top:176px;font-size:64px;line-height:1.2}.subtitle{left:112px;top:348px;font-size:26px;line-height:36px}
+      .deck{left:352px;top:408px}.popup{left:1300px;top:140px}.caption{left:1300px;top:850px;font-size:20px;line-height:28px}` : ''}
   `;
   const locales = {
     en: { title: 'Control YouTube Music<br>from your Stream Deck.',
-      subtitle: 'Requires the Music Deck Bridge Stream Deck plugin.',
+      subtitle: toElgato ? 'Stream Deck plugin + companion Chrome extension' : 'Requires the Music Deck Bridge Stream Deck plugin.',
       caption: 'Extension popup · Sample playback data' },
     ko: { title: 'YouTube Music을<br>Stream Deck으로 제어하세요.',
       subtitle: 'Music Deck Bridge 플러그인이 함께 필요합니다.',
       caption: '확장 프로그램 팝업 · 샘플 재생 정보' },
   };
   for (const [locale, text] of Object.entries(locales)) {
+    if (toElgato && locale !== 'en') continue; // Marketplace explanatory text must be English.
     const popup = await asset(`store-assets/chrome/screenshots/popup-${locale}.png`);
     await page.setContent(`<!doctype html><html lang="${locale}"><meta charset="utf-8"><style>${style}</style>
       <body><div class="backdrop"></div><div class="brand"><img src="${brand}" alt=""><span>Music Deck Bridge</span></div>
@@ -62,27 +69,30 @@ try {
     assert.ok(await page.evaluate(() => [...document.querySelectorAll('h1,.brand,.subtitle,.caption')].every(element => {
       const box = element.getBoundingClientRect(); return box.x >= 0 && box.right <= innerWidth && box.bottom <= innerHeight;
     })), `${locale}: text must fit the screenshot`);
-    await page.screenshot({ path: join(output, `screenshot-${locale}-1280x800.png`) });
+    await page.screenshot({ path: join(output, toElgato ? 'from-chrome-screenshot-en-1920x960.png' : `screenshot-${locale}-1280x800.png`) });
   }
-  await page.setViewportSize({ width: 440, height: 280 });
+  await page.setViewportSize(toElgato ? { width: 1920, height: 960 } : { width: 440, height: 280 });
   await page.setContent(`<!doctype html><style>
     ${style}body{background:#10131b}.glow{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 35%,#d000a455,transparent 72%)}
     .mark{position:absolute;width:164px;height:164px;left:138px;top:27px}
     .actions{position:absolute;left:119px;top:211px;display:flex;gap:14px}.actions img{width:40px;height:40px}
     svg{position:absolute;inset:0;width:440px;height:280px}
+    ${toElgato ? `.mark{width:512px;height:512px;left:704px;top:80px}.actions{left:694px;top:700px;gap:44px}.actions img{width:100px;height:100px}svg{width:1920px;height:960px}` : ''}
     </style><body><div class="glow"></div>
-    <svg viewBox="0 0 440 280" fill="none" aria-hidden="true"><path d="M-32 250C60 60 92 40 170-22M310-20C340 80 450 90 462 240" stroke="#f72575" stroke-opacity=".12" stroke-width="22"/><path d="M-30 200C60 15 100 10 120-24M355-20C380 60 455 100 478 180" stroke="#ff38d1" stroke-opacity=".12" stroke-width="10"/></svg>
+    <svg viewBox="0 0 440 280" ${toElgato ? 'preserveAspectRatio="none"' : ''} fill="none" aria-hidden="true"><path d="M-32 250C60 60 92 40 170-22M310-20C340 80 450 90 462 240" stroke="#f72575" stroke-opacity=".12" stroke-width="22"/><path d="M-30 200C60 15 100 10 120-24M355-20C380 60 455 100 478 180" stroke="#ff38d1" stroke-opacity=".12" stroke-width="10"/></svg>
     <img class="mark" src="${brand}" alt=""><div class="actions">${[previous, play, next, volume].map(src => `<img src="${src}" alt="">`).join('')}</div></body>`);
   await page.evaluate(() => Promise.all([...document.images].map(image => image.decode())));
-  await page.screenshot({ path: join(output, 'promo-small-440x280.png') });
-  const icon = await page.evaluate(async brand => {
-    const image = new Image(); image.src = brand; await image.decode();
-    const canvas = document.createElement('canvas'); canvas.width = canvas.height = 128;
-    const context = canvas.getContext('2d');
-    context.imageSmoothingQuality = 'high';
-    context.drawImage(image, 16, 16, 96, 96);
-    return canvas.toDataURL('image/png').split(',')[1];
-  }, brand);
-  await writeFile(join(output, 'icon-128.png'), Buffer.from(icon, 'base64'));
-  console.log(`Chrome Web Store assets: ${output}`);
+  await page.screenshot({ path: join(output, toElgato ? 'from-chrome-promo-1920x960.png' : 'promo-small-440x280.png') });
+  if (!toElgato) {
+    const icon = await page.evaluate(async brand => {
+      const image = new Image(); image.src = brand; await image.decode();
+      const canvas = document.createElement('canvas'); canvas.width = canvas.height = 128;
+      const context = canvas.getContext('2d');
+      context.imageSmoothingQuality = 'high';
+      context.drawImage(image, 16, 16, 96, 96);
+      return canvas.toDataURL('image/png').split(',')[1];
+    }, brand);
+    await writeFile(join(output, 'icon-128.png'), Buffer.from(icon, 'base64'));
+  }
+  console.log(`Store assets: ${output}`);
 } finally { await browser.close(); }

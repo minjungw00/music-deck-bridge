@@ -24,6 +24,15 @@ The actual Stream Deck capture takes precedence over the browser-rendered device
 
 The [Chrome Web Store upload set](chrome/README.md#upload-files) and [Elgato Marketplace gallery set](elgato/README.md#upload-files) are exported from these approved sources. The original popup previews and Stream Deck capture remain unchanged.
 
+## Use designs in both stores
+
+| Destination | Additional files | Guide |
+| --- | --- | --- |
+| Chrome Web Store | Marketplace gallery designs at 1280×800; its thumbnail as 440×280 and 1400×560 promotional tiles | [Marketplace-derived images](chrome/README.md#images-adapted-from-marketplace) |
+| Elgato Marketplace | Chrome English screenshot and promotional design at 1920×960 | [Chrome-derived images](elgato/README.md#images-adapted-from-chrome-web-store) |
+
+The common brand already has a [128px Chrome icon](chrome/listing/icon-128.png) and [288px Marketplace icon](elgato/listing/app-icon-288.png). Use the icon at the destination store's required size. The [adaptation record](../docs/verification/cross-store-images-2026-10-18.md) documents layout changes and verification.
+
 ## Submission workflow
 
 For each submission, match the package, listing claims and media to the same version. Preserve already submitted packages and record revisions separately. Check current Console requirements before exporting media. Reconcile the submitted extension's storage, scripting, alarms and host permissions with the privacy form; the plugin fetches artwork externally.

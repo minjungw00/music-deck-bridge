@@ -47,6 +47,7 @@ v1.1.1 adds consistent popup button sizing, the heading icon, the offline render
 - [Selected official images, source provenance and lossless Stream Deck margin correction](verification/official-images-2026-10-18.md)
 - [Chrome Web Store upload image dimensions, sources and checksums](verification/chrome-store-images-2026-10-18.md)
 - [Elgato Marketplace icon, thumbnail and three gallery exports](verification/elgato-store-images-2026-10-18.md)
+- [Alternative image designs adapted for both stores](verification/cross-store-images-2026-10-18.md)
 - [Marketplace DRM test record (not performed)](verification/marketplace-drm.md)
 
 ### Device, browser and protocol verification

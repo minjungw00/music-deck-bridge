@@ -18,6 +18,17 @@ Upload all three numbered gallery files in that order; the separate thumbnail do
 
 The galleries use the approved actual Stream Deck capture at native pixel dimensions. The Chrome connection image also includes the approved English **1.1.1** popup rendering, labelled as sample playback data. Sources, export checks and hashes are recorded in the [Marketplace image record](../../docs/verification/elgato-store-images-2026-10-18.md).
 
+## Images adapted from Chrome Web Store
+
+These alternative exports in [cross-store/](cross-store/) reuse the Chrome designs at Marketplace resolution:
+
+| Upload field | File | Dimensions |
+| --- | --- | --- |
+| Additional gallery image — extension and Stream Deck | [from-chrome-screenshot-en-1920x960.png](cross-store/from-chrome-screenshot-en-1920x960.png) | 1920 × 960 |
+| Alternative thumbnail — main mark and playback icons | [from-chrome-promo-1920x960.png](cross-store/from-chrome-promo-1920x960.png) | 1920 × 960 |
+
+Choose a thumbnail and retain at least three gallery items when selecting a combination. Keep [app-icon-288.png](listing/app-icon-288.png) as the app icon: both designs share the same brand. Marketplace exports use English text and the English popup; the Korean popup remains a Chrome-localized image. See the [adaptation record](../../docs/verification/cross-store-images-2026-10-18.md) for source mapping and checks.
+
 ## Source images and submission
 
 Use the selected [Stream Deck + capture](screenshots/stream-deck-plus.png) for product media. Its outer margins are balanced without changing UI pixels. See the [shared image inventory](../README.md#official-product-images).
@@ -51,3 +62,11 @@ node scripts/render-elgato-store.mjs
 ```
 
 The script composes existing project artwork and approved capture PNGs without starting the bridge or reading credentials. It writes only the five listing PNGs. `ELGATO_STORE_BROWSER` can select an existing Chromium executable; `ELGATO_STORE_FONT_DIR` can supply local Windows Segoe UI fonts for rendering. No font files are distributed. Keep the approved popup source in sync when preparing media for a newer version.
+
+Regenerate the two Chrome-derived alternatives with the source design's renderer:
+
+```sh
+node scripts/render-chrome-store.mjs --for elgato
+```
+
+That command uses `CHROME_STORE_BROWSER` / `CHROME_STORE_FONT_DIR` and writes only `elgato/cross-store/`.
