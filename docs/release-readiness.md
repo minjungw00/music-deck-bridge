@@ -10,12 +10,12 @@ Last updated: October 18, 2026 (Asia/Seoul). Current distribution status and rem
 | Elgato Marketplace | **v1.1.1**, registered, **Pending review** | [Store submissions](verification/stores.md) |
 | Chrome Web Store | **v1.1.1**, registered, **Pending review** | [Store submissions](verification/stores.md) |
 
-The selected development target is **1.1.2-dev**: Chrome numeric version **1.1.2**, plugin **1.1.2.0**, protocol **1**. Its architectural refactor and local validation are recorded in [runtime verification](verification/runtime.md#112-development-refactor). The published/submitted v1.1.1 artifacts above remain separate and fixed under the [versioning policy](versioning.md). Public store install links await approval, publication and installation verification.
+The maintainer authorized promotion to **1.1.2** after confirming normal operation: Chrome **1.1.2**, plugin **1.1.2.0**, protocol **1**. GitHub release preparation is in progress; exact-source CI and package verification must finish before publication. Its architectural refactor, local validation and maintainer confirmation are recorded in [runtime verification](verification/runtime.md#112-development-refactor). The published/submitted v1.1.1 artifacts above remain separate and fixed under the [versioning policy](versioning.md). Public store install links await approval, publication and installation verification.
 
 ## Verified scope
 
 - **Release:** exact-source Windows/Ubuntu CI, 117 Node tests, two Python tests, Chromium integration, official packaging and public download checksums/bytes passed.
-- **Device/Chrome:** the maintainer confirmed displays, controls, pairing recovery, retained settings and rollback. That sign-off predates protocol negotiation and the later v1.1.1 popup corrections.
+- **Device/Chrome:** the maintainer confirmed normal operation after the 1.1.2 refactor. Earlier itemized sign-off covers displays, controls, pairing recovery, retained settings and rollback within its original scope; neither report establishes Marketplace DRM execution.
 - **Installation:** a later rename denial was reproduced and traced to an Explorer folder handle; closing that folder allowed the same installer to succeed. No installer code fix is claimed.
 - **Media/copy:** official popup renderings display 1.1.1, the actual device capture is retained, and store-sized exports are prepared. Actual submitted descriptions are preserved in English for both stores and Korean for Chrome; uploaded package/media identities remain unconfirmed.
 

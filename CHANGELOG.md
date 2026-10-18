@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.2-dev — unreleased
+## v1.1.2 — 2026-10-18
 
 - Serialize extension pairing, unpairing, port changes and management reads through server responses and local persistence; failed operations allow subsequent requests to continue.
 - Ignore superseded popup responses and retain newer port edits when startup reads or save responses arrive late.

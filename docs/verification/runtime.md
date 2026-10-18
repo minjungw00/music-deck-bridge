@@ -69,6 +69,12 @@ Evidence date: October 18, 2026 (Asia/Seoul). Runtime source: `a0f5877`, on the 
 
 ## Maintainer confirmation
 
+### 1.1.2 refactor
+
+On October 18, 2026 (Asia/Seoul), the maintainer confirmed normal operation after the completed refactor and requested release 1.1.2. The latest supplied development source was `5f0d3f4`; no itemized environment or installed-artifact identity was supplied. This is maintainer confirmation of normal operation, separate from automated fixtures and independent observation. It does not establish Console-processed Marketplace DRM execution or clean-environment installation coverage, and does not require a repeat solely to fill omitted metadata.
+
+### Earlier behavior confirmation
+
 The maintainer confirmed the following development-build checks complete before requesting protocol negotiation:
 
 | Scope | Result |
