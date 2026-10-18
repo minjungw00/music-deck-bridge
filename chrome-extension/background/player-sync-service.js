@@ -25,19 +25,31 @@
       if (removedTabs.has(sender.tab.id)) return { paired: true, commands: [] };
       const request = type === 'sync' ? post('/sync', { token, clientId: sender.tab.id, state }) :
         post('/listen', { token, clientId: sender.tab.id }, 15500);
-      if (type === 'sync') synchronizations.set(sender.tab.id, request);
+      let pending;
+      if (type === 'sync') {
+        pending = synchronizations.get(sender.tab.id);
+        if (!pending) synchronizations.set(sender.tab.id, pending = new Set());
+        pending.add(request);
+      }
       let result;
       try { result = await request; }
-      finally { if (synchronizations.get(sender.tab.id) === request) synchronizations.delete(sender.tab.id); }
+      finally {
+        if (pending) {
+          pending.delete(request);
+          if (!pending.size) synchronizations.delete(sender.tab.id);
+        }
+      }
       void browserChannel.start();
       return { paired: true, commands: result.commands || [], idle: result.idle === true };
     }
     function onRemoved(tabId) {
       removedTabs.add(tabId);
       if (removedTabs.size > 1024) removedTabs.delete(removedTabs.values().next().value);
-      const pending = synchronizations.get(tabId);
+      // Navigation can overlap snapshots from different documents in one tab.
+      // Finish all submitted snapshots before removing the player's state.
+      const pending = [...(synchronizations.get(tabId) || [])];
       void (async () => {
-        await pending?.catch(() => {});
+        await Promise.allSettled(pending);
         const token = await pairedToken();
         if (token) await post('/player-closed', { token, clientId: tabId });
       })().catch(() => {});
