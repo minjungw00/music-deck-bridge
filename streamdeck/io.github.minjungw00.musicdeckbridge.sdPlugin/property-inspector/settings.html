@@ -67,6 +67,20 @@
       <sdpi-item id="artworkTitleRow" label="Song name">
         <sdpi-checkbox id="artworkShowTitle" setting="artworkShowTitle" default="false" label="Show song name"></sdpi-checkbox>
       </sdpi-item>
+      <div id="artworkTextOptions" class="hidden">
+        <sdpi-item id="artworkArtistRow" label="Artist">
+          <sdpi-checkbox id="artworkShowArtist" setting="artworkShowArtist" default="false" label="Append artist name"></sdpi-checkbox>
+        </sdpi-item>
+        <sdpi-item id="artworkBackgroundRow" label="Text background">
+          <sdpi-checkbox id="artworkTitleBackground" setting="artworkTitleBackground" default="false" label="Show background"></sdpi-checkbox>
+        </sdpi-item>
+        <sdpi-item id="artworkTitleModeRow" label="Text display">
+          <sdpi-select id="artworkTitleMode" setting="artworkTitleMode" default="truncate">
+            <option id="optArtworkTruncate" value="truncate">Truncate</option>
+            <option id="optArtworkScroll" value="scroll">Scroll left</option>
+          </sdpi-select>
+        </sdpi-item>
+      </div>
     </div>
   </section>
   <section id="volumeSection" class="hidden">

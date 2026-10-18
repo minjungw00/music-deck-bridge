@@ -2,6 +2,8 @@
 
 Evidence date: October 18, 2026 (Asia/Seoul). The unpublished development cycle remains **1.0.2-dev**, with Stream Deck **1.0.2.0** and Chrome **1.0.2**. This change requires only the plugin package; the Chrome extension is unchanged.
 
+Follow-up: physical-device feedback exposed a rendering gap in these Chromium-only image checks. The [Qt reproduction and rendering correction](dial-artwork-rendering.md) supersedes the fitting implementation and adds optional artist, background and scrolling controls. Results below describe the earlier build.
+
 ## Behavior
 
 In album-artwork mode, each Current Track Dial saves two additional settings:

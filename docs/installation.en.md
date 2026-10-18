@@ -125,7 +125,7 @@ Install matching plugin and extension builds for these features. Keep the extens
 - **Volume Dial:** turn to adjust volume; push or touch its screen to toggle mute. Its icon follows the confirmed mute state.
 - **Current Track Dial:** turn for previous/next track; push or touch its screen to play/pause. Its playback icon follows the selected player.
 
-In Current Track Dial action settings, choose **Touch strip display → Icon + song name** or **Album artwork**. In artwork mode, choose **Artwork fit → Fit height** (default, showing the full image) or **Fit width** (filling the screen, with possible cropping at the top and bottom). Enable **Show song name** to overlay the title at the bottom; it is hidden by default. Each dial saves its own settings. Unavailable/loading artwork falls back to the playback icon. Existing Track Dial actions retain their assignments and settings under the new name.
+In Current Track Dial action settings, choose **Touch strip display → Icon + song name** or **Album artwork**. In artwork mode, choose **Artwork fit → Fit height** (default) or **Fit width**. Both preserve the original proportions; content outside the strip is cropped. Enable **Show song name** to overlay the title at the bottom; it is hidden by default. While showing the title, **Append artist name** and **Show background** can each be enabled independently (both default to off). Choose **Text display → Truncate** (default) or **Scroll left** for long text. Each dial saves its own settings. Unavailable/loading artwork falls back to the playback icon. Existing Track Dial actions retain their assignments and settings under the new name.
 
 ### Custom port
 

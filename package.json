@@ -29,7 +29,8 @@
     "prebuild:dev": "npm run build:plugin"
   },
   "dependencies": {
-    "@elgato/streamdeck": "3.0.2"
+    "@elgato/streamdeck": "3.0.2",
+    "image-size": "2.0.4"
   },
   "devDependencies": {
     "@elgato/cli": "1.10.2",

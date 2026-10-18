@@ -139,8 +139,12 @@ for (const protectedManifest of [false, true]) {
     await waitFor(() => dialLayout() === 'layouts/current-track-artwork.json' && dialFeedback()?.fallback?.value === pauseImage);
     assert.equal(dialFeedback().songName.enabled, false, 'song name is hidden by default');
     assert.equal(dialFeedback().artwork.enabled, false);
-    send('didReceiveSettings', 'trackdial', { settings: { dialDisplay: 'artwork', artworkFit: 'width', artworkShowTitle: true } });
-    await waitFor(() => dialFeedback()?.songName?.enabled === true && dialFeedback()?.songName?.value === state.title);
+    send('didReceiveSettings', 'trackdial', { settings: { dialDisplay: 'artwork', artworkFit: 'width', artworkShowTitle: true,
+      artworkShowArtist: true, artworkTitleBackground: true } });
+    await waitFor(() => dialFeedback()?.songName?.enabled === true && dialFeedback()?.songName?.value === state.title + ' — ' + state.artist);
+    assert.equal(dialFeedback().songName.background, 'black');
+    send('didReceiveSettings', 'trackdial', { settings: { dialDisplay: 'artwork', artworkShowTitle: true, artworkTitleMode: 'scroll' } });
+    await waitFor(() => dialFeedback()?.songName?.alignment === 'left' && dialFeedback()?.songName?.background === 'transparent');
     send('didReceiveSettings', 'trackdial', { settings: { dialDisplay: 'artwork', artworkShowTitle: false } });
     await waitFor(() => dialFeedback()?.songName?.enabled === false);
     send('didReceiveSettings', 'trackdial', { settings: { dialDisplay: 'info' } });
@@ -201,10 +205,12 @@ for (const protectedManifest of [false, true]) {
     await command('touchTap', 'trackdial', {}, { type: 'toggle', amount: 0 });
     send('willDisappear', 'trackdial');
     send('willAppear', 'trackdial', { controller: 'Encoder', coordinates: { column: 1, row: 0 },
-      settings: { dialDisplay: 'artwork', artworkFit: 'width', artworkShowTitle: true }, state: 0 });
+      settings: { dialDisplay: 'artwork', artworkFit: 'width', artworkShowTitle: true,
+        artworkShowArtist: true, artworkTitleBackground: true, artworkTitleMode: 'truncate' }, state: 0 });
     await waitFor(() => dialLayout() === 'layouts/current-track-artwork.json' && dialFeedback()?.fallback?.value === pauseImage);
     assert.equal(dialFeedback().songName.enabled, true, 'saved title visibility survives reappearance');
-    assert.equal(dialFeedback().songName.value, state.title);
+    assert.equal(dialFeedback().songName.value, state.title + ' — ' + state.artist);
+    assert.equal(dialFeedback().songName.background, 'black');
     send('didReceiveSettings', 'trackdial', { settings: { dialDisplay: 'info' } });
     await waitFor(() => dialLayout() === '$A1' && dialFeedback()?.icon === pauseImage);
     const ratingImage = kind => messages.findLast(m => m.event === 'setImage' && m.context === kind)?.payload.image;

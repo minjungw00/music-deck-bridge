@@ -11,6 +11,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 const { launchChrome } = require('./launch-chrome.cjs');
+const { fitDialArtwork } = require('./dial-artwork.cjs');
 
 const PLUGIN_ID = 'io.github.minjungw00.musicdeckbridge';
 const LOCALHOST = '127.0.0.1';
@@ -90,9 +91,10 @@ const STRINGS = {
 };
 const tr = key => STRINGS[locale]?.[key] || STRINGS.en[key];
 const marqueeTimer = setInterval(() => {
-  // Scroll only when at least one visible current-track key requests it.
-  if ([...displayed.values()].some(item => actionName(item.action) === 'nowplaying' &&
-    item.settings?.titleMode === 'scroll')) drawSoon();
+  if ([...displayed.values()].some(item =>
+    (actionName(item.action) === 'nowplaying' && item.settings?.titleMode === 'scroll') ||
+    (actionName(item.action) === 'trackdial' && item.settings?.dialDisplay === 'artwork' &&
+      item.settings?.artworkShowTitle === true && item.settings?.artworkTitleMode === 'scroll'))) drawSoon();
 }, MARQUEE_STEP_MS);
 marqueeTimer.unref();
 
@@ -518,13 +520,21 @@ function renderCurrentTrackDial(context, item, state) {
   const artwork = item.settings?.dialDisplay === 'artwork';
   const fit = item.settings?.artworkFit === 'width' ? 'width' : 'height';
   const showName = artwork && item.settings?.artworkShowTitle === true;
+  const scroll = item.settings?.artworkTitleMode === 'scroll';
+  const background = item.settings?.artworkTitleBackground === true ? 'black' : 'transparent';
   const layout = artwork ? 'layouts/current-track-artwork.json' : '$A1';
-  const cached = artwork && state?.cover && cachedCoverUrl === state.cover ? cachedCoverData : '';
-  const cover = /^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(cached) ? cached : '';
-  const image = cover || icon;
-  const title = artwork ? showName ? state?.title || '' : '' : tr('currentTrack');
+  const cover = artwork && state?.cover && cachedCoverUrl === state.cover ? cachedCoverData : '';
+  const fitted = cover ? fitDialArtwork(cover, fit) : '';
+  const image = fitted || icon;
+  const text = showName && state?.title ? state.title +
+    (item.settings?.artworkShowArtist === true && state.artist ? ` — ${state.artist}` : '') : '';
+  const trackSignature = JSON.stringify([state?.title, state?.artist, item.settings?.artworkShowArtist, showName, scroll]);
+  if (item.artworkTrackSignature !== trackSignature) {
+    item.artworkTrackSignature = trackSignature; item.artworkMarqueeStart = Date.now();
+  }
+  const title = artwork ? scroll ? marquee(text, item.artworkMarqueeStart, Date.now(), 14) : text : tr('currentTrack');
   const value = artwork ? '' : state ? ellipsis(state.title, 14) : tr('unavailable');
-  const signature = JSON.stringify([layout, title, value, fit, showName]);
+  const signature = JSON.stringify([layout, title, value, fit, showName, scroll, background]);
   if (item.dialSignature === signature && item.dialImage === image) return;
   item.dialSignature = signature; item.dialImage = image;
   // Serialize layout and image updates so mode changes cannot send artwork to
@@ -537,16 +547,9 @@ function renderCurrentTrackDial(context, item, state) {
       item.sentLayout = layout;
     }
     if (displayed.get(context) !== item) return;
-    const feedback = artwork ? { songName: { value: title, enabled: showName && Boolean(title) } } : { title, value, icon };
+    const feedback = artwork ? { songName: { value: title, enabled: showName && Boolean(title),
+      background, alignment: scroll ? 'left' : 'center', 'text-overflow': scroll ? 'clip' : 'ellipsis' } } : { title, value, icon };
     if (artwork && (changedLayout || item.sentDialImage !== image || item.sentArtworkFit !== fit)) {
-      // The SVG viewport crops width-fitted square covers and letterboxes
-      // height-fitted covers without stretching. Only embed cached raster data.
-      let fitted = '';
-      if (cover) {
-        const ratio = fit === 'width' ? 'slice' : 'meet';
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="100" viewBox="0 0 200 100"><image width="200" height="100" preserveAspectRatio="xMidYMid ${ratio}" xlink:href="${cover}"/></svg>`;
-        fitted = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
-      }
       feedback.artwork = { value: fitted, enabled: Boolean(fitted) };
       feedback.fallback = { value: icon, enabled: !fitted };
     }
@@ -565,15 +568,15 @@ function glyphs(value) {
   const text = String(value || '');
   return [...segmenter.segment(text)].map(s => s.segment);
 }
-function marquee(value, started, now = Date.now()) {
+function marquee(value, started, now = Date.now(), width = MARQUEE_WIDTH) {
   const characters = glyphs(value);
-  if (characters.length <= MARQUEE_WIDTH) return characters.join('');
+  if (characters.length <= width) return characters.join('');
   const progress = Math.floor((now - started) / MARQUEE_STEP_MS);
-  if (progress < 3) return characters.slice(0, MARQUEE_WIDTH).join('');
+  if (progress < 3) return characters.slice(0, width).join('');
   const gap = [' ', ' ', ' '];
   const loop = [...characters, ...gap];
   const start = (progress - 3) % loop.length;
-  return Array.from({ length: MARQUEE_WIDTH }, (_, i) => loop[(start + i) % loop.length]).join('');
+  return Array.from({ length: width }, (_, i) => loop[(start + i) % loop.length]).join('');
 }
 const COVERS = new Set(['i.ytimg.com', 'img.youtube.com', 'yt3.ggpht.com', 'yt3.googleusercontent.com']);
 function validCover(str) {

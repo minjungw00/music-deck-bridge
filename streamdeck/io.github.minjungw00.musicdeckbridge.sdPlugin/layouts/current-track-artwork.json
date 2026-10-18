@@ -41,7 +41,7 @@
       },
       "alignment": "center",
       "color": "white",
-      "background": "black",
+      "background": "transparent",
       "text-overflow": "ellipsis",
       "enabled": false,
       "zOrder": 2

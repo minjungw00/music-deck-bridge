@@ -38,6 +38,7 @@ test('dial names, default icons and touch descriptions match their controls', ()
   assert.deepEqual(art.items.find(item => item.key === 'fallback').rect, [50, 0, 100, 100]);
   const name = art.items.find(item => item.key === 'songName');
   assert.equal(name.enabled, false);
+  assert.equal(name.background, 'transparent');
   assert.ok(name.zOrder > art.items[0].zOrder, 'song name overlays the artwork');
 });
 

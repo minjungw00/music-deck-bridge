@@ -175,3 +175,21 @@ Names such as Google, YouTube, Elgato and Corsair remain their owners' trademark
 Node.js, Python, optional Pillow, the Elgato CLI, and GitHub Actions are development
 or packaging tools and are not included as runtime libraries in these packages.
 Review upstream dependencies and notices whenever replacing the vendored bundle.
+
+## image-size v2.0.4 — MIT
+
+Bundled into the plugin runtime to read PNG, JPEG and WebP dimensions in memory.
+Source: [image-size](https://codeberg.org/image-size/image-size).
+No file-reading API or native module is used.
+
+```text
+The MIT License (MIT)
+
+Copyright © 2013-Present Aditya Yadav, http://netroy.in
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```

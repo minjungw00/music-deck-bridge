@@ -9,8 +9,10 @@ const strings = {
     dialDisplayRow: '화면 표시', dialInfo: '아이콘 + 곡 이름', dialArtwork: '앨범 이미지',
     dialDisplayHint: '누르기·화면 터치: 재생/일시정지, 회전: 이전/다음 곡. 앨범 이미지가 없으면 재생 상태 아이콘을 표시합니다.',
     artworkFit: '이미지 맞춤', artworkWidth: '좌우에 맞추기', artworkHeight: '상하에 맞추기',
-    artworkFitHint: '좌우 맞춤은 화면을 채우며 위아래가 잘릴 수 있습니다. 상하 맞춤은 전체 이미지를 표시합니다.',
+    artworkFitHint: '원본 비율을 유지하며 너비 또는 높이에 맞춥니다. 화면 밖으로 넘치는 부분은 잘립니다.',
     artworkTitle: '곡 이름', artworkShowTitle: '곡 이름 표시',
+    artworkArtist: '가수명', artworkShowArtist: '곡 이름 뒤에 가수명 표시',
+    artworkBackground: '자막 배경', artworkShowBackground: '배경 표시', artworkTitleMode: '텍스트 표시',
     volumeRow: '회전당 볼륨', volumeHint: '다이얼 1칸당 변경량:',
     pinRow: 'Chrome 연결', generate: 'PIN 발급', checking: '연결 상태 확인 중…',
     portRow: '로컬 서버 포트', applyPort: '적용', portHint: '모든 버튼·다이얼에 공통으로 적용됩니다. 연결된 Chrome은 자동으로 포트를 변경합니다.',
@@ -38,8 +40,10 @@ const strings = {
     dialDisplayRow: 'Touch strip display', dialInfo: 'Icon + song name', dialArtwork: 'Album artwork',
     dialDisplayHint: 'Push or touch to play/pause; turn for previous/next track. Without artwork, the playback icon is shown.',
     artworkFit: 'Artwork fit', artworkWidth: 'Fit width', artworkHeight: 'Fit height',
-    artworkFitHint: 'Fit width fills the screen and may crop the top and bottom. Fit height shows the full artwork.',
+    artworkFitHint: 'Fit the width or height while preserving the original proportions. Parts outside the screen are cropped.',
     artworkTitle: 'Song name', artworkShowTitle: 'Show song name',
+    artworkArtist: 'Artist', artworkShowArtist: 'Append artist name',
+    artworkBackground: 'Text background', artworkShowBackground: 'Show background', artworkTitleMode: 'Text display',
     volumeRow: 'Volume per tick', volumeHint: 'Change per dial tick:',
     pinRow: 'Chrome connection', generate: 'Generate PIN', checking: 'Checking connection…',
     portRow: 'Local server port', applyPort: 'Apply', portHint: 'Shared by all buttons/dials. A connected Chrome extension follows the new port automatically.',
@@ -113,6 +117,13 @@ function localize() {
   $('artworkFitHint').textContent = t('artworkFitHint');
   $('artworkTitleRow').setAttribute('label', t('artworkTitle'));
   $('artworkShowTitle').setAttribute('label', t('artworkShowTitle'));
+  $('artworkArtistRow').setAttribute('label', t('artworkArtist'));
+  $('artworkShowArtist').setAttribute('label', t('artworkShowArtist'));
+  $('artworkBackgroundRow').setAttribute('label', t('artworkBackground'));
+  $('artworkTitleBackground').setAttribute('label', t('artworkShowBackground'));
+  $('artworkTitleModeRow').setAttribute('label', t('artworkTitleMode'));
+  $('optArtworkTruncate').textContent = t('truncate');
+  $('optArtworkScroll').textContent = t('scroll');
   $('volumeRow').setAttribute('label', t('volumeRow'));
   $('volumeStep').setAttribute('aria-label', t('volumeRow'));
   $('volumeHint').textContent = t('volumeHint');
@@ -129,10 +140,12 @@ function updateVolumeLabel() {
   const value = validVolume($('volumeStep').value) ?? 4;
   $('stepLabel').textContent = `${Number.isFinite(value) ? Math.max(1, Math.min(5, value)) : 4}%`;
 }
-function updateArtworkOptions(mode = $('dialDisplay').value) {
+function updateArtworkOptions(mode = $('dialDisplay').value, showTitle = $('artworkShowTitle').value) {
   $('artworkOptions').classList.toggle('hidden', mode !== 'artwork');
+  $('artworkTextOptions').classList.toggle('hidden', mode !== 'artwork' || showTitle !== true);
 }
 $('dialDisplay').addEventListener('valuechange', () => updateArtworkOptions());
+$('artworkShowTitle').addEventListener('valuechange', () => updateArtworkOptions());
 function showConnection(payload) {
   currentStatus = payload;
   const error = payload.lastCommandError;
@@ -191,7 +204,7 @@ client.sendToPropertyInspector.subscribe(msg => {
 client.didReceiveSettings.subscribe(msg => {
   // Native range is manually synchronized; sdpi-select persists titleMode/dialDisplay.
   syncSavedVolume(msg.payload?.settings);
-  updateArtworkOptions(msg.payload?.settings?.dialDisplay || 'info');
+  updateArtworkOptions(actionSettings.dialDisplay || 'info', actionSettings.artworkShowTitle === true);
 });
 $('generatePin').addEventListener('click', () => { lastPin = ''; void requestConnection('generate-pin'); });
 function sendVolumePreview(value) {
@@ -242,7 +255,7 @@ void (async () => {
     const { info, actionInfo } = await client.getConnectionInfo();
     connectedToHost = true;
     syncSavedVolume(actionInfo?.payload?.settings || {});
-    updateArtworkOptions(actionInfo?.payload?.settings?.dialDisplay || 'info');
+    updateArtworkOptions(actionSettings.dialDisplay || 'info', actionSettings.artworkShowTitle === true);
     language = info?.application?.language === 'ko' ? 'ko' : 'en';
     localize();
     const action = actionInfo?.action || '';
