@@ -10,7 +10,7 @@ The exact release source, final Windows/Ubuntu CI run and package checksums are 
 | --- | --- |
 | Device displays, controls and retained settings | Complete by [maintainer confirmation](verification/maintainer-validation-2026-10-18.md), including text/artwork options and profile/restart restoration |
 | Actual Chrome/YouTube Music operation and pairing recovery | Complete by the same maintainer report; implementation evidence: [readiness](verification/player-readiness-and-feedback.md), [cold-tab recovery](verification/browser-connection-recovery.md) |
-| Ordinary-package update, settings retention and rollback | Complete by maintainer report; historical installation conflict not reproduced, original cause unconfirmed |
+| Ordinary-package update, settings retention and rollback | Retention/rollback complete by maintainer report. Later 1.0.2 development → public 1.1.0 root-rename failure reproduced; [Explorer-handle closure followed by successful same-host/package rename](verification/update-procmon-v1.1.0-2026-10-18.md), all 62 release files match. Earlier failures are not retroactively diagnosed |
 | Protocol compatibility | Implemented and locally verified: [117 Node tests, HTTP/SDK/worker matrix and actual Chromium fixture](verification/protocol-compatibility.md); newly introduced protocol behavior has no separate Windows device sign-off |
 | Release source and packages | Complete: `7eb20a58b22df782af6cd80a360c27cde5100264`, [main CI 39101874429](https://github.com/minjungw00/music-deck-bridge/actions/runs/39101874429) passed both OS jobs; draft/public asset checksums and byte equality verified. [Publication evidence](verification/v1.1.0.md) |
 | GitHub security | [Verified enabled](security-readiness.md): private reports, secret scanning, push protection and Dependabot; read-only default Actions token |
@@ -30,7 +30,7 @@ Brand/action artwork, the supplied README thumbnail and locale-aware inspector/p
 3. **Protocol deployment:** verify the new explicit identity/status and retained pairing on the actual Windows component pair. Controlled incompatible/future-version fixtures already pass.
 4. **Final environment coverage:** retain CI/artifact provenance and complete clean-environment install/uninstall/reset or idle/port-conflict coverage outside the confirmed scope. A future wire version must add migration tests for its implemented ranges.
 
-The original ACCESS DENIED installation trace is retained. Investigate handles/effective permissions/filter evidence if that failing state recurs; repeating equivalent successful installs is unnecessary. The [normal-workflow assessment](verification/update-behavior-assessment.md) distinguishes supported newer-version updating from recovery/file replacement and does not establish failure frequency.
+The ACCESS DENIED installation condition [recurred after publication](verification/update-procmon-v1.1.0-2026-10-18.md). A live snapshot identified Explorer handles inside the installed directory; the close-folder retry then succeeded through the original root rename with the same host and public installer. This provides a concrete trigger/recovery comparison for that recurrence, without diagnosing every older failure or establishing a runtime fix. The [normal-workflow assessment](verification/update-behavior-assessment.md) distinguishes supported newer-version updating from recovery/file replacement and does not establish failure frequency.
 
 ## Detailed verification records
 
@@ -56,5 +56,6 @@ The original ACCESS DENIED installation trace is retained. Investigate handles/e
 - [October 18 successful official-stop installation retry](verification/update-procmon-retry-2026-10-18.md)
 - [October 18 successful running-plugin update and remaining mode control](verification/update-procmon-direct-2026-10-18.md)
 - [October 18 successful normal-mode running-plugin update](verification/update-procmon-normal-2026-10-18.md)
+- [October 18 public v1.1.0 rename denial, live Explorer handles and successful close-folder retry](verification/update-procmon-v1.1.0-2026-10-18.md)
 - [Expected update behavior, failure classification and limits of generalization](verification/update-behavior-assessment.md)
 - [Marketplace DRM test record (not performed)](verification/marketplace-drm.md)
