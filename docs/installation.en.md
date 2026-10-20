@@ -4,7 +4,7 @@
 
 Install **both** the Stream Deck plugin (which runs the local bridge) and the Chrome extension. All four methods use the same PIN pairing procedure and support a normal YouTube Music tab or the app installed through Chrome (PWA).
 
-**Recommended: [GitHub Releases](https://github.com/minjungw00/music-deck-bridge/releases/latest) for stable packages.** Actions provides development builds. See [distribution status](release-readiness.md#distribution-status) for store availability. Prebuilt packages need no separate Node.js, npm or Python installation.
+**Recommended: the extension from [Chrome Web Store](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca) and the plugin from [GitHub Releases](https://github.com/minjungw00/music-deck-bridge/releases/latest).** Follow [Official stores](#method-4-official-stores) below. Actions provides development builds. See [distribution status](release-readiness.md#distribution-status) for store availability. Prebuilt packages need no separate Node.js, npm or Python installation.
 
 - [Requirements](#requirements)
 - [Method 1: GitHub Releases](#method-1-github-releases)
@@ -88,16 +88,14 @@ The files are written to `dist/` with the same names as release packages. Stream
 
 ## Method 4: Official stores
 
-Check [distribution status](release-readiness.md#distribution-status) for verified public store links. Until a store listing is public, use the corresponding GitHub package:
+Use the published Chrome extension with the GitHub Release plugin while Elgato Marketplace is pending review. See [distribution status](release-readiness.md#distribution-status) for current availability.
 
-| Component | Store | Installation until available |
+| Component | Distribution | Installation |
 | --- | --- | --- |
-| Stream Deck plugin | Elgato Marketplace | Use a GitHub Release package |
-| Chrome extension | Chrome Web Store | Extract and load the Chrome ZIP |
+| Stream Deck plugin | GitHub Releases; Elgato Marketplace pending review | Download the stable `.streamDeckPlugin` from [GitHub Releases](https://github.com/minjungw00/music-deck-bridge/releases/latest), double-click it and confirm installation in Stream Deck |
+| Chrome extension | [Chrome Web Store](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca) | Open the listing, select **Add to Chrome** and confirm installation |
 
-After each listing becomes public, its verified product URL will appear here. Install the plugin from Elgato Marketplace and add the extension from Chrome Web Store, then complete [Pairing](#pairing). Once both are available, stores become the first recommended method.
-
-The stores may launch separately. For example, once the Chrome listing is available, you can combine it with a GitHub Release plugin. Keep only one active copy of each component and follow [Switching installation methods](#switching-installation-methods).
+Then complete [Pairing](#pairing). Keep only one active copy of each component. If replacing an unpacked extension, follow [Switching installation methods](#switching-installation-methods): unpair the connected old extension, remove it, install the store extension and pair with a new PIN.
 
 ## Pairing
 
@@ -174,7 +172,7 @@ Back up Stream Deck profiles before changing installations. Keep `%APPDATA%\Musi
 | GitHub Releases | Download both matching packages. For a newer plugin version, install its package over the existing plugin as below; update the Chrome folder in place. |
 | GitHub Actions | Select another successful `main` run and record its SHA. Use package installation for a newer plugin version; same-version development rebuilds may need the recovery/replacement procedure below. No automatic updates. |
 | Source | Pull the chosen revision, run `npm ci --ignore-scripts` and `npm run build:plugin`, quit Stream Deck, replace the installed plugin folder including notices, then restart. |
-| Official stores, once available | Use each store's update mechanism; check that both components have updated. |
+| Chrome Web Store + GitHub Release plugin | Chrome uses store updates; update the plugin from GitHub Releases. Once the Marketplace plugin is available, use its store updates after switching installation methods. |
 
 For an unpacked Chrome extension, replace the contents of its existing permanent folder with the new extracted files (or update the same source checkout), preserving the **absolute folder path**. Click **Reload** at `chrome://extensions` and refresh YouTube Music if needed. Do not load every new version as another extension.
 

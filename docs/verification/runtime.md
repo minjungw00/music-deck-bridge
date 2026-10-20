@@ -75,6 +75,10 @@ On October 18, 2026 (Asia/Seoul), the maintainer confirmed normal operation afte
 
 After the [v1.1.2 publication](releases.md#v112), the maintainer directly confirmed operation of that version and reported updating both store submissions to 1.1.2, Pending review. This adds maintainer-confirmed released-version operation to the earlier development sign-off. The report does not separately identify a Console-processed package or store-installed build; approval/publication and those package identities remain distinct from this completed normal-operation confirmation.
 
+### Chrome Web Store extension
+
+On October 20, 2026 (Asia/Seoul), the maintainer reported completed [Chrome Web Store publication](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca) and confirmed that the store extension works with the released Stream Deck plugin. This establishes maintainer-confirmed operation of that distribution combination. No itemized control/environment inventory or exact installed extension version/hash was supplied. Unpacked-to-store migration/new PIN pairing and Marketplace-installed plugin/Console-processed DRM execution were not separately reported. Elgato Marketplace remains Pending review; see [store status](stores.md).
+
 ### Earlier behavior confirmation
 
 The maintainer confirmed the following development-build checks complete before requesting protocol negotiation:

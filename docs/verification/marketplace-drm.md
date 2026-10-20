@@ -1,6 +1,6 @@
 # Marketplace DRM verification
 
-Last updated: October 18, 2026 (Asia/Seoul). **Console-processed package execution: not separately confirmed.** The maintainer directly confirmed operation of released 1.1.2 and updated both store submissions to that version, Pending review. That report does not identify the tested package as Console-processed. Review status is in [store submissions](stores.md); public source/package hashes are in [release verification](releases.md#v112).
+Last updated: October 20, 2026 (Asia/Seoul). **Console-processed package execution: not separately confirmed.** Elgato Marketplace remains Pending review for the submitted 1.1.2 plugin. The maintainer confirmed released-version operation and later the published Chrome Web Store extension working with the released plugin. Neither report identifies the plugin package as Console-processed. Review status is in [store submissions](stores.md); public source/package hashes are in [release verification](releases.md#v112).
 
 ## Required input
 
