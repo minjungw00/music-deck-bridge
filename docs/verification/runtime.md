@@ -77,7 +77,11 @@ After the [v1.1.2 publication](releases.md#v112), the maintainer directly confir
 
 ### Chrome Web Store extension
 
-On October 20, 2026 (Asia/Seoul), the maintainer reported completed [Chrome Web Store publication](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca) and confirmed that the store extension works with the released Stream Deck plugin. This establishes maintainer-confirmed operation of that distribution combination. No itemized control/environment inventory or exact installed extension version/hash was supplied. Unpacked-to-store migration/new PIN pairing and Marketplace-installed plugin/Console-processed DRM execution were not separately reported. Elgato Marketplace remains Pending review; see [store status](stores.md).
+On October 20, 2026 (Asia/Seoul), the maintainer reported completed [Chrome Web Store publication](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca) and confirmed that the store extension works with the released Stream Deck plugin. This establishes maintainer-confirmed operation of that distribution combination. No itemized control/environment inventory or exact installed extension version/hash was supplied. Unpacked-to-store migration/new PIN pairing and Marketplace-installed plugin/Console-processed DRM execution were not separately reported. Elgato Marketplace was still Pending review at that time; the later confirmation below updates the [store status](stores.md).
+
+### Official store components
+
+On October 24, 2026 (Asia/Seoul), the maintainer reported completed publication on both [Elgato Marketplace](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd) and [Chrome Web Store](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca), supplied both public URLs and confirmed normal operation. This establishes maintainer-confirmed operation of the published store components, extending the October 20 distribution scope to include Marketplace. Exact installed versions/hashes, an itemized installation/migration or control inventory and Console processing details were not supplied. These omissions do not require repeating completed normal-operation validation. Runtime operation was not independently observed; separately identified DRM package evidence remains in the [DRM record](marketplace-drm.md).
 
 ### Earlier behavior confirmation
 

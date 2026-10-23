@@ -4,7 +4,7 @@
 
 로컬 브리지를 실행하는 **Stream Deck 플러그인과 Chrome 확장 프로그램을 모두 설치**해야 합니다. 네 설치 경로는 같은 PIN 연결 절차를 사용하며, 일반 YouTube Music 탭과 Chrome으로 설치한 앱(PWA)을 모두 지원합니다.
 
-**확장 프로그램은 [Chrome 웹 스토어](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca), 플러그인은 [GitHub Releases의 안정 패키지](https://github.com/minjungw00/music-deck-bridge/releases/latest)로 설치하는 경로를 권장합니다.** 아래 [공식 스토어](#method-4-official-stores) 안내를 따르세요. Actions는 개발 빌드를 제공합니다. 스토어 공개 여부는 [배포 상태](release-readiness.md#distribution-status)를 참고하세요. 사전 빌드 패키지를 설치할 때는 Node.js·npm·Python을 별도로 설치할 필요가 없습니다.
+**확장 프로그램은 [Chrome 웹 스토어](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca), 플러그인은 [Elgato Marketplace](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd)에서 설치하는 경로를 권장합니다.** 아래 [공식 스토어](#method-4-official-stores) 안내를 따르세요. Actions는 개발 빌드를 제공합니다. 스토어 공개 여부는 [배포 상태](release-readiness.md#distribution-status)를 참고하세요. 사전 빌드 패키지를 설치할 때는 Node.js·npm·Python을 별도로 설치할 필요가 없습니다.
 
 - [요구사항](#requirements)
 - [방법 1: GitHub Releases](#method-1-github-releases)
@@ -98,11 +98,11 @@ npm run build:chrome
 
 ## 방법 4: 공식 스토어
 
-Elgato Marketplace 검토가 끝날 때까지 공개된 Chrome 확장 프로그램과 GitHub Release 플러그인을 함께 사용하세요. 현재 공개 여부는 [배포 상태](release-readiness.md#distribution-status)를 참고하세요.
+각 공식 스토어에서 두 구성요소를 모두 설치하세요.
 
 | 구성요소 | 배포 경로 | 설치 방법 |
 | --- | --- | --- |
-| Stream Deck 플러그인 | GitHub Releases; Elgato Marketplace 검토 대기 | [GitHub Releases](https://github.com/minjungw00/music-deck-bridge/releases/latest)에서 안정 버전 `.streamDeckPlugin`을 받아 더블클릭하고 Stream Deck에서 설치 확인 |
+| Stream Deck 플러그인 | [Elgato Marketplace](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd) | 제품 페이지를 열고 Stream Deck의 설치 절차 진행 |
 | Chrome 확장 프로그램 | [Chrome 웹 스토어](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca) | 제품 페이지에서 **Chrome에 추가**를 누르고 설치 확인 |
 
 설치 후 [PIN 연결](#pairing)을 수행합니다. 각 구성요소는 하나만 활성화하세요. 기존 압축 해제 확장 프로그램을 사용 중이라면 [설치 경로 전환](#switching-installation-methods)에 따라 연결된 기존 확장의 해제 성공을 확인하고 삭제한 뒤, 스토어판을 설치하고 새 PIN으로 연결하세요.
@@ -188,7 +188,8 @@ Music Deck Bridge 액션 목록에서 **YouTube Music 실행**, **좋아요**, *
 | GitHub Releases | 같은 릴리스의 두 패키지를 다운로드합니다. 플러그인 버전이 더 높으면 기존 설치본 위에 아래 방법으로 패키지를 설치하고, Chrome은 기존 폴더에서 갱신합니다. |
 | GitHub Actions | 다른 성공한 `main` 실행에서 패키지를 받고 SHA를 기록합니다. 플러그인 버전이 더 높으면 일반 패키지 설치를 사용하고, 같은 버전의 개발 빌드 교체에는 아래 복구·파일 교체 절차가 필요할 수 있습니다. 자동 업데이트는 지원하지 않습니다. |
 | 소스 | 원하는 리비전을 받은 뒤 `npm ci --ignore-scripts`, `npm run build:plugin`을 실행합니다. Stream Deck을 종료하고 라이선스 문서와 함께 플러그인 폴더를 교체한 뒤 다시 실행합니다. |
-| Chrome 웹 스토어 + GitHub Release 플러그인 | Chrome은 스토어 업데이트를 사용하고 플러그인은 GitHub Releases에서 갱신합니다. Marketplace 플러그인이 공개되면 설치 경로를 전환한 뒤 해당 스토어 업데이트를 사용합니다. |
+| 공식 스토어 | 확장 프로그램은 Chrome 웹 스토어, 플러그인은 Elgato Marketplace의 업데이트를 사용합니다. |
+| Chrome 웹 스토어 + GitHub Release 플러그인 | Chrome은 스토어 업데이트를 사용하고 플러그인은 GitHub Releases에서 갱신합니다. Elgato Marketplace로 전환하려면 설치 경로 전환 절차를 따르세요. |
 
 압축 해제한 Chrome 확장 프로그램은 **폴더 절대 경로를 유지**하며 기존 폴더의 내용을 새 파일로 교체합니다. 소스 설치라면 같은 저장소 경로를 갱신하세요. `chrome://extensions`에서 **새로고침**을 누르고 필요하면 YouTube Music도 새로고침합니다. 새 버전마다 별도 확장 프로그램으로 로드하지 마세요.
 
@@ -241,7 +242,7 @@ Get-FileHash -Algorithm SHA256 -Path .\*.streamDeckPlugin, .\music-deck-bridge-c
 | --- | --- |
 | Actions → Releases | 안정 패키지의 플러그인 버전이 더 높으면 일반 업데이트로 설치하고, 같거나 낮으면 백업 후 파일 교체를 사용합니다. 기존 Chrome 폴더를 같은 위치에서 갱신한 뒤 새로고침합니다. |
 | Releases → Actions | 같은 `main` 빌드의 두 패키지로 교체합니다. 수동 업데이트가 필요하고 안정성은 보장하지 않습니다. |
-| GitHub → Elgato Marketplace | 승인 후 프로필과 플러그인을 백업하고 Stream Deck을 종료한 뒤 아래 방법으로 기존 플러그인 폴더를 제거합니다. 다시 실행하여 Marketplace 플러그인을 설치하고 기존 액션·설정을 확인합니다. |
+| GitHub → Elgato Marketplace | 프로필과 플러그인을 백업하고 Stream Deck을 종료한 뒤 아래 방법으로 기존 플러그인 폴더를 제거합니다. 다시 실행하여 Marketplace 플러그인을 설치하고 기존 액션·설정을 확인합니다. |
 | 압축 해제 Chrome → Chrome 웹 스토어 | Stream Deck과 기존 확장 프로그램이 연결된 상태에서 **해제** 성공을 확인한 뒤 기존 확장 프로그램을 삭제합니다. 승인된 스토어판을 설치하고 새 PIN으로 연결합니다. |
 | 소스 → 배포 패키지 | 개발용 플러그인·확장 프로그램 사용을 중단하고 원하는 플러그인 패키지로 교체합니다. Chrome은 같은 폴더를 갱신하거나 개발용 확장 프로그램을 해제·제거한 뒤 다른 설치본을 로드합니다. |
 

@@ -33,7 +33,7 @@ Choose a thumbnail and retain at least three gallery items when selecting a comb
 
 Use the selected [Stream Deck + capture](screenshots/stream-deck-plus.png) for product media. Its outer margins are balanced without changing UI pixels. See the [shared image inventory](../README.md#official-product-images).
 
-Record the submitted version, package hash, Console product/version ID, processing settings and review result in [release readiness](../../docs/release-readiness.md). After approval and publication, verify the actual product URL and add it to README and both installation guides. Track this independently of the Chrome Web Store listing; until then use the [package installation guide](../../docs/installation.en.md).
+Record the submitted version, package hash, Console product/version ID, processing settings and review result in [release readiness](../../docs/release-readiness.md). For later revisions, keep publication and runtime evidence scoped to the submitted version in the [store record](../../docs/verification/stores.md); maintain the public product link in README and both installation guides.
 
 - Use publisher UUID `io.github.minjungw00.musicdeckbridge` and confirm supported device models.
 - Capture Now Playing artwork, key controls, Stream Deck + dial feedback and settings/PIN flow in English and Korean.

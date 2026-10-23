@@ -1,6 +1,6 @@
 # Marketplace DRM verification
 
-Last updated: October 20, 2026 (Asia/Seoul). **Console-processed package execution: not separately confirmed.** Elgato Marketplace remains Pending review for the submitted 1.1.2 plugin. The maintainer confirmed released-version operation and later the published Chrome Web Store extension working with the released plugin. Neither report identifies the plugin package as Console-processed. Review status is in [store submissions](stores.md); public source/package hashes are in [release verification](releases.md#v112).
+Last updated: October 24, 2026 (Asia/Seoul). **Published store components: normal operation confirmed by the maintainer.** Both Elgato Marketplace and Chrome Web Store publication are complete according to the October 24 report. The report does not separately identify the Console-processed package/hash or provide the detailed DRM matrix below. This record tracks that narrower evidence and does not reopen the completed store-operation confirmation. See [runtime confirmation](runtime.md#official-store-components), [store submissions](stores.md) and [public source/package hashes](releases.md#v112).
 
 ## Required input
 
@@ -12,17 +12,17 @@ Refer to Elgato's [DRM testing instructions](https://docs.elgato.com/streamdeck/
 
 ## Windows execution record
 
-The matrix below concerns the Console-processed package only. It does not reopen the maintainer's completed normal-operation confirmation or the earlier itemized validation in [runtime verification](runtime.md#maintainer-confirmation).
+The matrix below tracks detailed results for an identified Console-processed package. The maintainer's completed store-operation confirmation and earlier itemized validation retain their scopes in [runtime verification](runtime.md#maintainer-confirmation).
 
 Record OS/Chrome/Stream Deck/device versions, extension ID/version, previous plugin version, original/processed package hashes and timestamps. Back up profiles and private auth/config; follow the [settings-preserving replacement guide](../installation.en.md#replacing-plugin-files). Keep one active extension and test retained pairing before creating a new PIN.
 
 | Check | Result |
 | --- | --- |
-| Processed installer installs, correct version starts and SDK connects without DRM/integrity errors | Pending |
-| Existing pairing, custom port, profiles and per-action settings survive update | Pending |
-| Fresh PIN pairing and restart/reconnect | Pending |
-| All keys: playback, previous/next, mute, launch/continuation, ratings and current-track feedback | Pending |
-| Both dials: rotate, press/touch, step settings and configurable artwork/text | Pending |
-| Explicit protocol identity/status, retained-token reconnect and backup rollback | Pending |
+| Processed installer installs, correct version starts and SDK connects without DRM/integrity errors | Not separately recorded |
+| Existing pairing, custom port, profiles and per-action settings survive update | Not separately recorded |
+| Fresh PIN pairing and restart/reconnect | Not separately recorded |
+| All keys: playback, previous/next, mute, launch/continuation, ratings and current-track feedback | Not separately recorded |
+| Both dials: rotate, press/touch, step settings and configurable artwork/text | Not separately recorded |
+| Explicit protocol identity/status, retained-token reconnect and backup rollback | Not separately recorded |
 
 Keep redacted logs and exact steps for failures; distinguish installation, runtime and Chrome errors. Do not modify protected distributed files to bypass integrity checks. DRM execution, store approval and public installation/migration are separate results.
