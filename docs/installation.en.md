@@ -2,9 +2,9 @@
 
 [한국어](installation.ko.md) · [Troubleshooting](troubleshooting.md)
 
-Install **both** the Stream Deck plugin (which runs the local bridge) and the Chrome extension. All four methods use the same PIN pairing procedure and support a normal YouTube Music tab or the app installed through Chrome (PWA).
+Install **both** the Stream Deck plugin and the Chrome extension. For normal use, choose [Method 1: Official stores](#method-1-official-stores), then complete [PIN pairing](#pairing). Store installation needs no separate Node.js, npm or Python.
 
-**Recommended: the extension from [Chrome Web Store](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca) and the plugin from [Elgato Marketplace](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd).** Follow [Official stores](#method-1-official-stores) below. Actions provides development builds. See [distribution status](release-readiness.md#distribution-status) for store availability. Prebuilt packages need no separate Node.js, npm or Python installation.
+The plugin runs the local bridge. The extension controls YouTube Music in a normal Chrome tab or the app installed through Chrome (PWA). Releases, Actions and source builds are alternative installation methods.
 
 - [Requirements](#requirements)
 - [Method 1: Official stores](#method-1-official-stores)
@@ -30,7 +30,7 @@ Install **both** the Stream Deck plugin (which runs the local bridge) and the Ch
 
 ## Method 1: Official stores
 
-Install both components from their official store listings:
+Recommended for general users. Install both components from their official store listings:
 
 | Component | Distribution | Installation |
 | --- | --- | --- |
@@ -58,7 +58,7 @@ Use the packaged Chrome ZIP, rather than GitHub's automatically generated **Sour
 
 ## Method 3: GitHub Actions
 
-Development builds include recent changes and may be unstable. They require GitHub sign-in to download. [GitHub retains artifacts for 90 days by default](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/download-workflow-artifacts); repository settings can shorten retention, and artifacts may expire or be deleted. They are temporary downloads.
+For testers. Development builds may be unstable and require GitHub sign-in to download. Artifacts can expire or be deleted; [GitHub retains them for 90 days by default](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/download-workflow-artifacts), subject to repository settings.
 
 1. Sign in to GitHub and open [CI runs](https://github.com/minjungw00/music-deck-bridge/actions/workflows/ci.yml).
 2. Select a recent **successful CI run for `main`**, with both Windows and Ubuntu jobs passed. Avoid pull request runs and builds from other branches.
@@ -94,6 +94,8 @@ This creates the standalone `bin/plugin.js` bundle, including the official SDK. 
 3. Copy the repository's `LICENSE`, `NOTICE`, `THIRD_PARTY_NOTICES.md` and `PRIVACY.md` into the installed plugin folder, then restart Stream Deck.
 4. Open `chrome://extensions`, enable **Developer mode**, select **Load unpacked**, and choose the repository's `chrome-extension/` folder containing `manifest.json`.
 5. Complete [Pairing](#pairing).
+
+### Create packages from source
 
 To create installable packages yourself, also install **Python 3.10+** (`python3`, `python`, or Windows `py`) and run:
 
@@ -177,10 +179,10 @@ Back up Stream Deck profiles before changing installations. Keep `%APPDATA%\Musi
 
 | Installed from | Update procedure |
 | --- | --- |
+| Official stores | Use Chrome Web Store updates for the extension and Elgato Marketplace updates for the plugin. |
 | GitHub Releases | Download both matching packages. For a newer plugin version, install its package over the existing plugin as below; update the Chrome folder in place. |
 | GitHub Actions | Select another successful `main` run and record its SHA. Use package installation for a newer plugin version; same-version development rebuilds may need the recovery/replacement procedure below. No automatic updates. |
 | Source | Pull the chosen revision, run `npm ci --ignore-scripts` and `npm run build:plugin`, quit Stream Deck, replace the installed plugin folder including notices, then restart. |
-| Official stores | Use Chrome Web Store updates for the extension and Elgato Marketplace updates for the plugin. |
 | Chrome Web Store + GitHub Release plugin | Chrome uses store updates; update the plugin from GitHub Releases or follow the switching procedure to use Elgato Marketplace. |
 
 For an unpacked Chrome extension, replace the contents of its existing permanent folder with the new extracted files (or update the same source checkout), preserving the **absolute folder path**. Click **Reload** at `chrome://extensions` and refresh YouTube Music if needed. Do not load every new version as another extension.
@@ -199,9 +201,7 @@ If Stream Deck rejects the package, record the error, installed version and host
 
 ### Recover a rejected install by replacing plugin files
 
-Use this procedure after an installation rejection or when intentionally replacing a development build whose version is not newer. It is a recovery option rather than a requirement for every update.
-
-For a package update in this situation:
+Use this procedure after an installation rejection or for an intentional same-version development rebuild/downgrade. Ordinary updates use the procedure above.
 
 1. Back up Stream Deck profiles and the installed plugin folder. Back up `%APPDATA%\MusicDeckBridge` privately as well. If investigating an installation error, save `%APPDATA%\Elgato\StreamDeck\logs\StreamDeck*.log` and matching JSON logs, plus the plugin's `logs` folder if present, before replacing files. Do not share PINs/tokens or unredacted personal data.
 2. **Quit Stream Deck from its system tray menu**, rather than just closing its window. Close Explorer windows and terminals opened inside the plugin folder. If moving the folder still gives access denied, stop and inspect open handles/permissions before retrying; do not delete the backups.
@@ -232,7 +232,7 @@ All plugin builds use UUID `io.github.minjungw00.musicdeckbridge`; use one insta
 | --- | --- |
 | Actions → Releases | Install the stable package as a normal update if its plugin version is newer; otherwise use backed-up replacement. Update the existing unpacked Chrome folder in place and reload. |
 | Releases → Actions | Replace both components with a matching `main` build; updates become manual and stability is not guaranteed. |
-| GitHub → Elgato Marketplace | Back up profiles and plugin files, quit Stream Deck and remove the existing plugin folder as below. Restart and install the Marketplace plugin; verify existing actions and settings. |
+| GitHub → Elgato Marketplace | Back up profiles and plugin files, quit Stream Deck and move the existing plugin folder outside `Plugins` using [file replacement](#replacing-plugin-files). Restart and install the Marketplace plugin; verify existing actions and settings. |
 | Unpacked Chrome → Chrome Web Store | While Stream Deck and the old extension are connected, choose **Unpair** and confirm success, then remove the old extension. Install the approved store extension and pair with a new PIN. |
 | Source → Distributed packages | Stop using the development plugin/extension, replace the plugin with the chosen package, and update the same Chrome folder or unpair/remove the development extension before loading another installation. |
 

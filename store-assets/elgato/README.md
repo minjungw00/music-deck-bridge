@@ -1,6 +1,6 @@
 # Elgato submission assets
 
-Keep product screenshots and store artwork here.
+Use this guide to select Marketplace upload files and regenerate exports. See the [shared submission workflow](../README.md#submission-workflow) for package/copy provenance and publication records.
 
 ## Upload files
 
@@ -33,17 +33,15 @@ Choose a thumbnail and retain at least three gallery items when selecting a comb
 
 Use the selected [Stream Deck + capture](screenshots/stream-deck-plus.png) for product media. Its outer margins are balanced without changing UI pixels. See the [shared image inventory](../README.md#official-product-images).
 
-Record the submitted version, package hash, Console product/version ID, processing settings and review result in [release readiness](../../docs/release-readiness.md). For later revisions, keep publication and runtime evidence scoped to the submitted version in the [store record](../../docs/verification/stores.md); maintain the public product link in README and both installation guides.
+Retain the submitted version, package hash, Console product/version ID, processing settings and review outcome in the [store record](../../docs/verification/stores.md). Keep runtime evidence scoped to the tested version.
 
 - Use publisher UUID `io.github.minjungw00.musicdeckbridge` and confirm supported device models.
 - Capture Now Playing artwork, key controls, Stream Deck + dial feedback and settings/PIN flow in English and Korean.
 - Use the [submitted English description](../submitted/v1.1.1/elgato-en.md) as the revision baseline; see [metadata and permission guidance](../listing.en.md) when preparing changes.
 - Check current Maker Console image specifications and SDK/DRM requirements before export.
 - Use the submitted version's magenta representative icons from `streamdeck/generate_assets.py`; see the [brand guide](../../docs/branding.md). Retain the project and bundled-library notices.
-- Record hardware and Maker Console DRM results in [release readiness](../../docs/release-readiness.md).
-- Do not use the automated opaque-manifest fixture as evidence of actual DRM compatibility.
 
-See the [shared submission guide and screenshot plan](../README.md).
+Use the [shared capture plan](../README.md#screenshot-capture-plan) for new screenshots.
 
 ## Media requirements
 
@@ -51,7 +49,7 @@ The [product guidelines](https://docs.elgato.com/guidelines/products/) require a
 
 The root README shares the [1920×960 Marketplace thumbnail](listing/thumbnail-1920x960.png). The smaller image in `screenshots/` is the canonical capture source, not the sized gallery upload.
 
-Download the selected Console version's processed package for the [DRM test](../../docs/verification/marketplace-drm.md). Match its hash and results to that submission, separately from local build checks.
+For identified processed-package evidence, follow the [DRM record](../../docs/verification/marketplace-drm.md) and match hashes/results to the submission. Local opaque-manifest fixtures do not establish actual DRM compatibility.
 
 ## Regenerate exports
 
@@ -61,7 +59,14 @@ With repository dependencies and Playwright Chromium installed, run from the rep
 node scripts/render-elgato-store.mjs
 ```
 
-The script composes existing project artwork and approved capture PNGs without starting the bridge or reading credentials. It writes only the five listing PNGs. `ELGATO_STORE_BROWSER` can select an existing Chromium executable; `ELGATO_STORE_FONT_DIR` can supply local Windows Segoe UI fonts for rendering. No font files are distributed. Keep the approved popup source in sync when preparing media for a newer version.
+The script composes project artwork and approved capture PNGs into five listing PNGs without starting the bridge or reading credentials.
+
+| Optional environment variable | Purpose |
+| --- | --- |
+| `ELGATO_STORE_BROWSER` | Existing Chromium executable |
+| `ELGATO_STORE_FONT_DIR` | Local Windows Segoe UI fonts |
+
+Fonts are not distributed. Refresh approved popup sources when preparing newer-version media.
 
 Regenerate the two Chrome-derived alternatives with the source design's renderer:
 

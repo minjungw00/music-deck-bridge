@@ -8,6 +8,29 @@ Control YouTube Music from Elgato Stream Deck using a Chrome extension.
 
 Music Deck Bridge contains two components that must be installed together: a Stream Deck plugin that runs a local bridge, and a Chrome extension that reads and controls the YouTube Music web player. It works with a normal Chrome tab or the YouTube Music app installed through Chrome (PWA).
 
+## Installation
+
+**Install the Stream Deck plugin from [Elgato Marketplace](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd) and the Chrome extension from [Chrome Web Store](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca).** Add both components, then complete PIN pairing. No separate Node.js, npm or Python installation is needed: Stream Deck provides the plugin runtime. Prebuilt packages are also available from [GitHub Releases](https://github.com/minjungw00/music-deck-bridge/releases/latest).
+
+| Method | Audience and availability | Instructions |
+| --- | --- | --- |
+| Official stores | Recommended for general users; Elgato Marketplace and Chrome Web Store | [English](docs/installation.en.md#method-1-official-stores) / [한국어](docs/installation.ko.md#method-1-official-stores) |
+| GitHub Releases | General users; stable prebuilt packages | [English](docs/installation.en.md#method-2-github-releases) / [한국어](docs/installation.ko.md#method-2-github-releases) |
+| GitHub Actions | Testers; latest development packages, stability not guaranteed; GitHub sign-in required | [English](docs/installation.en.md#method-3-github-actions) / [한국어](docs/installation.ko.md#method-3-github-actions) |
+| Build from source | Developers; requires Node.js 24 and npm, plus Python 3.10+ for packaging | [English](docs/installation.en.md#method-4-build-from-source) / [한국어](docs/installation.ko.md#method-4-build-from-source) |
+
+See the guides for [PIN pairing](docs/installation.en.md#pairing), [updates](docs/installation.en.md#updating), switching installation methods and removal. If using a Chrome ZIP, extract it to a permanent folder and load it unpacked in Developer mode.
+
+## Requirements
+
+| Component | Supported target |
+| --- | --- |
+| OS | Windows 10 / 11 |
+| Browser | Google Chrome 116+ |
+| Stream Deck software | 7.1+ (provides Node.js 24) |
+| Device | Key actions target Stream Deck key models; encoder actions require Stream Deck + |
+| Languages | English / 한국어 |
+
 ## Features
 
 - Current song, artist and album artwork on a key; choose text visibility, artist placement, background and scrolling. Press to play or pause.
@@ -26,35 +49,12 @@ Stream Deck + capture:
 
 ![Music Deck Bridge on Stream Deck +](store-assets/elgato/screenshots/stream-deck-plus.png)
 
-English and Korean Chrome extension popup previews:
+English and Korean Chrome extension popup previews with sample playback data:
 
 <p>
   <img src="store-assets/chrome/screenshots/popup-en.png" width="280" alt="Music Deck Bridge extension popup in English" />
   <img src="store-assets/chrome/screenshots/popup-ko.png" width="280" alt="Music Deck Bridge extension popup in Korean" />
 </p>
-
-## Requirements
-
-| Component | Supported target |
-| --- | --- |
-| OS | Windows 10 / 11 |
-| Browser | Google Chrome 116+ |
-| Stream Deck software | 7.1+ (provides Node.js 24) |
-| Device | Key actions target Stream Deck key models; encoder actions require Stream Deck + |
-| Languages | English / 한국어 |
-
-## Installation
-
-**Install the Stream Deck plugin from [Elgato Marketplace](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd) and the Chrome extension from [Chrome Web Store](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca).** Add both components, then complete PIN pairing. No separate Node.js, npm or Python installation is needed: Stream Deck provides the plugin runtime. Prebuilt packages are also available from [GitHub Releases](https://github.com/minjungw00/music-deck-bridge/releases/latest).
-
-| Method | Audience and availability | Instructions |
-| --- | --- | --- |
-| Official stores | Recommended for general users; Elgato Marketplace and Chrome Web Store | [English](docs/installation.en.md#method-1-official-stores) / [한국어](docs/installation.ko.md#method-1-official-stores) |
-| GitHub Releases | General users; stable prebuilt packages | [English](docs/installation.en.md#method-2-github-releases) / [한국어](docs/installation.ko.md#method-2-github-releases) |
-| GitHub Actions | Testers; latest development packages, stability not guaranteed; GitHub sign-in required | [English](docs/installation.en.md#method-3-github-actions) / [한국어](docs/installation.ko.md#method-3-github-actions) |
-| Build from source | Developers; requires Node.js 24 and npm, plus Python 3.10+ for packaging | [English](docs/installation.en.md#method-4-build-from-source) / [한국어](docs/installation.ko.md#method-4-build-from-source) |
-
-See the guides for [PIN pairing](docs/installation.en.md#pairing), updates, switching installation methods and removal. Chrome ZIP packages must be extracted to a permanent folder and loaded unpacked in Developer mode.
 
 ## Development
 

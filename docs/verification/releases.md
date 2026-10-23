@@ -8,9 +8,13 @@ Evidence date: October 18, 2026 (Asia/Seoul). These are completed GitHub publica
 
 Scope: role-based plugin/extension/content/inspector modules, pairing persistence and management ordering, port lifecycle, bounded/retryable display output, artwork deduplication and tab/page recovery. The maintainer confirmed normal operation before release; that report and its limits are recorded in [runtime verification](runtime.md#112-refactor).
 
-[Exact-source main CI 39136965856](https://github.com/minjungw00/music-deck-bridge/actions/runs/39136965856) passed on Windows and Ubuntu: 154 Node tests, two Python packaging tests, syntax/resources/locales/version checks, audit with zero reported vulnerabilities and official Elgato validation/packaging. Ubuntu also passed the actual Chromium MV3 local fixture. Release-time API checks found no open Dependabot or secret-scanning alerts; existing reporting/scanning/protection settings remained enabled.
+[Exact-source main CI 39136965856](https://github.com/minjungw00/music-deck-bridge/actions/runs/39136965856) passed on Windows and Ubuntu: 154 Node tests, two Python packaging tests, syntax/resources/locales/version checks, audit with zero reported vulnerabilities and official Elgato validation/packaging. Ubuntu also passed the actual Chromium MV3 local fixture.
 
-Both downloaded OS artifacts matched source/run/version metadata and checksums. Their 60 plugin and 24 Chrome payload files were identical across OSes and matched the tagged source, accounting for the official CLI removing the plugin manifest's final newline. The release preserves Windows CI archive bytes. Draft downloads and anonymous public downloads matched all three prepared release files byte-for-byte; GitHub reports v1.1.2 as the latest, non-draft, non-prerelease release. Store submissions and Console-processed DRM execution remain separate.
+Release-time API checks found no open Dependabot or secret-scanning alerts; existing reporting/scanning/protection settings remained enabled.
+
+Both downloaded OS artifacts matched source/run/version metadata and checksums. Their 60 plugin and 24 Chrome payload files were identical across OSes and matched the tagged source, accounting for the official CLI removing the plugin manifest's final newline.
+
+The release preserves Windows CI archive bytes. Draft downloads and anonymous public downloads matched all three prepared release files byte-for-byte; GitHub reports v1.1.2 as the latest, non-draft, non-prerelease release. Store submissions and Console-processed DRM execution remain separate.
 
 | Public asset | Bytes | SHA-256 |
 | --- | --- | --- |
@@ -26,7 +30,9 @@ Scope: equal single-line popup buttons, heading icon, offline preview tool and s
 
 [Exact-source CI 39106843325](https://github.com/minjungw00/music-deck-bridge/actions/runs/39106843325) passed on Windows and Ubuntu: 117 Node tests, two Python distribution tests, syntax/resources/locales/version checks, audit with zero reported vulnerabilities and official Elgato validation/packaging. Ubuntu also passed the actual Chromium MV3 fixture.
 
-Both downloaded OS artifacts matched their source/run/version metadata and checksums. Their 62 plugin and 15 Chrome payload files were identical across OSes and matched the source, accounting for the official CLI removing the plugin manifest's final newline. The release preserves Windows CI archive bytes; draft and public downloads matched them byte-for-byte.
+Both downloaded OS artifacts matched their source/run/version metadata and checksums. Their 62 plugin and 15 Chrome payload files were identical across OSes and matched the source, accounting for the official CLI removing the plugin manifest's final newline.
+
+The release preserves Windows CI archive bytes; draft and public downloads matched them byte-for-byte.
 
 | Public asset | Bytes | SHA-256 |
 | --- | --- | --- |

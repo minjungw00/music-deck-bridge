@@ -161,21 +161,6 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-## Project artwork
-
-The current plugin and extension icons are rendered by `streamdeck/generate_assets.py`
-from geometric primitives defined in that file. No external artwork, logos, fonts
-or source images are used as inputs. The previous supplied mark and icon assets
-were replaced; the unverified source mark was removed from the current tree.
-The generator and generated project artwork are distributed under this repository's Apache-2.0 license.
-Names such as Google, YouTube, Elgato and Corsair remain their owners' trademarks.
-
-## Development tools
-
-Node.js, Python, optional Pillow, the Elgato CLI, and GitHub Actions are development
-or packaging tools and are not included as runtime libraries in these packages.
-Review upstream dependencies and notices whenever replacing the vendored bundle.
-
 ## image-size v2.0.4 — MIT
 
 Bundled into the plugin runtime to read PNG, JPEG and WebP dimensions in memory.
@@ -193,3 +178,18 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
+
+## Project artwork
+
+The current plugin and extension icons are rendered by `streamdeck/generate_assets.py`
+from geometric primitives defined in that file. No external artwork, logos, fonts
+or source images are used as inputs. The previous supplied mark and icon assets
+were replaced; the unverified source mark was removed from the current tree.
+The generator and generated project artwork are distributed under this repository's Apache-2.0 license.
+Names such as Google, YouTube, Elgato and Corsair remain their owners' trademarks.
+
+## Development tools
+
+Node.js, Python, optional Pillow, the Elgato CLI, and GitHub Actions are development
+or packaging tools and are not included as runtime libraries in these packages.
+Review upstream dependencies and notices whenever replacing the vendored bundle.

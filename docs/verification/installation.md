@@ -4,7 +4,9 @@ Evidence collected October 17–18, 2026 (Asia/Seoul). A reproduced update failu
 
 ## Evidence summary
 
-The inspected environment used Windows 11 Education 10.0.26300 and Stream Deck 7.6.0.23012. Failures occurred when Stream Deck renamed the installed `.sdPlugin` root to `.sdPlugin.uninstall`, after stopping the old Node runtime. A stopped bridge's `Failed to fetch` was a consequence of the rejected update, not evidence of a Chrome-version incompatibility.
+The inspected environment used Windows 11 Education 10.0.26300 and Stream Deck 7.6.0.23012. Failures occurred when Stream Deck renamed the installed `.sdPlugin` root to `.sdPlugin.uninstall`, after stopping the old Node runtime.
+
+A stopped bridge's `Failed to fetch` was a consequence of the rejected update, not evidence of a Chrome-version incompatibility.
 
 | Time (KST) | Observation |
 | --- | --- |
@@ -26,7 +28,9 @@ The two user-provided captures were inspected with `procmon-parser` 0.4.0 and ra
 | `music-deck-update-102-to-110-1.PML` | 2043783281 | `a769bd399c39d1131d2fe382ffed25150875b97815f323ecccace34b0341b1da` |
 | `music-deck-update-102-to-110-2.PML` | 494063284 | `50f3a3a125b6762dda5d3deca3407c433ac72741dbe2222f7742a77472f8b315` |
 
-In the retry, Explorer handle-close events occurred at **15:06:48.299150/.299344**, followed by successful root rename at **15:06:56.851602**, new Node startup, AllOk and SDK connection. All 62 installed files matched the public v1.1.0 package. A later read-only probe's sharing violation occurred after the new runtime started and was not an installer failure.
+In the retry, Explorer handle-close events occurred at **15:06:48.299150/.299344**, followed by successful root rename at **15:06:56.851602**, new Node startup, AllOk and SDK connection. All 62 installed files matched the public v1.1.0 package.
+
+A later read-only probe's sharing violation occurred after the new runtime started and was not an installer failure.
 
 The earlier public v1.0.0/v1.0.1 package comparison found identical paths and runtime/inspector/locale bytes; only version manifests and brand PNGs changed. Both checksum inventories passed. This provides no evidence of a newly introduced runtime regression.
 

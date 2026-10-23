@@ -27,7 +27,9 @@ Chrome manages the extension's local storage inside the active browser profile; 
 
 The extension reads the page player's playback/mute state through a fixed function in the top-level page context, with media-element state as fallback; only those scalar states are added to metadata sync. It reports closed tab IDs and the current music-tab IDs to remove stale players, without retaining a browsing history.
 
-The extension sends player state and authenticated commands to `http://127.0.0.1:<port>` (default `17864`). The bridge listens on the IPv4 loopback interface and accepts Chrome extension origins, with token and paired-origin checks after pairing. The service worker restricts `chrome.storage.local` to trusted extension contexts before accessing tokens. Content scripts cannot read that storage or receive the token through the extension message API. An extension with no local token can report that absence to the bridge using `/status`; the request receives HTTP 401 and grants no state or control access. The bridge retains its saved credentials and can mark the connection unconfirmed and cancel undelivered commands; an active authenticated browser poll takes precedence.
+The extension sends player state and authenticated commands to `http://127.0.0.1:<port>` (default `17864`). The bridge listens on the IPv4 loopback interface and accepts Chrome extension origins, with token and paired-origin checks after pairing.
+
+The service worker restricts `chrome.storage.local` to trusted extension contexts before accessing tokens. Content scripts cannot read that storage or receive the token through the extension message API. An extension with no local token can report that absence to the bridge using `/status`; the request receives HTTP 401 and grants no state or control access. The bridge retains its saved credentials and can mark the connection unconfirmed and cancel undelivered commands; an active authenticated browser poll takes precedence.
 
 Any control may open `https://music.youtube.com/` in Chrome. Functional inputs wait for the opened player and then operate its controls. Like/dislike inputs from a closed player act on the restored current song; changes are saved by YouTube Music to the signed-in account under its policies. Removing Music Deck Bridge or unpairing does not undo saved song ratings. The extension uses existing site permissions to locate YouTube Music tabs; it does not request access to other sites.
 
@@ -45,13 +47,15 @@ No listening data is sent to the project maintainer or sold. Diagnostic logs may
 
 ## Delete or reset data
 
-Select **Unpair** in the popup to revoke the server token, delete the plugin's `auth.json` and remove the extension's token. Existing command polls are rejected, and player state and queued commands are cleared. The port is retained. If the bridge cannot be reached or revocation fails, the popup reports failure and retains the token so you can start Stream Deck, match the port and retry. A token already rejected by the server can be removed locally. A new successful pairing replaces the previous token and extension origin and rejects the previous session's pending requests.
+Select **Unpair** in the popup to revoke the server token, delete the plugin's `auth.json` and remove the extension's token. Existing command polls are rejected, and player state and queued commands are cleared. The port is retained.
+
+If the bridge cannot be reached or revocation fails, the popup reports failure and retains the token so you can start Stream Deck, match the port and retry. A token already rejected by the server can be removed locally. A new successful pairing replaces the previous token and extension origin and rejects the previous session's pending requests.
 
 For a full reset, quit Stream Deck, delete `%APPDATA%\MusicDeckBridge\auth.json` and `config.json`, and remove the extension through `chrome://extensions` to delete its local storage. To uninstall the plugin, delete `io.github.minjungw00.musicdeckbridge.sdPlugin` from `%APPDATA%\Elgato\StreamDeck\Plugins`. Remove associated Stream Deck actions/profiles through Stream Deck if you also want to delete their settings.
 
-For questions use the [repository issues](https://github.com/minjungw00/music-deck-bridge/issues); for sensitive information follow [SECURITY.md](SECURITY.md). Before Chrome Web Store submission, review this document against the actual submitted version and its store privacy declarations.
+For questions use the [repository issues](https://github.com/minjungw00/music-deck-bridge/issues); for sensitive information follow [SECURITY.md](SECURITY.md).
 
-### Chrome Web Store Limited Use Disclosure
+## Chrome Web Store Limited Use Disclosure
 
 Music Deck Bridge uses data accessed through Chrome APIs and the YouTube Music web player solely to provide its disclosed functionality: connecting YouTube Music to the companion Stream Deck plugin, displaying current-track information, and executing user-requested music controls.
 

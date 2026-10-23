@@ -1,6 +1,6 @@
 # Chrome Web Store submission assets
 
-Keep extension screenshots and promotional images here.
+Use this guide to select Chrome upload files and regenerate exports. See the [shared submission workflow](../README.md#submission-workflow) for package/copy provenance and publication records.
 
 ## Upload files
 
@@ -37,15 +37,14 @@ The selected popup images are [English](screenshots/popup-en.png) and [Korean](s
 
 The listing icon and promotional tile use the existing magenta main mark and action icons. Packaged extension icons remain in `chrome-extension/icons/`. See the [brand guide](../../docs/branding.md) for palette, size and reproduction details.
 
-Record the submitted version, ZIP hash, listing identifier and review result in [release readiness](../../docs/release-readiness.md). After approval and publication, verify the actual product URL and add it to README and both installation guides independently of Marketplace. Test switching from the unpacked extension with removal and new PIN pairing; until then use the [unpacked installation guide](../../docs/installation.en.md).
+Retain the submitted version, ZIP hash, listing identifier and review outcome in the [store record](../../docs/verification/stores.md). For unpacked-to-store migration, use the [switching procedure](../../docs/installation.en.md#switching-installation-methods) and record new-PIN coverage separately from normal operation.
 
 - Capture English and Korean pairing/status screens without real PINs, tokens or personal listening details.
 - Use the [submitted English](../submitted/v1.1.1/chrome-en.md) / [Korean](../submitted/v1.1.1/chrome-ko.md) descriptions as the revision baseline; see [permission guidance](../listing.en.md#permission-explanations) when preparing changes.
 - Declare each permission and reconcile store data-use answers with `PRIVACY.md` and the submitted version.
-- Confirm support/privacy URLs, current screenshot/promotional dimensions and artwork rights.
 - Submit the Chrome ZIP with `manifest.json` at its root, rather than the repository ZIP.
 
-See the [shared submission guide and screenshot plan](../README.md).
+Use the [shared capture plan](../README.md#screenshot-capture-plan) for new screenshots.
 
 ## Media requirements
 
@@ -61,7 +60,14 @@ With repository dependencies and Playwright Chromium installed, run from the rep
 node scripts/render-chrome-store.mjs
 ```
 
-The script composes the approved source PNGs and existing brand artwork without starting the bridge or reading credentials. It writes only the four listing PNGs. `CHROME_STORE_BROWSER` can select an existing Chromium executable; `CHROME_STORE_FONT_DIR` can supply local Windows Segoe UI/Malgun Gothic fonts. Fonts are used temporarily for rendering and are not distributed. Refresh the approved popup source images when preparing media for a newer version.
+The script composes approved source PNGs and brand artwork into four listing PNGs without starting the bridge or reading credentials.
+
+| Optional environment variable | Purpose |
+| --- | --- |
+| `CHROME_STORE_BROWSER` | Existing Chromium executable |
+| `CHROME_STORE_FONT_DIR` | Local Windows Segoe UI/Malgun Gothic fonts |
+
+Fonts are used temporarily and are not distributed. Refresh approved popup sources when preparing newer-version media.
 
 Regenerate the five Marketplace-derived alternatives with the source design's renderer:
 

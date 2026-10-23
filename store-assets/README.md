@@ -2,7 +2,7 @@
 
 This directory contains listing copy, artwork and submission checklists. Track submitted versions, Console identifiers, package hashes, review status and verification results in [release readiness](../docs/release-readiness.md) and its linked verification records.
 
-For the current review state of each store, use the [distribution status table](../docs/release-readiness.md#distribution-status). The guides here describe preparing or revising a submission; actual submitted descriptions are preserved separately in the [submission record](../docs/verification/stores.md). Uploaded-media selections are not yet recorded.
+Start with the store-specific upload guide below. These guides cover future submissions and revisions; current publication and actual submitted copy belong in the [store record](../docs/verification/stores.md). Prepared local media do not identify the files uploaded to a store.
 
 | Store | Assets and checklist |
 | --- | --- |
@@ -37,9 +37,12 @@ The common brand already has a [128px Chrome icon](chrome/listing/icon-128.png) 
 
 For each submission, match the package, listing claims and media to the same version. Preserve already submitted packages and record revisions separately. Check current Console requirements before exporting media. Reconcile the submitted extension's storage, scripting, alarms and host permissions with the privacy form; the plugin fetches artwork externally.
 
-The submissions and public installation URLs are independent. Activate each URL in README and both installation guides only after that product is approved, public and its store installation is verified. Record actual Maker Console package execution in the [DRM test record](../docs/verification/marketplace-drm.md).
+1. Prepare the version's package, copy, permissions/privacy answers and correctly sized media. Check artwork rights and support/privacy URLs.
+2. Retain upload files/hashes and record the store's version identifier, selected media, processing settings and review requests in the [store record](../docs/verification/stores.md).
+3. Record approval, public availability and installation/operation separately. Keep README and both installation guides linked to public products; record migration coverage within its tested scope.
+4. Preserve submitted descriptions verbatim and add later revisions separately. When updating live copy, replace temporary companion-download instructions with public store links.
 
-After submission, record review requests and any submitted revisions against that store's version. After approval, verify public installation and migration before adding the product URL to the installation guides. Keep the approved upload files and their hashes with the submission record.
+Record identified Maker Console processed-package results in the [DRM record](../docs/verification/marketplace-drm.md), separately from local packaging fixtures.
 
 ## Screenshot capture plan
 
@@ -63,4 +66,6 @@ npm run preview:render -- --cover /path/to/album-cover.jpg
 
 Open `dist/previews/prelude-bwv846/index.html` in a browser. This single HTML file embeds its cover, icons, styles and scripts and works offline. It includes language, playback, mute, volume, artwork-fit and text controls and can open the popup alone; `popup-en.html` and `popup-ko.html` are also exported separately. The generator never starts the bridge or reads pairing credentials. All generated files remain under ignored `dist/` and are excluded from product packages.
 
-The popup reuses the actual HTML, JavaScript and catalogs with in-memory sample responses. Track-key and dial content reuse the plugin's rendering functions and artwork layout. The device frame, native key text and built-in dial layout are browser approximations; these previews do not establish actual hardware or live-service behavior. Keep them labelled as previews and retain actual product captures for submission evidence. Supply cover artwork appropriate to the intended use; a recording's license does not by itself establish the cover's reuse terms.
+The popup reuses the real HTML, JavaScript and catalogs with sample responses. Key/dial content uses the plugin's rendering functions. The device frame, native key text and built-in dial layout are browser approximations. Label these as previews; actual captures provide device evidence.
+
+Supply cover artwork appropriate to the intended use. A recording's license does not establish its cover's reuse terms.

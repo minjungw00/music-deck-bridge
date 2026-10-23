@@ -23,7 +23,7 @@
 - Show the existing main icon beside the Music Deck Bridge popup heading.
 - Add an offline rendering-preview generator for the English/Korean popup and Stream Deck + layout with sample track metadata and selectable display states.
 - Select the English/Korean popup images and actual Stream Deck capture as official product media; balance the capture's outer margins without changing its UI pixels.
-- Publish source/Chrome version 1.1.1 and Stream Deck version 1.1.1.0; retain protocol 1, existing permissions, pairing and profile settings. Record the Explorer-folder-handle installation failure and successful retry separately; no installer code fix is claimed.
+- Publish source/Chrome version 1.1.1 and Stream Deck version 1.1.1.0; retain protocol 1, existing permissions, pairing and profile settings. See the [installation investigation](docs/verification/installation.md) for the Explorer-handle failure and successful retry; no installer code fix is claimed.
 
 ## v1.1.0 — 2026-10-18
 
@@ -37,19 +37,15 @@
 - Refresh action artwork and popup colors to match the main magenta icon, and include the supplied project thumbnail in README. Hide default titles on Play/Pause, Like, Dislike and Open keys.
 - Separate development build identities from release numbers, add browser/Qt/SDK compatibility regressions and retain dated verification records.
 - Publish source/Chrome version 1.1.0 and Stream Deck version 1.1.0.0; retain protocol 1 and existing permissions/storage paths. The unpublished 1.0.2 candidate is superseded by this release.
-- Record maintainer-completed device, Chrome and update/settings-retention/rollback checks. The historical installation conflict was not reproduced; no confirmed original-cause fix is claimed. New protocol behavior passed local automated and Chromium fixtures; Maker Console DRM and store approval remain separate.
+- Record [maintainer-completed device, Chrome and retention/rollback checks](docs/verification/runtime.md#earlier-behavior-confirmation). The installation conflict was not reproduced at that sign-off; no cause fix was claimed. Protocol behavior passed local automated/Chromium fixtures; DRM and store approval remained separate.
 
 ## Historical v1.0.2 candidate — not published, superseded by v1.1.0
 
-- Show only Play on the toggle key when paused and only Pause while playing, following the selected player's reported state, including changes made directly in Chrome. Use Play with the offline title when no player is available.
-- Align all seven Stream Deck action families with the main magenta play-disc identity, using matching circular badges, white symbols and dark key backgrounds. Keep action-list icons monochrome and align the Chrome popup palette.
-- Add the maintainer-supplied project thumbnail to README and record v1.0.1's Marketplace Pending review status. These candidate assets are separate from the fixed public and submitted v1.0.1 packages.
-- Align source/Chrome versions at 1.0.2 and Stream Deck at 1.0.2.0; preserve UUIDs, authentication, shared port, protocol and configuration paths.
-- Record the known update-installation rejection and Windows lock diagnostics. This candidate does **not** claim to fix the update conflict; the October 18 running-plugin 1.0.1 → 1.0.2 attempt failed at the directory rename after process exit. A later developer-mode/official-stop retry installed and started 1.0.2 with the same host running. Detailed operation/settings retention, fully exited-host comparison and rollback remain unverified. Maker Console DRM and store approval remain separate.
-- Record the maintainer's normal-operation confirmation for plugin 1.0.2 with Chrome extension 1.0.1 after that retry. This confirms the observed mixed-version combination; Chrome 1.0.2 manual operation and itemized retention/rollback checks are separate.
-- Record a later successful running-plugin update, including the old-folder rename, with developer mode enabled after host restart and baseline reinstall. Official stop is not universally necessary; the differing conditions do not establish developer mode as the cause or resolve the original failure.
-- Record the subsequent successful normal-mode running-plugin update after baseline reinstall, with developer mode absent and exact installed candidate files verified. Developer mode is not a universal prerequisite; the original denial's cause remains unconfirmed.
-- Corroborate the full explicit uninstall → public 1.0.1 installation → running-plugin 1.0.2 update sequence in a fifth PML capture. All stages pass in normal mode; distinguish the actual update from the initial baseline installation and from unmeasured settings retention/rollback.
+- Show Play when paused and Pause while playing, following confirmed player state, including changes made in Chrome. Show Play with an offline title when no player is available.
+- Align all seven action families and the popup palette with the magenta play-disc identity; retain monochrome action-list icons. Add the supplied project thumbnail to README. Candidate assets remain separate from fixed public/submitted v1.0.1 packages.
+- Align source/Chrome at 1.0.2 and Stream Deck at 1.0.2.0. Preserve UUIDs, authentication, shared port, protocol and configuration paths.
+- Record failed root-rename updates and later successful developer/normal-mode retries. No installer code fix, universal developer-mode requirement or universal manual-stop requirement was established. Controlled comparisons and installed-file checks are consolidated in the [installation investigation](docs/verification/installation.md).
+- Record maintainer-confirmed operation of plugin 1.0.2 with Chrome extension 1.0.1 after a successful retry. Chrome 1.0.2 operation and detailed retention/rollback were outside that report; later evidence is recorded separately in [runtime verification](docs/verification/runtime.md#maintainer-confirmation).
 
 ## v1.0.1 — 2026-10-17
 

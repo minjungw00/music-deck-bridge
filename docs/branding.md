@@ -33,6 +33,8 @@ Use the committed size-specific PNGs. The minimum colored size is **16×16**; th
 
 The 288px Marketplace export uses the same renderer; its size follows the [Marketplace product guidelines](https://docs.elgato.com/guidelines/products/).
 
+### Store exports
+
 The Chrome listing icon is a separate size-normalized export of the same main mark. The [Chrome media renderer](../scripts/render-chrome-store.mjs) prepares it alongside the store screenshots and promotional tile; see the [Chrome upload guide](../store-assets/chrome/README.md#upload-files).
 
 The [Marketplace media renderer](../scripts/render-elgato-store.mjs) copies the canonical 288px app icon and composes a separate 1920×960 thumbnail plus three gallery images. It preserves the approved actual device capture and uses English explanatory text; see the [Marketplace upload guide](../store-assets/elgato/README.md#upload-files).
@@ -41,11 +43,19 @@ The [Marketplace media renderer](../scripts/render-elgato-store.mjs) copies the 
 
 All ten actions use the main icon's circular badge, gradient magenta, white symbol and dark rounded surface. Now Playing uses the main play-disc mark; the other actions use recognizable playback, speaker/mute, dial, launch and thumb symbols.
 
-| Now Playing | Play / Pause | Previous | Next | Mute | Volume Dial | Current Track Dial |
-| --- | --- | --- | --- | --- | --- | --- |
-| ![Now Playing](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/nowplaying/key.png) | ![Play / Pause](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/toggle/key.png) | ![Previous](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/prev/key.png) | ![Next](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/next/key.png) | ![Mute](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/mute/key.png) | ![Volume Dial](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/volume/key.png) | ![Current Track Dial](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/toggle/key.png) |
+| Action | Key preview |
+| --- | --- |
+| Now Playing | ![Now Playing](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/nowplaying/key.png) |
+| Play / Pause | ![Play / Pause](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/toggle/key.png) |
+| Previous | ![Previous](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/prev/key.png) |
+| Next | ![Next](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/next/key.png) |
+| Mute | ![Mute](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/mute/key.png) |
+| Volume Dial | ![Volume Dial](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/volume/key.png) |
+| Current Track Dial | ![Current Track Dial](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/toggle/key.png) |
 
 Each family has a 72px key and 144px @2x key. The 20px/40px action-list badges use white with transparent symbol cutouts so they remain monochrome on Stream Deck's dark UI. All action exports use 4× supersampling before downsampling. The Chrome popup uses the same dark background, a deep-magenta primary button for white-text contrast and a magenta keyboard-focus outline. The property inspector retains the host's neutral SDPI style.
+
+### Playback and rating states
 
 The Play / Pause key has separate artwork for its next operation: Play when paused, Pause while playing. It follows the selected player's confirmed state, including changes made in Chrome, and updates every visible instance of the key. A key press alone does not flip the image. With no selected player it shows Play. Play/Pause, Like, Dislike and Open keys have no default text titles. The action-list icon uses Play.
 
@@ -73,7 +83,14 @@ git diff --exit-code -- chrome-extension/icons streamdeck/io.github.minjungw00.m
 
 Use `python3` on systems without a `python` alias. To review regeneration without overwriting tracked PNGs, pass `--output-root /path/to/temporary-output`. The generator defines every shape in a 512-unit coordinate system. Brand shapes are rendered at 4× resolution and downsampled using Lanczos, including the 512px export. The generator takes no external artwork, logo, font or source-image inputs. The pinned Pillow version reproduces the committed PNGs.
 
-Run the normal [development checks](development.md#local-checks). `tests/brand-assets.test.mjs` verifies brand/store PNG dimensions, RGBA data, corner transparency, palette, minimum-size triangle shape and manifest references, plus the 36 base action PNGs' dimensions, palette, distinct symbols and monochrome cutouts and separate playback/rating state artwork at both key sizes, using Node's standard library. Current Track Dial shares the Play / Pause icon family. Python packaging tests verify that Chrome ZIP and Stream Deck staging preserve the brand and action PNG bytes, including pause and selected-rating images. The generator produces 50 assets, including the store app icon and six additional state PNGs. Pillow is required only for regeneration, not ordinary tests or packaging.
+Run the normal [development checks](development.md#local-checks):
+
+| Check | Coverage |
+| --- | --- |
+| `tests/brand-assets.test.mjs` | Brand/store PNG dimensions, RGBA, transparent corners, palette, small play triangles and manifest references; 36 base action PNGs, symbols, monochrome cutouts and playback/rating variants at both key sizes |
+| Python packaging tests | Chrome ZIP and Stream Deck staging preserve the PNG bytes, including pause and selected-rating images |
+
+The Node checks use only the standard library. Current Track Dial shares the Play / Pause icon family. The generator produces 50 assets, including the store app icon and six additional state PNGs. Pillow is needed only for regeneration.
 
 ## License and attribution
 

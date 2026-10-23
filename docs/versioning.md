@@ -4,9 +4,13 @@ Application release numbers and [wire protocol versions](protocol.md) are indepe
 
 ## Development cycle
 
+### Version and build identity
+
 Choose the intended release number once, then keep `package.json` and the lockfile at `X.Y.Z-dev` throughout development. Ordinary fixes, documentation changes, commits, CI runs and local test builds do not increment that number. A new intended release number is a maintainer decision, not an installer workaround.
 
 Build identity is separate: `BUILD-INFO.json` records the full commit, build ID, platform and CI run/attempt or local build time. Local builds also record whether uncommitted changes were present. A dirty build is not an exact reproduction of its recorded commit; keep the delivered checksums for its identity.
+
+The following values are illustrative:
 
 | Field | Development example | Promoted release example |
 | --- | --- | --- |
@@ -17,6 +21,8 @@ Build identity is separate: `BUILD-INFO.json` records the full commit, build ID,
 | Build identity | Commit SHA plus CI/local build information | Approved source tag and package checksums |
 
 Chrome requires a [numeric version and provides `version_name` for display](https://developer.chrome.com/docs/extensions/reference/manifest/version). Stream Deck requires [four numeric version components](https://docs.elgato.com/streamdeck/sdk/references/manifest/#manifest). These manifest numbers are fixed platform values, not evidence that a build has been released. Do not increment a fourth component per development build.
+
+### Select a development target
 
 Start an explicitly selected development cycle with:
 
@@ -35,6 +41,8 @@ npm run build:dev
 ```
 
 `build:dev` rebuilds the plugin, packages both components and writes `BUILD-INFO.json` and `SHA256SUMS.txt` under `dist/development/<build-id>/`. Each invocation gets a distinct build ID without editing source versions. CI uses its existing SHA-named artifacts and records the same separation between version and build identity.
+
+### Replace an equal-version package
 
 Same-cycle development packages have equal numeric versions. Stream Deck may reject installation as already installed; promoting the same target also leaves its numeric value unchanged. Use the backed-up [file replacement procedure](installation.en.md#replacing-plugin-files) for development replacement/downgrade, or the [source installation workflow](installation.en.md#method-4-build-from-source). Keep the unpacked Chrome extension in the same folder and reload it instead of removing/reinstalling it. Keep one active plugin and extension copy.
 
