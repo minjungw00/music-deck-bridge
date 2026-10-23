@@ -4,13 +4,13 @@
 
 Install **both** the Stream Deck plugin (which runs the local bridge) and the Chrome extension. All four methods use the same PIN pairing procedure and support a normal YouTube Music tab or the app installed through Chrome (PWA).
 
-**Recommended: the extension from [Chrome Web Store](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca) and the plugin from [Elgato Marketplace](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd).** Follow [Official stores](#method-4-official-stores) below. Actions provides development builds. See [distribution status](release-readiness.md#distribution-status) for store availability. Prebuilt packages need no separate Node.js, npm or Python installation.
+**Recommended: the extension from [Chrome Web Store](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca) and the plugin from [Elgato Marketplace](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd).** Follow [Official stores](#method-1-official-stores) below. Actions provides development builds. See [distribution status](release-readiness.md#distribution-status) for store availability. Prebuilt packages need no separate Node.js, npm or Python installation.
 
 - [Requirements](#requirements)
-- [Method 1: GitHub Releases](#method-1-github-releases)
-- [Method 2: GitHub Actions](#method-2-github-actions)
-- [Method 3: Build from source](#method-3-build-from-source)
-- [Method 4: Official stores](#method-4-official-stores)
+- [Method 1: Official stores](#method-1-official-stores)
+- [Method 2: GitHub Releases](#method-2-github-releases)
+- [Method 3: GitHub Actions](#method-3-github-actions)
+- [Method 4: Build from source](#method-4-build-from-source)
 - [Pairing](#pairing)
 - [Controls and display](#controls-and-display)
 - [Updating](#updating)
@@ -26,7 +26,21 @@ Install **both** the Stream Deck plugin (which runs the local bridge) and the Ch
 | Stream Deck software | 7.1+; includes the plugin's Node.js 24 runtime |
 | Device | Key actions target Stream Deck key models; Volume/Current Track dials require Stream Deck + |
 
-## Method 1: GitHub Releases
+<a id="method-4-official-stores"></a>
+
+## Method 1: Official stores
+
+Install both components from their official store listings:
+
+| Component | Distribution | Installation |
+| --- | --- | --- |
+| Stream Deck plugin | [Elgato Marketplace](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd) | Open the listing and follow the installation flow in Stream Deck |
+| Chrome extension | [Chrome Web Store](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca) | Open the listing, select **Add to Chrome** and confirm installation |
+
+Then complete [Pairing](#pairing). Keep only one active copy of each component. If replacing an unpacked extension, follow [Switching installation methods](#switching-installation-methods): unpair the connected old extension, remove it, install the store extension and pair with a new PIN.
+<a id="method-1-github-releases"></a>
+
+## Method 2: GitHub Releases
 
 Use the [latest stable release](https://github.com/minjungw00/music-deck-bridge/releases/latest). No build tools are required:
 
@@ -40,7 +54,9 @@ Use the [latest stable release](https://github.com/minjungw00/music-deck-bridge/
 
 Use the packaged Chrome ZIP, rather than GitHub's automatically generated **Source code** archives. Do not drag the ZIP into Chrome or install an arbitrary CRX.
 
-## Method 2: GitHub Actions
+<a id="method-2-github-actions"></a>
+
+## Method 3: GitHub Actions
 
 Development builds include recent changes and may be unstable. They require GitHub sign-in to download. [GitHub retains artifacts for 90 days by default](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/download-workflow-artifacts); repository settings can shorten retention, and artifacts may expire or be deleted. They are temporary downloads.
 
@@ -53,7 +69,9 @@ Development builds include recent changes and may be unstable. They require GitH
 
 Development versions remain fixed at `X.Y.Z-dev` within a cycle; platform manifests retain fixed numeric values. Distinguish builds by their SHA and `BUILD-INFO.json`, not an incremented release number. See the [versioning policy](versioning.md). Install both components from the same run; development packages have no automatic updates.
 
-## Method 3: Build from source
+<a id="method-3-build-from-source"></a>
+
+## Method 4: Build from source
 
 For developers and contributors. Install Git, **Node.js 24 and npm**, then run:
 
@@ -86,16 +104,6 @@ npm run build:chrome
 
 The files are written to `dist/` with the same names as release packages. Stream Deck packaging uses the lockfile-pinned Elgato CLI installed by `npm ci`. See [development](development.md) for testing, debugging and release checks.
 
-## Method 4: Official stores
-
-Install both components from their official store listings:
-
-| Component | Distribution | Installation |
-| --- | --- | --- |
-| Stream Deck plugin | [Elgato Marketplace](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd) | Open the listing and follow the installation flow in Stream Deck |
-| Chrome extension | [Chrome Web Store](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca) | Open the listing, select **Add to Chrome** and confirm installation |
-
-Then complete [Pairing](#pairing). Keep only one active copy of each component. If replacing an unpacked extension, follow [Switching installation methods](#switching-installation-methods): unpair the connected old extension, remove it, install the store extension and pair with a new PIN.
 
 ## Pairing
 

@@ -49,10 +49,10 @@ English and Korean Chrome extension popup previews:
 
 | Method | Audience and availability | Instructions |
 | --- | --- | --- |
-| GitHub Releases | General users; stable prebuilt packages | [English](docs/installation.en.md#method-1-github-releases) / [한국어](docs/installation.ko.md#method-1-github-releases) |
-| GitHub Actions | Testers; latest development packages, stability not guaranteed; GitHub sign-in required | [English](docs/installation.en.md#method-2-github-actions) / [한국어](docs/installation.ko.md#method-2-github-actions) |
-| Build from source | Developers; requires Node.js 24 and npm, plus Python 3.10+ for packaging | [English](docs/installation.en.md#method-3-build-from-source) / [한국어](docs/installation.ko.md#method-3-build-from-source) |
-| Official stores | Recommended for general users; Elgato Marketplace and Chrome Web Store | [English](docs/installation.en.md#method-4-official-stores) / [한국어](docs/installation.ko.md#method-4-official-stores) |
+| Official stores | Recommended for general users; Elgato Marketplace and Chrome Web Store | [English](docs/installation.en.md#method-1-official-stores) / [한국어](docs/installation.ko.md#method-1-official-stores) |
+| GitHub Releases | General users; stable prebuilt packages | [English](docs/installation.en.md#method-2-github-releases) / [한국어](docs/installation.ko.md#method-2-github-releases) |
+| GitHub Actions | Testers; latest development packages, stability not guaranteed; GitHub sign-in required | [English](docs/installation.en.md#method-3-github-actions) / [한국어](docs/installation.ko.md#method-3-github-actions) |
+| Build from source | Developers; requires Node.js 24 and npm, plus Python 3.10+ for packaging | [English](docs/installation.en.md#method-4-build-from-source) / [한국어](docs/installation.ko.md#method-4-build-from-source) |
 
 See the guides for [PIN pairing](docs/installation.en.md#pairing), updates, switching installation methods and removal. Chrome ZIP packages must be extracted to a permanent folder and loaded unpacked in Developer mode.
 

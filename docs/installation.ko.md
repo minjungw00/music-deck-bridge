@@ -4,13 +4,13 @@
 
 로컬 브리지를 실행하는 **Stream Deck 플러그인과 Chrome 확장 프로그램을 모두 설치**해야 합니다. 네 설치 경로는 같은 PIN 연결 절차를 사용하며, 일반 YouTube Music 탭과 Chrome으로 설치한 앱(PWA)을 모두 지원합니다.
 
-**확장 프로그램은 [Chrome 웹 스토어](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca), 플러그인은 [Elgato Marketplace](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd)에서 설치하는 경로를 권장합니다.** 아래 [공식 스토어](#method-4-official-stores) 안내를 따르세요. Actions는 개발 빌드를 제공합니다. 스토어 공개 여부는 [배포 상태](release-readiness.md#distribution-status)를 참고하세요. 사전 빌드 패키지를 설치할 때는 Node.js·npm·Python을 별도로 설치할 필요가 없습니다.
+**확장 프로그램은 [Chrome 웹 스토어](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca), 플러그인은 [Elgato Marketplace](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd)에서 설치하는 경로를 권장합니다.** 아래 [공식 스토어](#method-1-official-stores) 안내를 따르세요. Actions는 개발 빌드를 제공합니다. 스토어 공개 여부는 [배포 상태](release-readiness.md#distribution-status)를 참고하세요. 사전 빌드 패키지를 설치할 때는 Node.js·npm·Python을 별도로 설치할 필요가 없습니다.
 
 - [요구사항](#requirements)
-- [방법 1: GitHub Releases](#method-1-github-releases)
-- [방법 2: GitHub Actions](#method-2-github-actions)
-- [방법 3: 소스에서 빌드](#method-3-build-from-source)
-- [방법 4: 공식 스토어](#method-4-official-stores)
+- [방법 1: 공식 스토어](#method-1-official-stores)
+- [방법 2: GitHub Releases](#method-2-github-releases)
+- [방법 3: GitHub Actions](#method-3-github-actions)
+- [방법 4: 소스에서 빌드](#method-4-build-from-source)
 - [PIN 연결](#pairing)
 - [버튼과 화면 설정](#controls-and-display)
 - [업데이트](#updating)
@@ -28,9 +28,23 @@
 | Stream Deck 소프트웨어 | 7.1 이상; 플러그인용 Node.js 24 런타임 포함 |
 | 장치 | 버튼 액션은 Stream Deck 키 모델 대상; 볼륨·현재 곡 다이얼은 Stream Deck + 필요 |
 
-<a id="method-1-github-releases"></a>
+<a id="method-4-official-stores"></a>
+<a id="method-1-official-stores"></a>
 
-## 방법 1: GitHub Releases
+## 방법 1: 공식 스토어
+
+각 공식 스토어에서 두 구성요소를 모두 설치하세요.
+
+| 구성요소 | 배포 경로 | 설치 방법 |
+| --- | --- | --- |
+| Stream Deck 플러그인 | [Elgato Marketplace](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd) | 제품 페이지를 열고 Stream Deck의 설치 절차 진행 |
+| Chrome 확장 프로그램 | [Chrome 웹 스토어](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca) | 제품 페이지에서 **Chrome에 추가**를 누르고 설치 확인 |
+
+설치 후 [PIN 연결](#pairing)을 수행합니다. 각 구성요소는 하나만 활성화하세요. 기존 압축 해제 확장 프로그램을 사용 중이라면 [설치 경로 전환](#switching-installation-methods)에 따라 연결된 기존 확장의 해제 성공을 확인하고 삭제한 뒤, 스토어판을 설치하고 새 PIN으로 연결하세요.
+<a id="method-1-github-releases"></a>
+<a id="method-2-github-releases"></a>
+
+## 방법 2: GitHub Releases
 
 [최신 안정 릴리스](https://github.com/minjungw00/music-deck-bridge/releases/latest)를 사용하세요. 빌드 도구 없이 다음과 같이 설치합니다.
 
@@ -45,8 +59,9 @@
 GitHub가 자동 생성하는 **Source code** 압축 파일 대신 배포용 Chrome ZIP을 받으세요. ZIP을 Chrome에 드래그하거나 임의의 CRX를 설치하지 마세요.
 
 <a id="method-2-github-actions"></a>
+<a id="method-3-github-actions"></a>
 
-## 방법 2: GitHub Actions
+## 방법 3: GitHub Actions
 
 개발 빌드는 최신 변경사항을 포함하지만 안정성을 보장하지 않습니다. 다운로드하려면 GitHub에 로그인해야 합니다. [GitHub의 기본 산출물 보존 기간은 90일](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/download-workflow-artifacts)이지만 저장소 설정에 따라 짧아지거나 산출물이 만료·삭제될 수 있습니다. 영구 다운로드 경로가 아닙니다.
 
@@ -60,8 +75,9 @@ GitHub가 자동 생성하는 **Source code** 압축 파일 대신 배포용 Chr
 같은 개발 주기에서는 `X.Y.Z-dev`와 플랫폼용 숫자 버전을 고정합니다. 빌드는 정식 버전 증가 대신 SHA와 `BUILD-INFO.json`으로 구분하며, [버전 관리 정책](versioning.md)을 따릅니다. 두 구성요소는 같은 실행의 패키지를 사용하며, 개발 패키지는 자동 업데이트되지 않습니다.
 
 <a id="method-3-build-from-source"></a>
+<a id="method-4-build-from-source"></a>
 
-## 방법 3: 소스에서 빌드
+## 방법 4: 소스에서 빌드
 
 개발자·기여자용입니다. Git, **Node.js 24와 npm**을 설치한 뒤 실행합니다.
 
@@ -94,18 +110,6 @@ npm run build:chrome
 
 `dist/`에 릴리스와 같은 이름의 패키지가 생성됩니다. Stream Deck 패키징은 `npm ci`가 설치한 잠금 파일 고정 버전의 Elgato CLI를 사용합니다. 테스트·디버깅·릴리스 검증은 [개발 문서](development.md)를 참고하세요.
 
-<a id="method-4-official-stores"></a>
-
-## 방법 4: 공식 스토어
-
-각 공식 스토어에서 두 구성요소를 모두 설치하세요.
-
-| 구성요소 | 배포 경로 | 설치 방법 |
-| --- | --- | --- |
-| Stream Deck 플러그인 | [Elgato Marketplace](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd) | 제품 페이지를 열고 Stream Deck의 설치 절차 진행 |
-| Chrome 확장 프로그램 | [Chrome 웹 스토어](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca) | 제품 페이지에서 **Chrome에 추가**를 누르고 설치 확인 |
-
-설치 후 [PIN 연결](#pairing)을 수행합니다. 각 구성요소는 하나만 활성화하세요. 기존 압축 해제 확장 프로그램을 사용 중이라면 [설치 경로 전환](#switching-installation-methods)에 따라 연결된 기존 확장의 해제 성공을 확인하고 삭제한 뒤, 스토어판을 설치하고 새 PIN으로 연결하세요.
 
 <a id="pairing"></a>
 

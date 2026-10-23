@@ -36,7 +36,7 @@ npm run build:dev
 
 `build:dev` rebuilds the plugin, packages both components and writes `BUILD-INFO.json` and `SHA256SUMS.txt` under `dist/development/<build-id>/`. Each invocation gets a distinct build ID without editing source versions. CI uses its existing SHA-named artifacts and records the same separation between version and build identity.
 
-Same-cycle development packages have equal numeric versions. Stream Deck may reject installation as already installed; promoting the same target also leaves its numeric value unchanged. Use the backed-up [file replacement procedure](installation.en.md#replacing-plugin-files) for development replacement/downgrade, or the [source installation workflow](installation.en.md#method-3-build-from-source). Keep the unpacked Chrome extension in the same folder and reload it instead of removing/reinstalling it. Keep one active plugin and extension copy.
+Same-cycle development packages have equal numeric versions. Stream Deck may reject installation as already installed; promoting the same target also leaves its numeric value unchanged. Use the backed-up [file replacement procedure](installation.en.md#replacing-plugin-files) for development replacement/downgrade, or the [source installation workflow](installation.en.md#method-4-build-from-source). Keep the unpacked Chrome extension in the same folder and reload it instead of removing/reinstalling it. Keep one active plugin and extension copy.
 
 If an earlier development package has a higher numeric version, migrate with backed-up file replacement. Do not increase the intended release number just to make that installer accept an update. Public users upgrading from an older public release still use the ordinary newer-package update path.
 
