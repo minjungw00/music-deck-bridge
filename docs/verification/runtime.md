@@ -121,6 +121,8 @@ A separate fresh-profile Chromium 156.0.8078.4 experiment uses a local one-secon
 
 Diagnostic validation passes: syntax/JSON/manifests, 198 Node tests and the Chromium 156.0.8078.4 MV3 fixture. The latter measures both activation flags as false inside the automatic cold-start API call and checks the new bounded fields through the full MAIN/content/worker failure path. Its modeled API still starts playback without activation, so its success does not test or establish real-site autoplay eligibility. The separate PCM experiment above uses actual media playback. No behavioral repair is claimed for this diagnostic revision.
 
+Dispatch/activation diagnostic artifacts from clean commit `40906dbf7dde` use build ID `1.1.3-dev+g40906dbf7dde.local20261028195102296` under `dist/development/`, with `dirty: false`. Official Stream Deck packaging and all checksums pass; both archived diagnostic modules match their source. The plugin runtime remains byte-identical to the preceding API-startup candidate. Only the extension changes; prior artifacts remain intact.
+
 ## Protocol compatibility
 
 The [protocol contract](../protocol.md) passed shared-engine, real HTTP bridge, SDK inspector and worker fixtures:
