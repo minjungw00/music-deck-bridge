@@ -166,6 +166,57 @@ test('an unstarted player with a loaded track still accepts Play', async () => {
   assert.equal(h.clicks(), 1);
 });
 
+for (const type of ['play', 'toggle']) {
+  test(`${type} starts a restored track without media through the Play API`, async () => {
+    const h = harness({ initialState: -1, noEffect: true });
+    h.player.audio.readyState = 0;
+    h.player.audio.currentSrc = '';
+    h.player.audio.paused = true;
+    assert.equal((await h.send(type, Date.now() + 180)).ok, true);
+    assert.equal(h.state(), 1);
+    assert.equal(h.plays(), 1);
+    assert.equal(h.clicks(), 0, 'use explicit Play instead of an ineffective synthetic toggle');
+  });
+}
+
+test('a restored track ID without media does not establish playback after an ineffective Play API request', async () => {
+  const h = harness({ initialState: -1, noEffect: true, playNoEffect: true });
+  h.player.audio.readyState = 0;
+  h.player.audio.currentSrc = '';
+  h.player.audio.paused = true;
+  const pending = await h.send('toggle', Date.now() + 180, true);
+  const result = await h.result(pending.pending);
+  assert.equal(result.reason, 'playback-unconfirmed');
+  assert.equal(result.diagnostic.source, 'observation');
+  assert.equal(result.diagnostic.code, null);
+  assert.equal(result.diagnostic.inputState, -1);
+  assert.equal(result.diagnostic.inputHasTrack, true);
+  assert.equal(result.diagnostic.inputMediaReady, 0);
+  assert.equal(result.diagnostic.state, -1);
+  assert.equal(result.diagnostic.hasTrack, true);
+  assert.equal(result.diagnostic.mediaReady, 0);
+  assert.equal(h.clicks(), 0, 'do not fall back to an ambiguous toggle');
+  assert.equal(h.plays(), 1, 'send explicit Play only once');
+});
+
+test('a restored-track API autoplay block is reported without falling back to a click', async () => {
+  const h = harness({ initialState: -1, playBlocked: true });
+  h.player.audio.readyState = 0;
+  const result = await h.send('play', Date.now() + 180);
+  assert.equal(result.reason, 'autoplay-blocked');
+  assert.equal(h.plays(), 1);
+  assert.equal(h.clicks(), 0);
+});
+
+test('a playing track without ready media still accepts Pause through its control', async () => {
+  const h = harness({ initialState: 1 });
+  h.player.audio.readyState = 0;
+  assert.equal((await h.send('toggle')).ok, true);
+  assert.equal(h.state(), 2);
+  assert.equal(h.clicks(), 1);
+  assert.equal(h.plays(), 0);
+});
+
 test('a cued state cannot bypass a known empty queue', async () => {
   const h = harness({ unloadedUntilPlay: true, initialState: 5 });
   h.player.setQueue({ getItems: () => [] });

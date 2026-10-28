@@ -165,9 +165,17 @@
       seekMedia = before.media;
       seekMedia?.addEventListener?.('seeked', onSeeked);
       control.latest = sequence;
-      phase = navigation ? 'navigate-button' : 'play-button';
-      noteInput(before);
-      button.click();
+      // A restored track can have an ID while still UNSTARTED with no media.
+      // Its synthetic Play button may do nothing. Use an explicit Play request
+      // for that state, once; keep Pause and loaded-player controls unchanged.
+      if (!navigation && before.ready && before.state === -1 && !(before.media?.readyState > 0) &&
+          typeof before.api?.playVideo === 'function') {
+        await requestPlay(before);
+      } else {
+        phase = navigation ? 'navigate-button' : 'play-button';
+        noteInput(before);
+        button.click();
+      }
       deadline = Math.min(expires, Date.now() + 10000);
       phase = 'confirm';
       return { before };

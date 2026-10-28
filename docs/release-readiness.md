@@ -4,7 +4,7 @@ Last updated: October 29, 2026 (Asia/Seoul). Both official stores are published 
 
 Current development target: **1.1.3-dev**, with [dependency security updates](verification/runtime.md#113-dependency-review) and [artwork/transport fixes](verification/runtime.md#113-artwork-and-transport-fixes). It has not been promoted or published; its automated checks do not extend the 1.1.2 maintainer sign-off to this candidate.
 
-The maintainer reports an unresolved signed-in cold-start `player-error` with site code `2`. The current development revision guards against starting an empty UNSTARTED player and records input-time readiness separately from failure-time state; see the [startup error record](verification/runtime.md#startup-player-error-diagnosis). Passing local models do not establish resolution of that report.
+The signed-in cold-start report remains unresolved: after the empty-player guard, the maintainer reports `playback-unconfirmed` with a track ID present before dispatch, UNSTARTED state and no ready media. The maintainer confirms direct Console API playback starts music in that failure state. The current revision uses that API for this startup state; actual extension/Windows operation remains unconfirmed. See the [startup error record](verification/runtime.md#startup-player-error-diagnosis); passing local models do not establish resolution of that report.
 
 ## Distribution status
 

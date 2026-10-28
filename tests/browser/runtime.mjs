@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const musicURL = 'https://music.youtube.com/';
-const fixture = `<!doctype html><html><body>
+const fixture = (restored = false) => `<!doctype html><html><body>
 <ytmusic-player-bar>
  <span class="title">Fixture song</span><span class="byline">Fixture artist</span>
  <audio></audio><div id="movie_player"></div>
@@ -27,11 +27,13 @@ const fixture = `<!doctype html><html><body>
 </ytmusic-player-bar>
 <script>
 let playing=false, muted=false, ready=false, cued=false, initialized=false, index=2, time=0, stallPrevious=false, seekSignal=true;
+const restored=${restored};
 const playerListeners=new Map();
 const tracks=['aaaaaaaaaaa','bbbbbbbbbbb','ccccccccccc','ddddddddddd','eeeeeeeeeee'];
 function record(key){ document.body.dataset[key]=String(Number(document.body.dataset[key]||0)+1); }
 function control(type){
  if(!ready){record('early');return;}
+ if(type==='toggle'&&restored&&!initialized){record('ignoredRestoredClick');return;}
  if(!initialized&&!cued){record('uncuedInput');for(const fn of playerListeners.get('onError')||[])fn({data:2});return;}
  if(type==='toggle'){playing=!playing;initialized=true;}
  if(type==='prev'||type==='next'){
@@ -48,8 +50,8 @@ Object.defineProperties(document.querySelector('audio'), {
  currentSrc:{get:()=>initialized?tracks[index]:''}
 });
 const api=document.querySelector('#movie_player');
-api.isReady=()=>ready;api.getPlayerState=()=>!initialized?(cued?5:-1):playing?1:2;
-api.getVideoData=()=>({video_id:initialized?tracks[index]:''});
+api.isReady=()=>ready;api.getPlayerState=()=>!initialized?(cued&&!restored?5:-1):playing?1:2;
+api.getVideoData=()=>({video_id:initialized||restored?tracks[index]:''});
 api.getCurrentTime=()=>time;
 api.playVideo=()=>{if(!ready){record('early');return;}playing=true;initialized=true;record('playRequest');};
 api.isMuted=()=>muted;
@@ -75,6 +77,7 @@ async function until(check, label) {
 test('real MV3 worker retains cold-tab inputs and safely recovers a replaced receiver', { timeout: 90000 }, async t => {
   const temp = await mkdtemp(join(tmpdir(), 'music-deck-browser-'));
   let browser, process, child, site;
+  let restoredStartup = false;
   t.after(async () => {
     await browser?.close();
     if (child) await child.stop();
@@ -85,7 +88,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '1',
     '-keyout', join(temp, 'key'), '-out', join(temp, 'cert'), '-subj', '/CN=music.youtube.com'], { stdio: 'ignore' });
   site = httpsServer({ key: await readFile(join(temp, 'key')), cert: await readFile(join(temp, 'cert')) },
-    (_req, res) => { setTimeout(() => { res.setHeader('Content-Type', 'text/html'); res.end(fixture); }, 250); });
+    (_req, res) => { setTimeout(() => { res.setHeader('Content-Type', 'text/html'); res.end(fixture(restoredStartup)); }, 250); });
   await new Promise(resolve => site.listen(0, '127.0.0.1', resolve));
   const port = await freePort();
   process = spawn(globalThis.process.execPath, [join(root, 'streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/bin/plugin.js')], {
@@ -189,6 +192,28 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     }
     assert.equal(browser.pages().filter(page => page.url().startsWith(musicURL)).length, 1);
   }
+  // The reported startup shape: restored ID, UNSTARTED and no media. The
+  // synthetic Play control has no effect while the explicit Play API starts it.
+  restoredStartup = true;
+  for (const type of ['toggle', 'nowplaying']) {
+    for (const page of browser.pages()) if (page.url().startsWith(musicURL)) await page.close();
+    const before = await worker.evaluate(() => acknowledgments.length);
+    await postEvent(type);
+    const result = await until(async () => (await worker.evaluate(() => acknowledgments))[before], `${type} restored startup ACK`);
+    assert.equal(result.ok, true, JSON.stringify(result));
+    const page = browser.pages().find(page => page.url().startsWith(musicURL));
+    assert.equal(await page.evaluate(() => playing), true);
+    assert.equal(await page.evaluate(() => document.body.dataset.playRequest), '1');
+    assert.equal(await page.evaluate(() => document.body.dataset.ignoredRestoredClick), undefined);
+    assert.equal(await page.evaluate(() => document.body.dataset.toggle), undefined);
+    const paused = await worker.evaluate(() => acknowledgments.length);
+    await postEvent('toggle');
+    assert.equal((await until(async () => (await worker.evaluate(() => acknowledgments))[paused], 'Pause after restored startup')).ok, true);
+    assert.equal(await page.evaluate(() => playing), false);
+    assert.equal(await page.evaluate(() => document.body.dataset.toggle), '1', 'Pause still uses the site control');
+    assert.equal(await page.evaluate(() => document.body.dataset.playRequest), '1', 'Pause did not issue Play');
+  }
+  restoredStartup = false;
   // Previous can leave the same item/position and omit seek events. Its result
   // must not hold subsequent controls or let an old monitor undo a later Pause.
   const controlled = browser.pages().find(page => page.url().startsWith(musicURL));
@@ -289,5 +314,5 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   } finally {
     await music.evaluate(() => { document.querySelector('ytmusic-player-bar .play-pause-button').click = globalThis.originalPlayClick; delete globalThis.originalPlayClick; });
   }
-  t.diagnostic(`Chromium ${browser.browser().version()}; unstarted API-ready selection delay, Play-gated media/track initialization, cold-tab and post-launch controls, stalled/no-seek Previous followed by responsive Pause/Next, stale-monitor cancellation and receiver recovery passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
+  t.diagnostic(`Chromium ${browser.browser().version()}; restored-ID API startup for Play/Pause and Current Track followed by Pause, unstarted API-ready selection delay, Play-gated media/track initialization, cold-tab and post-launch controls, stalled/no-seek Previous followed by responsive Pause/Next, stale-monitor cancellation and receiver recovery passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
 });

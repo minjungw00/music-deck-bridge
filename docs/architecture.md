@@ -99,6 +99,8 @@ The document serializes preparation/clicks, then verifies outcomes independently
 
 A usable Play control can precede loaded media or a track ID in a cued player. This startup path requires a ready API in CUED state (`5`) and no known empty/unreadable queue. API readiness, UNSTARTED (`-1`) or an enabled button alone do not authorize it. Play/Toggle may start a cued player directly; Previous/Next first start it through the site's Play control, then wait for actual readiness before navigating. Loaded-track/media readiness continues to permit ordinary controls, including Play in UNSTARTED. Disabled controls and explicit unplayable responses still block startup. Initialization expiry reports `player-not-ready`; a dispatched control whose outcome is not observed reports `playback-unconfirmed`.
 
+For Play/Toggle in UNSTARTED with an available track ID but no ready media, dispatch one explicit `playVideo()` request when the selected API supports it. A restored ID can precede media initialization, and a synthetic site-button click may be ineffective there. Confirmation still requires observed playback; rejection, autoplay blocking or an unconfirmed result does not trigger a toggle fallback. Pause and controls on loaded media retain the site-button path.
+
 ### Extension credentials and page access
 
 The content script reads player DOM/Media Session metadata and current-song rating state and exchanges messages with the service worker, which adds the token to loopback requests. The service worker restricts local storage to `TRUSTED_CONTEXTS` on every start and waits for that restriction before reading tokens or making authenticated requests. The content script does not receive the bearer token.
