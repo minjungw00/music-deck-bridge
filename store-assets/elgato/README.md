@@ -37,7 +37,7 @@ Use the selected [Stream Deck + capture](screenshots/stream-deck-plus.png) for p
 
 Retain the submitted version, package hash, Console product/version ID, processing settings and review outcome in the [store record](../../docs/verification/stores.md). Keep runtime evidence scoped to the tested version.
 
-- Use publisher UUID `io.github.minjungw00.musicdeckbridge` and confirm supported device models.
+- Use plugin UUID `io.github.minjungw00.musicdeckbridge` and confirm supported device models.
 - Capture Now Playing artwork, key controls, Stream Deck + dial feedback and settings/PIN flow in English and Korean.
 - Use the [submitted English description](../submitted/v1.1.1/elgato-en.md) as the revision baseline; see [metadata and permission guidance](../listing.en.md) when preparing changes.
 - Check current Maker Console image specifications and SDK/DRM requirements before export.
@@ -48,6 +48,8 @@ Use the [shared capture plan](../README.md#screenshot-capture-plan) for new scre
 ## Media requirements
 
 The [product guidelines](https://docs.elgato.com/guidelines/products/) require a 288×288 PNG app icon, 1920×960 PNG thumbnail/gallery images, English text and at least three gallery items (up to ten). The prepared upload set includes the icon, a separate thumbnail and three gallery images. Review the actual Console fields when submitting media.
+
+The same [product guidelines](https://docs.elgato.com/guidelines/products/#description) specify an English description of 250–1,500 characters, with unformatted introductory text. Check the complete description, including retained text, when applying the How to Use draft.
 
 The root README shares the [1920×960 Marketplace thumbnail](listing/thumbnail-1920x960.png). The smaller image in `screenshots/` is the canonical capture source, not the sized gallery upload.
 

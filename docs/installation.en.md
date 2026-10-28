@@ -69,6 +69,8 @@ For testers. Development builds may be unstable and require GitHub sign-in to do
 
 Development versions remain fixed at `X.Y.Z-dev` within a cycle; platform manifests retain fixed numeric values. Distinguish builds by their SHA and `BUILD-INFO.json`, not an incremented release number. See the [versioning policy](versioning.md). Install both components from the same run; development packages have no automatic updates.
 
+If that numeric plugin version is already installed, use [backed-up file replacement](#replacing-plugin-files); repeatedly downloading an equal-version installer does not select a newer development revision. Update the existing unpacked extension folder with the complete ZIP contents and reload it, so newly added modules are included.
+
 <a id="method-3-build-from-source"></a>
 
 ## Method 4: Build from source
@@ -141,12 +143,16 @@ Install matching plugin and extension builds for these features. Keep the extens
 
 Pending inputs expire after 45 seconds; a page without usable controls cannot complete them. Re-pairing cancels pending inputs.
 
+Previous can restart the current song instead of choosing another track. At the beginning of a restored selection, the site itself may show no visible change. Compare the site's button and the song's position/title before treating a warning as failed delivery; see [command warnings](troubleshooting.md#command-warnings--버튼-경고).
+
 ### Dial controls and display
 
 - **Volume Dial:** turn to adjust volume; push or touch its screen to toggle mute. Its icon follows the confirmed mute state.
 - **Current Track Dial:** turn for previous/next track; push or touch its screen to play/pause. Its playback icon follows the selected player.
 
 ### Now Playing key text
+
+In the 1.1.3 development line, non-square album art is fitted proportionally in the key with black margins, including when the text backdrop is enabled. This source change is separate from the currently published store packages; see [version status](release-readiness.md).
 
 Configure each key independently in its action settings:
 

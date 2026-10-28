@@ -1,6 +1,6 @@
 # Repository security verification
 
-Checked October 17, 2026 (Asia/Seoul) against `minjungw00/music-deck-bridge` using the authenticated GitHub REST API. These settings are independent of store approval and hardware verification.
+Repository-setting evidence below was collected October 17, 2026 (Asia/Seoul) against `minjungw00/music-deck-bridge` using the authenticated GitHub REST API. These settings are independent of store approval and hardware verification.
 
 | Setting | Verified state / action |
 | --- | --- |
@@ -15,6 +15,8 @@ Checked October 17, 2026 (Asia/Seoul) against `minjungw00/music-deck-bridge` usi
 | Release workflow permissions | Read by default; only the draft-release job requests `contents: write` |
 
 Private reports use the repository's [private vulnerability form](https://github.com/minjungw00/music-deck-bridge/security/advisories/new), also linked by [SECURITY.md](../SECURITY.md). The public Advisories page returned HTTP 200 and exposed the private form link and “Report a vulnerability” label. No vulnerability report was submitted to test the route. GitHub documents the [reporting entry point and enabled setting](https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/configure-vulnerability-reporting/configure-for-a-repository).
+
+The October 29 documentation review does not recheck these administrative settings or alert state. Current development dependency decisions and their dated audit/compatibility results are in the [1.1.3 dependency review](verification/runtime.md#113-dependency-review); they do not replace repository scanning or certify that every input path is safe.
 
 ## Rechecking settings
 

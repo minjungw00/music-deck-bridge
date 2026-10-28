@@ -81,6 +81,8 @@ The test uses a fresh temporary profile and local HTTPS fixture mapped to `music
 
 Nine inputs include the Now Playing key and Open YouTube Music. The fixture delays player readiness after visible controls, models stale media-element state and replaces a receiver during navigation. It does not establish signed-in YouTube Music behavior, Windows native startup or Marketplace DRM.
 
+Playback cases also cover ignored initial/destination Play requests, one navigation click per input, bounded recovery, later Pause and superseded monitors. MAIN-world helpers must remain self-contained when serialized; add any new worker module to both the import graph and package allowlist. Keep actual-site comparisons in [runtime verification](verification/runtime.md).
+
 ## Packaging
 
 ### Local development builds

@@ -10,9 +10,11 @@ See [store status](stores.md), [runtime confirmation](runtime.md#official-store-
 
 For the last reported submission, **v1.1.2**, the exact uploaded-file hash and Console-processed installer were not supplied. If obtained, retain the processed version ID, processing status, download time and SHA-256 separately from the GitHub original. Preserve public GitHub assets.
 
-The inspected source uses SDK 3.0.2, manifest SDKVersion 3, Stream Deck minimum 7.1, a constant UUID and state outside the plugin folder. Packaging and opaque-manifest fixtures cover static paths; they do not verify encryption/integrity behavior.
+The published 1.1.2 source inspected for this record uses SDK 3.0.2, manifest SDKVersion 3, Stream Deck minimum 7.1, a constant UUID and state outside the plugin folder. Packaging and opaque-manifest fixtures cover static paths; they do not verify encryption/integrity behavior.
 
 Use Elgato's [DRM testing instructions](https://docs.elgato.com/streamdeck/sdk/introduction/distribution/#testing-with-drm) and [Console version downloads](https://docs.elgato.com/maker-console/managing-products/#versions). An additional DRM-only submission, if needed, follows the documented **Publish after review unselected** procedure.
+
+The separate 1.1.3 development checkout uses SDK 3.0.3; its [local dependency tests](runtime.md#113-dependency-review) do not identify or validate a new Console-processed package.
 
 ## Windows execution record
 

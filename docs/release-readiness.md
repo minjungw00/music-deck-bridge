@@ -1,24 +1,28 @@
 # Release readiness
 
-Last updated: October 29, 2026 (Asia/Seoul). Both official stores are published and normal operation is maintainer-confirmed for 1.1.2. Install from the [official stores](installation.en.md#method-1-official-stores); dated evidence is linked below.
+Reviewed October 29, 2026 (Asia/Seoul). General installation starts with the [official stores](installation.en.md#method-1-official-stores). Public releases, local development and store processing have separate evidence.
 
-Current development target: **1.1.3-dev**, with [dependency security updates](verification/runtime.md#113-dependency-review) and [artwork/transport fixes](verification/runtime.md#113-artwork-and-transport-fixes). It has not been promoted or published; its automated checks do not extend the 1.1.2 maintainer sign-off to this candidate.
+## Current versions and distribution
 
-The maintainer confirmed operation after the destination-playback fix and requested refactoring. This confirmation covers the reported startup/destination follow-up within its stated scope. The current refactor preserves those playback policies and keeps the development target fixed; its local verification is separate from the maintainer's pre-refactor confirmation. See the [destination record](verification/runtime.md#navigation-destination-playback) and [refactor record](verification/runtime.md#playback-refactor).
-
-A later first-Previous report has healthy playing state and no observed transition. The maintainer confirms the site control behaves similarly and later restarts the same song; queue/history absence remains an interpretation. See the [restored-selection boundary record](verification/runtime.md#previous-at-the-beginning-of-a-restored-selection). This does not rewrite the earlier playback confirmation or establish a refactor regression.
-
-## Distribution status
-
-| Channel | Reported version | State and evidence |
+| Channel | Version / state | Evidence |
 | --- | --- | --- |
-| Elgato Marketplace | Last submission **1.1.2** / plugin **1.1.2.0** | **Published**, maintainer-confirmed · [Listing](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd) · [Store record](verification/stores.md) |
-| Chrome Web Store | Last submission **1.1.2** | **Published**, maintainer-confirmed · [Listing](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca) · [Store record](verification/stores.md) |
-| GitHub | **v1.1.2**, Chrome **1.1.2**, plugin **1.1.2.0**, protocol **1** | Published October 18 at 23:43 KST · [Release verification](verification/releases.md#v112) |
+| GitHub | **v1.1.2**, Chrome **1.1.2**, plugin **1.1.2.0**, protocol **1** | Latest non-draft/non-prerelease release re-read through GitHub API on October 29; original publication/byte checks in [Releases](verification/releases.md#v112) |
+| Elgato Marketplace | Public listing **1.1.2**; last reported plugin submission **1.1.2.0** | Public version/copy inspected October 29; normal store operation maintainer-confirmed October 24 · [Store record](verification/stores.md) |
+| Chrome Web Store | Last reported submission **1.1.2**, published | Maintainer-confirmed publication/operation October 24; current page/version could not be independently read · [Store record](verification/stores.md) |
+| Development checkout | **1.1.3-dev**, Chrome numeric **1.1.3**, plugin **1.1.3.0**, protocol **1** | Dependency security updates, proportional key artwork, playback recovery and refactor; no 1.1.3 release promotion or store submission is recorded |
 
-Store pages, displayed versions and runtime operation were not independently verified. README and both installation guides link to both stores. Published tags/assets and historical submitted descriptions remain fixed under the [versioning policy](versioning.md).
+## Development validation
 
-## Verified scope
+The [runtime record](verification/runtime.md#current-evidence) is the source for detailed scope, failed-candidate history and the [local artifact inventory](verification/runtime.md#development-artifact-inventory).
+
+| Area | Current evidence | Remaining limit |
+| --- | --- | --- |
+| Automated refactor checks | At `cbd17925ad7d`: 217 Node tests, two Python tests, syntax/resources/versions and Chromium MV3 integration | Local fixtures; no independent Windows/site operation |
+| Startup and destination playback | Maintainer reported new-window recovery normal, then confirmed destination recovery before refactoring | Preserve that confirmation; it is not a complete post-refactor/hardware inventory |
+| First Previous at a restored selection | Later real log shows healthy playing state; the site button similarly restarts the same song after time has advanced; three targeted fixtures pass | Actual queue/history absence remains an interpretation; no full-suite result claimed for the later test-only revision |
+| Security dependencies | Dated locked installation/audit and schema comparisons support the scoped Zod override | Review the override when utils declares a patched range; audit results are time-specific |
+
+## Published release and historical verification
 
 | Area | Completed evidence | Scope limits |
 | --- | --- | --- |
@@ -30,7 +34,10 @@ Store pages, displayed versions and runtime operation were not independently ver
 
 ## Remaining work
 
-- For later store revisions, retain version identifiers, uploaded-file hashes, selected media and supplied descriptions. Replace temporary companion-download instructions when revising live listings; preserve historical snapshots.
+Prepare 1.1.3 only through the authorized [release checklist](development.md#release-checklist) and [versioning policy](versioning.md). Confirm the final source/CI/packages and document remaining manual coverage; a fixed development number or passing model is not a release.
+
+- The Elgato installation-copy correction is still a [local draft](../store-assets/elgato/how-to-use.en.md). Apply and record it as a later listing revision when submitted; preserve actual submitted snapshots.
+- For later store revisions, retain version identifiers, uploaded-file hashes, selected media and supplied descriptions. Refresh version-labelled sample media to match the submitted build.
 - Record separately obtained Console-processed package identity and detailed DRM results. Completed store-operation validation does not need repeating solely for missing metadata.
 - For future wire changes, test the implemented version ranges and explicit component identity/status behavior.
 - Extend evidence to independent/clean Windows environments and idle/port-conflict scenarios outside the existing maintainer-confirmed scope.

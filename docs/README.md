@@ -2,6 +2,8 @@
 
 Start with the [English installation guide](installation.en.md) or [한국어 설치 안내](installation.ko.md). Both begin with the recommended official-store installation.
 
+For version and evidence status, use [release readiness](release-readiness.md). The [runtime summary](verification/runtime.md#current-evidence) distinguishes full automated runs, targeted later checks and maintainer confirmation.
+
 ## Guides
 
 ### Using Music Deck Bridge

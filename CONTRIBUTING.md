@@ -22,6 +22,7 @@ Use `python3` if your system has no `python` alias. Check/test commands rebuild 
 - Test affected behavior, including pairing, live port changes and Stream Deck actions where relevant. Cover protocol, identifier and storage changes with meaningful regressions.
 - Keep Chrome en/ko message keys synchronized. Update privacy documentation when data handling changes.
 - Keep credentials and runtime data out of the repository. Preserve upstream copyright and license notices.
+- Keep general documentation repeatable and bilingual installation procedures aligned. Record dated measurements and confirmations in [verification records](docs/README.md#release-and-verification-records), preserving their scope and actual submitted copy.
 
 ## Commits and review
 

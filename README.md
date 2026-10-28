@@ -21,6 +21,8 @@ Music Deck Bridge contains two components that must be installed together: a Str
 
 See the guides for [PIN pairing](docs/installation.en.md#pairing), [updates](docs/installation.en.md#updating), switching installation methods and removal. If using a Chrome ZIP, extract it to a permanent folder and load it unpacked in Developer mode.
 
+Public releases and development builds are tracked separately in [release readiness](docs/release-readiness.md). The current source targets **1.1.3-dev**; its changes are not yet an official release. Use build metadata to identify development revisions.
+
 ## Requirements
 
 | Component | Supported target |

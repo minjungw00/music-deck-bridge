@@ -165,6 +165,8 @@ The Now Playing key keeps its native bottom-aligned title layer and existing `ti
 
 When enabled, a cached 144 × 144 SVG composites a black lower band behind the native text, using the cached album cover or bundled key image. One- and two-line variants are cached independently; hiding all text removes the band, and scroll frames update only the title. No browser permissions or extra metadata are needed.
 
+Album artwork uses its measured aspect ratio, centered within the 144 × 144 key with black margins where needed. The same fitted geometry is used with and without the text backdrop; non-square artwork is not stretched into a square. The native key title remains a separate layer.
+
 ## Command delivery
 
 ### Browser command delivery
@@ -179,7 +181,9 @@ Delivered requests never trigger native fallback. The content script acknowledge
 
 ### Playback confirmation
 
-Playback and track commands run through a fixed top-frame `MAIN`-world function. It checks player initialization and any available queue state before dispatching a site control. A restored title or enabled button alone does not establish readiness. It confirms playback/pause, a changed track/queue index, or the site's Previous-to-start behavior before acknowledging success. After a click, confirmation waits for up to ten seconds within the original command deadline. A missing result or site/autoplay error is reported without repeating the click. Browser autoplay restrictions are not overridden.
+The fixed top-frame `MAIN` function implements the [dispatch/confirmation policy](#command-dispatch-and-confirmation). A restored title or enabled button alone does not establish readiness. After dispatch, confirmation waits up to ten seconds within the original deadline; ambiguous results do not replay a click. Browser autoplay restrictions are not overridden.
+
+Previous may restart the same song. At its beginning, an unchanged ID/position with no seek event provides no navigation evidence even while playback remains healthy. The result stays `playback-unconfirmed`; neither queue/history absence nor successful movement is invented. See the [comparison procedure](troubleshooting.md#command-warnings--버튼-경고) and [scoped evidence](verification/runtime.md#previous-at-the-beginning-of-a-restored-selection).
 
 ### Song ratings
 

@@ -1,6 +1,6 @@
 # Release verification
 
-Evidence date: October 18, 2026 (Asia/Seoul). These are completed GitHub publication checks. Store submissions are recorded [separately](stores.md).
+Publication evidence: October 18, 2026 (Asia/Seoul). On October 29 a read-only [latest-release API check](https://api.github.com/repos/minjungw00/music-deck-bridge/releases/latest) still identifies v1.1.2 as non-draft/non-prerelease, with the same three asset names, sizes and package SHA-256 digests below. That recheck is metadata verification, not a new download/rehash or runtime test. Store submissions are recorded [separately](stores.md).
 
 ## v1.1.2
 

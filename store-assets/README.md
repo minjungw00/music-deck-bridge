@@ -7,7 +7,7 @@ Start with the store-specific upload guide below. These guides cover future subm
 | Store | Assets and checklist |
 | --- | --- |
 | Elgato Marketplace | [Upload guide and sized exports](elgato/README.md#upload-files): 288px icon, 1920×960 thumbnail and three gallery images |
-| Chrome Web Store | [Upload guide and sized exports](chrome/README.md#upload-files): 128px icon, localized 1280×800 screenshots and 440×280 promotional tile |
+| Chrome Web Store | [Upload guide and sized exports](chrome/README.md#upload-files): 128px icon, localized 1280×800 screenshots and optional 440×280 promotional tile |
 | Both | [Submitted descriptions and English guidance](listing.en.md) / [한국어](listing.ko.md) and public [privacy policy](https://github.com/minjungw00/music-deck-bridge/blob/main/PRIVACY.md) |
 
 ## Official product images

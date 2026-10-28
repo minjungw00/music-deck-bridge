@@ -11,7 +11,7 @@ Use the files in [listing/](listing/) for the Chrome Web Store upload fields:
 | Store icon | [icon-128.png](listing/icon-128.png) | 128 × 128 |
 | English screenshot | [screenshot-en-1280x800.png](listing/screenshot-en-1280x800.png) | 1280 × 800 |
 | Korean localized screenshot | [screenshot-ko-1280x800.png](listing/screenshot-ko-1280x800.png) | 1280 × 800 |
-| Small promotional tile, required | [promo-small-440x280.png](listing/promo-small-440x280.png) | 440 × 280 |
+| Small promotional tile, optional | [promo-small-440x280.png](listing/promo-small-440x280.png) | 440 × 280 |
 
 Upload the English screenshot to the English/default listing and the Korean screenshot to the Korean localized listing. The promotional tile is shared across locales and contains no text. The icon has a 96 × 96 artwork area inside a transparent 16px border. Screenshots and the promotional tile are opaque RGB PNGs; screenshots fill the canvas with square outer corners.
 
@@ -48,7 +48,7 @@ Use the [shared capture plan](../README.md#screenshot-capture-plan) for new scre
 
 ## Media requirements
 
-The [Chrome listing instructions](https://developer.chrome.com/docs/webstore/cws-dashboard-listing) require a 128×128 store icon, at least one screenshot (up to five), and a 440×280 small promotional tile. The detailed [image guide](https://developer.chrome.com/docs/webstore/images) accepts 1280×800 or 640×400 screenshots and prefers 1280×800. The 1400×560 marquee tile is optional; an adapted export is available above.
+The [Chrome listing instructions](https://developer.chrome.com/docs/webstore/cws-dashboard-listing) require a 128×128 store icon and at least one screenshot (up to five). The 440×280 small promotional tile is optional. The detailed [image guide](https://developer.chrome.com/docs/webstore/images) accepts 1280×800 or 640×400 screenshots and prefers 1280×800. The 1400×560 marquee tile is optional; an adapted export is available above.
 
 Before submission, confirm that the screenshots match the submitted ZIP and the listing/privacy declarations. The smaller images in `screenshots/` are source previews; upload the correctly sized files in `listing/`.
 
