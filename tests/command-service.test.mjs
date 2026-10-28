@@ -11,10 +11,10 @@ function harness() {
     launch: async options => { launches.push(options); },
     setTimeout: (run, delay) => { const key = ++id; timers.set(key, { run, at: clock + delay }); return key; },
     clearTimeout: key => timers.delete(key) });
-  function channel() {
+  function channel(concurrent = false) {
     const replies = [];
     let close;
-    commands.listenBrowser({ reply: (data, status = 200) => replies.push({ data, status }), onClose: fn => { close = fn; } });
+    commands.listenBrowser({ reply: (data, status = 200) => replies.push({ data, status }), onClose: fn => { close = fn; } }, { concurrent });
     return { replies, close };
   }
   return { commands, session, launches, timers, channel, async advance(ms) {
@@ -39,6 +39,38 @@ test('browser commands remain ordered, delivered once and settle only on their o
   assert.equal(h.commands.lastError, '', 'a duplicate ACK cannot change completed results');
   h.commands.acknowledge(secondId, true);
   assert.equal(await second, true);
+  assert.equal(h.timers.size, 0);
+});
+
+test('opted-in delivery lets Pause pass an unconfirmed Previous and ignores late older errors', async () => {
+  const h = harness();
+  const previous = h.commands.request('prev'), pause = h.commands.request('toggle');
+  const a = h.channel(true), b = h.channel(true);
+  assert.equal(b.replies.length, 1);
+  h.commands.acknowledge(b.replies[0].data.commands[0].id, true);
+  assert.equal(await pause, true);
+  h.commands.acknowledge(a.replies[0].data.commands[0].id, false, 'playback-unconfirmed');
+  assert.equal(await previous, false);
+  assert.equal(h.commands.lastError, '', 'late failure cannot overwrite the current input result');
+});
+
+test('superseded verification is cancellation and not a failed user input', async () => {
+  const h = harness(), request = h.commands.request('prev');
+  const channel = h.channel(true);
+  h.commands.acknowledge(channel.replies[0].data.commands[0].id, false, 'command-superseded');
+  assert.equal(await request, null);
+  assert.equal(h.commands.lastError, '');
+});
+
+test('concurrent delivery remains bounded and resumes after one final acknowledgment', async () => {
+  const h = harness();
+  const requests = Array.from({ length: 9 }, () => h.commands.request('next'));
+  const channels = Array.from({ length: 9 }, () => h.channel(true));
+  assert.equal(channels[8].replies.length, 0);
+  h.commands.acknowledge(channels[0].replies[0].data.commands[0].id, true);
+  assert.equal(channels[8].replies.length, 1);
+  h.commands.reset();
+  await Promise.all(requests);
   assert.equal(h.timers.size, 0);
 });
 

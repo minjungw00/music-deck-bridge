@@ -4,7 +4,7 @@ const limit = (value, min, max) => Math.max(min, Math.min(max, value));
 const COMMAND_ERRORS = new Set(['pairing-required', 'extension-unavailable', 'command-timeout',
   'authorization-lost', 'injection-unavailable', 'receiver-unavailable', 'delivery-uncertain',
   'player-rejected', 'player-not-ready', 'browser-api-failed', 'bridge-unavailable', 'command-failed',
-  'autoplay-blocked', 'player-error', 'playback-unconfirmed', 'protocol-incompatible', 'invalid-protocol']);
+  'autoplay-blocked', 'player-error', 'playback-unconfirmed', 'command-superseded', 'protocol-incompatible', 'invalid-protocol']);
 
 // A channel port supplies reply(data, status) and onClose(callback); no HTTP objects enter this service.
 function createCommandService({ getSession, selectedEntry, launch, log,
@@ -19,6 +19,7 @@ function createCommandService({ getSession, selectedEntry, launch, log,
   let nativeLaunchTimer = null;
   let browserCapable = false;
   let lastCommandError = '';
+  let latestRequest = 0;
   function addCommand(type, ticks = 0) {
     if (getSession().blocked) return false;
     const entry = selectedEntry();
@@ -108,8 +109,10 @@ function createCommandService({ getSession, selectedEntry, launch, log,
   }
   function flushBrowserRequest() {
     if (getSession().blocked) return;
-    const request = browserRequests.values().next().value;
+    const pending = [...browserRequests.values()];
+    const request = browserWaiter?.concurrent ? pending.find(item => item.state === 'queued') : pending[0];
     if (!browserWaiter || !request || request.state === 'delivered') return;
+    if (browserWaiter.concurrent && pending.filter(item => item.state === 'delivered').length >= 8) return;
     request.state = 'delivered';
     clearTimeout(nativeLaunchTimer); nativeLaunchTimer = null;
     browserWaiter.reply({ commands: [{ id: request.id, type: request.type, amount: request.amount,
@@ -117,11 +120,12 @@ function createCommandService({ getSession, selectedEntry, launch, log,
       preferredTabId: request.preferredTabId, ...(request.trackKey ? { trackKey: request.trackKey } : {}) }] });
     nativeTabPending = false;
   }
-  function listenForBrowser(channel) {
+  function listenForBrowser(channel, { concurrent = false } = {}) {
     // One paired extension profile owns the browser-wide channel, even with no tabs.
     browserCapable = true;
     browserWaiter?.reply({ commands: [] });
     const waiter = {
+      concurrent,
       timer: null,
       reply(message, status = 200) {
         clearTimeout(waiter.timer);
@@ -153,18 +157,20 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     let resolve;
     const promise = new Promise(done => { resolve = done; });
     const request = {
-      id: newId(), type, amount, promise, state: 'queued',
+      id: newId(), type, amount, promise, state: 'queued', order: ++latestRequest,
       expiresAt: now() + 45000, preferredTabId: entry ? Number(entry[0]) : null,
       trackKey: (type === 'like' || type === 'dislike') && state?.title ?
         state.trackId || JSON.stringify([state.title, state.artist]) : null,
       finish(ok, reason = 'command-failed') {
         if (!['queued', 'delivered'].includes(request.state)) return;
-        request.state = ok ? 'succeeded' : ['command-timeout', 'extension-unavailable'].includes(reason) ? 'expired' : 'failed';
-        lastCommandError = ok ? '' : (COMMAND_ERRORS.has(reason) ? reason : 'command-failed');
-        if (!ok) log(`Browser command ${type} failed: ${lastCommandError}`);
+        request.state = reason === 'command-superseded' ? 'cancelled' : ok ? 'succeeded' :
+          ['command-timeout', 'extension-unavailable'].includes(reason) ? 'expired' : 'failed';
+        const failure = COMMAND_ERRORS.has(reason) ? reason : 'command-failed';
+        if (request.order === latestRequest && reason !== 'command-superseded') lastCommandError = ok ? '' : failure;
+        if (!ok && reason !== 'command-superseded') log(`Browser command ${type} failed: ${failure}`);
         clearTimeout(request.timer);
         browserRequests.delete(request.id);
-        resolve(ok);
+        resolve(reason === 'command-superseded' ? null : ok);
         if (!browserRequests.size) {
           nativeLaunchStarted = false;
           nativeTabPending = false;

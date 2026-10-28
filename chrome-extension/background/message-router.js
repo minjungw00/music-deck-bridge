@@ -5,14 +5,22 @@
     const managementMethods = Object.freeze({ __proto__: null, pair: 'pair', check: 'check',
       'get-port': 'getPort', 'set-port': 'setPort', unpair: 'unpair' });
     function onMessage(msg, sender, respond) {
-      if (client.blocked() && ['player-playback', 'player-volume'].includes(msg?.type)) {
+      if (client.blocked() && ['player-playback', 'player-playback-result', 'player-volume'].includes(msg?.type)) {
         respond({ ok: false, reason: 'protocol-incompatible' }); return false;
       }
       if (msg?.type === 'player-playback' && Number.isInteger(sender.tab?.id) && sender.frameId === 0 &&
           sender.url?.startsWith('https://music.youtube.com/')) {
         if (!['play', 'toggle', 'next', 'prev'].includes(msg.command)) { respond({ ok: false }); return false; }
         chrome.scripting.executeScript({ target: { tabId: sender.tab.id, frameIds: [0] }, world: 'MAIN',
-          func: playerPlayback, args: [msg.command, msg.expiresAt] })
+          func: playerPlayback, args: [msg.command, msg.expiresAt, msg.dispatchOnly === true] })
+          .then(results => respond(results[0]?.result || { ok: false }))
+          .catch(() => respond({ ok: false, reason: 'playback-unconfirmed' }));
+        return true;
+      }
+      if (msg?.type === 'player-playback-result' && Number.isInteger(sender.tab?.id) && sender.frameId === 0 &&
+          sender.url?.startsWith('https://music.youtube.com/') && Number.isSafeInteger(msg.pending) && msg.pending > 0) {
+        chrome.scripting.executeScript({ target: { tabId: sender.tab.id, frameIds: [0] }, world: 'MAIN',
+          func: playerPlayback, args: ['result', msg.pending] })
           .then(results => respond(results[0]?.result || { ok: false }))
           .catch(() => respond({ ok: false, reason: 'playback-unconfirmed' }));
         return true;

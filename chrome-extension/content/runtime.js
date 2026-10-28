@@ -4,8 +4,9 @@
     let active = true;
     const command = createCommands({ isActive: () => active, scheduleSync });
     const browserCommands = new Map();
+    const browserResults = new Map();
     chrome.runtime.onMessage.addListener((message, sender, respond) => {
-      if (!['bridge-command', 'bridge-toggle'].includes(message?.type) ||
+      if (!['bridge-command', 'bridge-toggle', 'bridge-command-result'].includes(message?.type) ||
           sender.id !== chrome.runtime.id || sender.tab || !active) return;
       if (Number.isFinite(message.expiresAt) && Date.now() >= message.expiresAt) {
         respond({ ok: false }); return false;
@@ -13,12 +14,27 @@
       const input = message.type === 'bridge-toggle' ? { type: 'toggle' } : message.command;
       const id = typeof message.id === 'string' ? message.id : null;
       let operation = id && browserCommands.get(id);
+      if (message.type === 'bridge-command-result') {
+        if (!operation) { respond({ ok: false, reason: 'playback-unconfirmed' }); return false; }
+        if (!browserResults.has(id)) {
+          const result = operation.then(dispatched => dispatched.pending ?
+            command({ type: 'playback-result', pending: dispatched.pending }) : dispatched)
+            .catch(() => ({ ok: false, reason: 'playback-unconfirmed' }));
+          browserResults.set(id, result);
+          result.then(value => { if (value.retry) { browserCommands.delete(id); browserResults.delete(id); } });
+        }
+        browserResults.get(id).then(respond);
+        return true;
+      }
       if (!operation) {
-        operation = command({ ...input, expiresAt: message.expiresAt }).catch(() => ({ ok: false }));
+        operation = command({ ...input, expiresAt: message.expiresAt, dispatchOnly: message.dispatchOnly === true }).catch(() => ({ ok: false }));
         if (id) {
           browserCommands.set(id, operation);
           operation.then(result => { if (result.retry) browserCommands.delete(id); });
-          while (browserCommands.size > 100) browserCommands.delete(browserCommands.keys().next().value);
+          while (browserCommands.size > 100) {
+            const oldest = browserCommands.keys().next().value;
+            browserCommands.delete(oldest); browserResults.delete(oldest);
+          }
         }
       }
       operation.then(respond);

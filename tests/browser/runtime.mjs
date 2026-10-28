@@ -26,15 +26,16 @@ const fixture = `<!doctype html><html><body>
  </ytmusic-like-button-renderer>
 </ytmusic-player-bar>
 <script>
-let playing=false, muted=false, ready=false, initialized=false, index=2, time=0;
+let playing=false, muted=false, ready=false, initialized=false, index=2, time=0, stallPrevious=false, seekSignal=true;
 const tracks=['aaaaaaaaaaa','bbbbbbbbbbb','ccccccccccc','ddddddddddd','eeeeeeeeeee'];
 function record(key){ document.body.dataset[key]=String(Number(document.body.dataset[key]||0)+1); }
 function control(type){
  if(!ready){record('early');return;}
  if(type==='toggle'){playing=!playing;initialized=true;}
  if(type==='prev'||type==='next'){
+  if(type==='prev'){record('previousAttempt');if(stallPrevious)return;}
   if(!initialized){record('ignoredNavigation');return;}
-  if(type==='prev' && index===0){time=0;document.querySelector('audio').dispatchEvent(new Event('seeked'));}
+  if(type==='prev' && index===0){time=0;if(seekSignal)document.querySelector('audio').dispatchEvent(new Event('seeked'));}
   else index+=type==='prev'?-1:1;
   playing=false;
  }
@@ -179,6 +180,38 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     }
     assert.equal(browser.pages().filter(page => page.url().startsWith(musicURL)).length, 1);
   }
+  // Previous can leave the same item/position and omit seek events. Its result
+  // must not hold subsequent controls or let an old monitor undo a later Pause.
+  const controlled = browser.pages().find(page => page.url().startsWith(musicURL));
+  const pauseDelays = [];
+  for (const stall of [true, false]) {
+    await controlled.evaluate(stall => {
+      index=0;time=0;playing=true;initialized=true;stallPrevious=stall;seekSignal=false;
+    }, stall);
+    const before = await worker.evaluate(() => acknowledgments.length);
+    const attempts = await controlled.evaluate(() => Number(document.body.dataset.previousAttempt || 0));
+    await postEvent('prev');
+    await until(() => controlled.evaluate(attempts => Number(document.body.dataset.previousAttempt) === attempts+1, attempts), 'Previous dispatched');
+    if (!stall) {
+      await until(() => controlled.evaluate(() => playing), 'same-item playback recovered without seek event');
+    }
+    const start = Date.now();
+    await postEvent('toggle');
+    await until(() => controlled.evaluate(() => !playing), 'Pause overtakes old outcome verification');
+    const delay = Date.now()-start;
+    pauseDelays.push(delay);
+    assert.ok(delay < 1000, 'Pause must not wait for a ten-second result timeout');
+    await until(async () => (await worker.evaluate(() => acknowledgments.length)) >= before+2, 'both final results');
+    const replies = await worker.evaluate(before => acknowledgments.slice(before), before);
+    assert.ok(replies.some(reply => reply.ok));
+    assert.ok(replies.some(reply => !reply.ok && reply.reason === 'command-superseded'));
+    await new Promise(resolve => setTimeout(resolve, 180));
+    assert.equal(await controlled.evaluate(() => playing), false, 'old verification did not resume after Pause');
+    const next = await worker.evaluate(() => acknowledgments.length);
+    await postEvent('next');
+    assert.equal((await until(async () => (await worker.evaluate(() => acknowledgments))[next], 'Next after interrupted Previous')).ok, true);
+  }
+  t.diagnostic(`Modeled stalled/no-seek Previous: Pause observed after ${pauseDelays.join('/')} ms; older monitors did not resume playback.`);
   assert.equal(await worker.evaluate(() => legacyPollsStarted), 0, 'modern controls must not consume connections with per-tab long polls');
   // Force a genuine missing receiver by removing it from the actual isolated
   // world once. This is a pre-delivery failure, unlike a lost execution reply.
@@ -224,5 +257,5 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   assert.equal(compatibility.token, token);
   assert.equal(compatibility.recovered.compatible, true);
   assert.equal(await music.evaluate(() => document.body.dataset.next), '1', 'incompatible input had no page effect');
-  t.diagnostic(`Chromium ${browser.browser().version()}; 9 cold-tab actions, 18 post-launch Previous/Next inputs, playback confirmation, delayed readiness, MAIN state sync and replaced-receiver recovery passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
+  t.diagnostic(`Chromium ${browser.browser().version()}; cold-tab and post-launch controls, stalled/no-seek Previous followed by responsive Pause/Next, stale-monitor cancellation, playback confirmation and receiver recovery passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
 });

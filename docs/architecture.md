@@ -36,7 +36,7 @@ The plugin uses ports and adapters with explicit factories. [plugin.cjs](../stre
 
 ### Plugin services
 
-The command service owns `queued → delivered → succeeded/failed/expired` transitions. Its channel port exposes only `reply` and `onClose`; HTTP request/response objects stay in the transport adapter. A delivered command is not replayed after a missing result.
+The command service owns `queued → delivered → succeeded/failed/expired/cancelled` transitions. Its channel port exposes only `reply` and `onClose`; HTTP request/response objects stay in the transport adapter. A delivered command is not replayed after a missing result. A superseded outcome is cancellation, not successful navigation or a key error; older results cannot replace the newest request's diagnostic state.
 
 A session coordinator cancels polls/inputs and resets player/artwork state through explicit service methods. The session service publishes only pairing/access flags and a generation number to command delivery; it does not expose the stored token or assign command error fields.
 
@@ -88,6 +88,14 @@ The [shared protocol contract](protocol.md) reports `pluginVersion` and `extensi
 | `/browser-result` | Acknowledge a delivered browser request |
 | `/player-closed` | Remove a closed tab's player state and end its legacy polls |
 | `/configure-port` | Change the shared port while preserving authentication |
+
+### Command dispatch and confirmation
+
+An extension can opt into `/browser-listen` with `concurrent: true`. The plugin then delivers queued requests in order with at most eight awaiting final results; each still settles only through its own `/browser-result`. Peers that omit the flag retain one request at a time. An older plugin ignores the optional flag and remains serial.
+
+Within a tab, the content runtime deduplicates request IDs and obtains a document-local operation receipt from the fixed `MAIN` function. A separate result read observes actual completion; receipt alone is never reported as success. The worker resumes polling after receipt, allowing later controls to reach the same document while verification is pending. Lost receivers are retried only before receipt; lost results after receipt are ambiguous and never replay navigation.
+
+The document serializes preparation/clicks, then verifies outcomes independently. A later Play/Pause can interrupt undispatched navigation initialization. Once a newer playback control is dispatched, older verification stops and cannot issue a late Play request. Previous/Next playback recovery does not depend on receiving a seek event, but navigation success still requires observed track/index/restart evidence. The wire protocol remains 1; use both updated components for concurrent delivery.
 
 ### Extension credentials and page access
 

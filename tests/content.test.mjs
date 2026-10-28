@@ -52,7 +52,7 @@ async function scenario(useMediaSession=false, { commands, manualVolume, compact
       },
     },
     chrome:{runtime:{id:'this-extension',onMessage:{addListener(fn){eventHandlers.runtimeMessage=fn;}},async sendMessage(data){
-      if(data.type==='player-volume' || data.type==='player-playback') return player.send(data);
+      if(['player-volume', 'player-playback', 'player-playback-result'].includes(data.type)) return player.send(data);
       if(data.type==='listen') return {paired:false,commands:[]};
       if(data.type==='sync') {
         lastState=data.state; syncCount++;
@@ -172,6 +172,19 @@ test('launch continuation starts paused playback and leaves restored playing med
     assert.equal(result.audio.paused, false);
     assert.equal(result.playClicks, paused ? 1 : 0);
   }
+});
+
+test('dispatch receipts and repeated final-result reads do not replay a browser input', async () => {
+  const input = { type: 'bridge-command', id: 'staged-next', dispatchOnly: true, command: { type: 'next' } };
+  const result = await scenario(false, { commands: [], browserInputs: [
+    { message: input }, { message: input },
+    { message: { type: 'bridge-command-result', id: input.id } },
+    { message: { type: 'bridge-command-result', id: input.id } },
+  ] });
+  assert.equal(result.nextClicks, 1);
+  assert.ok(result.browserResponses[0].pending);
+  assert.deepEqual(result.browserResponses[0], result.browserResponses[1]);
+  assert.ok(result.browserResponses.slice(2).every(response => response.ok));
 });
 
 test('a rating requested while opening acts on the restored song once', async () => {

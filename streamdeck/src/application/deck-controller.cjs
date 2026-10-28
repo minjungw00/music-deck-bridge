@@ -7,7 +7,7 @@ const { PLAYER_STALE_MS } = require('../domain/player-state.cjs');
 function createDeckController({ displayed, commands, session, ports, players, output, onChange,
   version, now = Date.now }) {
   function controlPlayer(context, type, amount = 0) {
-    void commands.request(type, amount).then(ok => { if (!ok) output.send({ event: 'showAlert', context }); });
+    void commands.request(type, amount).then(ok => { if (ok === false) output.send({ event: 'showAlert', context }); });
   }
   function handleDeckEvent(e) {
     if (!e || !e.event) return;

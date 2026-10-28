@@ -5,6 +5,8 @@
 - Preserve non-square Current Track key artwork proportions with centered fitting and black margins, with or without the optional title backdrop.
 - Initialize playback before Previous/Next on a restored or paused player, then confirm both navigation and actual destination playback. A cued destination receives one Play request without replaying navigation.
 - Recognize confirmed same-track Previous restarts within the first five seconds, including a seek at time zero; retain autoplay/error reporting and rejection of ambiguous navigation retries.
+- Separate ordered control dispatch from outcome confirmation so a pending Previous result cannot block later Pause/Next inputs. Cancel superseded verification without resuming playback or displaying stale failures.
+- Recover paused same-item Previous playback even when no seek event is emitted, retain restart evidence through delayed playback, and observe playback instead of waiting for a site's unsettled Play promise.
 - Update the Stream Deck SDK to 3.0.3 and CLI to 1.10.3 while retaining Node.js 24.
 - Scope a Zod 4.6.7 override to `@elgato/utils` 0.6.1 to address GHSA-mrhx-c7xc-m3w5; add option-schema compatibility and bounded-array rejection regressions.
 - Update the CLI's locked `fast-uri` dependency from 3.1.8 to 3.1.9 within its existing allowed range to address URI parsing advisories.

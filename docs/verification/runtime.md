@@ -57,6 +57,20 @@ Completed local checks: syntax/JSON/manifests, 164 Node tests, two Python tests 
 
 Windows CI, physical key rendering, signed-in YouTube Music playback and native Windows cold startup remain unverified for these changes. Earlier maintainer confirmations retain their original scope.
 
+### Follow-up: pending Previous and later controls
+
+On October 29 the maintainer reported that post-launch Previous still delayed, that Pause/Next also delayed in that state, and that Previous intermittently failed to start playback. The preceding candidate's isolated-input fixtures do not establish a fix for these reports; its 164-test and package results above retain their original scope.
+
+Code inspection identified two serial barriers: the plugin withheld later requests until the previous final acknowledgment, and the worker waited for that result before polling again. A page-level confirmation can wait ten seconds. A same-item restart without a seek event or a brief restart signal that disappears before playback resumes can therefore hold later controls; the preceding playback recovery also depended on that signal. These are supported code paths, not an observed trace from the maintainer's signed-in player.
+
+The extension now opts into bounded concurrent delivery, obtains a document-local receipt, then reads the final outcome separately. Actual preparation/clicks remain ordered in the document. Later Play/Pause can interrupt undispatched navigation initialization, and a newer playback control stops older outcome checks and Play recovery. Superseded checks are cancelled without key alerts or overwriting current diagnostics. Final results still belong to their own request IDs; a receipt alone is not success. Lost result receivers after receipt never replay navigation. Older/mixed peers retain serial behavior; both updated components are needed for the delivery improvement.
+
+Playback recovery now operates independently of same-item seek confirmation, retains observed restart evidence across delayed playback, and observes player state rather than awaiting a site's potentially unsettled Play promise. If navigation cannot be observed, its result remains unconfirmed even when playback recovers; no navigation success is invented.
+
+Controlled comparison against `27dcf2c`: four new playback regressions and two command-service regressions fail before these changes. The models cover a held Previous result followed by Pause, missing seek events, delayed restart playback, ordered rapid navigation, delivery before older acknowledgment and stale diagnostics. Additional regressions cover buffered initialization cancellation, an unsettled Play promise, receipt/result deduplication and receiver loss after receipt. These models do not measure how often YouTube Music exhibits each condition.
+
+Final local checks pass: syntax/JSON/manifests, 176 Node tests, two Python tests and Chromium 156.0.8078.4 integration. In Chromium's modeled stalled/no-seek Previous cases, subsequent Pause was observed after 34/33 ms, older monitors did not resume playback, and Next then succeeded. Existing cold-start, nine launch-button/18 follow-up input cases, protocol blocking and receiver-replacement coverage also pass. This measures the local model, not signed-in YouTube Music or Windows/device latency; resolution of the maintainer's actual reports remains unconfirmed.
+
 ## Protocol compatibility
 
 The [protocol contract](../protocol.md) passed shared-engine, real HTTP bridge, SDK inspector and worker fixtures:

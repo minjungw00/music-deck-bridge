@@ -42,6 +42,8 @@ export function playerHarness({ compact = false, available = true, delay = 0 } =
   const page = { document: { querySelector: selector => available && selector === 'ytmusic-player-bar' ? bar : null }, Event,
     setTimeout, Date };
   const scriptCalls = [];
+  // MAIN-world globals persist across injections in a real document.
+  const pageContext = vm.createContext(page);
   let listener;
   const chrome = {
     storage: { local: { setAccessLevel: async () => {} } },
@@ -53,7 +55,8 @@ export function playerHarness({ compact = false, available = true, delay = 0 } =
     scripting: { async executeScript(options) {
       scriptCalls.push(options);
       if (delay) await new Promise(resolve => setTimeout(resolve, delay));
-      const result = await vm.runInNewContext(`(${options.func.toString()})(...args)`, { ...page, args: options.args });
+      pageContext.args = options.args;
+      const result = await vm.runInContext(`(${options.func.toString()})(...args)`, pageContext);
       return [{ result }];
     } },
   };

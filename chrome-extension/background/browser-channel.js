@@ -8,7 +8,7 @@
     let browserChannelAvailable = null;
     const PLAYER_COMMANDS = ['toggle', 'prev', 'next', 'mute', 'volume_delta', 'like', 'dislike'];
     const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-    async function performBrowserCommand(command, stillPaired = async () => true, diagnostic = {}) {
+    async function performBrowserCommand(command, stillPaired = async () => true, diagnostic = {}, onAccepted = () => {}) {
       const failed = reason => { diagnostic.reason = reason; return false; };
       if (!['open', ...PLAYER_COMMANDS].includes(command?.type)) return false;
       const deadline = Math.min(Number(command.expiresAt) || Date.now() + 30000, Date.now() + 30000);
@@ -42,18 +42,27 @@
         } catch { diagnostic.reason = 'injection-unavailable'; await wait(200); continue; }
         if (!await allowed(true)) return denied();
         let result;
+        let accepted = false;
         try {
           const trackKey = !opened && !resuming ? command.trackKey : undefined;
           result = await chrome.tabs.sendMessage(tab.id, { type: 'bridge-command', id: command.id,
-            expiresAt: deadline, command: {
+            expiresAt: deadline, dispatchOnly: true, command: {
               type: command.type === 'toggle' && opened ? 'play' : command.type,
               amount: command.amount, trackKey, allowCurrentTrack: !trackKey,
             } }, { frameId: 0 });
+          if (result?.pending) {
+            // Receipt starts an ordered MAIN-world dispatch operation. Keep its
+            // final ACK separate so the listener can receive later controls.
+            accepted = true;
+            onAccepted();
+            result = await chrome.tabs.sendMessage(tab.id, { type: 'bridge-command-result',
+              id: command.id, expiresAt: deadline }, { frameId: 0 });
+          }
         } catch (error) {
           // A new tab can navigate between injection and messaging. Chrome's
           // missing-receiver error guarantees that this input was not delivered.
           // A closed/lost reply after delivery remains ambiguous and is not retried.
-          if (String(error?.message).includes('Receiving end does not exist')) {
+          if (!accepted && String(error?.message).includes('Receiving end does not exist')) {
             diagnostic.reason = 'receiver-unavailable';
             await wait(200);
             continue;
@@ -75,8 +84,11 @@
       let listeningToken;
       let retry = false;
       let retryDelay = 1000;
+      const active = new Set();
+      let executionFailure;
       try {
         while (true) {
+          if (executionFailure) throw executionFailure;
           const token = await pairedToken();
           listeningToken = token;
           if (!token) {
@@ -88,7 +100,7 @@
           let result;
           try {
             const tabs = await chrome.tabs.query({ url: MUSIC_URL + '*' });
-            result = await post('/browser-listen', { token, clientIds: tabs.map(tab => tab.id) }, 15500);
+            result = await post('/browser-listen', { token, clientIds: tabs.map(tab => tab.id), concurrent: true }, 15500);
           }
           catch (error) {
             if (error.httpStatus === 404) browserChannelAvailable = false;
@@ -99,24 +111,37 @@
           // Re-pairing/unpairing must invalidate already received browser commands.
           if (await pairedToken() !== token) continue;
           for (const command of result.commands) {
-            let ok = false;
-            const diagnostic = {};
-            try {
-              ok = await performBrowserCommand(command, async confirm => {
-                if (await pairedToken() !== token) return false;
-                // A different extension/profile may have replaced this pairing while
-                // the page was loading; local storage alone cannot detect that.
-                if (confirm) {
-                  try { await post('/status', { token }); }
-                  catch (error) {
-                    diagnostic.reason = error.httpStatus === 401 ? 'authorization-lost' : 'bridge-unavailable';
-                    return false;
+            let release;
+            const accepted = new Promise(resolve => { release = resolve; });
+            const execution = (async () => {
+              let ok = false;
+              const diagnostic = {};
+              try {
+                ok = await performBrowserCommand(command, async confirm => {
+                  if (await pairedToken() !== token) return false;
+                  // Recheck server-side authorization before each dispatch.
+                  if (confirm) {
+                    try { await post('/status', { token }); }
+                    catch (error) {
+                      diagnostic.reason = error.httpStatus === 401 ? 'authorization-lost' : 'bridge-unavailable';
+                      return false;
+                    }
                   }
-                }
-                return await pairedToken() === token;
-              }, diagnostic);
-            } catch { diagnostic.reason = 'browser-api-failed'; }
-            await post('/browser-result', { token, id: command.id, ok, ...(!ok ? { reason: diagnostic.reason } : {}) });
+                  return await pairedToken() === token;
+                }, diagnostic, release);
+              } catch { diagnostic.reason = 'browser-api-failed'; }
+              try {
+                if (await pairedToken() === token) await post('/browser-result',
+                  { token, id: command.id, ok, ...(!ok ? { reason: diagnostic.reason } : {}) });
+              } finally { release(); }
+            })();
+            active.add(execution);
+            void execution.then(() => active.delete(execution), error => {
+              executionFailure = error; active.delete(execution);
+            });
+            // Until receipt, retain startup/tab selection and message ordering.
+            // Older content scripts give only a final result and stay serial.
+            await accepted;
           }
         }
       } catch (error) {
@@ -126,6 +151,7 @@
         if (error.compatibility) retryDelay = 5000;
       }
       finally {
+        await Promise.allSettled(active);
         browserListening = false;
         const token = await pairedToken().catch(() => '');
         if (token && token !== listeningToken) void startBrowserListener();

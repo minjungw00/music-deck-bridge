@@ -110,6 +110,17 @@ test('navigation replacing an injected receiver retries the undelivered input ex
   assert.equal(h.calls.filter(c => c[0] === 'create').length, 1);
 });
 
+test('a receiver lost after dispatch receipt never replays navigation in a replacement document', async () => {
+  const h = harness({ response: message => {
+    if (message.type === 'bridge-command') return { ok: true, pending: 1 };
+    throw Error('Could not establish connection. Receiving end does not exist.');
+  } });
+  const diagnostic = {};
+  assert.equal(await h.api.performBrowserCommand({ type: 'next', id: 'already-accepted' }, undefined, diagnostic), false);
+  assert.equal(diagnostic.reason, 'delivery-uncertain');
+  assert.equal(h.calls.filter(call => call[0] === 'message' && call[2].type === 'bridge-command').length, 1);
+});
+
 test('missing credentials are reported to the bridge without starting a browser command channel', async () => {
   const h = harness();
   await new Promise(resolve => setImmediate(resolve));
@@ -220,6 +231,36 @@ test('revoking pairing after a response prevents the received browser command fr
   };
   await h.api.startBrowserListener();
   assert.equal(h.calls.some(c => ['create', 'message', 'update'].includes(c[0])), false);
+});
+
+test('worker receives Pause and its final ACK while Previous verification is still pending', async () => {
+  let finishPrevious;
+  const previous = new Promise(resolve => { finishPrevious = resolve; });
+  const h = harness({ tabs: [{ id: 1, windowId: 10 }], response: msg =>
+    msg.type === 'bridge-command' ? { ok: true, pending: 1 } : msg.id === 'previous' ? previous : { ok: true } });
+  await new Promise(resolve => setImmediate(resolve));
+  h.storage.bridgeToken = 'paired-token';
+  let poll = 0;
+  const acknowledgments = [];
+  h.context.fetch = async (url, options) => {
+    const body = JSON.parse(options.body);
+    if (url.endsWith('/status')) return { ok: true, json: async () => ({ paired: true }) };
+    if (url.endsWith('/browser-result')) {
+      acknowledgments.push(body); return { ok: true, json: async () => ({ ok: true }) };
+    }
+    assert.equal(body.concurrent, true);
+    const commands = [{ id: 'previous', type: 'prev' }, { id: 'pause', type: 'toggle' }];
+    const command = commands[poll++];
+    return { ok: true, json: async () => command ? { commands: [command] } : {} };
+  };
+  const listening = h.api.startBrowserListener();
+  try {
+    await new Promise(resolve => setImmediate(resolve));
+    assert.deepEqual(acknowledgments.map(item => item.id), ['pause']);
+    assert.deepEqual(h.calls.filter(item => item[0] === 'message' && item[2].type === 'bridge-command')
+      .map(item => item[2].id), ['previous', 'pause']);
+  } finally { finishPrevious({ ok: false, reason: 'command-superseded' }); await listening; }
+  assert.deepEqual(acknowledgments.map(item => item.id), ['pause', 'previous']);
 });
 
 test('server-side revocation during startup prevents input even when local credentials remain', async () => {

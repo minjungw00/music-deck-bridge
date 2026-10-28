@@ -4,13 +4,16 @@ import { playerHarness } from './helpers/player.mjs';
 
 function harness({ ready = true, blocked = false, error = false, noEffect = false,
   restart = false, playBlocked = false, playNoEffect = false, initialState = 2,
-  cueOnNavigation = false, ignoreUntilPlaying = false } = {}) {
+  cueOnNavigation = false, ignoreUntilPlaying = false, seekEvent = true, ignoredTypes = [], playPromise } = {}) {
   const player = playerHarness();
   let state = initialState, track = 'aaaaaaaaaaa', clicks = 0, time = 0, plays = 0, ignored = 0;
   const listeners = new Map();
   const mediaListeners = new Map();
-  player.audio.addEventListener = (name, fn) => mediaListeners.set(name, fn);
-  player.audio.removeEventListener = name => mediaListeners.delete(name);
+  const add = (map, name, fn) => { if (!map.has(name)) map.set(name, new Set()); map.get(name).add(fn); };
+  const remove = (map, name, fn) => { map.get(name)?.delete(fn); if (!map.get(name)?.size) map.delete(name); };
+  const emit = (map, name) => { for (const fn of map.get(name) || []) fn(); };
+  player.audio.addEventListener = (name, fn) => add(mediaListeners, name, fn);
+  player.audio.removeEventListener = (name, fn) => remove(mediaListeners, name, fn);
   const api = {
     isReady: () => ready,
     getPlayerState: () => state,
@@ -18,26 +21,28 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
     getCurrentTime: () => time,
     playVideo() {
       plays++;
-      if (playBlocked) { listeners.get('onAutoplayBlocked')?.(); return; }
+      if (playBlocked) { emit(listeners, 'onAutoplayBlocked'); return; }
       if (!playNoEffect) state = 1;
+      return playPromise;
     },
-    addEventListener: (name, fn) => listeners.set(name, fn),
-    removeEventListener: name => listeners.delete(name),
+    addEventListener: (name, fn) => add(listeners, name, fn),
+    removeEventListener: (name, fn) => remove(listeners, name, fn),
   };
   const button = type => ({
     getAttribute: () => null,
     click() {
       clicks++;
-      if (blocked) { listeners.get('onAutoplayBlocked')?.(); return; }
-      if (error) { listeners.get('onError')?.(); return; }
+      if (blocked) { emit(listeners, 'onAutoplayBlocked'); return; }
+      if (error) { emit(listeners, 'onError'); return; }
       if (noEffect) return;
+      if (ignoredTypes.includes(type)) return;
       if (type !== 'toggle' && ignoreUntilPlaying && state !== 1) { ignored++; return; }
-      if (type === 'toggle') state = state === 1 ? 2 : 1;
+      if (type === 'toggle') state = state === 1 || state === 3 ? 2 : 1;
       else if (type === 'prev' && (restart || time > 5)) {
         time = 0;
-        mediaListeners.get('seeked')?.();
+        if (seekEvent) emit(mediaListeners, 'seeked');
       }
-      else track = type === 'next' ? 'bbbbbbbbbbb' : 'ccccccccccc';
+      else track = String(clicks).padStart(11, type === 'next' ? 'b' : 'c');
       if (type !== 'toggle' && cueOnNavigation) state = 5;
     },
   });
@@ -50,8 +55,77 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
     state: () => state, ignored: () => ignored, ready: value => { ready = value; },
     setState: value => { state = value; },
     time: value => { time = value; },
-    send: (command, expiresAt) => player.send({ type: 'player-playback', command, expiresAt }) };
+    send: (command, expiresAt, dispatchOnly = false) => player.send({ type: 'player-playback', command, expiresAt, dispatchOnly }),
+    result: pending => player.send({ type: 'player-playback-result', pending }) };
 }
+
+async function until(check) {
+  const deadline = Date.now() + 1000;
+  while (!check()) {
+    assert.ok(Date.now() < deadline, 'fixture did not dispatch');
+    await new Promise(resolve => setTimeout(resolve, 5));
+  }
+}
+
+test('an unconfirmed Previous cannot delay Pause or resume playback after it', async () => {
+  const h = harness({ initialState: 1, ignoredTypes: ['prev'] });
+  const previous = await h.send('prev', Date.now() + 1500, true);
+  assert.ok(previous.pending);
+  await until(() => h.clicks() === 1);
+  const start = Date.now();
+  assert.equal((await h.send('toggle')).ok, true);
+  assert.ok(Date.now() - start < 300, 'Pause did not wait for the navigation timeout');
+  assert.equal((await h.result(previous.pending)).reason, 'command-superseded');
+  await new Promise(resolve => setTimeout(resolve, 100));
+  assert.equal(h.state(), 2);
+  assert.equal(h.plays(), 0, 'old verification cannot restart the newly paused player');
+});
+
+test('Pause interrupts a buffered navigation before its click is dispatched', async () => {
+  const h = harness({ initialState: 3 });
+  const previous = await h.send('prev', Date.now() + 1500, true);
+  const start = Date.now();
+  assert.equal((await h.send('toggle')).ok, true);
+  assert.ok(Date.now() - start < 300);
+  assert.equal((await h.result(previous.pending)).reason, 'command-superseded');
+  assert.equal(h.clicks(), 1, 'only Pause was dispatched');
+  assert.equal(h.state(), 2);
+  assert.equal(h.plays(), 0);
+});
+
+test('an unsettled Play API promise cannot hold navigation after playback has started', { timeout: 1000 }, async () => {
+  const h = harness({ playPromise: new Promise(() => {}) });
+  assert.equal((await h.send('prev', Date.now() + 600)).ok, true);
+  assert.equal(h.clicks(), 1);
+  assert.equal(h.state(), 1);
+});
+
+test('a restart without a seek event still recovers playback without inventing a navigation result', async () => {
+  const h = harness({ initialState: 1, restart: true, cueOnNavigation: true, seekEvent: false });
+  const pending = await h.send('prev', Date.now() + 180, true);
+  await until(() => h.plays() === 1);
+  assert.equal(h.state(), 1);
+  assert.equal((await h.result(pending.pending)).reason, 'playback-unconfirmed');
+  assert.equal(h.clicks(), 1);
+});
+
+test('restart evidence is retained while playback remains cued beyond two seconds', async () => {
+  const h = harness({ initialState: 1, restart: true, cueOnNavigation: true, playNoEffect: true });
+  h.time(2);
+  const pending = await h.send('prev', Date.now() + 600, true);
+  await until(() => h.plays() === 1);
+  h.time(4); h.setState(1);
+  assert.equal((await h.result(pending.pending)).ok, true);
+});
+
+test('rapid navigation dispatches every input once while old outcome monitors are superseded', async () => {
+  const h = harness({ initialState: 1 });
+  const pending = await Promise.all(Array.from({ length: 3 }, () => h.send('next', Date.now() + 600, true)));
+  const results = await Promise.all(pending.map(item => h.result(item.pending)));
+  assert.equal(h.clicks(), 3);
+  assert.equal(results.at(-1).ok, true);
+  assert.ok(results.slice(0, -1).every(result => result.ok || result.reason === 'command-superseded'));
+});
 
 test('restored metadata does not authorize a click before the player is ready', async () => {
   const h = harness({ ready: false });

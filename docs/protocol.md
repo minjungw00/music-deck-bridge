@@ -40,6 +40,10 @@ The current implementation supports **protocol 1 only**. It preserves existing e
 | Peer maximum is below local minimum | Update the peer component |
 | Malformed explicit metadata | Invalid compatibility information; no legacy fallback |
 
+### Optional concurrent command delivery
+
+`/browser-listen` accepts optional `concurrent: true` to allow up to eight delivered requests awaiting separate final acknowledgments. The default remains serial, and older plugins can ignore the flag. Request IDs, final `/browser-result` semantics and authentication are unchanged; a local extension/page receipt is not a successful final result. See [dispatch and confirmation](architecture.md#command-dispatch-and-confirmation) for ordering, cancellation and mixed-component behavior.
+
 ## Authentication and failure behavior
 
 For `/pair`, the PIN is verified before compatibility. Incompatible pairing returns HTTP 409 without consuming the PIN or saving a new token. Authenticated routes verify origin/token before negotiation; an unrelated request cannot overwrite the active pair's compatibility state. Explicit `/unpair` remains available even for incompatible components.

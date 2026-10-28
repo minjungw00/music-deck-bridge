@@ -13,7 +13,11 @@
         case 'next':
         case 'prev':
           result = await chrome.runtime.sendMessage({ type: 'player-playback', command: message.type,
-            expiresAt: message.expiresAt });
+            expiresAt: message.expiresAt, dispatchOnly: message.dispatchOnly === true });
+          result = result || { ok: false, reason: 'playback-unconfirmed' };
+          break;
+        case 'playback-result':
+          result = await chrome.runtime.sendMessage({ type: 'player-playback-result', pending: message.pending });
           result = result || { ok: false, reason: 'playback-unconfirmed' };
           break;
         case 'like':
