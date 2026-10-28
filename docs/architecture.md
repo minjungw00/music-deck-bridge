@@ -9,7 +9,7 @@ flowchart LR
   P -->|HTTPS artwork download| CDN[Google and YouTube image servers]
 ```
 
-The Stream Deck manifest launches `streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/bin/plugin.js` with the local WebSocket registration arguments. It bundles the official `@elgato/streamdeck` 3.0.2 SDK, which owns registration, event routing and display/inspector output. The ten `SingletonAction` registrations forward events to the local bridge. The runtime does not load the manifest itself; the SDK handles protected manifests.
+The Stream Deck manifest launches `streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/bin/plugin.js` with the local WebSocket registration arguments. It bundles the official `@elgato/streamdeck` 3.0.3 SDK, which owns registration, event routing and display/inspector output. The ten `SingletonAction` registrations forward events to the local bridge. The runtime does not load the manifest itself; the SDK handles protected manifests.
 
 The entry point is `streamdeck/src/plugin.cjs`; esbuild produces the standalone deployed bundle.
 
@@ -47,6 +47,8 @@ Credential writes/deletion must succeed before the active pairing is replaced/re
 [background.js](../chrome-extension/background.js) is the classic MV3 worker entry point. Its [background modules](../chrome-extension/background/) separate the authenticated bridge client, browser-wide command channel, message router and fixed page-control functions. The client owns credential access and protocol state; the channel owns polling/retry and tab delivery. Management and player-sync services own pairing/port workflows and tab state/closure. The router validates message senders and arguments, then dispatches to those services.
 
 `MAIN`-world functions remain self-contained because Chrome serializes them for execution in the page.
+
+[player-playback.js](../chrome-extension/background/player-playback.js) owns the injected playback function. Its helpers separate player observation, bounded diagnostics, event subscription/cleanup, recovery state, ordered preparation/dispatch and independent outcome confirmation. They stay inside the serialized function; they do not require a second injection or page-global helper installation. [page-controls.js](../chrome-extension/background/page-controls.js) owns volume/mute and exposes the playback entry point to the existing router and state-sync service. The worker loads the playback module before this composition, and packaging explicitly includes both files.
 
 The isolated-world content entry point composes metadata, command execution and runtime/lifecycle modules under `content/`. Both manifest loading and reinjection use the manifest’s complete ordered script list.
 

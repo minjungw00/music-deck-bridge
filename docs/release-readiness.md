@@ -4,7 +4,7 @@ Last updated: October 29, 2026 (Asia/Seoul). Both official stores are published 
 
 Current development target: **1.1.3-dev**, with [dependency security updates](verification/runtime.md#113-dependency-review) and [artwork/transport fixes](verification/runtime.md#113-artwork-and-transport-fixes). It has not been promoted or published; its automated checks do not extend the 1.1.2 maintainer sign-off to this candidate.
 
-The maintainer reports that new-window playback now appears normal with the bounded startup recovery. Intermittent Previous destination playback remains unresolved: navigation occurs, but the destination stays UNSTARTED after Play. The current revision extends bounded recovery to an observed destination; actual operation of this follow-up is unconfirmed. See the [startup record](verification/runtime.md#startup-player-error-diagnosis) and [destination record](verification/runtime.md#navigation-destination-playback). Passing local models does not establish resolution of the remaining report.
+The maintainer confirmed operation after the destination-playback fix and requested refactoring. This confirmation covers the reported startup/destination follow-up within its stated scope. The current refactor preserves those playback policies and keeps the development target fixed; its local verification is separate from the maintainer's pre-refactor confirmation. See the [destination record](verification/runtime.md#navigation-destination-playback) and [refactor record](verification/runtime.md#playback-refactor).
 
 ## Distribution status
 

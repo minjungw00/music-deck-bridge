@@ -11,6 +11,7 @@
 - Use explicit Play API requests for an UNSTARTED restored track with an ID but no ready media; recover an ineffective initial request with bounded, spaced Play retries only while the same player/selection remains unchanged. Stop recovery on progress, later playback control or errors; retain playback confirmation and never replay Toggle/navigation.
 - Apply the same bounded Play recovery to an observed Previous/Next destination that remains UNSTARTED after its first Play request; preserve one navigation click and cancellation by later Pause.
 - Add bounded playback-failure diagnostics in the extension worker console to distinguish site events, media errors and script exceptions, including phase, numeric code, input-time versus failure-time readiness, dispatched action/API source and user-activation flags.
+- Separate injected playback from volume controls and organize observation, diagnostics, event lifecycle, bounded recovery, dispatch and confirmation into named helpers while preserving the serialized MAIN-world entry point.
 - Update the Stream Deck SDK to 3.0.3 and CLI to 1.10.3 while retaining Node.js 24.
 - Scope a Zod 4.6.7 override to `@elgato/utils` 0.6.1 to address GHSA-mrhx-c7xc-m3w5; add option-schema compatibility and bounded-array rejection regressions.
 - Update the CLI's locked `fast-uri` dependency from 3.1.8 to 3.1.9 within its existing allowed range to address URI parsing advisories.

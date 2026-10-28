@@ -432,7 +432,8 @@ test('track controls require an observed track change, and expiry forbids input'
 test('track navigation starts a cued track and confirms playback before acknowledging', async () => {
   for (const type of ['next', 'prev']) {
     const h = harness({ cueOnNavigation: true });
-    assert.equal((await h.send(type, Date.now() + 500)).ok, true);
+    const result = await h.send(type, Date.now() + 500);
+    assert.equal(result.ok, true, JSON.stringify({ type, ...result }));
     assert.equal(h.state(), 1);
     assert.equal(h.plays(), 2, 'initialize playback, then start the cued destination');
     assert.equal(h.clicks(), 1, 'navigation is dispatched once');

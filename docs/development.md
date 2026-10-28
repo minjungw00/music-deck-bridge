@@ -103,7 +103,7 @@ npm run build:streamdeck
 | Output | Packaging behavior |
 | --- | --- |
 | `music-deck-bridge-chrome-<version>.zip` | Stages the source allowlist with `manifest.json` at the ZIP root |
-| `io.github.minjungw00.musicdeckbridge.streamDeckPlugin` | Bundles the SDK/bridge, stages under `dist/staging/`, then runs the pinned CLI 1.10.2 validator and packager |
+| `io.github.minjungw00.musicdeckbridge.streamDeckPlugin` | Bundles the SDK/bridge, stages under `dist/staging/`, then runs the pinned CLI 1.10.3 validator and packager |
 
 Both packages include LICENSE, NOTICE, THIRD_PARTY_NOTICES.md and PRIVACY.md. Review validation warnings before distribution. See the [official CLI packaging reference](https://docs.elgato.com/streamdeck/cli/commands/pack/).
 

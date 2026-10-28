@@ -147,6 +147,16 @@ Final destination checks pass: syntax/JSON/manifests, 217 Node tests, two Python
 
 Destination-recovery artifacts from clean commit `4e525a05c5b0` use build ID `1.1.3-dev+g4e525a05c5b0.local20261028203136514` under `dist/development/`, with `dirty: false`. Official Stream Deck packaging and all checksums pass; the archived page-control module matches its source. The plugin runtime is byte-identical to the preceding startup-recovery candidate, so only the extension changes. Earlier artifacts remain intact.
 
+The maintainer subsequently confirmed operation and requested refactoring. This accepts the reported startup/destination follow-up within the conversation's scope; it does not supply an itemized device/environment inventory or establish independent observation. No repeat is requested solely to fill omitted metadata. The latest supplied destination candidate is identified above; this confirmation precedes the following refactor.
+
+### Playback refactor
+
+On 2026-10-29 KST the refactor keeps `1.1.3-dev`, protocol 1 and the existing permissions. Mechanical commit `c6b776a` moves the injected playback function to `background/player-playback.js`; a source comparison verifies its function body is unchanged at that step. The worker import graph and packaging allowlist include the new module. Seven targeted playback/volume checks and both Python packaging tests pass for that move.
+
+The subsequent internal refactor separates observation, diagnostics, event lifecycle and retry state from ordered preparation/dispatch and playback/navigation confirmation. Helpers remain nested inside the injected function so Chrome serialization keeps the existing single-injection contract. Shared document sequence/result state, deadlines, polling interval, retry limits, cancellation, confirmation evidence, diagnostic filtering and cleanup are retained. Existing regression assertions remain intact; one cued-track assertion gains failure-result text without widening its deadline. A focused run had one transient failure of that 500 ms case, which passed in isolation; its cause was not established.
+
+Final refactor verification passes: syntax/JSON/manifests, all 217 Node tests, two Python packaging tests and the Chromium 156.0.8078.4 MV3 fixture. Packaging checks follow the actual worker import graph and compare the new module's archived bytes. VM fixtures serialize the exported function into a separate MAIN context; Chromium additionally exercises actual worker loading, startup/destination retries, supersession, responsive Pause, receiver replacement and bounded diagnostic transport. These are local results for the refactor, separate from the maintainer's accepted pre-refactor operation report; the refactored package has not been independently observed on Windows.
+
 ## Protocol compatibility
 
 The [protocol contract](../protocol.md) passed shared-engine, real HTTP bridge, SDK inspector and worker fixtures:
