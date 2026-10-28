@@ -18,6 +18,8 @@ Private reports use the repository's [private vulnerability form](https://github
 
 The October 29 documentation review does not recheck these administrative settings or alert state. Current development dependency decisions and their dated audit/compatibility results are in the [1.1.3 dependency review](verification/runtime.md#113-dependency-review); they do not replace repository scanning or certify that every input path is safe.
 
+Later on October 29, the authorized 1.1.3 release preparation re-read the settings through the authenticated API. Private vulnerability reporting, secret scanning, push protection, vulnerability alerts and automated security fixes remained enabled; fixes were not paused. Workflow defaults remained read-only without pull-request approval permission. Non-provider secret patterns and validity checks were disabled. The open Dependabot and secret-scanning alert queries each returned an empty list. These are dated repository/API observations, not a replacement for dependency or runtime tests; no settings were changed.
+
 ## Rechecking settings
 
 Read-only rechecks (GitHub CLI, with authenticated repository access):

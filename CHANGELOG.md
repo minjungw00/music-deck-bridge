@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.1.3-dev — unreleased
+## v1.1.3 — 2026-10-29
 
 - Fit non-square Current Track key artwork proportionally with centered black margins, including title-backdrop variants.
 - Confirm track movement or a same-track restart and destination playback before acknowledging Previous/Next. Preserve restart evidence through delayed playback and observe state without waiting for an unsettled site promise.

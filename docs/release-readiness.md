@@ -9,7 +9,7 @@ Reviewed October 29, 2026 (Asia/Seoul). General installation starts with the [of
 | GitHub | **v1.1.2**, Chrome **1.1.2**, plugin **1.1.2.0**, protocol **1** | Latest non-draft/non-prerelease release re-read through GitHub API on October 29; original publication/byte checks in [Releases](verification/releases.md#v112) |
 | Elgato Marketplace | Public listing **1.1.2**; last reported plugin submission **1.1.2.0** | Public version/copy inspected October 29; normal store operation maintainer-confirmed October 24 · [Store record](verification/stores.md) |
 | Chrome Web Store | Last reported submission **1.1.2**, published | Maintainer-confirmed publication/operation October 24; current page/version could not be independently read · [Store record](verification/stores.md) |
-| Development checkout | **1.1.3-dev**, Chrome numeric **1.1.3**, plugin **1.1.3.0**, protocol **1** | Dependency security updates, proportional key artwork, playback recovery and refactor; no 1.1.3 release promotion or store submission is recorded |
+| Release checkout | **1.1.3**, Chrome **1.1.3**, plugin **1.1.3.0**, protocol **1** | Maintainer authorized release October 29; development target promoted, final stable-source CI/packages and GitHub publication pending; no 1.1.3 store submission is recorded |
 
 ## Development validation
 
@@ -35,7 +35,7 @@ The [runtime record](verification/runtime.md#current-evidence) is the source for
 
 ## Remaining work
 
-The final development review found no additional code change to make. Prepare 1.1.3 only through the authorized [release checklist](development.md#release-checklist) and [versioning policy](versioning.md). After promotion, verify the final stable/tagged source, CI and packages and record remaining manual coverage; a passing development review is not release publication. The latest [review record](verification/runtime.md#october-29-pre-release-review) distinguishes automated results from maintainer confirmation and outstanding Windows/hardware/DRM coverage.
+The final development review found no additional code change to make. The maintainer subsequently authorized the 1.1.3 release. Follow the direct GitHub publication path in the [release checklist](development.md#release-checklist): verify the exact stable/tagged source CI and packages and disclose outstanding manual coverage in release notes. The latest [review record](verification/runtime.md#october-29-pre-release-review) distinguishes automated results from maintainer confirmation and outstanding Windows/hardware/DRM coverage. Store processing remains separate.
 
 - The Elgato installation-copy correction is still a [local draft](../store-assets/elgato/how-to-use.en.md). Apply and record it as a later listing revision when submitted; preserve actual submitted snapshots.
 - For later store revisions, retain version identifiers, uploaded-file hashes, selected media and supplied descriptions. Refresh version-labelled sample media to match the submitted build.
