@@ -211,6 +211,6 @@
     "MinimumVersion": "7.1"
   },
   "UUID": "io.github.minjungw00.musicdeckbridge",
-  "Version": "1.1.2.0",
+  "Version": "1.1.3.0",
   "PropertyInspectorPath": "property-inspector/settings.html"
 }
