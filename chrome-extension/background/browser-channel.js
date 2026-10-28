@@ -6,6 +6,29 @@
     let browserListening = false;
     let browserRetryTimer = null;
     let browserChannelAvailable = null;
+    let lastFailure = null;
+    const phases = ['prepare', 'subscribe', 'play-button', 'play-api', 'navigate-button', 'confirm'];
+    const faultSources = ['observation', 'site-event', 'media', 'play-rejection', 'exception'];
+    const exceptions = ['Error', 'TypeError', 'ReferenceError', 'NotAllowedError', 'InvalidStateError',
+      'SecurityError', 'AbortError', 'NotSupportedError', 'Other'];
+    function recordFailure(type, result) {
+      if (!['player-error', 'player-not-ready', 'playback-unconfirmed', 'autoplay-blocked'].includes(result?.reason)) return;
+      const data = result.diagnostic || {};
+      // Retain only bounded enums/numbers/booleans, never page text, IDs,
+      // exception messages, URLs, playback metadata or credentials.
+      lastFailure = Object.freeze({ command: type, reason: result.reason,
+        phase: phases.includes(data.phase) ? data.phase : null,
+        source: faultSources.includes(data.source) ? data.source : null,
+        errorPhase: phases.includes(data.errorPhase) ? data.errorPhase : null,
+        code: Number.isInteger(data.code) && data.code >= 0 && data.code <= 999 ? data.code : null,
+        exception: exceptions.includes(data.exception) ? data.exception : null,
+        state: [-1, 0, 1, 2, 3, 5].includes(data.state) ? data.state : null,
+        apiReady: typeof data.apiReady === 'boolean' ? data.apiReady : null,
+        mediaReady: [0, 1, 2, 3, 4].includes(data.mediaReady) ? data.mediaReady : null,
+        hasTrack: typeof data.hasTrack === 'boolean' ? data.hasTrack : null,
+        playable: typeof data.playable === 'boolean' ? data.playable : null });
+      console.warn('Music Deck Bridge playback diagnostic:', JSON.stringify(lastFailure));
+    }
     const PLAYER_COMMANDS = ['toggle', 'prev', 'next', 'mute', 'volume_delta', 'like', 'dislike'];
     const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
     async function performBrowserCommand(command, stillPaired = async () => true, diagnostic = {}, onAccepted = () => {}) {
@@ -70,6 +93,7 @@
           return failed('delivery-uncertain');
         }
         if (result?.ok) return true;
+        recordFailure(command.type, result);
         if (result?.retry !== true) return failed(result?.reason || 'player-rejected');
         diagnostic.reason = 'player-not-ready';
         await wait(200);
@@ -160,6 +184,7 @@
     }
 
     return { start: startBrowserListener, perform: performBrowserCommand,
+      get lastFailure() { return lastFailure; },
       get available() { return browserChannelAvailable; } };
   }
   root.MusicDeckBrowserChannel = Object.freeze({ create: createBrowserChannel });

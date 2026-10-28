@@ -14,6 +14,7 @@
       try { return await result; }
       finally { control.results.delete(expiresAt); }
     }
+    let snapshot;
     const read = () => {
       const bar = document.querySelector('ytmusic-player-bar');
       const api = [bar?.playerApi, document.querySelector('#movie_player')]
@@ -39,7 +40,7 @@
       } catch { ready = false; }
       const playing = Number.isFinite(state) ? state === 1 || state === 3 :
         Boolean(media && !media.paused && !media.ended);
-      return { api, media, ready, apiReady, playable, playing, state, index,
+      return snapshot = { api, media, ready, apiReady, playable, playing, state, index,
         muted: typeof muted === 'boolean' ? muted : Boolean(media?.muted),
         key: videoId || media?.currentSrc || media?.src || '',
         time: Number.isFinite(time) ? time : media?.currentTime || 0 };
@@ -53,7 +54,19 @@
     const navigation = type === 'next' || type === 'prev';
     const expires = Number(expiresAt) || Infinity;
     let deadline = Math.min(expires, Date.now() + (dispatchOnly ? 30000 : 10000));
-    const failure = reason => ({ ok: false, reason });
+    let phase = 'prepare', fault = null;
+    const exceptionName = value => ['Error', 'TypeError', 'ReferenceError', 'NotAllowedError',
+      'InvalidStateError', 'SecurityError', 'AbortError', 'NotSupportedError'].includes(value) ? value : 'Other';
+    const faultInfo = (source, code, exception) => ({ source, phase,
+      code: Number.isInteger(code) && code >= 0 && code <= 999 ? code : null,
+      exception: exception ? exceptionName(exception) : null });
+    const failure = reason => ({ ok: false, reason, diagnostic: {
+      phase, source: fault?.source || 'observation', errorPhase: fault?.phase || phase,
+      code: fault?.code ?? null, exception: fault?.exception ?? null,
+      state: [-1, 0, 1, 2, 3, 5].includes(snapshot?.state) ? snapshot.state : null,
+      apiReady: snapshot?.apiReady === true, mediaReady: [0, 1, 2, 3, 4].includes(snapshot?.media?.readyState) ? snapshot.media.readyState : null,
+      hasTrack: Boolean(snapshot?.key), playable: snapshot?.playable !== false,
+    } });
     const superseded = () => control.latest > sequence || (navigation && control.interrupt > sequence);
     const started = state => Number.isFinite(state.state) ? state.state === 1 :
       state.playing && state.media?.readyState >= 2;
@@ -67,14 +80,19 @@
     const wait = () => new Promise(resolve => setTimeout(resolve, 80));
     let blocked = false, playerError = false, seeked = false, source, seekMedia;
     const onBlocked = () => { blocked = true; };
-    const onError = () => { playerError = true; };
+    const onError = event => {
+      playerError = true;
+      fault = faultInfo('site-event', typeof event === 'number' ? event : event?.data);
+    };
     const onSeeked = () => { seeked = true; };
     const requestPlay = async state => {
-      if (!state.ready && canStart(state)) { playButton().click(); return true; }
+      if (!state.ready && canStart(state)) { phase = 'play-button'; playButton().click(); return true; }
       if (typeof state.api?.playVideo === 'function') {
         // Observe playback itself; a site's returned promise need not settle
         // when media starts, and must not hold the dispatch queue indefinitely.
+        phase = 'play-api';
         state.api.playVideo()?.catch?.(error => {
+          fault = { ...faultInfo('play-rejection', null, error?.name), phase: 'play-api' };
           if (error?.name === 'NotAllowedError') blocked = true;
           else playerError = true;
         });
@@ -82,10 +100,16 @@
       }
       const button = playButton();
       if (!usable(button)) return false;
+      phase = 'play-button';
       button.click(); return true;
     };
-    const error = state => superseded() ? 'command-superseded' : blocked ? 'autoplay-blocked' :
-      playerError || state.media?.error ? 'player-error' : null;
+    const error = state => {
+      if (superseded()) return 'command-superseded';
+      if (blocked) return 'autoplay-blocked';
+      if (playerError) return 'player-error';
+      if (state.media?.error) { fault = faultInfo('media', state.media.error.code); return 'player-error'; }
+      return null;
+    };
     const dispatch = control.dispatch.then(async () => {
       let before = read();
       if (error(before)) return { result: failure(error(before)) };
@@ -100,9 +124,11 @@
         if (!navigation && canStart(before)) break;
         if ((before.ready || canStart(before)) && navigation && !before.playing && !primed) {
           source = before;
+          phase = 'subscribe';
           source.api?.addEventListener?.('onAutoplayBlocked', onBlocked);
           source.api?.addEventListener?.('onError', onError);
           if (!await requestPlay(before) && !dispatchOnly) return { result: { ok: false, retry: true } };
+          phase = 'prepare';
           primed = true;
         }
         before = read();
@@ -119,14 +145,17 @@
       if (!usable(button)) return { result: { ok: false, retry: true } };
       if (!source) {
         source = before;
+        phase = 'subscribe';
         source.api?.addEventListener?.('onAutoplayBlocked', onBlocked);
         source.api?.addEventListener?.('onError', onError);
       }
       seekMedia = before.media;
       seekMedia?.addEventListener?.('seeked', onSeeked);
       control.latest = sequence;
+      phase = navigation ? 'navigate-button' : 'play-button';
       button.click();
       deadline = Math.min(expires, Date.now() + 10000);
+      phase = 'confirm';
       return { before };
     });
     // Release after dispatch, including when verification is still pending.
@@ -154,12 +183,14 @@
             const target = JSON.stringify([after.key, after.index]);
             if (!after.playing && after.ready && !played.has(target) && played.size < 2) {
               if (await requestPlay(after)) played.add(target);
+              phase = 'confirm';
             }
           }
           await wait();
         }
         return failure('playback-unconfirmed');
       } catch (error) {
+        fault = faultInfo('exception', null, error?.name);
         return failure(error?.name === 'NotAllowedError' ? 'autoplay-blocked' : 'player-error');
       } finally {
         source?.api?.removeEventListener?.('onAutoplayBlocked', onBlocked);

@@ -70,6 +70,22 @@ When a control shows the warning triangle, select that action in the Stream Deck
 | `player-error` | Resolve the reported player/media error in YouTube Music. | YouTube Music에서 플레이어·미디어 오류를 확인하세요. |
 | `autoplay-blocked` | Start playback in the YouTube Music window, then retry. | YouTube Music 창에서 직접 재생한 뒤 재시도하세요. |
 
+### Development playback diagnostics / 개발 빌드 재생 진단
+
+Development builds with this instrumentation retain the most recent playback failure in the extension worker's memory. Reproduce after opening the inspector so the worker remains available; a worker restart clears it. A successful later command does not clear this diagnostic record.
+
+이 진단 기능이 포함된 개발 빌드는 마지막 재생 실패를 확장 프로그램 워커 메모리에 보관합니다. 검사 창을 먼저 연 뒤 문제를 확인하세요. 워커가 재시작되면 기록이 사라지며, 이후 명령이 성공해도 마지막 진단 기록은 남습니다.
+
+| Step | English | 한국어 |
+| --- | --- | --- |
+| 1 | Update the diagnostic extension in its existing folder and reload it at `chrome://extensions`. | 기존 확장 폴더를 진단 빌드로 갱신하고 `chrome://extensions`에서 새로고침하세요. |
+| 2 | With Developer mode enabled, open Music Deck Bridge's **service worker** inspector and select **Console**. | 개발자 모드에서 Music Deck Bridge의 **서비스 워커** 검사를 열고 **Console**을 선택하세요. |
+| 3 | Perform the failing action and copy the line starting with `Music Deck Bridge playback diagnostic:`. | 문제가 발생하는 동작을 수행하고 `Music Deck Bridge playback diagnostic:`로 시작하는 줄을 복사하세요. |
+
+If the line is no longer visible, the read-only console expression `JSON.stringify(browserChannel.lastFailure, null, 2)` displays the retained record. `null` means no retained failure in this worker. Only fixed phase/source names, bounded numbers and booleans are recorded; account/track data, URLs, PINs/tokens and raw exception messages/stacks are excluded. `source` identifies the numeric code's namespace: `site-event` is a player event, `media` an HTML media error, and `exception` a script exception. These are evidence for diagnosis, not a cause or repair by themselves.
+
+로그가 보이지 않으면 읽기 전용 Console 명령 `JSON.stringify(browserChannel.lastFailure, null, 2)`로 남아 있는 기록을 확인할 수 있습니다. `null`은 현재 워커에 실패 기록이 없다는 뜻입니다. 기록에는 정해진 단계·출처 이름, 제한된 숫자와 참/거짓 값만 포함되며 계정·곡 정보, URL, PIN·토큰, 원본 예외 메시지·스택은 포함하지 않습니다. `source`의 `site-event`는 플레이어 이벤트, `media`는 미디어 오류, `exception`은 스크립트 예외입니다. 이 정보 자체만으로 원인이나 해결을 확정하지 않습니다.
+
 The plugin leaves Chrome's autoplay and security settings unchanged. See Chrome's [autoplay policy](https://developer.chrome.com/blog/autoplay/).
 
 플러그인은 Chrome의 자동 재생·보안 설정을 변경하지 않습니다.

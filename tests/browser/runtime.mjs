@@ -259,5 +259,25 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   assert.equal(compatibility.token, token);
   assert.equal(compatibility.recovered.compatible, true);
   assert.equal(await music.evaluate(() => document.body.dataset.next), '1', 'incompatible input had no page effect');
+  // Inject a script failure in the local page model to verify diagnostics travel
+  // through the actual MAIN/content/worker result path without raw error text.
+  await music.evaluate(() => {
+    const button = document.querySelector('ytmusic-player-bar .play-pause-button');
+    globalThis.originalPlayClick = button.click;
+    button.click = () => { throw new TypeError('DO_NOT_RETAIN_PAGE_ERROR_TEXT'); };
+  });
+  const prior = await worker.evaluate(() => acknowledgments.length);
+  try {
+    await postEvent('toggle');
+    const result = await until(async () => (await worker.evaluate(() => acknowledgments))[prior], 'diagnostic failure ACK');
+    assert.equal(result.reason, 'player-error');
+    const diagnostic = await worker.evaluate(() => browserChannel.lastFailure);
+    assert.equal(diagnostic.source, 'exception');
+    assert.equal(diagnostic.exception, 'TypeError');
+    assert.equal(diagnostic.errorPhase, 'play-button');
+    assert.equal(JSON.stringify(diagnostic).includes('DO_NOT_RETAIN'), false);
+  } finally {
+    await music.evaluate(() => { document.querySelector('ytmusic-player-bar .play-pause-button').click = globalThis.originalPlayClick; delete globalThis.originalPlayClick; });
+  }
   t.diagnostic(`Chromium ${browser.browser().version()}; Play-gated media/track initialization, cold-tab and post-launch controls, stalled/no-seek Previous followed by responsive Pause/Next, stale-monitor cancellation and receiver recovery passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
 });

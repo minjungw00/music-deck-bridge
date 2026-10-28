@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 
 function harness({ tabs = [], response = true, injectionFailures = 0 } = {}) {
-  const calls = [];
+  const calls = [], warnings = [];
   let listener;
   const storage = { bridgeToken: '' };
   let now = Date.now();
@@ -33,10 +33,11 @@ function harness({ tabs = [], response = true, injectionFailures = 0 } = {}) {
     } },
   };
   const context = vm.createContext({ chrome, AbortSignal, Date: { now: () => now },
+    console: { warn: (...args) => warnings.push(args) },
     setTimeout(fn, ms) { now += ms; queueMicrotask(fn); } });
   loadExtension(context);
-  vm.runInContext('this.api = { performBrowserCommand, startBrowserListener };', context);
-  return { api: context.api, calls, storage, context,
+  vm.runInContext('this.api = { performBrowserCommand, startBrowserListener, failure: () => browserChannel.lastFailure };', context);
+  return { api: context.api, calls, storage, context, warnings,
     send: (message, sender) => new Promise(resolve => listener(message, sender, resolve)) };
 }
 
@@ -55,6 +56,24 @@ test('every control opens a missing player and then performs its original input'
       assert.equal(messages[0][2].id, type);
     }
   }
+});
+
+test('failed playback diagnostics whitelist fields and survive a later successful command', async () => {
+  let ok = false;
+  const h = harness({ tabs: [{ id: 1 }], response: () => ok ? { ok: true } : ({ ok: false, reason: 'player-error',
+    diagnostic: { source: 'site-event', phase: 'confirm', errorPhase: 'play-button', code: 5, state: 2,
+      apiReady: true, mediaReady: 0, hasTrack: true, playable: false,
+      exception: 'DO_NOT_RETAIN_EXCEPTION', title: 'DO_NOT_RETAIN_TITLE', url: 'DO_NOT_RETAIN_URL' } }) });
+  assert.equal(await h.api.performBrowserCommand({ type: 'toggle' }), false);
+  const failure = h.api.failure();
+  assert.equal(failure.code, 5);
+  assert.equal(failure.source, 'site-event');
+  assert.equal(failure.exception, null);
+  assert.equal(JSON.stringify(failure).includes('DO_NOT_RETAIN'), false);
+  assert.equal(h.warnings.length, 1);
+  ok = true;
+  assert.equal(await h.api.performBrowserCommand({ type: 'toggle' }), true);
+  assert.equal(h.api.failure(), failure, 'keep the latest failure available for diagnosis');
 });
 
 test('open reuses and focuses the selected PWA instead of creating duplicate tabs', async () => {

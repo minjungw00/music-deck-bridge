@@ -85,6 +85,16 @@ Controlled comparison against `918a6d9`: five new Node cases fail (four startup 
 
 Development packages from clean code commit `f909efcc2d42` use build ID `1.1.3-dev+gf909efcc2d42.local20261028174813965` under `dist/development/`, with `dirty: false`. Official Stream Deck validation and both package checksums pass; the Chrome archive contains the corrected source. The plugin runtime bundle is byte-identical to the preceding `7e0f61ba651f` candidate, so users already running that plugin can update just the extension for this change. Existing build artifacts remain separate and unchanged.
 
+### Startup player error diagnosis
+
+The maintainer then reported a YouTube Music “An error occurred” screen and plugin `player-error` when Play/Pause or Current Track opened a new window; clicking the site's Play button afterwards still started music. The preceding readiness candidate therefore does not establish a resolution. Inspection shows that this first Play input uses the native button, not the navigation path's supplemental `playVideo()` call. The existing `player-error` can mean a site event, an HTML media error or a script exception, so those observations alone do not identify the cause.
+
+Read-only anonymous access from the local Chromium environment returned an unsupported-browser page, then a Music Premium page when using a standard Chrome user agent. It did not expose the maintainer's signed-in Music player, and is not a reproduction of the reported failure.
+
+The new instrumentation retains bounded failure phase/source, numeric site/media code, exception name and readiness flags in extension worker memory and a console warning. It preserves playback dispatch/recovery decisions and permissions. It excludes account/track data, URLs, tokens and raw exception text/stacks. Tests distinguish numeric site events, media errors and script exceptions and verify worker-side field filtering and retention after success. The actual signed-in failure remains unresolved pending a diagnostic record from that environment; no further behavioral fix is claimed for this instrumentation.
+
+Validation: syntax/JSON/manifests, 185 Node tests, two Python tests and Chromium 156.0.8078.4 integration pass. Chromium injects a TypeError into the local model's Play button to verify the full MAIN/content/worker diagnostic path and removal of raw error text. That injected error is not a reproduction of the maintainer's site error. Diagnostic collection steps are in the [troubleshooting guide](../troubleshooting.md#development-playback-diagnostics--개발-빌드-재생-진단).
+
 ## Protocol compatibility
 
 The [protocol contract](../protocol.md) passed shared-engine, real HTTP bridge, SDK inspector and worker fixtures:

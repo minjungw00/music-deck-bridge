@@ -8,6 +8,7 @@
 - Separate ordered control dispatch from outcome confirmation so a pending Previous result cannot block later Pause/Next inputs. Cancel superseded verification without resuming playback or displaying stale failures.
 - Recover paused same-item Previous playback even when no seek event is emitted, retain restart evidence through delayed playback, and observe playback instead of waiting for a site's unsettled Play promise.
 - Start a cued/restored player through its usable Play control before waiting for loaded media/track metadata; distinguish initialization failure from an unconfirmed dispatched control.
+- Add bounded playback-failure diagnostics in the extension worker console to distinguish site events, media errors and script exceptions, including their phase and numeric code. This instrumentation does not establish a fix for the reported signed-in startup failure.
 - Update the Stream Deck SDK to 3.0.3 and CLI to 1.10.3 while retaining Node.js 24.
 - Scope a Zod 4.6.7 override to `@elgato/utils` 0.6.1 to address GHSA-mrhx-c7xc-m3w5; add option-schema compatibility and bounded-array rejection regressions.
 - Update the CLI's locked `fast-uri` dependency from 3.1.8 to 3.1.9 within its existing allowed range to address URI parsing advisories.

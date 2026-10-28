@@ -5,7 +5,7 @@ import { playerHarness } from './helpers/player.mjs';
 function harness({ ready = true, blocked = false, error = false, noEffect = false,
   restart = false, playBlocked = false, playNoEffect = false, initialState = 2,
   cueOnNavigation = false, ignoreUntilPlaying = false, seekEvent = true, ignoredTypes = [], playPromise,
-  unloadedUntilPlay = false } = {}) {
+  unloadedUntilPlay = false, clickError } = {}) {
   const player = playerHarness();
   let state = initialState, track = 'aaaaaaaaaaa', clicks = 0, time = 0, plays = 0, ignored = 0;
   let initialized = !unloadedUntilPlay;
@@ -14,7 +14,7 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
   const mediaListeners = new Map();
   const add = (map, name, fn) => { if (!map.has(name)) map.set(name, new Set()); map.get(name).add(fn); };
   const remove = (map, name, fn) => { map.get(name)?.delete(fn); if (!map.get(name)?.size) map.delete(name); };
-  const emit = (map, name) => { for (const fn of map.get(name) || []) fn(); };
+  const emit = (map, name, event) => { for (const fn of map.get(name) || []) fn(event); };
   player.audio.addEventListener = (name, fn) => add(mediaListeners, name, fn);
   player.audio.removeEventListener = (name, fn) => remove(mediaListeners, name, fn);
   const api = {
@@ -35,8 +35,9 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
     getAttribute: () => null,
     click() {
       clicks++;
+      if (clickError) throw clickError;
       if (blocked) { emit(listeners, 'onAutoplayBlocked'); return; }
-      if (error) { emit(listeners, 'onError'); return; }
+      if (error) { emit(listeners, 'onError', { data: typeof error === 'number' ? error : undefined }); return; }
       if (noEffect) return;
       if (ignoredTypes.includes(type)) return;
       if (type !== 'toggle' && ignoreUntilPlaying && state !== 1) { ignored++; return; }
@@ -64,6 +65,37 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
     send: (command, expiresAt, dispatchOnly = false) => player.send({ type: 'player-playback', command, expiresAt, dispatchOnly }),
     result: pending => player.send({ type: 'player-playback-result', pending }) };
 }
+
+test('site error diagnostics retain the numeric event code and the control phase', async () => {
+  const h = harness({ error: 153 });
+  const result = await h.send('play');
+  assert.equal(result.reason, 'player-error');
+  assert.equal(result.diagnostic.source, 'site-event');
+  assert.equal(result.diagnostic.code, 153);
+  assert.equal(result.diagnostic.errorPhase, 'play-button');
+  assert.equal(h.clicks(), 1);
+});
+
+test('media error diagnostics remain distinct and do not send an input', async () => {
+  const h = harness();
+  h.player.audio.error = { code: 4, message: 'DO_NOT_RETAIN_MEDIA_MESSAGE' };
+  const result = await h.send('play');
+  assert.equal(result.reason, 'player-error');
+  assert.equal(result.diagnostic.source, 'media');
+  assert.equal(result.diagnostic.code, 4);
+  assert.equal(h.clicks(), 0);
+  assert.equal(JSON.stringify(result).includes('DO_NOT_RETAIN'), false);
+});
+
+test('script error diagnostics include a bounded exception name without its message or stack', async () => {
+  const h = harness({ clickError: new TypeError('DO_NOT_RETAIN_EXCEPTION_MESSAGE') });
+  const result = await h.send('play');
+  assert.equal(result.reason, 'player-error');
+  assert.equal(result.diagnostic.source, 'exception');
+  assert.equal(result.diagnostic.exception, 'TypeError');
+  assert.equal(result.diagnostic.errorPhase, 'play-button');
+  assert.equal(JSON.stringify(result).includes('DO_NOT_RETAIN'), false);
+});
 
 for (const type of ['play', 'toggle', 'prev', 'next']) {
   test(`${type} bootstraps media that cannot load until the first Play input`, async () => {
