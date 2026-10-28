@@ -34,7 +34,18 @@
         key: videoId || media?.currentSrc || media?.src || '',
         time: Number.isFinite(time) ? time : media?.currentTime || 0 };
     };
-    const before = read();
+    const started = snapshot => Number.isFinite(snapshot.state) ? snapshot.state === 1 :
+      snapshot.playing && snapshot.media?.readyState >= 2;
+    const usable = button => button && !button.disabled && button.getAttribute('aria-disabled') !== 'true' &&
+      !button.closest?.('[disabled], [aria-disabled="true"]');
+    const requestPlay = async snapshot => {
+      if (typeof snapshot.api?.playVideo === 'function') { await snapshot.api.playVideo(); return true; }
+      const play = document.querySelector('ytmusic-player-bar .play-pause-button');
+      if (!usable(play)) return false;
+      play.click();
+      return true;
+    };
+    let before = read();
     if (type === 'state') return { playing: before.playing, muted: before.muted };
     if (!['play', 'toggle', 'next', 'prev'].includes(type)) return { ok: false };
     if (!before.ready) return { ok: false, retry: true };
@@ -43,29 +54,57 @@
     const desiredPlaying = type === 'play' || !before.playing;
     const selector = ({ play: '.play-pause-button', toggle: '.play-pause-button',
       next: '.next-button', prev: '.previous-button' })[type];
-    const button = document.querySelector('ytmusic-player-bar ' + selector);
-    if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true' ||
-        button.closest?.('[disabled], [aria-disabled="true"]')) return { ok: false, retry: true };
-    let blocked = false, playerError = false;
+    const navigation = type === 'next' || type === 'prev';
+    const source = before;
+    let seekMedia;
+    let blocked = false, playerError = false, seeked = false, playRequested = false;
     const onBlocked = () => { blocked = true; };
     const onError = () => { playerError = true; };
+    const onSeeked = () => { seeked = true; };
     before.api?.addEventListener?.('onAutoplayBlocked', onBlocked);
     before.api?.addEventListener?.('onError', onError);
     try {
+      const deadline = Math.min(Number(expiresAt) || Infinity, Date.now() + 10000);
+      // A restored/cued player can expose metadata and buttons before its first
+      // playback session is active. Prime playback before dispatching navigation.
+      if (navigation && !started(before)) {
+        if (!before.playing && !await requestPlay(before)) return { ok: false, retry: true };
+        while (Date.now() < deadline) {
+          before = read();
+          if (blocked) return { ok: false, reason: 'autoplay-blocked' };
+          if (playerError || before.media?.error) return { ok: false, reason: 'player-error' };
+          if (before.ready && started(before)) break;
+          await new Promise(resolve => setTimeout(resolve, 80));
+        }
+        if (!before.ready || !started(before)) return { ok: false, reason: 'playback-unconfirmed' };
+      }
+      if (Date.now() >= deadline) return { ok: false, reason: 'command-timeout' };
+      const button = document.querySelector('ytmusic-player-bar ' + selector);
+      if (!usable(button)) return { ok: false, retry: true };
+      // Playback initialization can replace the media node. Observe the node
+      // that will receive this navigation, ignoring any initialization seek.
+      seekMedia = before.media;
+      seekMedia?.addEventListener?.('seeked', onSeeked);
       // Use the site's own control path only after its media/queue is initialized.
       button.click();
-      const deadline = Math.min(Number(expiresAt) || Infinity, Date.now() + 10000);
       do {
+        if (Date.now() >= deadline) break;
         const after = read();
         if (blocked) return { ok: false, reason: 'autoplay-blocked' };
         if (playerError || after.media?.error) return { ok: false, reason: 'player-error' };
         if (type === 'play' || type === 'toggle') {
-          const started = Number.isFinite(after.state) ? after.state === 1 :
-            after.playing && after.media?.readyState >= 2;
-          if (desiredPlaying ? started : !after.playing) return { ok: true };
+          if (desiredPlaying ? started(after) : !after.playing) return { ok: true };
         } else if ((before.key && after.key && before.key !== after.key) ||
             (Number.isInteger(before.index) && Number.isInteger(after.index) && before.index !== after.index) ||
-            (type === 'prev' && before.time > 5 && after.time < 2)) return { ok: true };
+            (type === 'prev' && before.key === after.key && after.time < 2 &&
+              (after.time < before.time || seeked))) {
+          if (started(after)) return { ok: true };
+          // Navigation may only cue a track after a cold start. Request Play
+          // once, after observing the destination; never repeat Next/Previous.
+          if (!after.playing && after.ready && !playRequested) {
+            playRequested = await requestPlay(after);
+          }
+        }
         await new Promise(resolve => setTimeout(resolve, 80));
       } while (Date.now() < deadline);
       // A dispatched click with no observed result is ambiguous. Never retry it:
@@ -74,8 +113,9 @@
     } catch (error) {
       return { ok: false, reason: error?.name === 'NotAllowedError' ? 'autoplay-blocked' : 'player-error' };
     } finally {
-      before.api?.removeEventListener?.('onAutoplayBlocked', onBlocked);
-      before.api?.removeEventListener?.('onError', onError);
+      source.api?.removeEventListener?.('onAutoplayBlocked', onBlocked);
+      source.api?.removeEventListener?.('onError', onError);
+      seekMedia?.removeEventListener?.('seeked', onSeeked);
     }
   }
 

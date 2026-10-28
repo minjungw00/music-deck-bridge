@@ -26,14 +26,18 @@ const fixture = `<!doctype html><html><body>
  </ytmusic-like-button-renderer>
 </ytmusic-player-bar>
 <script>
-let playing=false, muted=false, ready=false, index=2;
+let playing=false, muted=false, ready=false, initialized=false, index=2, time=0;
 const tracks=['aaaaaaaaaaa','bbbbbbbbbbb','ccccccccccc','ddddddddddd','eeeeeeeeeee'];
 function record(key){ document.body.dataset[key]=String(Number(document.body.dataset[key]||0)+1); }
 function control(type){
  if(!ready){record('early');return;}
- if(type==='toggle')playing=!playing;
- if(type==='prev')index--;
- if(type==='next')index++;
+ if(type==='toggle'){playing=!playing;initialized=true;}
+ if(type==='prev'||type==='next'){
+  if(!initialized){record('ignoredNavigation');return;}
+  if(type==='prev' && index===0){time=0;document.querySelector('audio').dispatchEvent(new Event('seeked'));}
+  else index+=type==='prev'?-1:1;
+  playing=false;
+ }
  record(type);
 }
 Object.defineProperties(document.querySelector('audio'), {
@@ -42,6 +46,8 @@ Object.defineProperties(document.querySelector('audio'), {
 });
 const api=document.querySelector('#movie_player');
 api.isReady=()=>ready;api.getPlayerState=()=>playing?1:2;api.getVideoData=()=>({video_id:tracks[index]});
+api.getCurrentTime=()=>time;
+api.playVideo=()=>{if(!ready){record('early');return;}playing=true;initialized=true;record('playRequest');};
 api.isMuted=()=>muted;
 setTimeout(()=>{ready=true;},500);
 const slider=document.querySelector('#volume-slider');slider.value=50;
@@ -149,6 +155,30 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     assert.equal((await until(async () => (await worker.evaluate(() => acknowledgments))[before], `${type} reuse ACK`)).ok, true);
     assert.equal(browser.pages().filter(page => page.url().startsWith(musicURL)).length, 1);
   }
+  // Launch with each button, then operate both transport keys on that same tab.
+  // The page model ignores navigation before first playback and cues (pauses)
+  // each destination, exposing failures hidden by the old track-ID-only ACK.
+  for (const launch of ['toggle', 'nowplaying', 'prev', 'next', 'mute', 'like', 'dislike', 'volume_delta', 'open']) {
+    for (const page of browser.pages()) if (page.url().startsWith(musicURL)) await page.close();
+    let before = await worker.evaluate(() => acknowledgments.length);
+    await postEvent(launch);
+    assert.equal((await until(async () => (await worker.evaluate(() => acknowledgments))[before], `${launch} launch ACK`)).ok, true);
+    const page = await until(() => browser.pages().find(page => page.url().startsWith(musicURL)), 'music tab');
+    await page.waitForLoadState();
+    // First queue item at time zero: Previous restarts it without a new ID.
+    await page.evaluate(() => { index=0;time=0; });
+    for (const type of ['prev', 'next']) {
+      const clicks = await page.evaluate(type => Number(document.body.dataset[type] || 0), type);
+      before = await worker.evaluate(() => acknowledgments.length);
+      await postEvent(type);
+      const ack = await until(async () => (await worker.evaluate(() => acknowledgments))[before], `${launch} then ${type} ACK`);
+      assert.equal(ack.ok, true, JSON.stringify(ack));
+      assert.equal(await page.evaluate(type => Number(document.body.dataset[type]), type), clicks+1, 'navigate once');
+      assert.equal(await page.evaluate(() => document.querySelector('#movie_player').getPlayerState()), 1, 'destination is playing before ACK');
+      assert.equal(await page.evaluate(() => document.body.dataset.ignoredNavigation), undefined);
+    }
+    assert.equal(browser.pages().filter(page => page.url().startsWith(musicURL)).length, 1);
+  }
   assert.equal(await worker.evaluate(() => legacyPollsStarted), 0, 'modern controls must not consume connections with per-tab long polls');
   // Force a genuine missing receiver by removing it from the actual isolated
   // world once. This is a pre-delivery failure, unlike a lost execution reply.
@@ -194,5 +224,5 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   assert.equal(compatibility.token, token);
   assert.equal(compatibility.recovered.compatible, true);
   assert.equal(await music.evaluate(() => document.body.dataset.next), '1', 'incompatible input had no page effect');
-  t.diagnostic(`Chromium ${browser.browser().version()}; 9 cold-tab actions, delayed readiness, MAIN state sync and replaced-receiver recovery passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
+  t.diagnostic(`Chromium ${browser.browser().version()}; 9 cold-tab actions, 18 post-launch Previous/Next inputs, playback confirmation, delayed readiness, MAIN state sync and replaced-receiver recovery passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
 });
