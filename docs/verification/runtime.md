@@ -145,6 +145,8 @@ Six focused fixtures pass: Previous/Next destinations whose first Play is ignore
 
 Final destination checks pass: syntax/JSON/manifests, 217 Node tests, two Python packaging tests and Chromium 156.0.8078.4 MV3 integration. Chromium models changed-ID UNSTARTED destinations for Previous and Next, ignores each first destination Play and confirms the second starts playback. Each navigation is clicked once; subsequent Pause remains paused beyond the retry interval without extra Play. Existing startup recovery and earlier transport/diagnostic checks also pass. These automated results do not extend the maintainer's new-window report to this remaining intermittent case.
 
+Destination-recovery artifacts from clean commit `4e525a05c5b0` use build ID `1.1.3-dev+g4e525a05c5b0.local20261028203136514` under `dist/development/`, with `dirty: false`. Official Stream Deck packaging and all checksums pass; the archived page-control module matches its source. The plugin runtime is byte-identical to the preceding startup-recovery candidate, so only the extension changes. Earlier artifacts remain intact.
+
 ## Protocol compatibility
 
 The [protocol contract](../protocol.md) passed shared-engine, real HTTP bridge, SDK inspector and worker fixtures:
