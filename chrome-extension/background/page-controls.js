@@ -220,7 +220,7 @@
         if (dispatched.result) return dispatched.result;
         const { before } = dispatched;
         const desiredPlaying = type === 'play' || !before.playing;
-        let navigated = false;
+        let navigated = false, destinationRecoveryStarted = false;
         const played = new Set();
         while (Date.now() < deadline) {
           const after = read();
@@ -238,9 +238,17 @@
             // Keep playback recovery independent of navigation confirmation.
             const target = JSON.stringify([after.key, after.index]);
             if (!after.playing && after.ready && !played.has(target) && played.size < 2) {
-              if (await requestPlay(after)) played.add(target);
+              // Once navigation is observed, its destination can need the
+              // same initialization recovery as a newly opened player.
+              const recoverDestination = navigated && !destinationRecoveryStarted && canRecoverStartup(after);
+              if (await requestPlay(after, recoverDestination)) {
+                played.add(target);
+                if (recoverDestination) destinationRecoveryStarted = true;
+              }
               phase = 'confirm';
             }
+            await recoverStartup(after);
+            phase = 'confirm';
           }
           await wait();
         }

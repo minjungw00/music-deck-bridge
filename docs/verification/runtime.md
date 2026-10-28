@@ -135,6 +135,16 @@ Recovery validation passes: syntax/JSON/manifests, 211 Node tests, two Python pa
 
 Recovery artifacts from clean commit `7145a38d90ba` use build ID `1.1.3-dev+g7145a38d90ba.local20261028201730142` under `dist/development/`, with `dirty: false`. Official Stream Deck packaging and all checksums pass; both archived recovery/diagnostic modules match their source. The plugin runtime matches the preceding diagnostic candidate byte for byte, so only the extension needs replacement. Previous artifacts remain intact.
 
+### Navigation destination playback
+
+On 2026-10-29 KST the maintainer reports that new-window playback now appears normal. Preserve that scoped confirmation without requesting repetition solely for artifact metadata. The remaining report is intermittent Previous navigation to another song without playback. Its real diagnostic identifies `prev`, `playback-unconfirmed`, `source: observation`, `phase: confirm`, no site code/exception, UNSTARTED state (-1), ready API, media readiness 0, track identity present and `playable: true`. Input-time state is the same; `inputAction: play-api`, `inputApi: movie-player`, both activation flags false and `startupAttempts: 0`. These observations do not establish autoplay blocking or the site's internal readiness cause.
+
+Inspection identifies a recovery gap: the navigation outcome loop sends one Play per target, but does not arm the bounded UNSTARTED recovery added to preparation. Three focused destination-recovery checks fail on the preceding implementation. The correction arms that existing recovery for the first eligible destination only after navigation/restart is observed, then runs it during outcome confirmation. It preserves the original deadline, four-request cap, progress/error/Pause cancellation and one navigation click. A target change cannot rearm destination retries; ambiguous same-track Previous retains its one-shot recovery without new retries or invented navigation success. The diagnostic counter now describes the most recent eligible UNSTARTED recovery sequence, including an observed navigation destination.
+
+Six focused fixtures pass: Previous/Next destinations whose first Play is ignored, retry-time autoplay blocking, cancellation by later Pause, no rearming after external track change, and ambiguous same-track handling. These model the reported failure shape, not its underlying cause; actual Windows operation of this follow-up remains unconfirmed. The maintainer's new-window report retains its stated scope.
+
+Final destination checks pass: syntax/JSON/manifests, 217 Node tests, two Python packaging tests and Chromium 156.0.8078.4 MV3 integration. Chromium models changed-ID UNSTARTED destinations for Previous and Next, ignores each first destination Play and confirms the second starts playback. Each navigation is clicked once; subsequent Pause remains paused beyond the retry interval without extra Play. Existing startup recovery and earlier transport/diagnostic checks also pass. These automated results do not extend the maintainer's new-window report to this remaining intermittent case.
+
 ## Protocol compatibility
 
 The [protocol contract](../protocol.md) passed shared-engine, real HTTP bridge, SDK inspector and worker fixtures:

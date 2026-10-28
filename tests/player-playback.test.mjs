@@ -6,7 +6,7 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
   restart = false, playBlocked = false, playNoEffect = false, initialState = 2,
   cueOnNavigation = false, ignoreUntilPlaying = false, seekEvent = true, ignoredTypes = [], playPromise,
   unloadedUntilPlay = false, rejectUncued = false, clearOnError = false, clickError,
-  ignoredPlayRequests = 0, blockedPlayRequest = 0 } = {}) {
+  ignoredPlayRequests = 0, blockedPlayRequest = 0, unstartedOnNavigation = false } = {}) {
   const player = playerHarness();
   let state = initialState, track = 'aaaaaaaaaaa', clicks = 0, time = 0, plays = 0, ignored = 0;
   let initialized = !unloadedUntilPlay;
@@ -61,6 +61,9 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
       }
       else track = String(clicks).padStart(11, type === 'next' ? 'b' : 'c');
       if (type !== 'toggle' && cueOnNavigation) state = 5;
+      if (type !== 'toggle' && unstartedOnNavigation) {
+        state = -1; player.audio.readyState = 0; player.audio.currentSrc = '';
+      }
     },
   });
   const buttons = { '.play-pause-button': button('toggle'), '.next-button': button('next'), '.previous-button': button('prev') };
@@ -435,6 +438,62 @@ test('track navigation starts a cued track and confirms playback before acknowle
     assert.equal(h.clicks(), 1, 'navigation is dispatched once');
     assert.equal(h.mediaListeners.size, 0);
   }
+});
+
+for (const type of ['prev', 'next']) {
+  test(`${type} retries an ignored destination Play without navigating again`, async () => {
+    const h = harness({ initialState: 1, unstartedOnNavigation: true, ignoredPlayRequests: 1 });
+    const result = await h.send(type, Date.now() + 4000);
+    assert.equal(result.ok, true);
+    assert.equal(h.state(), 1);
+    assert.equal(h.plays(), 2);
+    assert.equal(h.clicks(), 1);
+  });
+}
+
+test('destination retry autoplay blocking fails without repeating Previous', async () => {
+  const h = harness({ initialState: 1, unstartedOnNavigation: true,
+    ignoredPlayRequests: 1, blockedPlayRequest: 2 });
+  const result = await h.send('prev', Date.now() + 4000);
+  assert.equal(result.reason, 'autoplay-blocked');
+  assert.equal(result.diagnostic.startupAttempts, 2);
+  assert.equal(h.plays(), 2);
+  assert.equal(h.clicks(), 1);
+});
+
+test('destination recovery cannot undo a later Pause', async () => {
+  const h = harness({ initialState: 1, unstartedOnNavigation: true, playNoEffect: true });
+  const pending = await h.send('prev', Date.now() + 2200, true);
+  await until(() => h.plays() === 1);
+  h.setState(1);
+  assert.equal((await h.send('toggle')).ok, true);
+  assert.equal((await h.result(pending.pending)).reason, 'command-superseded');
+  await new Promise(resolve => setTimeout(resolve, 1100));
+  assert.equal(h.plays(), 1);
+  assert.equal(h.clicks(), 2, 'Previous and Pause each clicked once');
+  assert.equal(h.state(), 2);
+});
+
+test('destination recovery is not rearmed after an external track change', async () => {
+  const h = harness({ initialState: 1, unstartedOnNavigation: true, playNoEffect: true });
+  const pending = await h.send('prev', Date.now() + 1500, true);
+  await until(() => h.plays() === 1);
+  h.setTrack('bbbbbbbbbbb');
+  const result = await h.result(pending.pending);
+  assert.equal(result.reason, 'playback-unconfirmed');
+  assert.equal(h.plays(), 2, 'retain the existing one-shot target check without a fresh retry sequence');
+  assert.equal(result.diagnostic.startupAttempts, 1);
+  assert.equal(h.clicks(), 1);
+});
+
+test('ambiguous same-track Previous does not arm destination retries or invent navigation success', async () => {
+  const h = harness({ initialState: 1, unstartedOnNavigation: true, restart: true,
+    seekEvent: false, playNoEffect: true });
+  const result = await h.send('prev', Date.now() + 1500);
+  assert.equal(result.reason, 'playback-unconfirmed');
+  assert.equal(h.plays(), 1);
+  assert.equal(h.clicks(), 1);
+  assert.equal(result.diagnostic.startupAttempts, 0);
 });
 
 test('previous confirms a same-track restart within the first five seconds, including zero', async () => {

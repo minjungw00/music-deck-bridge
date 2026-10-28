@@ -27,6 +27,7 @@ const fixture = (restored = false, ignoredStartupRequests = 0) => `<!doctype htm
 </ytmusic-player-bar>
 <script>
 let playing=false, muted=false, ready=false, cued=false, initialized=false, index=2, time=0, stallPrevious=false, seekSignal=true;
+let destinationUnstarted=false, unstartedDestination=false, ignoredDestinationPlays=0, destinationPlays=0;
 const restored=${restored};
 const ignoredStartupRequests=${ignoredStartupRequests};
 const playerListeners=new Map();
@@ -43,15 +44,16 @@ function control(type){
   if(type==='prev' && index===0){time=0;if(seekSignal)document.querySelector('audio').dispatchEvent(new Event('seeked'));}
   else index+=type==='prev'?-1:1;
   playing=false;
+  unstartedDestination=destinationUnstarted;destinationPlays=0;
  }
  record(type);
 }
 Object.defineProperties(document.querySelector('audio'), {
- paused:{get:()=>true}, ended:{get:()=>false}, readyState:{get:()=>ready&&initialized?4:0}, duration:{get:()=>180},
+ paused:{get:()=>true}, ended:{get:()=>false}, readyState:{get:()=>ready&&initialized&&!unstartedDestination?4:0}, duration:{get:()=>180},
  currentSrc:{get:()=>initialized?tracks[index]:''}
 });
 const api=document.querySelector('#movie_player');
-api.isReady=()=>ready;api.getPlayerState=()=>!initialized?(cued&&!restored?5:-1):playing?1:2;
+api.isReady=()=>ready;api.getPlayerState=()=>unstartedDestination?-1:!initialized?(cued&&!restored?5:-1):playing?1:2;
 api.getVideoData=()=>({video_id:initialized||restored?tracks[index]:''});
 api.getCurrentTime=()=>time;
 api.playVideo=()=>{
@@ -60,6 +62,8 @@ api.playVideo=()=>{
  document.body.dataset.apiUserEverActive=String(navigator.userActivation.hasBeenActive);
  record('playRequest');
  if(restored&&!initialized&&Number(document.body.dataset.playRequest)<=ignoredStartupRequests){record('ignoredStartupRequest');return;}
+ if(unstartedDestination&&++destinationPlays<=ignoredDestinationPlays){record('ignoredDestinationRequest');return;}
+ unstartedDestination=false;
  playing=true;initialized=true;
 };
 api.isMuted=()=>muted;
@@ -231,6 +235,33 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   }
   restoredStartup = false;
   ignoredStartupRequests = 0;
+  // Navigation changes the ID but leaves the destination UNSTARTED. Its first
+  // Play is ignored; recovery must not click Previous/Next a second time.
+  const destinationPage = browser.pages().find(page => page.url().startsWith(musicURL));
+  await destinationPage.evaluate(() => {
+    index=2;playing=true;destinationUnstarted=true;ignoredDestinationPlays=1;
+  });
+  for (const type of ['prev', 'next']) {
+    await destinationPage.evaluate(() => { playing=true; });
+    const clicks = await destinationPage.evaluate(type => Number(document.body.dataset[type] || 0), type);
+    const plays = await destinationPage.evaluate(() => Number(document.body.dataset.playRequest || 0));
+    const ignored = await destinationPage.evaluate(() => Number(document.body.dataset.ignoredDestinationRequest || 0));
+    const before = await worker.evaluate(() => acknowledgments.length);
+    await postEvent(type);
+    const result = await until(async () => (await worker.evaluate(() => acknowledgments))[before], `${type} destination recovery ACK`);
+    assert.equal(result.ok, true, JSON.stringify(result));
+    assert.equal(await destinationPage.evaluate(() => playing), true);
+    assert.equal(await destinationPage.evaluate(type => Number(document.body.dataset[type]), type), clicks+1);
+    assert.equal(await destinationPage.evaluate(() => Number(document.body.dataset.playRequest)), plays+2);
+    assert.equal(await destinationPage.evaluate(() => Number(document.body.dataset.ignoredDestinationRequest)), ignored+1);
+    const paused = await worker.evaluate(() => acknowledgments.length);
+    await postEvent('toggle');
+    assert.equal((await until(async () => (await worker.evaluate(() => acknowledgments))[paused], 'Pause after destination recovery')).ok, true);
+    await new Promise(resolve => setTimeout(resolve, 1100));
+    assert.equal(await destinationPage.evaluate(() => playing), false);
+    assert.equal(await destinationPage.evaluate(() => Number(document.body.dataset.playRequest)), plays+2);
+  }
+  await destinationPage.evaluate(() => { destinationUnstarted=false; });
   // Previous can leave the same item/position and omit seek events. Its result
   // must not hold subsequent controls or let an old monitor undo a later Pause.
   const controlled = browser.pages().find(page => page.url().startsWith(musicURL));
@@ -335,5 +366,5 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   } finally {
     await music.evaluate(() => { document.querySelector('ytmusic-player-bar .play-pause-button').click = globalThis.originalPlayClick; delete globalThis.originalPlayClick; });
   }
-  t.diagnostic(`Chromium ${browser.browser().version()}; ignored-initial-Play recovery for Play/Pause, Current Track, Previous and Next followed by Pause, unstarted API-ready selection delay, Play-gated media/track initialization, cold-tab and post-launch controls, stalled/no-seek Previous followed by responsive Pause/Next, stale-monitor cancellation and receiver recovery passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
+  t.diagnostic(`Chromium ${browser.browser().version()}; ignored-initial-Play startup recovery, ignored destination Play recovery after Previous/Next followed by Pause, unstarted API-ready selection delay, Play-gated media/track initialization, cold-tab and post-launch controls, stalled/no-seek Previous followed by responsive Pause/Next, stale-monitor cancellation and receiver recovery passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
 });

@@ -4,7 +4,7 @@ Last updated: October 29, 2026 (Asia/Seoul). Both official stores are published 
 
 Current development target: **1.1.3-dev**, with [dependency security updates](verification/runtime.md#113-dependency-review) and [artwork/transport fixes](verification/runtime.md#113-artwork-and-transport-fixes). It has not been promoted or published; its automated checks do not extend the 1.1.2 maintainer sign-off to this candidate.
 
-The signed-in cold-start report remains unresolved. The maintainer confirms a second Stream Deck input starts music after the first fails, without site/Console interaction. The current revision retains startup intent through bounded explicit Play retries while the same player/selection remains unchanged. This implements recovery for an ineffective initial request; its actual Windows behavior and the underlying site cause remain unconfirmed. See the [startup error record](verification/runtime.md#startup-player-error-diagnosis); passing local models do not establish resolution of that report.
+The maintainer reports that new-window playback now appears normal with the bounded startup recovery. Intermittent Previous destination playback remains unresolved: navigation occurs, but the destination stays UNSTARTED after Play. The current revision extends bounded recovery to an observed destination; actual operation of this follow-up is unconfirmed. See the [startup record](verification/runtime.md#startup-player-error-diagnosis) and [destination record](verification/runtime.md#navigation-destination-playback). Passing local models does not establish resolution of the remaining report.
 
 ## Distribution status
 

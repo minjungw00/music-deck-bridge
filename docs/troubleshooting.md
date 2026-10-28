@@ -88,7 +88,7 @@ The `inputState`, `inputApiReady`, `inputMediaReady` and `inputHasTrack` fields 
 
 `inputAction` distinguishes the Play API, Play button and navigation button; `inputApi` identifies the player-bar or movie-player object. `inputUserActive` and `inputUserEverActive` record transient/sticky user activation at dispatch; null means unavailable or no dispatch. Absence of activation alone does not establish autoplay blocking. For a Console comparison, control DevTools' [Treat code evaluation as user action](https://developer.chrome.com/docs/devtools/settings/preferences#console) setting: it can make a manual API call differ from automatic extension execution.
 
-`startupAttempts` counts explicit API requests in the restored-track startup recovery (0–4). It does not count navigation or ordinary playback requests. Recovery ends on progress, changed selection/player, errors or superseding playback intent and never repeats a toggle/navigation click.
+`startupAttempts` counts explicit API requests in the most recent eligible UNSTARTED playback-recovery sequence (0–4), either before navigation or on its observed destination. Zero means no such sequence was armed; an ordinary one-shot Play may still have been sent. Navigation clicks and ordinary playback requests are not counted. Recovery ends on progress, changed selection/player, errors or superseding playback intent and never repeats a toggle/navigation click.
 
 로그가 보이지 않으면 읽기 전용 Console 명령 `JSON.stringify(browserChannel.lastFailure, null, 2)`로 남아 있는 기록을 확인할 수 있습니다. `null`은 현재 워커에 실패 기록이 없다는 뜻입니다. 기록에는 정해진 단계·출처 이름, 제한된 숫자와 참/거짓 값만 포함되며 계정·곡 정보, URL, PIN·토큰, 원본 예외 메시지·스택은 포함하지 않습니다. `source`의 `site-event`는 플레이어 이벤트, `media`는 미디어 오류, `exception`은 스크립트 예외입니다. 이 정보 자체만으로 원인이나 해결을 확정하지 않습니다.
 
@@ -96,7 +96,7 @@ The `inputState`, `inputApiReady`, `inputMediaReady` and `inputHasTrack` fields 
 
 `inputAction`은 재생 API·재생 버튼·곡 이동 버튼을, `inputApi`는 사용한 플레이어 객체를 구분합니다. `inputUserActive`, `inputUserEverActive`는 호출 시점의 일시적·누적 사용자 활성화 상태이며, 확인할 수 없거나 호출이 없으면 `null`입니다. 활성화가 없다는 사실만으로 자동 재생 차단을 확정하지 않습니다. Console에서 비교할 때는 **Treat code evaluation as user action** 설정도 통제해야 합니다. 이 설정으로 수동 API 실행과 확장 프로그램의 자동 실행 조건이 달라질 수 있습니다.
 
-`startupAttempts`는 복원된 곡의 초기 재생 복구에서 보낸 API 요청 횟수(0~4)입니다. 곡 이동이나 일반 재생 요청은 포함하지 않습니다. 상태 진행, 곡·플레이어 변경, 오류, 후속 재생 제어가 확인되면 복구를 중단하며 토글·곡 이동 클릭은 반복하지 않습니다.
+`startupAttempts`는 가장 최근 미시작 상태 재생 복구의 API 요청 횟수(0~4)입니다. 곡 이동 전 초기화나 이동이 확인된 곡의 재생 복구에 적용됩니다. `0`은 해당 복구가 시작되지 않았다는 뜻이며, 일반적인 1회 재생 요청은 보냈을 수 있습니다. 곡 이동 클릭이나 일반 재생 요청은 횟수에 포함하지 않습니다. 상태 진행, 곡·플레이어 변경, 오류, 후속 재생 제어가 확인되면 복구를 중단하며 토글·곡 이동 클릭은 반복하지 않습니다.
 
 The plugin leaves Chrome's autoplay and security settings unchanged. See Chrome's [autoplay policy](https://developer.chrome.com/blog/autoplay/).
 

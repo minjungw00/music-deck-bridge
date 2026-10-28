@@ -101,6 +101,8 @@ A usable Play control can precede loaded media or a track ID in a cued player. T
 
 For Play/Toggle in UNSTARTED with an available track ID but no ready media, dispatch an explicit `playVideo()` request when the selected API supports it. A restored ID can precede media initialization, and the first request can be ineffective there. If the same ready API, valid track ID and queue position remain UNSTARTED with no ready media, allow at most three additional explicit Play requests, spaced by one, two and three seconds, within the original deadline. The same recovery applies while initializing Previous/Next before their one navigation click. Any observed progress, selection/API change, disabled control, error or superseding playback input permanently stops this recovery. Confirmation still requires observed playback; Toggle/navigation are never replayed. Pause and controls on loaded media retain the site-button path.
 
+After observed navigation, its first eligible UNSTARTED destination can start one such recovery sequence. A later target change cannot rearm destination retries. The existing one-shot playback checks still apply to ordinary paused/cued targets. Without navigation/restart evidence, recovery does not add retries or invent a successful navigation result.
+
 ### Extension credentials and page access
 
 The content script reads player DOM/Media Session metadata and current-song rating state and exchanges messages with the service worker, which adds the token to loopback requests. The service worker restricts local storage to `TRUSTED_CONTEXTS` on every start and waits for that restriction before reading tokens or making authenticated requests. The content script does not receive the bearer token.
