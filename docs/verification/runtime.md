@@ -83,6 +83,8 @@ The startup check now distinguishes usable controls/API state from loaded media.
 
 Controlled comparison against `918a6d9`: five new Node cases fail (four startup inputs plus initialization-error classification), and the strengthened Chromium fixture times out waiting for the first Toggle acknowledgment. After the change, 181 Node tests, two Python tests, syntax/JSON/manifests and Chromium 156.0.8078.4 integration pass. Chromium now requires Play to load media/track identity, while retaining disabled-control startup, nine launch inputs, 18 follow-up Previous/Next inputs, stale-monitor cancellation, protocol blocking and receiver replacement. This establishes a corrected model/code path, not confirmed resolution of the maintainer's signed-in Windows behavior.
 
+Development packages from clean code commit `f909efcc2d42` use build ID `1.1.3-dev+gf909efcc2d42.local20261028174813965` under `dist/development/`, with `dirty: false`. Official Stream Deck validation and both package checksums pass; the Chrome archive contains the corrected source. The plugin runtime bundle is byte-identical to the preceding `7e0f61ba651f` candidate, so users already running that plugin can update just the extension for this change. Existing build artifacts remain separate and unchanged.
+
 ## Protocol compatibility
 
 The [protocol contract](../protocol.md) passed shared-engine, real HTTP bridge, SDK inspector and worker fixtures:
