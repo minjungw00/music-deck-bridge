@@ -2,7 +2,7 @@
 // Classic MV3 composition root. The modules expose factories without starting work on import.
 if (typeof importScripts === 'function') importScripts('protocol.js',
   'background/bridge-client.js', 'background/browser-channel.js',
-  'background/page-controls.js', 'background/management-service.js',
+  'background/player-playback.js', 'background/page-controls.js', 'background/management-service.js',
   'background/player-sync-service.js', 'background/message-router.js');
 
 const bridgeClient = MusicDeckBridgeClient.create({ chrome, protocol: MusicDeckProtocol,

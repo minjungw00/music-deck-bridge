@@ -22,7 +22,7 @@ def stage(component, output):
     folders = [] if component == "chrome" else ["imgs"]
     files += (["background.js", "protocol.js",
                "background/bridge-client.js", "background/browser-channel.js",
-               "background/page-controls.js", "background/message-router.js",
+               "background/player-playback.js", "background/page-controls.js", "background/message-router.js",
                "background/management-service.js", "background/player-sync-service.js",
                "content/metadata.js", "content/commands.js", "content/runtime.js", "content.js", "popup.html", "popup.js",
                "icons/16.png", "icons/48.png", "icons/128.png",
