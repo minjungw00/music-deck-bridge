@@ -24,7 +24,7 @@ These short-field suggestions and the permission explanations below are preparat
 | Permission / host | User-facing reason |
 | --- | --- |
 | storage | Save the local pairing token and bridge port. Content scripts cannot read this storage. |
-| scripting | Restore the player connection after extension updates/startup and use the player's own volume/mute controls. |
+| scripting | Restore scripts after extension updates/startup, read player state, and execute and confirm playback, track-navigation and volume/mute controls in the page. |
 | alarms | Periodically restore player scripts and the browser command connection. |
 | https://music.youtube.com/* | Read current-track/rating information, locate its tabs and operate playback and rating controls on YouTube Music. |
 | http://127.0.0.1/* | Connect to the companion plugin on the same computer using its configurable port. |

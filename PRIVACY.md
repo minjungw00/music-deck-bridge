@@ -1,6 +1,6 @@
 # Privacy
 
-Effective date: October 18, 2026.
+Effective date for this source revision: October 29, 2026 (Asia/Seoul). Published packages retain the policy included with their own revision.
 
 Music Deck Bridge connects the YouTube Music web player in Chrome to a Stream Deck plugin on the same computer. It has no project-operated server, analytics, advertising or telemetry. It does not read Google passwords, account tokens, payment information or browser history. Normal YouTube Music and Chrome network activity is governed by their providers' policies.
 
@@ -15,9 +15,10 @@ Music Deck Bridge connects the YouTube Music web player in Chrome to a Stream De
 | Local bridge port | Connect the two components | Plugin `config.json` and extension `chrome.storage.local` (`bridgePort`); retained until changed or deleted |
 | Plugin/extension application versions, supported protocol ranges and compatibility result | Decide whether local communication is supported and identify required updates | Exchanged over loopback and held in plugin/extension-worker memory; cleared on process/worker restart or pairing reset |
 | Artwork bytes and download errors | Show artwork and connection diagnostics | Plugin memory cache; cleared on plugin exit |
-| Queued playback/rating commands | Deliver button and dial input; bind ratings to the intended current track | Plugin memory; consumed on delivery or discarded after five seconds |
+| Legacy per-tab playback/rating commands | Deliver input to older peers; bind ratings to the intended current track | Plugin memory; consumed on delivery or discarded after five seconds |
 | Last command failure code | Explain pairing, delivery or player readiness failures | Plugin memory until successful execution, pairing reset or process exit; bounded codes are also written to the SDK log |
 | Browser launch/playback request and acknowledgment | Open or focus YouTube Music, including when no player tab exists | Plugin memory; ordered inputs expire after 45 seconds or clear on completion/pairing reset; repeated Open requests coalesce |
+| Development playback diagnostics, when included | Distinguish dispatched controls, player readiness, site/media errors and user-activation conditions | Latest bounded failure in extension-worker memory and a Chrome console warning; memory record clears on worker restart and survives later successful commands |
 
 On Windows, pairing credentials (`auth.json`, containing the token and extension origin) and bridge port configuration (`config.json`) are stored under `%APPDATA%\MusicDeckBridge\`. The installed plugin program and resources are stored separately under `%APPDATA%\Elgato\StreamDeck\Plugins\io.github.minjungw00.musicdeckbridge.sdPlugin\`.
 
@@ -25,7 +26,7 @@ Chrome manages the extension's local storage inside the active browser profile; 
 
 ## Network activity
 
-The extension reads the page player's playback/mute state through a fixed function in the top-level page context, with media-element state as fallback; only those scalar states are added to metadata sync. It reports closed tab IDs and the current music-tab IDs to remove stale players, without retaining a browsing history.
+The extension reads the page player's playback/mute state through a fixed function in the top-level page context, with media-element state as fallback; only those scalar states are added to metadata sync. Playback control also observes the current track/queue position and media readiness in page memory to confirm requested actions and constrain recovery. Track identifiers used for this comparison are not included in failure diagnostics. The extension reports closed tab IDs and the current music-tab IDs to remove stale players, without retaining a browsing history.
 
 The extension sends player state and authenticated commands to `http://127.0.0.1:<port>` (default `17864`). The bridge listens on the IPv4 loopback interface and accepts Chrome extension origins, with token and paired-origin checks after pairing.
 
@@ -37,10 +38,12 @@ The plugin fetches album artwork over HTTPS from `i.ytimg.com`, `img.youtube.com
 
 No listening data is sent to the project maintainer or sold. Diagnostic logs may contain connection details, artwork URLs or errors; review logs before sharing them. The project does not define a retention policy for logs maintained by Stream Deck or Chrome.
 
+The development playback record contains fixed action/source/phase names, bounded player/media codes, exception names, readiness and user-activation flags, and a retry count. It excludes account/track identifiers, titles, URLs, PINs/tokens and raw exception messages/stacks. It is not automatically sent to the maintainer; sharing a copied record is a user action. See [diagnostic instructions](docs/troubleshooting.md#development-playback-diagnostics--개발-빌드-재생-진단).
+
 ## Permissions
 
 - `storage`: save the pairing token and port locally.
-- `scripting`: restore the content script after updates/startup and operate YouTube Music's volume/mute controls in the page's JavaScript environment. Pairing tokens remain in the extension service worker.
+- `scripting`: restore content scripts after updates/startup, read playback state, and operate and confirm playback/navigation/volume/mute controls in the page's JavaScript environment. Pairing tokens remain in the extension service worker.
 - `alarms`: periodically restore player scripts and the browser command connection.
 - `https://music.youtube.com/*`: read player metadata/rating state, locate its tabs and operate playback/rating controls on that site.
 - `http://127.0.0.1/*`: connect to the configurable local bridge port.

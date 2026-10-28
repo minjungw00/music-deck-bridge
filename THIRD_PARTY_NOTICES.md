@@ -78,7 +78,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-## @elgato/streamdeck 3.0.2 — MIT
+## @elgato/streamdeck 3.0.3 — MIT
 
 Bundled into the Stream Deck runtime by esbuild. Source: [Elgato SDK](https://github.com/elgatosf/streamdeck).
 
@@ -106,7 +106,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## @elgato/utils 0.6.1 — MIT
+## @elgato/utils 0.6.1 and @elgato/schemas 0.5.3 — MIT
 
 Bundled into the Stream Deck runtime by esbuild. Source: [Elgato SDK](https://github.com/elgatosf/streamdeck).
 
@@ -114,6 +114,35 @@ Bundled into the Stream Deck runtime by esbuild. Source: [Elgato SDK](https://gi
 MIT License
 
 Copyright (c) Corsair Memory Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+## Zod 4.6.7 — MIT
+
+Bundled through the scoped `@elgato/utils` override; the runtime uses the `zod/v4-mini` API.
+Source: [Zod](https://github.com/colinhacks/zod). The following notice is retained from the installed package.
+
+```text
+MIT License
+
+Copyright (c) 2025 Colin McDonnell
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
