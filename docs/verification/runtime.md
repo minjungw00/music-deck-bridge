@@ -95,6 +95,8 @@ The new instrumentation retains bounded failure phase/source, numeric site/media
 
 Validation: syntax/JSON/manifests, 185 Node tests, two Python tests and Chromium 156.0.8078.4 integration pass. Chromium injects a TypeError into the local model's Play button to verify the full MAIN/content/worker diagnostic path and removal of raw error text. That injected error is not a reproduction of the maintainer's site error. Diagnostic collection steps are in the [troubleshooting guide](../troubleshooting.md#development-playback-diagnostics--개발-빌드-재생-진단).
 
+Diagnostic artifacts from clean commit `58f33e4f8266` use build ID `1.1.3-dev+g58f33e4f8266.local20261028183058944` in `dist/development/`, with `dirty: false`. Packaging and checksum verification pass; both modified extension modules match the packaged source, and the plugin runtime matches the preceding candidate byte for byte. Only the extension needs updating to collect this diagnostic. This build adds observation rather than a claimed repair.
+
 ## Protocol compatibility
 
 The [protocol contract](../protocol.md) passed shared-engine, real HTTP bridge, SDK inspector and worker fixtures:
