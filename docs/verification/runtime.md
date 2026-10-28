@@ -71,6 +71,8 @@ Controlled comparison against `27dcf2c`: four new playback regressions and two c
 
 Final local checks pass: syntax/JSON/manifests, 176 Node tests, two Python tests and Chromium 156.0.8078.4 integration. In Chromium's modeled stalled/no-seek Previous cases, subsequent Pause was observed after 34/33 ms, older monitors did not resume playback, and Next then succeeded. Existing cold-start, nine launch-button/18 follow-up input cases, protocol blocking and receiver-replacement coverage also pass. This measures the local model, not signed-in YouTube Music or Windows/device latency; resolution of the maintainer's actual reports remains unconfirmed.
 
+The follow-up Chrome and officially validated Stream Deck packages were built from clean code commit `7e0f61ba651f`, with build ID `1.1.3-dev+g7e0f61ba651f.local20261028163626482` under `dist/development/` and `dirty: false`. Both checksums, all five changed extension modules and the plugin bundle match their built sources. These new development artifacts are separate from the preceding candidate; neither is an official release or evidence of Windows installation.
+
 ## Protocol compatibility
 
 The [protocol contract](../protocol.md) passed shared-engine, real HTTP bridge, SDK inspector and worker fixtures:
