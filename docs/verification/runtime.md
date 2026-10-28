@@ -73,6 +73,16 @@ Final local checks pass: syntax/JSON/manifests, 176 Node tests, two Python tests
 
 The follow-up Chrome and officially validated Stream Deck packages were built from clean code commit `7e0f61ba651f`, with build ID `1.1.3-dev+g7e0f61ba651f.local20261028163626482` under `dist/development/` and `dirty: false`. Both checksums, all five changed extension modules and the plugin bundle match their built sources. These new development artifacts are separate from the preceding candidate; neither is an official release or evidence of Windows installation.
 
+### Cold-start readiness follow-up
+
+The maintainer subsequently reported that automatic cold startup only opened a window, produced no requested action and ended with `playback-unconfirmed`; clicking Play directly in YouTube Music did start music. This leaves the preceding candidate's actual-environment behavior unresolved despite its passing model tests.
+
+The previous fixture made media and track identity available automatically after 500 ms. It did not cover a usable Play control whose media/identity become available only after Play. Code inspection found that both Play and navigation initialization waited for loaded media/identity before requesting playback, creating a circular wait in that condition. The [YouTube embed API documents cued media that is not requested until Play](https://developers.google.com/youtube/iframe_api_reference#cueVideoById), supporting a separate start-capability check; this is not evidence of the maintainer's private YouTube Music state.
+
+The startup check now distinguishes usable controls/API state from loaded media. A usable Play control can start cued/restored playback before media/track metadata is available. Previous/Next then wait for actual readiness before navigating. Disabled controls and explicit unplayable responses remain guarded. Initialization expiry reports `player-not-ready` separately from a dispatched control's unconfirmed outcome. The [troubleshooting guide](../troubleshooting.md#command-warnings--버튼-경고) now identifies the actual error-message location rather than suggesting a separate settings item.
+
+Controlled comparison against `918a6d9`: five new Node cases fail (four startup inputs plus initialization-error classification), and the strengthened Chromium fixture times out waiting for the first Toggle acknowledgment. After the change, 181 Node tests, two Python tests, syntax/JSON/manifests and Chromium 156.0.8078.4 integration pass. Chromium now requires Play to load media/track identity, while retaining disabled-control startup, nine launch inputs, 18 follow-up Previous/Next inputs, stale-monitor cancellation, protocol blocking and receiver replacement. This establishes a corrected model/code path, not confirmed resolution of the maintainer's signed-in Windows behavior.
+
 ## Protocol compatibility
 
 The [protocol contract](../protocol.md) passed shared-engine, real HTTP bridge, SDK inspector and worker fixtures:

@@ -55,9 +55,9 @@ Update the plugin or extension named in an incompatibility message. Existing cre
 
 ## Command warnings / 버튼 경고
 
-When a control shows the warning triangle, open its Stream Deck action settings and read the last-command explanation. Successful browser input clears that explanation.
+When a control shows the warning triangle, select that action in the Stream Deck app. In its lower settings panel, look in **Chrome connection**, below the PIN button and connection/version lines, for the failure explanation ending in `(error-code)`. There is no separate “last command error” setting. Successful browser input clears the explanation.
 
-버튼에 노란 삼각형이 표시되면 해당 액션 설정에서 마지막 명령의 오류 안내를 확인하세요. 이후 명령이 성공하면 안내가 지워집니다.
+버튼에 노란 삼각형이 표시되면 Stream Deck 앱에서 해당 버튼을 선택하세요. 하단 설정 패널의 **Chrome 연결** 영역에서 PIN 발급 버튼 및 연결 상태·버전 표시 아래에 있는 `(오류 코드)`로 끝나는 실패 안내를 확인하세요. ‘마지막 명령 오류’라는 별도 설정 항목은 없습니다. 이후 명령이 성공하면 안내가 지워집니다.
 
 | Code | English | 한국어 |
 | --- | --- | --- |

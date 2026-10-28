@@ -15,9 +15,9 @@ const fixture = `<!doctype html><html><body>
 <ytmusic-player-bar>
  <span class="title">Fixture song</span><span class="byline">Fixture artist</span>
  <audio></audio><div id="movie_player"></div>
- <button class="play-pause-button" onclick="control('toggle')">Play</button>
- <button class="previous-button" onclick="control('prev')">Previous</button>
- <button class="next-button" onclick="control('next')">Next</button>
+ <button class="play-pause-button" disabled onclick="control('toggle')">Play</button>
+ <button class="previous-button" disabled onclick="control('prev')">Previous</button>
+ <button class="next-button" disabled onclick="control('next')">Next</button>
  <button class="volume" onclick="muted=!muted;record('mute')">Mute</button>
  <div id="volume-slider" style="width:100px;height:20px" aria-valuenow="50"></div>
  <ytmusic-like-button-renderer like-status="INDIFFERENT">
@@ -42,15 +42,17 @@ function control(type){
  record(type);
 }
 Object.defineProperties(document.querySelector('audio'), {
- paused:{get:()=>true}, ended:{get:()=>false}, readyState:{get:()=>ready?4:0}, duration:{get:()=>180},
- currentSrc:{get:()=>tracks[index]}
+ paused:{get:()=>true}, ended:{get:()=>false}, readyState:{get:()=>ready&&initialized?4:0}, duration:{get:()=>180},
+ currentSrc:{get:()=>initialized?tracks[index]:''}
 });
 const api=document.querySelector('#movie_player');
-api.isReady=()=>ready;api.getPlayerState=()=>playing?1:2;api.getVideoData=()=>({video_id:tracks[index]});
+api.isReady=()=>ready;api.getPlayerState=()=>!initialized?5:playing?1:2;
+api.getVideoData=()=>({video_id:initialized?tracks[index]:''});
 api.getCurrentTime=()=>time;
 api.playVideo=()=>{if(!ready){record('early');return;}playing=true;initialized=true;record('playRequest');};
 api.isMuted=()=>muted;
-setTimeout(()=>{ready=true;},500);
+// Usable controls precede loaded media/track identity. Only Play initializes it.
+setTimeout(()=>{ready=true;for(const button of document.querySelectorAll('button[disabled]'))button.disabled=false;},500);
 const slider=document.querySelector('#volume-slider');slider.value=50;
 slider.addEventListener('change',()=>{slider.setAttribute('aria-valuenow',slider.value);record('volume_delta');});
 </script></body></html>`;
@@ -257,5 +259,5 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   assert.equal(compatibility.token, token);
   assert.equal(compatibility.recovered.compatible, true);
   assert.equal(await music.evaluate(() => document.body.dataset.next), '1', 'incompatible input had no page effect');
-  t.diagnostic(`Chromium ${browser.browser().version()}; cold-tab and post-launch controls, stalled/no-seek Previous followed by responsive Pause/Next, stale-monitor cancellation, playback confirmation and receiver recovery passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
+  t.diagnostic(`Chromium ${browser.browser().version()}; Play-gated media/track initialization, cold-tab and post-launch controls, stalled/no-seek Previous followed by responsive Pause/Next, stale-monitor cancellation and receiver recovery passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
 });

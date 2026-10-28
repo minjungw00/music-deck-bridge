@@ -21,16 +21,16 @@
       const all = [...document.querySelectorAll('video, audio')];
       const media = all.find(item => item.readyState > 0 && !item.paused) ||
         all.find(item => item.readyState > 0 && Number.isFinite(item.duration)) || all[0];
-      let state, videoId = '', ready = false, muted, time;
+      let state, videoId = '', ready = false, apiReady = false, playable = true, muted, time;
       try {
         state = api?.getPlayerState();
         videoId = api?.getVideoData?.()?.video_id || '';
         muted = api?.isMuted?.();
         time = api?.getCurrentTime?.();
-        ready = api ? (typeof api.isReady !== 'function' || api.isReady()) &&
-          Number.isFinite(state) && Boolean(videoId || media?.readyState > 0) : media?.readyState > 0;
+        apiReady = Boolean(api && (typeof api.isReady !== 'function' || api.isReady()) && Number.isFinite(state));
+        ready = api ? apiReady && Boolean(videoId || media?.readyState > 0) : media?.readyState > 0;
         const status = api?.getPlayerResponse?.()?.playabilityStatus?.status;
-        if (status && status !== 'OK') ready = false;
+        if (status && status !== 'OK') { playable = false; ready = false; }
       } catch { ready = false; }
       let index;
       try {
@@ -39,7 +39,7 @@
       } catch { ready = false; }
       const playing = Number.isFinite(state) ? state === 1 || state === 3 :
         Boolean(media && !media.paused && !media.ended);
-      return { api, media, ready, playing, state, index,
+      return { api, media, ready, apiReady, playable, playing, state, index,
         muted: typeof muted === 'boolean' ? muted : Boolean(media?.muted),
         key: videoId || media?.currentSrc || media?.src || '',
         time: Number.isFinite(time) ? time : media?.currentTime || 0 };
@@ -59,12 +59,18 @@
       state.playing && state.media?.readyState >= 2;
     const usable = button => button && !button.disabled && button.getAttribute('aria-disabled') !== 'true' &&
       !button.closest?.('[disabled], [aria-disabled="true"]');
+    const playButton = () => document.querySelector('ytmusic-player-bar .play-pause-button');
+    // A cued/restored player can expose a usable Play control before any media
+    // or track ID is loaded. Starting it must not depend on that loaded media.
+    const canStart = state => state.playable && usable(playButton()) &&
+      (state.apiReady || state.state === -1 || state.state === 5 || (!state.api && state.media?.readyState === 0));
     const wait = () => new Promise(resolve => setTimeout(resolve, 80));
     let blocked = false, playerError = false, seeked = false, source, seekMedia;
     const onBlocked = () => { blocked = true; };
     const onError = () => { playerError = true; };
     const onSeeked = () => { seeked = true; };
     const requestPlay = async state => {
+      if (!state.ready && canStart(state)) { playButton().click(); return true; }
       if (typeof state.api?.playVideo === 'function') {
         // Observe playback itself; a site's returned promise need not settle
         // when media starts, and must not hold the dispatch queue indefinitely.
@@ -74,7 +80,7 @@
         });
         return true;
       }
-      const button = document.querySelector('ytmusic-player-bar .play-pause-button');
+      const button = playButton();
       if (!usable(button)) return false;
       button.click(); return true;
     };
@@ -84,14 +90,15 @@
       let before = read();
       if (error(before)) return { result: failure(error(before)) };
       if (Date.now() >= deadline) return { result: failure('command-timeout') };
-      if (!before.ready && !dispatchOnly) return { result: { ok: false, retry: true } };
+      if (!before.ready && !dispatchOnly && !canStart(before)) return { result: { ok: false, retry: true } };
       // Only initialization occupies the dispatch queue, never outcome polling.
       // A later play/pause input cancels this wait on its next bounded tick.
       let primed = false;
       while (!before.ready || (navigation && !started(before))) {
         if (error(before)) return { result: failure(error(before)) };
-        if (Date.now() >= deadline) return { result: failure('playback-unconfirmed') };
-        if (before.ready && navigation && !before.playing && !primed) {
+        if (Date.now() >= deadline) return { result: failure('player-not-ready') };
+        if (!navigation && canStart(before)) break;
+        if ((before.ready || canStart(before)) && navigation && !before.playing && !primed) {
           source = before;
           source.api?.addEventListener?.('onAutoplayBlocked', onBlocked);
           source.api?.addEventListener?.('onError', onError);

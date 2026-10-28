@@ -4,9 +4,12 @@ import { playerHarness } from './helpers/player.mjs';
 
 function harness({ ready = true, blocked = false, error = false, noEffect = false,
   restart = false, playBlocked = false, playNoEffect = false, initialState = 2,
-  cueOnNavigation = false, ignoreUntilPlaying = false, seekEvent = true, ignoredTypes = [], playPromise } = {}) {
+  cueOnNavigation = false, ignoreUntilPlaying = false, seekEvent = true, ignoredTypes = [], playPromise,
+  unloadedUntilPlay = false } = {}) {
   const player = playerHarness();
   let state = initialState, track = 'aaaaaaaaaaa', clicks = 0, time = 0, plays = 0, ignored = 0;
+  let initialized = !unloadedUntilPlay;
+  if (unloadedUntilPlay) { player.audio.readyState = 0; player.audio.currentSrc = ''; player.audio.paused = true; }
   const listeners = new Map();
   const mediaListeners = new Map();
   const add = (map, name, fn) => { if (!map.has(name)) map.set(name, new Set()); map.get(name).add(fn); };
@@ -17,7 +20,7 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
   const api = {
     isReady: () => ready,
     getPlayerState: () => state,
-    getVideoData: () => ({ video_id: track }),
+    getVideoData: () => ({ video_id: initialized ? track : '' }),
     getCurrentTime: () => time,
     playVideo() {
       plays++;
@@ -37,7 +40,10 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
       if (noEffect) return;
       if (ignoredTypes.includes(type)) return;
       if (type !== 'toggle' && ignoreUntilPlaying && state !== 1) { ignored++; return; }
-      if (type === 'toggle') state = state === 1 || state === 3 ? 2 : 1;
+      if (type === 'toggle') {
+        state = state === 1 || state === 3 ? 2 : 1;
+        initialized = true; player.audio.readyState = 4; player.audio.currentSrc = track;
+      }
       else if (type === 'prev' && (restart || time > 5)) {
         time = 0;
         if (seekEvent) emit(mediaListeners, 'seeked');
@@ -58,6 +64,26 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
     send: (command, expiresAt, dispatchOnly = false) => player.send({ type: 'player-playback', command, expiresAt, dispatchOnly }),
     result: pending => player.send({ type: 'player-playback-result', pending }) };
 }
+
+for (const type of ['play', 'toggle', 'prev', 'next']) {
+  test(`${type} bootstraps media that cannot load until the first Play input`, async () => {
+    const h = harness({ unloadedUntilPlay: true, initialState: 5, ignoreUntilPlaying: true });
+    const pending = await h.send(type, Date.now() + 250, true);
+    const result = await h.result(pending.pending);
+    assert.equal(result.ok, true, `${type} must not wait for media that only Play can load`);
+    assert.equal(h.state(), 1);
+    assert.equal(h.clicks(), type === 'play' || type === 'toggle' ? 1 : 2);
+    assert.equal(h.ignored(), 0);
+  });
+}
+
+test('an initialization timeout is distinguished from an unconfirmed dispatched input', async () => {
+  const h = harness({ ready: false });
+  const pending = await h.send('play', Date.now() + 60, true);
+  const result = await h.result(pending.pending);
+  assert.equal(result.reason, 'player-not-ready');
+  assert.equal(h.clicks(), 0);
+});
 
 async function until(check) {
   const deadline = Date.now() + 1000;

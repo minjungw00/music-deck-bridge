@@ -97,6 +97,8 @@ Within a tab, the content runtime deduplicates request IDs and obtains a documen
 
 The document serializes preparation/clicks, then verifies outcomes independently. A later Play/Pause can interrupt undispatched navigation initialization. Once a newer playback control is dispatched, older verification stops and cannot issue a late Play request. Previous/Next playback recovery does not depend on receiving a seek event, but navigation success still requires observed track/index/restart evidence. The wire protocol remains 1; use both updated components for concurrent delivery.
 
+A usable Play control can precede loaded media or a track ID in a cued/restored player. Play/Toggle may start that player directly; Previous/Next first start it through the site's Play control, then wait for actual readiness before navigating. Disabled controls and explicit unplayable responses still block startup. Initialization expiry reports `player-not-ready`; a dispatched control whose outcome is not observed reports `playback-unconfirmed`.
+
 ### Extension credentials and page access
 
 The content script reads player DOM/Media Session metadata and current-song rating state and exchanges messages with the service worker, which adds the token to loopback requests. The service worker restricts local storage to `TRUSTED_CONTEXTS` on every start and waits for that restriction before reading tokens or making authenticated requests. The content script does not receive the bearer token.
