@@ -113,6 +113,8 @@ The correction sends one explicit API Play for Play/Toggle when a ready player i
 
 API-startup validation passes: syntax/JSON/manifests, 198 Node tests, two Python packaging tests and Chromium 156.0.8078.4 MV3 integration. Chromium additionally opens a restored-ID/no-media tab through Play/Pause and Current Track, confirms one API request without a synthetic toggle, then confirms a subsequent Pause uses the site control. The existing missing-selection, navigation/recovery and diagnostic cases also pass. Maintainer confirmation applies to the manual Console API call; extension-driven signed-in Windows startup still needs separate evidence.
 
+API-startup artifacts from clean commit `fd2d4d962b04` use build ID `1.1.3-dev+gfd2d4d962b04.local20261028191228513` under `dist/development/`, with `dirty: false`. Official Stream Deck packaging and all checksums pass; the archived startup source matches the commit. The plugin runtime matches the preceding candidate byte for byte, so this revision requires only an extension update. Earlier artifacts remain unchanged.
+
 ## Protocol compatibility
 
 The [protocol contract](../protocol.md) passed shared-engine, real HTTP bridge, SDK inspector and worker fixtures:
