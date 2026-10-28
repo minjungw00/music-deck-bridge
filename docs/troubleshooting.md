@@ -70,6 +70,10 @@ When a control shows the warning triangle, select that action in the Stream Deck
 | `player-error` | Resolve the reported player/media error in YouTube Music. | YouTube Music에서 플레이어·미디어 오류를 확인하세요. |
 | `autoplay-blocked` | Start playback in the YouTube Music window, then retry. | YouTube Music 창에서 직접 재생한 뒤 재시도하세요. |
 
+For Previous, compare track identity and playback position separately. The site's control may restart the current song rather than select another one. At the beginning of a restored selection, an unchanged song/position can provide no observable transition; `playback-unconfirmed` then does not establish a dropped input or stopped playback. Compare the site's own control before changing delivery behavior; a first queue position alone does not prove the absence of playable history or rule out looping.
+
+이전 곡은 곡 변경과 현재 곡 재시작을 구분해서 확인하세요. 사이트의 이전 곡 버튼이 다른 곡으로 이동하지 않고 현재 곡 처음으로 돌아갈 수 있습니다. 복원된 곡의 시작 지점에서는 곡·위치가 그대로여서 동작을 관찰하지 못할 수 있으며, 이때 `playback-unconfirmed`만으로 입력 누락이나 재생 중단을 단정할 수 없습니다. 사이트 버튼의 동작도 비교하세요. 재생목록의 첫 위치라는 사실만으로 재생 가능한 이전 기록이 없거나 반복 재생이 꺼졌다고 확정하지는 않습니다.
+
 ### Development playback diagnostics / 개발 빌드 재생 진단
 
 Development builds with this instrumentation retain the most recent playback failure in the extension worker's memory. Reproduce after opening the inspector so the worker remains available; a worker restart clears it. A successful later command does not clear this diagnostic record.

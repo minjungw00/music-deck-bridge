@@ -6,6 +6,8 @@ Current development target: **1.1.3-dev**, with [dependency security updates](ve
 
 The maintainer confirmed operation after the destination-playback fix and requested refactoring. This confirmation covers the reported startup/destination follow-up within its stated scope. The current refactor preserves those playback policies and keeps the development target fixed; its local verification is separate from the maintainer's pre-refactor confirmation. See the [destination record](verification/runtime.md#navigation-destination-playback) and [refactor record](verification/runtime.md#playback-refactor).
 
+A later first-Previous report has healthy playing state and no observed transition. The maintainer confirms the site control behaves similarly and later restarts the same song; queue/history absence remains an interpretation. See the [restored-selection boundary record](verification/runtime.md#previous-at-the-beginning-of-a-restored-selection). This does not rewrite the earlier playback confirmation or establish a refactor regression.
+
 ## Distribution status
 
 | Channel | Reported version | State and evidence |

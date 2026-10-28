@@ -497,6 +497,24 @@ test('ambiguous same-track Previous does not arm destination retries or invent n
   assert.equal(result.diagnostic.startupAttempts, 0);
 });
 
+test('Previous at the first item can be unconfirmed at zero and confirm a later same-track restart', async () => {
+  const h = harness({ initialState: 1, restart: true, seekEvent: false });
+  h.player.setQueue({ getItems: () => ['current'], getCurrentItemIndex: () => 0 });
+  const result = await h.send('prev', Date.now() + 180);
+  assert.equal(result.reason, 'playback-unconfirmed');
+  assert.equal(result.diagnostic.state, 1);
+  assert.equal(result.diagnostic.mediaReady, 4);
+  assert.equal(result.diagnostic.inputAction, 'navigate-button');
+  assert.equal(result.diagnostic.startupAttempts, 0);
+  assert.equal(h.clicks(), 1, 'an ambiguous first-item input must not be replayed');
+  assert.equal(h.plays(), 0, 'already-playing media does not need playback recovery');
+  h.time(6);
+  assert.equal((await h.send('prev', Date.now() + 500)).ok, true);
+  assert.equal(h.clicks(), 2);
+  assert.equal(h.plays(), 0);
+  assert.equal(h.state(), 1);
+});
+
 test('previous confirms a same-track restart within the first five seconds, including zero', async () => {
   for (const time of [0, 2, 5]) {
     const h = harness({ restart: true });

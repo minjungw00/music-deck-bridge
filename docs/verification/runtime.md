@@ -159,6 +159,16 @@ Final refactor verification passes: syntax/JSON/manifests, all 217 Node tests, t
 
 Refactor artifacts from clean commit `cbd17925ad7d` use build ID `1.1.3-dev+gcbd17925ad7d.local20261028210702553` under `dist/development/`, with `dirty: false`. Official Stream Deck packaging and all checksums pass; the archived entry point and every imported worker module match source, including `player-playback.js`. The plugin runtime is byte-identical to the preceding destination candidate, so only the extension changes. Previous supplied artifacts remain intact.
 
+### Previous at the beginning of a restored selection
+
+After the refactor was supplied, the maintainer reports that the first Previous input after opening Music has no visible effect, while later inputs work, and asks whether an earlier item is absent. The real diagnostic is `playback-unconfirmed` after a `navigate-button` input, with both input/final states playing (1), media readiness 4, a ready movie-player API and track present, no error/exception and `startupAttempts: 0`. This shows healthy ongoing playback without observed navigation/restart; it is distinct from the earlier UNSTARTED destination failure.
+
+In the controlled site-button comparison, the maintainer reports the browser behaves the same way: after more than five seconds, Previous returns the same song to its beginning rather than changing its title. This supports a restored-selection boundary/current-song-restart interpretation, rather than establishing a plugin-only dropped input. Exact queue/history contents, loop state and input-time position were not captured, so absence of an accessible previous item is a supported interpretation, not a measured queue fact. The [IFrame API reference](https://developers.google.com/youtube/iframe_api_reference#Playing_a_video_in_a_playlist) also documents restarting the first item for non-looping Previous; that is reference context, not a contract for Music's private control.
+
+Code inspection explains the warning: at zero, a same-track restart with no seek event supplies no observable transition, so strict confirmation remains unconfirmed even while music plays. A focused fixture models a one-item queue at zero without a seek event, then the same control at six seconds. It matches the reported healthy-playing/unconfirmed diagnostic first and confirms the later restart, with one click per input and no playback-recovery requests. It does not reproduce Music's underlying queue state. Runtime delivery/retry behavior is unchanged; the fixture and troubleshooting guide preserve the distinction without inventing a successful transition or adding a second Previous click.
+
+Validation for this review: all three targeted first-item/same-track Previous fixtures pass, and `git diff --check` is clean. No full-suite or new-package result is claimed for this test/documentation-only revision.
+
 ## Protocol compatibility
 
 The [protocol contract](../protocol.md) passed shared-engine, real HTTP bridge, SDK inspector and worker fixtures:
