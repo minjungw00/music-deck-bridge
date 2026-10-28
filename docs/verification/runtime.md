@@ -1,6 +1,6 @@
 # Runtime verification
 
-Automated evidence: October 18, 2026 (Asia/Seoul). Maintainer confirmations extend through October 24. Final source/CI and package identities are in [release verification](releases.md).
+Automated evidence through October 29, 2026 (Asia/Seoul), including the 1.1.3 development review below. Maintainer confirmations extend through October 24 for 1.1.2. Published source/CI and package identities are in [release verification](releases.md).
 
 | Evidence type | Scope |
 | --- | --- |
@@ -23,6 +23,22 @@ Automated evidence: October 18, 2026 (Asia/Seoul). Maintainer confirmations exte
 Chromium uses a disposable profile and local HTTPS player model. These runs do not establish signed-in YouTube Music behavior, Windows native startup, physical-device output, installation or Maker Console DRM. Qt reference rendering is distinct from the host's exact renderer. Popup message mocks do not measure real network-race frequency; opaque manifests do not verify DRM.
 
 The first Node attempt during the preceding investigation was blocked by sandbox listener restrictions; the reported integration runs allowed loopback listeners. Chromium and a missing ALSA library were supplied from temporary directories without changing system packages. Maintainer confirmations below are separate evidence.
+
+## 1.1.3 dependency review
+
+Checked October 29, 2026 (Asia/Seoul), at `1.1.3-dev` on Linux with Node.js 24.19.0 and npm 11.17.0. Chrome numeric version is `1.1.3`, Stream Deck version is `1.1.3.0`; protocol remains 1. This is development evidence, separate from released 1.1.2 operation.
+
+Both Dependabot patch updates were adopted: SDK 3.0.2 → 3.0.3 and CLI 1.10.2 → 1.10.3. Their shared schemas package becomes 0.5.3. The [upstream change](https://github.com/elgatosf/streamdeck/commit/6a57d80bae1a77313481d52d1447c82037297e74) adds Node.js 26 manifest support and retains Node.js 24; this project keeps its existing engine and manifest runtime.
+
+Registry metadata still identifies utils 0.6.1, requiring `zod: ^3.25.24`, as current. Installing only the two Elgato updates leaves the [Zod advisory](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5). A root override limited to `@elgato/utils@0.6.1` selects Zod 4.6.7, outside that declared range. utils already imports `zod/v4-mini`; the [Zod subpath policy](https://zod.dev/v4/versioning) preserves it across package majors. The [4.6.6 → 4.6.7 comparison](https://github.com/colinhacks/zod/compare/v4.6.6...v4.6.7) contains version metadata changes only. Reassess/remove this override when utils officially supports a patched range.
+
+The same baseline audit also reports four URI parsing advisories for CLI → ajv 8.20.0 → fast-uri 3.1.8: [scheme decoding](https://github.com/advisories/GHSA-w74x-v6f9-j3xg), [path normalization](https://github.com/advisories/GHSA-xhq7-xmqj-769h), [host canonicalization](https://github.com/advisories/GHSA-wjr9-j795-jxcr) and [suffix scheme injection](https://github.com/advisories/GHSA-333x-w4r6-6crp). The lockfile now selects 3.1.9 within ajv's existing `^3.0.1` range; no additional override was needed.
+
+Controlled comparison: the bounded-array regression in `tests/dependency-validation.test.mjs` fails with Zod 3.25.76, producing three element errors before the size error, and passes with 4.6.7, producing only the size error. The input contains three elements; no memory-exhaustion attack was run. Nested Elgato option schemas accept valid options and reject malformed values on both versions.
+
+Final locked installation (`npm ci --ignore-scripts`) succeeds; `npm audit --json` reports zero vulnerabilities. Syntax/JSON/manifest checks, 156 Node tests (including the actual SDK bundle against local WebSocket fixtures with plain/opaque manifests), two Python packaging tests and the Chromium 156.0.8078.4 MV3 fixture pass. Chromium uses the existing temporary browser/ALSA directories and covers nine cold-tab inputs, delayed readiness, state sync and receiver replacement.
+
+`npm run build:dev` successfully creates the Chrome ZIP and officially validated Stream Deck package with CLI 1.10.3, plus build information and checksums. This local build records parent `df92eb103e06` and `dirty: true`; it is not an exact-commit or release artifact. These checks establish local automated compatibility, not signed-in YouTube Music, Windows host operation or actual Maker Console DRM. Windows CI, physical-device operation and a new official release remain unverified for this candidate.
 
 ## Protocol compatibility
 

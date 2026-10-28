@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.1.3-dev — unreleased
+
+- Update the Stream Deck SDK to 3.0.3 and CLI to 1.10.3 while retaining Node.js 24.
+- Scope a Zod 4.6.7 override to `@elgato/utils` 0.6.1 to address GHSA-mrhx-c7xc-m3w5; add option-schema compatibility and bounded-array rejection regressions.
+- Update the CLI's locked `fast-uri` dependency from 3.1.8 to 3.1.9 within its existing allowed range to address URI parsing advisories.
+
 ## v1.1.2 — 2026-10-18
 
 - Serialize extension pairing, unpairing, port changes and management reads through server responses and local persistence; failed operations allow subsequent requests to continue.
