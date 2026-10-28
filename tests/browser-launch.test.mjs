@@ -65,6 +65,7 @@ test('failed playback diagnostics whitelist fields and survive a later successfu
       apiReady: true, mediaReady: 0, hasTrack: true, playable: false,
       inputState: 5, inputMediaReady: 0, inputHasTrack: false, inputApiReady: 'DO_NOT_RETAIN',
       inputAction: 'play-api', inputApi: 'movie-player', inputUserActive: false, inputUserEverActive: 'DO_NOT_RETAIN',
+      startupAttempts: 2,
       exception: 'DO_NOT_RETAIN_EXCEPTION', title: 'DO_NOT_RETAIN_TITLE', url: 'DO_NOT_RETAIN_URL' } }) });
   assert.equal(await h.api.performBrowserCommand({ type: 'toggle' }), false);
   const failure = h.api.failure();
@@ -79,6 +80,7 @@ test('failed playback diagnostics whitelist fields and survive a later successfu
   assert.equal(failure.inputApi, 'movie-player');
   assert.equal(failure.inputUserActive, false);
   assert.equal(failure.inputUserEverActive, null);
+  assert.equal(failure.startupAttempts, 2);
   assert.equal(JSON.stringify(failure).includes('DO_NOT_RETAIN'), false);
   assert.equal(h.warnings.length, 1);
   ok = true;

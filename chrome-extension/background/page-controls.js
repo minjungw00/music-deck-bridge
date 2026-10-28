@@ -57,7 +57,7 @@
     const navigation = type === 'next' || type === 'prev';
     const expires = Number(expiresAt) || Infinity;
     let deadline = Math.min(expires, Date.now() + (dispatchOnly ? 30000 : 10000));
-    let phase = 'prepare', fault = null, input = null;
+    let phase = 'prepare', fault = null, input = null, startupRecovery = null, startupAttempts = 0;
     // Copy primitives before dispatch: a site error can clear the selected
     // track/media before the next observation. Never retain IDs or page text.
     const noteInput = state => { input = { state: state.state, apiReady: state.apiReady,
@@ -81,6 +81,7 @@
       inputHasTrack: input?.hasTrack ?? null,
       inputAction: input?.action ?? null, inputApi: input?.api ?? null,
       inputUserActive: input?.userActive ?? null, inputUserEverActive: input?.userEverActive ?? null,
+      startupAttempts,
     } });
     const superseded = () => control.latest > sequence || (navigation && control.interrupt > sequence);
     const started = state => Number.isFinite(state.state) ? state.state === 1 :
@@ -92,6 +93,8 @@
     // enabled button in UNSTARTED does not establish that a selection exists.
     const canStart = state => state.playable && state.queueReady && state.apiReady &&
       state.state === 5 && usable(playButton());
+    const canRecoverStartup = state => state.ready && state.state === -1 && !(state.media?.readyState > 0) &&
+      /^[\w-]{11}$/.test(state.key) && typeof state.api?.playVideo === 'function';
     const wait = () => new Promise(resolve => setTimeout(resolve, 80));
     let blocked = false, playerError = false, seeked = false, source, seekMedia;
     const onBlocked = () => { blocked = true; };
@@ -100,11 +103,15 @@
       fault = faultInfo('site-event', typeof event === 'number' ? event : event?.data);
     };
     const onSeeked = () => { seeked = true; };
-    const requestPlay = async state => {
+    const requestPlay = async (state, initializing = false) => {
       if (!state.ready && canStart(state)) {
         phase = 'play-button'; noteInput(state); playButton().click(); return true;
       }
       if (typeof state.api?.playVideo === 'function') {
+        if (initializing && canRecoverStartup(state)) {
+          startupRecovery = { api: state.api, key: state.key, index: state.index, nextAt: Date.now() + 1000 };
+          startupAttempts = 1;
+        }
         // Observe playback itself; a site's returned promise need not settle
         // when media starts, and must not hold the dispatch queue indefinitely.
         phase = 'play-api';
@@ -129,6 +136,22 @@
       if (state.media?.error) { fault = faultInfo('media', state.media.error.code); return 'player-error'; }
       return null;
     };
+    const recoverStartup = async state => {
+      if (!startupRecovery) return;
+      // Retry only an unchanged, still-unstarted selection. Any observed
+      // progress/selection change cancels recovery permanently for this input.
+      if (!canRecoverStartup(state) || state.api !== startupRecovery.api || state.key !== startupRecovery.key ||
+          state.index !== startupRecovery.index || !usable(playButton()) || error(state) ||
+          control.interrupt > sequence || (!navigation && control.sequence > sequence) ||
+          Date.now() >= deadline || startupAttempts >= 4) {
+        startupRecovery = null; return;
+      }
+      if (Date.now() < startupRecovery.nextAt) return;
+      startupAttempts++;
+      startupRecovery.nextAt = Date.now() + startupAttempts * 1000;
+      // Explicit Play is idempotent; never repeat Toggle or track navigation.
+      await requestPlay(state);
+    };
     const dispatch = control.dispatch.then(async () => {
       let before = read();
       if (error(before)) return { result: failure(error(before)) };
@@ -146,17 +169,20 @@
           phase = 'subscribe';
           source.api?.addEventListener?.('onAutoplayBlocked', onBlocked);
           source.api?.addEventListener?.('onError', onError);
-          if (!await requestPlay(before) && !dispatchOnly) return { result: { ok: false, retry: true } };
+          if (!await requestPlay(before, true) && !dispatchOnly) return { result: { ok: false, retry: true } };
           phase = 'prepare';
           primed = true;
         }
         before = read();
         if (error(before)) return { result: failure(error(before)) };
         if (before.ready && (!navigation || started(before))) break;
+        await recoverStartup(before);
+        phase = 'prepare';
         await wait(); before = read();
       }
       if (error(before)) return { result: failure(error(before)) };
       if (Date.now() >= deadline) return { result: failure('command-timeout') };
+      startupRecovery = null;
       if (type === 'play' && before.playing) return { result: { ok: true } };
       const selector = ({ play: '.play-pause-button', toggle: '.play-pause-button',
         next: '.next-button', prev: '.previous-button' })[type];
@@ -172,11 +198,11 @@
       seekMedia?.addEventListener?.('seeked', onSeeked);
       control.latest = sequence;
       // A restored track can have an ID while still UNSTARTED with no media.
-      // Its synthetic Play button may do nothing. Use an explicit Play request
-      // for that state, once; keep Pause and loaded-player controls unchanged.
+      // Its first Play request may be ignored during initialization. Retain
+      // the intent for bounded recovery; Pause/loaded controls stay unchanged.
       if (!navigation && before.ready && before.state === -1 && !(before.media?.readyState > 0) &&
           typeof before.api?.playVideo === 'function') {
-        await requestPlay(before);
+        await requestPlay(before, true);
       } else {
         phase = navigation ? 'navigate-button' : 'play-button';
         noteInput(before);
@@ -201,6 +227,8 @@
           if (error(after)) return failure(error(after));
           if (!navigation) {
             if (desiredPlaying ? started(after) : !after.playing) return { ok: true };
+            await recoverStartup(after);
+            phase = 'confirm';
           } else {
             navigated ||= Boolean((before.key && after.key && before.key !== after.key) ||
               (Number.isInteger(before.index) && Number.isInteger(after.index) && before.index !== after.index) ||

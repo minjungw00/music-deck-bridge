@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const musicURL = 'https://music.youtube.com/';
-const fixture = (restored = false) => `<!doctype html><html><body>
+const fixture = (restored = false, ignoredStartupRequests = 0) => `<!doctype html><html><body>
 <ytmusic-player-bar>
  <span class="title">Fixture song</span><span class="byline">Fixture artist</span>
  <audio></audio><div id="movie_player"></div>
@@ -28,6 +28,7 @@ const fixture = (restored = false) => `<!doctype html><html><body>
 <script>
 let playing=false, muted=false, ready=false, cued=false, initialized=false, index=2, time=0, stallPrevious=false, seekSignal=true;
 const restored=${restored};
+const ignoredStartupRequests=${ignoredStartupRequests};
 const playerListeners=new Map();
 const tracks=['aaaaaaaaaaa','bbbbbbbbbbb','ccccccccccc','ddddddddddd','eeeeeeeeeee'];
 function record(key){ document.body.dataset[key]=String(Number(document.body.dataset[key]||0)+1); }
@@ -57,7 +58,9 @@ api.playVideo=()=>{
  if(!ready){record('early');return;}
  document.body.dataset.apiUserActive=String(navigator.userActivation.isActive);
  document.body.dataset.apiUserEverActive=String(navigator.userActivation.hasBeenActive);
- playing=true;initialized=true;record('playRequest');
+ record('playRequest');
+ if(restored&&!initialized&&Number(document.body.dataset.playRequest)<=ignoredStartupRequests){record('ignoredStartupRequest');return;}
+ playing=true;initialized=true;
 };
 api.isMuted=()=>muted;
 api.addEventListener=(name,fn)=>{if(!playerListeners.has(name))playerListeners.set(name,new Set());playerListeners.get(name).add(fn);};
@@ -83,6 +86,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   const temp = await mkdtemp(join(tmpdir(), 'music-deck-browser-'));
   let browser, process, child, site;
   let restoredStartup = false;
+  let ignoredStartupRequests = 0;
   t.after(async () => {
     await browser?.close();
     if (child) await child.stop();
@@ -93,7 +97,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '1',
     '-keyout', join(temp, 'key'), '-out', join(temp, 'cert'), '-subj', '/CN=music.youtube.com'], { stdio: 'ignore' });
   site = httpsServer({ key: await readFile(join(temp, 'key')), cert: await readFile(join(temp, 'cert')) },
-    (_req, res) => { setTimeout(() => { res.setHeader('Content-Type', 'text/html'); res.end(fixture(restoredStartup)); }, 250); });
+    (_req, res) => { setTimeout(() => { res.setHeader('Content-Type', 'text/html'); res.end(fixture(restoredStartup, ignoredStartupRequests)); }, 250); });
   await new Promise(resolve => site.listen(0, '127.0.0.1', resolve));
   const port = await freePort();
   process = spawn(globalThis.process.execPath, [join(root, 'streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/bin/plugin.js')], {
@@ -198,9 +202,11 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     assert.equal(browser.pages().filter(page => page.url().startsWith(musicURL)).length, 1);
   }
   // The reported startup shape: restored ID, UNSTARTED and no media. The
-  // synthetic Play control has no effect while the explicit Play API starts it.
+  // first API request and synthetic Play control have no effect. A later Play
+  // request starts it without a second physical input or replayed navigation.
   restoredStartup = true;
-  for (const type of ['toggle', 'nowplaying']) {
+  ignoredStartupRequests = 1;
+  for (const type of ['toggle', 'nowplaying', 'prev', 'next']) {
     for (const page of browser.pages()) if (page.url().startsWith(musicURL)) await page.close();
     const before = await worker.evaluate(() => acknowledgments.length);
     await postEvent(type);
@@ -208,19 +214,23 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     assert.equal(result.ok, true, JSON.stringify(result));
     const page = browser.pages().find(page => page.url().startsWith(musicURL));
     assert.equal(await page.evaluate(() => playing), true);
-    assert.equal(await page.evaluate(() => document.body.dataset.playRequest), '1');
+    const plays = type === 'prev' || type === 'next' ? '3' : '2';
+    assert.equal(await page.evaluate(() => document.body.dataset.playRequest), plays);
+    assert.equal(await page.evaluate(() => document.body.dataset.ignoredStartupRequest), '1');
     assert.equal(await page.evaluate(() => document.body.dataset.apiUserActive), 'false');
     assert.equal(await page.evaluate(() => document.body.dataset.apiUserEverActive), 'false');
     assert.equal(await page.evaluate(() => document.body.dataset.ignoredRestoredClick), undefined);
     assert.equal(await page.evaluate(() => document.body.dataset.toggle), undefined);
+    if (type === 'prev' || type === 'next') assert.equal(await page.evaluate(type => document.body.dataset[type], type), '1');
     const paused = await worker.evaluate(() => acknowledgments.length);
     await postEvent('toggle');
     assert.equal((await until(async () => (await worker.evaluate(() => acknowledgments))[paused], 'Pause after restored startup')).ok, true);
     assert.equal(await page.evaluate(() => playing), false);
     assert.equal(await page.evaluate(() => document.body.dataset.toggle), '1', 'Pause still uses the site control');
-    assert.equal(await page.evaluate(() => document.body.dataset.playRequest), '1', 'Pause did not issue Play');
+    assert.equal(await page.evaluate(() => document.body.dataset.playRequest), plays, 'Pause did not issue Play');
   }
   restoredStartup = false;
+  ignoredStartupRequests = 0;
   // Previous can leave the same item/position and omit seek events. Its result
   // must not hold subsequent controls or let an old monitor undo a later Pause.
   const controlled = browser.pages().find(page => page.url().startsWith(musicURL));
@@ -325,5 +335,5 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   } finally {
     await music.evaluate(() => { document.querySelector('ytmusic-player-bar .play-pause-button').click = globalThis.originalPlayClick; delete globalThis.originalPlayClick; });
   }
-  t.diagnostic(`Chromium ${browser.browser().version()}; restored-ID API startup for Play/Pause and Current Track followed by Pause, unstarted API-ready selection delay, Play-gated media/track initialization, cold-tab and post-launch controls, stalled/no-seek Previous followed by responsive Pause/Next, stale-monitor cancellation and receiver recovery passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
+  t.diagnostic(`Chromium ${browser.browser().version()}; ignored-initial-Play recovery for Play/Pause, Current Track, Previous and Next followed by Pause, unstarted API-ready selection delay, Play-gated media/track initialization, cold-tab and post-launch controls, stalled/no-seek Previous followed by responsive Pause/Next, stale-monitor cancellation and receiver recovery passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
 });

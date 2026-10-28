@@ -5,7 +5,8 @@ import { playerHarness } from './helpers/player.mjs';
 function harness({ ready = true, blocked = false, error = false, noEffect = false,
   restart = false, playBlocked = false, playNoEffect = false, initialState = 2,
   cueOnNavigation = false, ignoreUntilPlaying = false, seekEvent = true, ignoredTypes = [], playPromise,
-  unloadedUntilPlay = false, rejectUncued = false, clearOnError = false, clickError } = {}) {
+  unloadedUntilPlay = false, rejectUncued = false, clearOnError = false, clickError,
+  ignoredPlayRequests = 0, blockedPlayRequest = 0 } = {}) {
   const player = playerHarness();
   let state = initialState, track = 'aaaaaaaaaaa', clicks = 0, time = 0, plays = 0, ignored = 0;
   let initialized = !unloadedUntilPlay;
@@ -17,14 +18,15 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
   const emit = (map, name, event) => { for (const fn of map.get(name) || []) fn(event); };
   player.audio.addEventListener = (name, fn) => add(mediaListeners, name, fn);
   player.audio.removeEventListener = (name, fn) => remove(mediaListeners, name, fn);
-  const api = {
+  let api = {
     isReady: () => ready,
     getPlayerState: () => state,
     getVideoData: () => ({ video_id: initialized ? track : '' }),
     getCurrentTime: () => time,
     playVideo() {
       plays++;
-      if (playBlocked) { emit(listeners, 'onAutoplayBlocked'); return; }
+      if (playBlocked || plays === blockedPlayRequest) { emit(listeners, 'onAutoplayBlocked'); return; }
+      if (plays <= ignoredPlayRequests) return;
       if (!playNoEffect) state = 1;
       return playPromise;
     },
@@ -69,6 +71,8 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
   return { player, listeners, mediaListeners, clicks: () => clicks, plays: () => plays,
     state: () => state, ignored: () => ignored, ready: value => { ready = value; },
     setState: value => { state = value; },
+    setTrack: value => { track = value; },
+    replaceApi: () => { api = { ...api }; },
     time: value => { time = value; },
     send: (command, expiresAt, dispatchOnly = false) => player.send({ type: 'player-playback', command, expiresAt, dispatchOnly }),
     result: pending => player.send({ type: 'player-playback-result', pending }) };
@@ -214,6 +218,78 @@ test('a restored-track API autoplay block is reported without falling back to a 
   assert.equal(h.plays(), 1);
   assert.equal(h.clicks(), 0);
 });
+
+for (const type of ['play', 'toggle', 'prev', 'next']) {
+  test(`${type} recovers an ignored initial Play request without replaying a control`, async () => {
+    const h = harness({ initialState: -1, ignoredPlayRequests: 1, cueOnNavigation: true,
+      ignoreUntilPlaying: true });
+    h.player.audio.readyState = 0;
+    h.player.audio.currentSrc = '';
+    h.player.audio.paused = true;
+    const result = await h.send(type, Date.now() + 1800);
+    assert.equal(result.ok, true);
+    assert.equal(h.state(), 1);
+    assert.equal(h.plays(), type === 'prev' || type === 'next' ? 3 : 2);
+    assert.equal(h.clicks(), type === 'prev' || type === 'next' ? 1 : 0);
+    assert.equal(h.ignored(), 0);
+  });
+}
+
+test('startup recovery is bounded even if every Play request is ineffective', async () => {
+  const h = harness({ initialState: -1, playNoEffect: true });
+  h.player.audio.readyState = 0;
+  // Preparation outlives the fifth request's nominal ten-second point, so
+  // expiry alone cannot make this assertion pass without the attempt cap.
+  const result = await h.send('prev', Date.now() + 14000);
+  assert.equal(result.reason, 'player-not-ready');
+  assert.equal(h.plays(), 4);
+  assert.equal(result.diagnostic.startupAttempts, 4);
+  assert.equal(h.clicks(), 0);
+});
+
+test('an autoplay block on a startup retry stops recovery without a toggle fallback', async () => {
+  const h = harness({ initialState: -1, ignoredPlayRequests: 1, blockedPlayRequest: 2 });
+  h.player.audio.readyState = 0;
+  const result = await h.send('play', Date.now() + 1800);
+  assert.equal(result.reason, 'autoplay-blocked');
+  assert.equal(h.plays(), 2);
+  assert.equal(h.clicks(), 0);
+});
+
+test('a later Pause stops startup recovery and cannot be undone by an old Play request', async () => {
+  const h = harness({ initialState: -1, playNoEffect: true });
+  h.player.audio.readyState = 0;
+  const pending = await h.send('play', Date.now() + 1800, true);
+  await until(() => h.plays() === 1);
+  h.setState(1);
+  assert.equal((await h.send('toggle')).ok, true);
+  assert.equal((await h.result(pending.pending)).reason, 'command-superseded');
+  await new Promise(resolve => setTimeout(resolve, 1100));
+  assert.equal(h.plays(), 1);
+  assert.equal(h.state(), 2);
+});
+
+for (const change of ['track', 'buffering', 'pause', 'media', 'queue-index', 'api']) {
+  test(`observed ${change} permanently cancels startup recovery`, async () => {
+    const h = harness({ initialState: -1, playNoEffect: true });
+    let index = 0;
+    if (change === 'queue-index') h.player.setQueue({ getItems: () => [0, 1], getCurrentItemIndex: () => index });
+    h.player.audio.readyState = 0;
+    const pending = await h.send('play', Date.now() + 1400, true);
+    await until(() => h.plays() === 1);
+    if (change === 'track') h.setTrack('bbbbbbbbbbb');
+    else if (change === 'media') h.player.audio.readyState = 4;
+    else if (change === 'queue-index') index = 1;
+    else if (change === 'api') h.replaceApi();
+    else h.setState(change === 'buffering' ? 3 : 2);
+    await new Promise(resolve => setTimeout(resolve, 160));
+    h.setTrack('aaaaaaaaaaa'); h.setState(-1);
+    h.player.audio.readyState = 0; index = 0;
+    assert.equal((await h.result(pending.pending)).reason, 'playback-unconfirmed');
+    assert.equal(h.plays(), 1, 'do not rearm recovery after intervening playback/selection changes');
+    assert.equal(h.clicks(), 0);
+  });
+}
 
 test('a playing track without ready media still accepts Pause through its control', async () => {
   const h = harness({ initialState: 1 });
