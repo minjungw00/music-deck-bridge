@@ -2,6 +2,8 @@
 
 Use this guide to select Marketplace upload files and regenerate exports. See the [shared submission workflow](../README.md#submission-workflow) for package/copy provenance and publication records.
 
+For the current installation-copy correction, use the [proposed English How to Use replacement](how-to-use.en.md). It identifies the existing public section and provides text to paste; it has not been submitted or published.
+
 ## Upload files
 
 Use the files in [listing/](listing/) for the Maker Console media fields:

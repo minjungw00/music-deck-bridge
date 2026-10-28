@@ -1,6 +1,6 @@
 # Store submissions
 
-Last updated: October 24, 2026 (Asia/Seoul). **Both stores are published and normal operation is maintainer-confirmed.** Store dashboards, page contents/displayed versions and runtime operation were not independently inspected. Neither supplied listing could be opened by the browsing tool during the update.
+Last updated: October 29, 2026 (Asia/Seoul). **Both stores are published and normal operation is maintainer-confirmed as reported on October 24.** During the October 24 update, store dashboards, page contents/displayed versions and runtime operation were not independently inspected; neither supplied listing could be opened by the browsing tool. The later public-description inspection below has a separate scope.
 
 ## Current listings
 
@@ -27,6 +27,12 @@ No separate approval outcome for the earlier revision was reported. The maintain
 | Chrome Web Store | [English](../../store-assets/submitted/v1.1.1/chrome-en.md) · [Korean](../../store-assets/submitted/v1.1.1/chrome-ko.md) |
 
 The three snapshots remain verbatim, including temporary GitHub companion-download links and Elgato spacing. Revised 1.1.2 descriptions were not supplied. These snapshots document historical submissions, not the current live copy; later supplied revisions belong in separate files.
+
+## Public description correction
+
+The maintainer reported that an October 28, 2026 inspection of the [public Elgato listing](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd) showed **1.1.2** and a Chrome Web Store link, but its How to Use still described the extension as awaiting publication and used the Chrome Web Store address as a ZIP download location. An independent browser read on October 29 found the same displayed version and installation wording. This establishes an inconsistency in the public Elgato description; it does not establish the current Chrome Web Store description or Maker Console contents, neither of which was inspected.
+
+The [proposed English How to Use replacement](../../store-assets/elgato/how-to-use.en.md) separates Add to Chrome installation from optional GitHub Releases ZIP installation, following the [English installation guide](../installation.en.md). It preserves the feature description, same-PC requirement, six-digit PIN's ten-minute validity and compatibility requirements. The draft identifies the existing public replacement range separately from the new copy. It has not been submitted or published, and the actual v1.1.1 submitted snapshot remains unchanged. No new installation or runtime verification was performed; the October 24 maintainer confirmation retains its original scope.
 
 ## Package and media provenance
 
