@@ -6,8 +6,9 @@ Evidence reviewed October 29, 2026 (Asia/Seoul). [Release verification](releases
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
-| Latest full local run, refactor source `cbd17925ad7d` | 217 Node tests, two Python packaging tests, syntax/JSON/manifests and Chromium 156.0.8078.4 MV3 integration | Disposable local player model; no independent Windows/site observation |
-| Later Previous-boundary review, `7318a3a` | Three targeted first-item/same-track fixtures | Adds one fixture; no subsequent full-suite result is claimed |
+| Latest full local review, source `131b5ef3ebe2` | Locked installation, 218 Node tests, two Python packaging tests, syntax/JSON/manifests, audit with zero reported vulnerabilities and Chromium 156.0.8078.4 MV3 integration | Disposable local player model; no independent Windows/site observation |
+| Exact-source [CI 40785323853](https://github.com/minjungw00/music-deck-bridge/actions/runs/40785323853) | Windows and Ubuntu jobs passed installation, checks, tests, audit, official packaging and artifact upload; Ubuntu also passed Chromium integration | Job/step and artifact metadata read from GitHub API; CI archive bytes were not downloaded in this review |
+| Previous-boundary review, `7318a3a` | Three targeted first-item/same-track fixtures; the added fixture is included in the later 218-test full run | Models restart evidence, not the site's actual queue/history contents |
 | 1.1.3 maintainer reports | New-window playback appeared normal after startup recovery; operation confirmed after destination recovery | Confirmation precedes the playback refactor and is not an itemized environment inventory |
 | Later first-Previous comparison | Site button behaves similarly; after more than five seconds it restarts the same song | Queue/history absence is an interpretation, not a measured queue fact |
 | Released 1.1.2 | Maintainer-confirmed release/store operation, including both published stores on October 24 | Detailed identified DRM and clean-environment coverage remain separate |
@@ -22,6 +23,14 @@ Evidence reviewed October 29, 2026 (Asia/Seoul). [Release verification](releases
 | Key/dial output | Settings, profile reappearance, rotation/press/touch, proportional artwork, artist placement, backdrops and scrolling; Qt 6.10.3 reference rendering |
 | Popup | English/Korean sample responses at 290 CSS px; 80×36 buttons, 28px heading icon and no overflow |
 | Distribution | Real worker import graph, serialized MAIN entry point, package allowlists/notices, fixed development versions and source/checksum metadata |
+
+### October 29 pre-release review
+
+Clean source `131b5ef3ebe23c9c34452e91cd82d0de2c3168be` passed a fresh `npm ci --ignore-scripts`, `npm run check`, all 218 Node tests, two Python packaging tests, Chromium integration and a separate `npm audit` (zero reported vulnerabilities). The stalled/no-seek Previous fixture observed later Pause in 34/34 ms; these are model timings. After recording this review, all 362 local links/images in 34 Markdown files resolved. The exact-source Windows/Ubuntu CI jobs and their non-expired source-named artifacts were also confirmed through read-only API calls.
+
+Code review covered bounded Play recovery/cancellation, one-shot navigation, receipt/result delivery, diagnostic filtering, artwork geometry and the dependency override. No additional code change was identified. The scoped Zod override remains outside utils' declared major range, with the compatibility evidence and limits below; Chrome permissions/host permissions and its minimum version are unchanged from v1.1.2.
+
+The new local build in the [inventory](#development-artifact-inventory) passed official CLI validation/packaging. SHA-256 checks, clean-source metadata, all 25 Chrome and 60 plugin payload files, versions and current legal notices matched source; the CLI-normalized plugin manifest was compared as JSON. The plugin runtime is byte-identical to the supplied refactor build. The initial restricted-environment build could not spawn Git; the permitted rerun succeeded without changing source. No development-version promotion, tag, release publication or store submission was performed. Final stable/tagged packages, actual Windows hardware/site coverage and identified Maker Console DRM coverage remain separate release steps.
 
 ### Limits of local evidence
 
@@ -98,7 +107,7 @@ The maintainer confirmed the browser button behaves similarly and, after more th
 
 ### Development artifact inventory
 
-All builds below are local, clean (`dirty: false`) and separate from public releases. Build IDs are `1.1.3-dev+g<source>.<suffix>` under `dist/development/`; suffix timestamps are UTC build identities, not KST observation dates. Each package/checksum and relevant archived source was verified when delivered. Official CLI validation/packaging passed. From `f909efc` onward, the plugin runtime remains byte-identical to `7e0f61b`; only extension updates are needed relative to that plugin.
+All builds below are local, clean (`dirty: false`) and separate from public releases. Build IDs are `1.1.3-dev+g<source>.<suffix>` under `dist/development/`; suffix timestamps are UTC build identities, not KST observation dates. Each package/checksum and relevant archived source was verified when delivered. Official CLI validation/packaging passed. From `f909efc` onward, the plugin runtime remains byte-identical to `7e0f61b`; the playback changes are in the extension. The later pre-release packages also update bundled legal notices.
 
 | Source (12 chars) | Build suffix | Purpose |
 | --- | --- | --- |
@@ -111,7 +120,10 @@ All builds below are local, clean (`dirty: false`) and separate from public rele
 | `40906dbf7dde` | `local20261028195102296` | Action/API/activation diagnostics |
 | `7145a38d90ba` | `local20261028201730142` | Bounded startup recovery |
 | `4e525a05c5b0` | `local20261028203136514` | Destination recovery; later maintainer confirmation |
-| `cbd17925ad7d` | `local20261028210702553` | Latest supplied refactor build; archived entry point/imports match source |
+| `cbd17925ad7d` | `local20261028210702553` | Supplied refactor build; archived entry point/imports match source |
+| `131b5ef3ebe2` | `local20261028231413385` | Pre-release review build; full payloads and updated legal notices match source |
+
+The pre-release review build's plugin SHA-256 is `2b1401e1c8a0cb13fe249ccf9bcaab163fd75d100b94ac8b3b192222f9115a06`; Chrome ZIP SHA-256 is `4619442b58be4513ca3eac94723ca42c1a983c68406480516b95fffff3eda80e`. Its `SHA256SUMS.txt` also covers `BUILD-INFO.json`. Previous build folders remain unchanged.
 
 Earlier failed candidates and intermediate checks retain the outcomes summarized above; detailed chronological notes remain in Git history. Published tags/assets, already supplied build folders and submitted packages were not replaced.
 

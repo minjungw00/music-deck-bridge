@@ -17,10 +17,11 @@ The [runtime record](verification/runtime.md#current-evidence) is the source for
 
 | Area | Current evidence | Remaining limit |
 | --- | --- | --- |
-| Automated refactor checks | At `cbd17925ad7d`: 217 Node tests, two Python tests, syntax/resources/versions and Chromium MV3 integration | Local fixtures; no independent Windows/site operation |
+| Final development checks | At `131b5ef3ebe2`: fresh locked install, 218 Node tests, two Python tests, syntax/resources/versions, audit with zero reported vulnerabilities and Chromium MV3 integration; exact-source [Windows/Ubuntu CI](https://github.com/minjungw00/music-deck-bridge/actions/runs/40785323853) passed | Automated fixtures; no independent Windows/site operation |
 | Startup and destination playback | Maintainer reported new-window recovery normal, then confirmed destination recovery before refactoring | Preserve that confirmation; it is not a complete post-refactor/hardware inventory |
-| First Previous at a restored selection | Later real log shows healthy playing state; the site button similarly restarts the same song after time has advanced; three targeted fixtures pass | Actual queue/history absence remains an interpretation; no full-suite result claimed for the later test-only revision |
+| First Previous at a restored selection | Later real log shows healthy playing state; the site button similarly restarts the same song after time has advanced; boundary regression is included in the passing 218-test full run | Actual queue/history absence remains an interpretation; a restart at zero without observable evidence can remain unconfirmed |
 | Security dependencies | Dated locked installation/audit and schema comparisons support the scoped Zod override | Review the override when utils declares a patched range; audit results are time-specific |
+| Development packages | Clean `131b5ef3ebe2` [review build](verification/runtime.md#development-artifact-inventory): official validator/packager passed; checksums, all payload files, versions and legal notices match source | Linux local development packages; CI archive metadata checked separately, without downloading those bytes; stable/tagged packages still need verification after promotion |
 
 ## Published release and historical verification
 
@@ -34,7 +35,7 @@ The [runtime record](verification/runtime.md#current-evidence) is the source for
 
 ## Remaining work
 
-Prepare 1.1.3 only through the authorized [release checklist](development.md#release-checklist) and [versioning policy](versioning.md). Confirm the final source/CI/packages and document remaining manual coverage; a fixed development number or passing model is not a release.
+The final development review found no additional code change to make. Prepare 1.1.3 only through the authorized [release checklist](development.md#release-checklist) and [versioning policy](versioning.md). After promotion, verify the final stable/tagged source, CI and packages and record remaining manual coverage; a passing development review is not release publication. The latest [review record](verification/runtime.md#october-29-pre-release-review) distinguishes automated results from maintainer confirmation and outstanding Windows/hardware/DRM coverage.
 
 - The Elgato installation-copy correction is still a [local draft](../store-assets/elgato/how-to-use.en.md). Apply and record it as a later listing revision when submitted; preserve actual submitted snapshots.
 - For later store revisions, retain version identifiers, uploaded-file hashes, selected media and supplied descriptions. Refresh version-labelled sample media to match the submitted build.
