@@ -123,6 +123,8 @@ Diagnostic validation passes: syntax/JSON/manifests, 198 Node tests and the Chro
 
 Dispatch/activation diagnostic artifacts from clean commit `40906dbf7dde` use build ID `1.1.3-dev+g40906dbf7dde.local20261028195102296` under `dist/development/`, with `dirty: false`. Official Stream Deck packaging and all checksums pass; both archived diagnostic modules match their source. The plugin runtime remains byte-identical to the preceding API-startup candidate. Only the extension changes; prior artifacts remain intact.
 
+The maintainer then confirmed that direct `#movie_player.playVideo()` still starts music after disabling Console's user-action evaluation, closing all Music windows and opening a fresh failing window through Stream Deck without clicking the site. This weakens the Console-supplied activation explanation; it does not establish the actual dispatch-time activation flags or isolate timing, because the manual call occurs after automatic confirmation has timed out. No browser autoplay policy change is justified by this observation. The next controlled comparison asks whether a second Stream Deck input, before interacting with the site or Console, also starts playback. A successful later automatic request would support investigating an early ineffective API call; a second failure would require checking the recorded dispatch route/context instead.
+
 ## Protocol compatibility
 
 The [protocol contract](../protocol.md) passed shared-engine, real HTTP bridge, SDK inspector and worker fixtures:
