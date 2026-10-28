@@ -157,6 +157,8 @@ The subsequent internal refactor separates observation, diagnostics, event lifec
 
 Final refactor verification passes: syntax/JSON/manifests, all 217 Node tests, two Python packaging tests and the Chromium 156.0.8078.4 MV3 fixture. Packaging checks follow the actual worker import graph and compare the new module's archived bytes. VM fixtures serialize the exported function into a separate MAIN context; Chromium additionally exercises actual worker loading, startup/destination retries, supersession, responsive Pause, receiver replacement and bounded diagnostic transport. These are local results for the refactor, separate from the maintainer's accepted pre-refactor operation report; the refactored package has not been independently observed on Windows.
 
+Refactor artifacts from clean commit `cbd17925ad7d` use build ID `1.1.3-dev+gcbd17925ad7d.local20261028210702553` under `dist/development/`, with `dirty: false`. Official Stream Deck packaging and all checksums pass; the archived entry point and every imported worker module match source, including `player-playback.js`. The plugin runtime is byte-identical to the preceding destination candidate, so only the extension changes. Previous supplied artifacts remain intact.
+
 ## Protocol compatibility
 
 The [protocol contract](../protocol.md) passed shared-engine, real HTTP bridge, SDK inspector and worker fixtures:
