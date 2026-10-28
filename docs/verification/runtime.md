@@ -105,6 +105,8 @@ Diagnostics now copy bounded readiness fields immediately before the latest play
 
 Correction validation passes: syntax/JSON/manifests, 193 Node tests, two Python packaging tests and the Chromium 156.0.8078.4 MV3 fixture. Chromium's API/controls become ready at 500 ms but cueing is delayed until 900 ms; an earlier Play emits modeled code 2. All nine launch inputs and subsequent controls pass without that early dispatch, and diagnostics carry input-time fields through MAIN/content/worker. These are controlled model results; signed-in Windows operation remains unconfirmed.
 
+Correction artifacts from clean commit `b6859e112ea8` use build ID `1.1.3-dev+gb6859e112ea8.local20261028184802811` under `dist/development/`, with `dirty: false`. Official Stream Deck packaging and all checksums pass; both changed extension modules match their archived source. The plugin runtime is byte-identical to the preceding diagnostic build, so only the extension needs replacement for this revision. Earlier distributed artifacts remain intact.
+
 ## Protocol compatibility
 
 The [protocol contract](../protocol.md) passed shared-engine, real HTTP bridge, SDK inspector and worker fixtures:
