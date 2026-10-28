@@ -33,14 +33,15 @@
         const status = api?.getPlayerResponse?.()?.playabilityStatus?.status;
         if (status && status !== 'OK') { playable = false; ready = false; }
       } catch { ready = false; }
-      let index;
+      let index, queueReady = true;
       try {
-        if (typeof bar?.queue?.getItems === 'function' && !bar.queue.getItems()?.length) ready = false;
+        if (typeof bar?.queue?.getItems === 'function') queueReady = Boolean(bar.queue.getItems()?.length);
         index = bar?.queue?.getCurrentItemIndex?.();
-      } catch { ready = false; }
+      } catch { queueReady = false; }
+      ready &&= queueReady;
       const playing = Number.isFinite(state) ? state === 1 || state === 3 :
         Boolean(media && !media.paused && !media.ended);
-      return snapshot = { api, media, ready, apiReady, playable, playing, state, index,
+      return snapshot = { api, media, ready, apiReady, queueReady, playable, playing, state, index,
         muted: typeof muted === 'boolean' ? muted : Boolean(media?.muted),
         key: videoId || media?.currentSrc || media?.src || '',
         time: Number.isFinite(time) ? time : media?.currentTime || 0 };
@@ -54,7 +55,11 @@
     const navigation = type === 'next' || type === 'prev';
     const expires = Number(expiresAt) || Infinity;
     let deadline = Math.min(expires, Date.now() + (dispatchOnly ? 30000 : 10000));
-    let phase = 'prepare', fault = null;
+    let phase = 'prepare', fault = null, input = null;
+    // Copy primitives before dispatch: a site error can clear the selected
+    // track/media before the next observation. Never retain IDs or page text.
+    const noteInput = state => { input = { state: state.state, apiReady: state.apiReady,
+      mediaReady: state.media?.readyState, hasTrack: Boolean(state.key) }; };
     const exceptionName = value => ['Error', 'TypeError', 'ReferenceError', 'NotAllowedError',
       'InvalidStateError', 'SecurityError', 'AbortError', 'NotSupportedError'].includes(value) ? value : 'Other';
     const faultInfo = (source, code, exception) => ({ source, phase,
@@ -66,6 +71,10 @@
       state: [-1, 0, 1, 2, 3, 5].includes(snapshot?.state) ? snapshot.state : null,
       apiReady: snapshot?.apiReady === true, mediaReady: [0, 1, 2, 3, 4].includes(snapshot?.media?.readyState) ? snapshot.media.readyState : null,
       hasTrack: Boolean(snapshot?.key), playable: snapshot?.playable !== false,
+      inputState: [-1, 0, 1, 2, 3, 5].includes(input?.state) ? input.state : null,
+      inputApiReady: input?.apiReady ?? null,
+      inputMediaReady: [0, 1, 2, 3, 4].includes(input?.mediaReady) ? input.mediaReady : null,
+      inputHasTrack: input?.hasTrack ?? null,
     } });
     const superseded = () => control.latest > sequence || (navigation && control.interrupt > sequence);
     const started = state => Number.isFinite(state.state) ? state.state === 1 :
@@ -73,10 +82,10 @@
     const usable = button => button && !button.disabled && button.getAttribute('aria-disabled') !== 'true' &&
       !button.closest?.('[disabled], [aria-disabled="true"]');
     const playButton = () => document.querySelector('ytmusic-player-bar .play-pause-button');
-    // A cued/restored player can expose a usable Play control before any media
-    // or track ID is loaded. Starting it must not depend on that loaded media.
-    const canStart = state => state.playable && usable(playButton()) &&
-      (state.apiReady || state.state === -1 || state.state === 5 || (!state.api && state.media?.readyState === 0));
+    // CUED can precede loaded media/track metadata. An initialized API or an
+    // enabled button in UNSTARTED does not establish that a selection exists.
+    const canStart = state => state.playable && state.queueReady && state.apiReady &&
+      state.state === 5 && usable(playButton());
     const wait = () => new Promise(resolve => setTimeout(resolve, 80));
     let blocked = false, playerError = false, seeked = false, source, seekMedia;
     const onBlocked = () => { blocked = true; };
@@ -86,11 +95,14 @@
     };
     const onSeeked = () => { seeked = true; };
     const requestPlay = async state => {
-      if (!state.ready && canStart(state)) { phase = 'play-button'; playButton().click(); return true; }
+      if (!state.ready && canStart(state)) {
+        phase = 'play-button'; noteInput(state); playButton().click(); return true;
+      }
       if (typeof state.api?.playVideo === 'function') {
         // Observe playback itself; a site's returned promise need not settle
         // when media starts, and must not hold the dispatch queue indefinitely.
         phase = 'play-api';
+        noteInput(state);
         state.api.playVideo()?.catch?.(error => {
           fault = { ...faultInfo('play-rejection', null, error?.name), phase: 'play-api' };
           if (error?.name === 'NotAllowedError') blocked = true;
@@ -101,6 +113,7 @@
       const button = playButton();
       if (!usable(button)) return false;
       phase = 'play-button';
+      noteInput(state);
       button.click(); return true;
     };
     const error = state => {
@@ -153,6 +166,7 @@
       seekMedia?.addEventListener?.('seeked', onSeeked);
       control.latest = sequence;
       phase = navigation ? 'navigate-button' : 'play-button';
+      noteInput(before);
       button.click();
       deadline = Math.min(expires, Date.now() + 10000);
       phase = 'confirm';

@@ -84,7 +84,11 @@ Development builds with this instrumentation retain the most recent playback fai
 
 If the line is no longer visible, the read-only console expression `JSON.stringify(browserChannel.lastFailure, null, 2)` displays the retained record. `null` means no retained failure in this worker. Only fixed phase/source names, bounded numbers and booleans are recorded; account/track data, URLs, PINs/tokens and raw exception messages/stacks are excluded. `source` identifies the numeric code's namespace: `site-event` is a player event, `media` an HTML media error, and `exception` a script exception. These are evidence for diagnosis, not a cause or repair by themselves.
 
+The `inputState`, `inputApiReady`, `inputMediaReady` and `inputHasTrack` fields capture the most recent playback control immediately before dispatch. Their counterparts without `input` describe the failure observation; a site error may already have cleared the track/media by then. Null input fields mean no control was dispatched.
+
 로그가 보이지 않으면 읽기 전용 Console 명령 `JSON.stringify(browserChannel.lastFailure, null, 2)`로 남아 있는 기록을 확인할 수 있습니다. `null`은 현재 워커에 실패 기록이 없다는 뜻입니다. 기록에는 정해진 단계·출처 이름, 제한된 숫자와 참/거짓 값만 포함되며 계정·곡 정보, URL, PIN·토큰, 원본 예외 메시지·스택은 포함하지 않습니다. `source`의 `site-event`는 플레이어 이벤트, `media`는 미디어 오류, `exception`은 스크립트 예외입니다. 이 정보 자체만으로 원인이나 해결을 확정하지 않습니다.
+
+`inputState`, `inputApiReady`, `inputMediaReady`, `inputHasTrack`은 마지막 재생 제어 호출 직전의 상태입니다. `input`이 없는 대응 필드는 실패를 관찰한 시점의 상태이며, 사이트 오류로 곡·미디어가 이미 사라졌을 수 있습니다. 제어 호출이 없으면 `input` 필드는 `null`입니다.
 
 The plugin leaves Chrome's autoplay and security settings unchanged. See Chrome's [autoplay policy](https://developer.chrome.com/blog/autoplay/).
 

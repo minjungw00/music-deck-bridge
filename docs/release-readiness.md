@@ -4,7 +4,7 @@ Last updated: October 29, 2026 (Asia/Seoul). Both official stores are published 
 
 Current development target: **1.1.3-dev**, with [dependency security updates](verification/runtime.md#113-dependency-review) and [artwork/transport fixes](verification/runtime.md#113-artwork-and-transport-fixes). It has not been promoted or published; its automated checks do not extend the 1.1.2 maintainer sign-off to this candidate.
 
-The maintainer reports an unresolved signed-in cold-start `player-error`. The current development revision adds bounded diagnostics to investigate it; see the [startup error record](verification/runtime.md#startup-player-error-diagnosis). Passing local models do not establish resolution of that report.
+The maintainer reports an unresolved signed-in cold-start `player-error` with site code `2`. The current development revision guards against starting an empty UNSTARTED player and records input-time readiness separately from failure-time state; see the [startup error record](verification/runtime.md#startup-player-error-diagnosis). Passing local models do not establish resolution of that report.
 
 ## Distribution status
 

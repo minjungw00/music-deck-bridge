@@ -26,11 +26,13 @@ const fixture = `<!doctype html><html><body>
  </ytmusic-like-button-renderer>
 </ytmusic-player-bar>
 <script>
-let playing=false, muted=false, ready=false, initialized=false, index=2, time=0, stallPrevious=false, seekSignal=true;
+let playing=false, muted=false, ready=false, cued=false, initialized=false, index=2, time=0, stallPrevious=false, seekSignal=true;
+const playerListeners=new Map();
 const tracks=['aaaaaaaaaaa','bbbbbbbbbbb','ccccccccccc','ddddddddddd','eeeeeeeeeee'];
 function record(key){ document.body.dataset[key]=String(Number(document.body.dataset[key]||0)+1); }
 function control(type){
  if(!ready){record('early');return;}
+ if(!initialized&&!cued){record('uncuedInput');for(const fn of playerListeners.get('onError')||[])fn({data:2});return;}
  if(type==='toggle'){playing=!playing;initialized=true;}
  if(type==='prev'||type==='next'){
   if(type==='prev'){record('previousAttempt');if(stallPrevious)return;}
@@ -46,13 +48,17 @@ Object.defineProperties(document.querySelector('audio'), {
  currentSrc:{get:()=>initialized?tracks[index]:''}
 });
 const api=document.querySelector('#movie_player');
-api.isReady=()=>ready;api.getPlayerState=()=>!initialized?5:playing?1:2;
+api.isReady=()=>ready;api.getPlayerState=()=>!initialized?(cued?5:-1):playing?1:2;
 api.getVideoData=()=>({video_id:initialized?tracks[index]:''});
 api.getCurrentTime=()=>time;
 api.playVideo=()=>{if(!ready){record('early');return;}playing=true;initialized=true;record('playRequest');};
 api.isMuted=()=>muted;
-// Usable controls precede loaded media/track identity. Only Play initializes it.
+api.addEventListener=(name,fn)=>{if(!playerListeners.has(name))playerListeners.set(name,new Set());playerListeners.get(name).add(fn);};
+api.removeEventListener=(name,fn)=>playerListeners.get(name)?.delete(fn);
+// Controls/API become ready before a selection. Play is invalid until cueing;
+// loaded media/track identity then still require the first valid Play input.
 setTimeout(()=>{ready=true;for(const button of document.querySelectorAll('button[disabled]'))button.disabled=false;},500);
+setTimeout(()=>{cued=true;},900);
 const slider=document.querySelector('#volume-slider');slider.value=50;
 slider.addEventListener('change',()=>{slider.setAttribute('aria-valuenow',slider.value);record('volume_delta');});
 </script></body></html>`;
@@ -142,6 +148,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     const effect = type === 'nowplaying' ? 'toggle' : type;
     if (type !== 'open') assert.equal(await page.evaluate(type => document.body.dataset[type], effect), '1', type);
     assert.equal(await page.evaluate(() => document.body.dataset.early), undefined, 'restored controls must wait for the player');
+    assert.equal(await page.evaluate(() => document.body.dataset.uncuedInput), undefined, 'API readiness alone must not authorize playback');
     if (effect === 'toggle') {
       await until(() => worker.evaluate(() => playerSnapshots.some(state => state.playing)), 'MAIN playback state reflected in sync');
       assert.equal(await page.evaluate(() => document.querySelector('audio').paused), true, 'stale media node must not override the site player');
@@ -275,9 +282,12 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     assert.equal(diagnostic.source, 'exception');
     assert.equal(diagnostic.exception, 'TypeError');
     assert.equal(diagnostic.errorPhase, 'play-button');
+    assert.equal(diagnostic.inputState, 1);
+    assert.equal(diagnostic.inputHasTrack, true);
+    assert.equal(diagnostic.inputMediaReady, 4);
     assert.equal(JSON.stringify(diagnostic).includes('DO_NOT_RETAIN'), false);
   } finally {
     await music.evaluate(() => { document.querySelector('ytmusic-player-bar .play-pause-button').click = globalThis.originalPlayClick; delete globalThis.originalPlayClick; });
   }
-  t.diagnostic(`Chromium ${browser.browser().version()}; Play-gated media/track initialization, cold-tab and post-launch controls, stalled/no-seek Previous followed by responsive Pause/Next, stale-monitor cancellation and receiver recovery passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
+  t.diagnostic(`Chromium ${browser.browser().version()}; unstarted API-ready selection delay, Play-gated media/track initialization, cold-tab and post-launch controls, stalled/no-seek Previous followed by responsive Pause/Next, stale-monitor cancellation and receiver recovery passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
 });

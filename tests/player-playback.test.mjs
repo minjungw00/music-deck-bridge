@@ -5,7 +5,7 @@ import { playerHarness } from './helpers/player.mjs';
 function harness({ ready = true, blocked = false, error = false, noEffect = false,
   restart = false, playBlocked = false, playNoEffect = false, initialState = 2,
   cueOnNavigation = false, ignoreUntilPlaying = false, seekEvent = true, ignoredTypes = [], playPromise,
-  unloadedUntilPlay = false, clickError } = {}) {
+  unloadedUntilPlay = false, rejectUncued = false, clearOnError = false, clickError } = {}) {
   const player = playerHarness();
   let state = initialState, track = 'aaaaaaaaaaa', clicks = 0, time = 0, plays = 0, ignored = 0;
   let initialized = !unloadedUntilPlay;
@@ -36,8 +36,16 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
     click() {
       clicks++;
       if (clickError) throw clickError;
+      if (rejectUncued && !initialized && state !== 5) {
+        emit(listeners, 'onError', { data: 2 }); return;
+      }
       if (blocked) { emit(listeners, 'onAutoplayBlocked'); return; }
-      if (error) { emit(listeners, 'onError', { data: typeof error === 'number' ? error : undefined }); return; }
+      if (error) {
+        if (clearOnError) {
+          state = -1; initialized = false; player.audio.readyState = 0; player.audio.currentSrc = '';
+        }
+        emit(listeners, 'onError', { data: typeof error === 'number' ? error : undefined }); return;
+      }
       if (noEffect) return;
       if (ignoredTypes.includes(type)) return;
       if (type !== 'toggle' && ignoreUntilPlaying && state !== 1) { ignored++; return; }
@@ -76,6 +84,20 @@ test('site error diagnostics retain the numeric event code and the control phase
   assert.equal(h.clicks(), 1);
 });
 
+test('diagnostics distinguish the input state from track/media cleared by a site error', async () => {
+  const h = harness({ error: 2, clearOnError: true });
+  const result = await h.send('play');
+  assert.equal(result.reason, 'player-error');
+  assert.equal(result.diagnostic.code, 2);
+  assert.equal(result.diagnostic.state, -1);
+  assert.equal(result.diagnostic.hasTrack, false);
+  assert.equal(result.diagnostic.mediaReady, 0);
+  assert.equal(result.diagnostic.inputState, 2);
+  assert.equal(result.diagnostic.inputHasTrack, true);
+  assert.equal(result.diagnostic.inputMediaReady, 4);
+  assert.equal(result.diagnostic.inputApiReady, true);
+});
+
 test('media error diagnostics remain distinct and do not send an input', async () => {
   const h = harness();
   h.player.audio.error = { code: 4, message: 'DO_NOT_RETAIN_MEDIA_MESSAGE' };
@@ -98,6 +120,20 @@ test('script error diagnostics include a bounded exception name without its mess
 });
 
 for (const type of ['play', 'toggle', 'prev', 'next']) {
+  test(`${type} waits for a selection when the API is ready but the player is empty`, async () => {
+    const h = harness({ unloadedUntilPlay: true, initialState: -1, rejectUncued: true,
+      ignoreUntilPlaying: true });
+    const pending = await h.send(type, Date.now() + 1000, true);
+    await new Promise(resolve => setTimeout(resolve, 100));
+    assert.equal(h.clicks(), 0, 'an initialized API alone must not authorize a Play request');
+    assert.equal(h.plays(), 0);
+    h.setState(5);
+    assert.equal((await h.result(pending.pending)).ok, true);
+    assert.equal(h.clicks(), type === 'play' || type === 'toggle' ? 1 : 2);
+    assert.equal(h.ignored(), 0);
+    assert.equal(h.state(), 1);
+  });
+
   test(`${type} bootstraps media that cannot load until the first Play input`, async () => {
     const h = harness({ unloadedUntilPlay: true, initialState: 5, ignoreUntilPlaying: true });
     const pending = await h.send(type, Date.now() + 250, true);
@@ -108,6 +144,35 @@ for (const type of ['play', 'toggle', 'prev', 'next']) {
     assert.equal(h.ignored(), 0);
   });
 }
+
+test('an empty unstarted player expires without causing a site error or claiming success', async () => {
+  const h = harness({ unloadedUntilPlay: true, initialState: -1, rejectUncued: true });
+  assert.equal((await h.send('play')).retry, true, 'legacy callers can retry before dispatch');
+  const pending = await h.send('play', Date.now() + 100, true);
+  const result = await h.result(pending.pending);
+  assert.equal(result.reason, 'player-not-ready');
+  assert.equal(result.diagnostic.phase, 'prepare');
+  assert.equal(result.diagnostic.apiReady, true);
+  assert.equal(result.diagnostic.hasTrack, false);
+  assert.equal(result.diagnostic.state, -1);
+  assert.equal(result.diagnostic.inputState, null, 'no input was dispatched');
+  assert.equal(h.clicks(), 0);
+  assert.equal(h.plays(), 0);
+});
+
+test('an unstarted player with a loaded track still accepts Play', async () => {
+  const h = harness({ initialState: -1 });
+  assert.equal((await h.send('play')).ok, true);
+  assert.equal(h.clicks(), 1);
+});
+
+test('a cued state cannot bypass a known empty queue', async () => {
+  const h = harness({ unloadedUntilPlay: true, initialState: 5 });
+  h.player.setQueue({ getItems: () => [] });
+  const pending = await h.send('play', Date.now() + 100, true);
+  assert.equal((await h.result(pending.pending)).reason, 'player-not-ready');
+  assert.equal(h.clicks(), 0);
+});
 
 test('an initialization timeout is distinguished from an unconfirmed dispatched input', async () => {
   const h = harness({ ready: false });

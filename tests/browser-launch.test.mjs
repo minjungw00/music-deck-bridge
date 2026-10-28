@@ -63,12 +63,17 @@ test('failed playback diagnostics whitelist fields and survive a later successfu
   const h = harness({ tabs: [{ id: 1 }], response: () => ok ? { ok: true } : ({ ok: false, reason: 'player-error',
     diagnostic: { source: 'site-event', phase: 'confirm', errorPhase: 'play-button', code: 5, state: 2,
       apiReady: true, mediaReady: 0, hasTrack: true, playable: false,
+      inputState: 5, inputMediaReady: 0, inputHasTrack: false, inputApiReady: 'DO_NOT_RETAIN',
       exception: 'DO_NOT_RETAIN_EXCEPTION', title: 'DO_NOT_RETAIN_TITLE', url: 'DO_NOT_RETAIN_URL' } }) });
   assert.equal(await h.api.performBrowserCommand({ type: 'toggle' }), false);
   const failure = h.api.failure();
   assert.equal(failure.code, 5);
   assert.equal(failure.source, 'site-event');
   assert.equal(failure.exception, null);
+  assert.equal(failure.inputState, 5);
+  assert.equal(failure.inputMediaReady, 0);
+  assert.equal(failure.inputHasTrack, false);
+  assert.equal(failure.inputApiReady, null);
   assert.equal(JSON.stringify(failure).includes('DO_NOT_RETAIN'), false);
   assert.equal(h.warnings.length, 1);
   ok = true;
