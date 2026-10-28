@@ -2,7 +2,7 @@
 
 Last updated: October 29, 2026 (Asia/Seoul). Both official stores are published and normal operation is maintainer-confirmed for 1.1.2. Install from the [official stores](installation.en.md#method-1-official-stores); dated evidence is linked below.
 
-Current development target: **1.1.3-dev**, with dependency security updates described in the [dependency review](verification/runtime.md#113-dependency-review). It has not been promoted or published; its automated checks do not extend the 1.1.2 maintainer sign-off to this candidate.
+Current development target: **1.1.3-dev**, with [dependency security updates](verification/runtime.md#113-dependency-review) and [artwork/transport fixes](verification/runtime.md#113-artwork-and-transport-fixes). It has not been promoted or published; its automated checks do not extend the 1.1.2 maintainer sign-off to this candidate.
 
 ## Distribution status
 

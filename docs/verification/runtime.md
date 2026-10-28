@@ -40,6 +40,23 @@ Final locked installation (`npm ci --ignore-scripts`) succeeds; `npm audit --jso
 
 `npm run build:dev` successfully creates the Chrome ZIP and officially validated Stream Deck package with CLI 1.10.3, plus build information and checksums. This local build records parent `df92eb103e06` and `dirty: true`; it is not an exact-commit or release artifact. These checks establish local automated compatibility, not signed-in YouTube Music, Windows host operation or actual Maker Console DRM. Windows CI, physical-device operation and a new official release remain unverified for this candidate.
 
+## 1.1.3 artwork and transport fixes
+
+Checked October 29, 2026 (Asia/Seoul), retaining `1.1.3-dev`, Node.js 24 and protocol 1. Source changes: `091ebb5` (key artwork) and `ce17e95` (track navigation).
+
+The maintainer reported distorted non-square Current Track key artwork, an unresponsive/delayed first Previous input after opening the browser, and Next changing tracks without playback. The additional observation was that the first click had no effect and later clicks responded. No live player trace or exact installed artifact was supplied; the controlled models below do not establish the cause of that environment's first-click failure.
+
+- **Artwork:** the key helper now computes centered proportional geometry in a 144×144 viewport, with black margins for non-square images. Optional one-/two-line title backdrops use the same fit; square artwork without a backdrop still uses its original raster. The raster bytes are preserved. Two renderer regressions cover landscape/portrait fitting and cached output. Qt 6.10.3 checks 27 generated-image combinations (square/landscape/portrait, PNG/JPEG/WebP, no/one-/two-line backdrop). The preceding helper fails the landscape comparison; the new helper passes. Existing Qt text/backdrop checks also pass. Generated images are fixtures, not screenshots.
+- **Transport:** Previous/Next first wait for playback initialization, dispatch navigation once, then confirm a changed track/index or a same-track restart and actual playback. If the destination is only cued, one explicit Play request starts it. Restart confirmation accepts a decreased position below two seconds or a seek-completion event at the beginning, instead of requiring a starting position beyond five seconds. Autoplay/error reporting, deadlines and refusal to replay ambiguous navigation remain in place.
+
+Six new playback regressions fail against the preceding `page-controls.js` and pass after the change: initial playback preparation, buffering, cued destinations, early/zero-position restarts, unconfirmed playback and autoplay blocking. These models intentionally reproduce ignored navigation before initialization and paused destinations; they are not observations of YouTube Music's current internals.
+
+Completed local checks: syntax/JSON/manifests, 164 Node tests, two Python tests and the Chromium 156.0.8078.4 MV3 fixture. Chromium covers all nine cold-tab inputs plus 18 subsequent Previous/Next inputs (both after each launch button), checking one navigation per input and playing state before acknowledgment. The final media-listener adjustment also passed the 12 targeted playback tests and Chromium rerun.
+
+`npm run build:dev` packages Chrome and the officially validated Stream Deck plugin from clean code commit `ce17e95c54f6a171b1753c7e87bf50d0e733739a`. Build ID: `1.1.3-dev+gce17e95c54f6.local20261028155820921`, under `dist/development/`, with `dirty: false`. Both archives match their checksum inventory; the packaged extension controls and bundled plugin match the built sources. This is a local development build, not a published release.
+
+Windows CI, physical key rendering, signed-in YouTube Music playback and native Windows cold startup remain unverified for these changes. Earlier maintainer confirmations retain their original scope.
+
 ## Protocol compatibility
 
 The [protocol contract](../protocol.md) passed shared-engine, real HTTP bridge, SDK inspector and worker fixtures:
