@@ -81,6 +81,8 @@ test('site error diagnostics retain the numeric event code and the control phase
   assert.equal(result.diagnostic.source, 'site-event');
   assert.equal(result.diagnostic.code, 153);
   assert.equal(result.diagnostic.errorPhase, 'play-button');
+  assert.equal(result.diagnostic.inputAction, 'play-button');
+  assert.equal(result.diagnostic.inputApi, 'movie-player');
   assert.equal(h.clicks(), 1);
 });
 
@@ -181,6 +183,7 @@ for (const type of ['play', 'toggle']) {
 
 test('a restored track ID without media does not establish playback after an ineffective Play API request', async () => {
   const h = harness({ initialState: -1, noEffect: true, playNoEffect: true });
+  h.player.setUserActivation({ isActive: false, hasBeenActive: false });
   h.player.audio.readyState = 0;
   h.player.audio.currentSrc = '';
   h.player.audio.paused = true;
@@ -192,6 +195,10 @@ test('a restored track ID without media does not establish playback after an ine
   assert.equal(result.diagnostic.inputState, -1);
   assert.equal(result.diagnostic.inputHasTrack, true);
   assert.equal(result.diagnostic.inputMediaReady, 0);
+  assert.equal(result.diagnostic.inputAction, 'play-api');
+  assert.equal(result.diagnostic.inputApi, 'movie-player');
+  assert.equal(result.diagnostic.inputUserActive, false);
+  assert.equal(result.diagnostic.inputUserEverActive, false);
   assert.equal(result.diagnostic.state, -1);
   assert.equal(result.diagnostic.hasTrack, true);
   assert.equal(result.diagnostic.mediaReady, 0);

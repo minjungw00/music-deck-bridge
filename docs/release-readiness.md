@@ -4,7 +4,7 @@ Last updated: October 29, 2026 (Asia/Seoul). Both official stores are published 
 
 Current development target: **1.1.3-dev**, with [dependency security updates](verification/runtime.md#113-dependency-review) and [artwork/transport fixes](verification/runtime.md#113-artwork-and-transport-fixes). It has not been promoted or published; its automated checks do not extend the 1.1.2 maintainer sign-off to this candidate.
 
-The signed-in cold-start report remains unresolved: after the empty-player guard, the maintainer reports `playback-unconfirmed` with a track ID present before dispatch, UNSTARTED state and no ready media. The maintainer confirms direct Console API playback starts music in that failure state. The current revision uses that API for this startup state; actual extension/Windows operation remains unconfirmed. See the [startup error record](verification/runtime.md#startup-player-error-diagnosis); passing local models do not establish resolution of that report.
+The signed-in cold-start report remains unresolved: the maintainer reports `playback-unconfirmed` even after the restored-track API revision. Both manual and automatic paths select the movie-player API; manual Console playback succeeds, but its user-activation conditions were not controlled. The current revision adds action/API/activation diagnostics for that comparison. See the [startup error record](verification/runtime.md#startup-player-error-diagnosis); passing local models do not establish resolution of that report.
 
 ## Distribution status
 

@@ -64,6 +64,7 @@ export function playerHarness({ compact = false, available = true, delay = 0 } =
   return {
     audio, sliders, state, scriptCalls, setSiteVolume,
     setQueue(queue) { bar.queue = queue; },
+    setUserActivation(activation) { page.navigator = { userActivation: activation }; },
     setDocument(document) { page.document = { ...document,
       querySelector: selector => selector === 'ytmusic-player-bar' ? bar : document.querySelector(selector) }; },
     contentSliders: available ? sliders.map(slider => ({

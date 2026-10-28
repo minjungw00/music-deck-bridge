@@ -30,7 +30,11 @@
         inputState: [-1, 0, 1, 2, 3, 5].includes(data.inputState) ? data.inputState : null,
         inputApiReady: typeof data.inputApiReady === 'boolean' ? data.inputApiReady : null,
         inputMediaReady: [0, 1, 2, 3, 4].includes(data.inputMediaReady) ? data.inputMediaReady : null,
-        inputHasTrack: typeof data.inputHasTrack === 'boolean' ? data.inputHasTrack : null });
+        inputHasTrack: typeof data.inputHasTrack === 'boolean' ? data.inputHasTrack : null,
+        inputAction: ['play-button', 'play-api', 'navigate-button'].includes(data.inputAction) ? data.inputAction : null,
+        inputApi: ['none', 'player-bar', 'movie-player'].includes(data.inputApi) ? data.inputApi : null,
+        inputUserActive: typeof data.inputUserActive === 'boolean' ? data.inputUserActive : null,
+        inputUserEverActive: typeof data.inputUserEverActive === 'boolean' ? data.inputUserEverActive : null });
       console.warn('Music Deck Bridge playback diagnostic:', JSON.stringify(lastFailure));
     }
     const PLAYER_COMMANDS = ['toggle', 'prev', 'next', 'mute', 'volume_delta', 'like', 'dislike'];

@@ -53,7 +53,12 @@ const api=document.querySelector('#movie_player');
 api.isReady=()=>ready;api.getPlayerState=()=>!initialized?(cued&&!restored?5:-1):playing?1:2;
 api.getVideoData=()=>({video_id:initialized||restored?tracks[index]:''});
 api.getCurrentTime=()=>time;
-api.playVideo=()=>{if(!ready){record('early');return;}playing=true;initialized=true;record('playRequest');};
+api.playVideo=()=>{
+ if(!ready){record('early');return;}
+ document.body.dataset.apiUserActive=String(navigator.userActivation.isActive);
+ document.body.dataset.apiUserEverActive=String(navigator.userActivation.hasBeenActive);
+ playing=true;initialized=true;record('playRequest');
+};
 api.isMuted=()=>muted;
 api.addEventListener=(name,fn)=>{if(!playerListeners.has(name))playerListeners.set(name,new Set());playerListeners.get(name).add(fn);};
 api.removeEventListener=(name,fn)=>playerListeners.get(name)?.delete(fn);
@@ -204,6 +209,8 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     const page = browser.pages().find(page => page.url().startsWith(musicURL));
     assert.equal(await page.evaluate(() => playing), true);
     assert.equal(await page.evaluate(() => document.body.dataset.playRequest), '1');
+    assert.equal(await page.evaluate(() => document.body.dataset.apiUserActive), 'false');
+    assert.equal(await page.evaluate(() => document.body.dataset.apiUserEverActive), 'false');
     assert.equal(await page.evaluate(() => document.body.dataset.ignoredRestoredClick), undefined);
     assert.equal(await page.evaluate(() => document.body.dataset.toggle), undefined);
     const paused = await worker.evaluate(() => acknowledgments.length);
@@ -310,6 +317,10 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     assert.equal(diagnostic.inputState, 1);
     assert.equal(diagnostic.inputHasTrack, true);
     assert.equal(diagnostic.inputMediaReady, 4);
+    assert.equal(diagnostic.inputAction, 'play-button');
+    assert.equal(diagnostic.inputApi, 'movie-player');
+    assert.equal(typeof diagnostic.inputUserActive, 'boolean');
+    assert.equal(typeof diagnostic.inputUserEverActive, 'boolean');
     assert.equal(JSON.stringify(diagnostic).includes('DO_NOT_RETAIN'), false);
   } finally {
     await music.evaluate(() => { document.querySelector('ytmusic-player-bar .play-pause-button').click = globalThis.originalPlayClick; delete globalThis.originalPlayClick; });

@@ -17,8 +17,10 @@
     let snapshot;
     const read = () => {
       const bar = document.querySelector('ytmusic-player-bar');
-      const api = [bar?.playerApi, document.querySelector('#movie_player')]
+      const barApi = bar?.playerApi;
+      const api = [barApi, document.querySelector('#movie_player')]
         .find(item => typeof item?.getPlayerState === 'function');
+      const apiSource = !api ? 'none' : api === barApi ? 'player-bar' : 'movie-player';
       const all = [...document.querySelectorAll('video, audio')];
       const media = all.find(item => item.readyState > 0 && !item.paused) ||
         all.find(item => item.readyState > 0 && Number.isFinite(item.duration)) || all[0];
@@ -41,7 +43,7 @@
       ready &&= queueReady;
       const playing = Number.isFinite(state) ? state === 1 || state === 3 :
         Boolean(media && !media.paused && !media.ended);
-      return snapshot = { api, media, ready, apiReady, queueReady, playable, playing, state, index,
+      return snapshot = { api, apiSource, media, ready, apiReady, queueReady, playable, playing, state, index,
         muted: typeof muted === 'boolean' ? muted : Boolean(media?.muted),
         key: videoId || media?.currentSrc || media?.src || '',
         time: Number.isFinite(time) ? time : media?.currentTime || 0 };
@@ -59,7 +61,9 @@
     // Copy primitives before dispatch: a site error can clear the selected
     // track/media before the next observation. Never retain IDs or page text.
     const noteInput = state => { input = { state: state.state, apiReady: state.apiReady,
-      mediaReady: state.media?.readyState, hasTrack: Boolean(state.key) }; };
+      mediaReady: state.media?.readyState, hasTrack: Boolean(state.key), action: phase, api: state.apiSource,
+      userActive: globalThis.navigator?.userActivation?.isActive ?? null,
+      userEverActive: globalThis.navigator?.userActivation?.hasBeenActive ?? null }; };
     const exceptionName = value => ['Error', 'TypeError', 'ReferenceError', 'NotAllowedError',
       'InvalidStateError', 'SecurityError', 'AbortError', 'NotSupportedError'].includes(value) ? value : 'Other';
     const faultInfo = (source, code, exception) => ({ source, phase,
@@ -75,6 +79,8 @@
       inputApiReady: input?.apiReady ?? null,
       inputMediaReady: [0, 1, 2, 3, 4].includes(input?.mediaReady) ? input.mediaReady : null,
       inputHasTrack: input?.hasTrack ?? null,
+      inputAction: input?.action ?? null, inputApi: input?.api ?? null,
+      inputUserActive: input?.userActive ?? null, inputUserEverActive: input?.userEverActive ?? null,
     } });
     const superseded = () => control.latest > sequence || (navigation && control.interrupt > sequence);
     const started = state => Number.isFinite(state.state) ? state.state === 1 :
