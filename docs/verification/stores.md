@@ -11,6 +11,8 @@ Last updated: October 29, 2026 (Asia/Seoul). **Both stores are published and nor
 
 The October 24 report confirms normal operation of the published store components without an itemized installation/migration or control inventory. See [runtime confirmation](runtime.md#official-store-components).
 
+GitHub [v1.1.3](releases.md#v113) was published October 29. No 1.1.3 store submission or approval was performed or reported; the listing and submitted-description evidence below remains scoped to the earlier store versions.
+
 ## Submitted description history
 
 | Report date (KST) | Reported state |

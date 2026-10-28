@@ -6,10 +6,10 @@ Reviewed October 29, 2026 (Asia/Seoul). General installation starts with the [of
 
 | Channel | Version / state | Evidence |
 | --- | --- | --- |
-| GitHub | **v1.1.2**, Chrome **1.1.2**, plugin **1.1.2.0**, protocol **1** | Latest non-draft/non-prerelease release re-read through GitHub API on October 29; original publication/byte checks in [Releases](verification/releases.md#v112) |
+| GitHub | **v1.1.3**, Chrome **1.1.3**, plugin **1.1.3.0**, protocol **1** | Published October 29 at 08:22 KST; latest non-draft/non-prerelease API result and anonymous download bytes verified · [Release record](verification/releases.md#v113) |
 | Elgato Marketplace | Public listing **1.1.2**; last reported plugin submission **1.1.2.0** | Public version/copy inspected October 29; normal store operation maintainer-confirmed October 24 · [Store record](verification/stores.md) |
 | Chrome Web Store | Last reported submission **1.1.2**, published | Maintainer-confirmed publication/operation October 24; current page/version could not be independently read · [Store record](verification/stores.md) |
-| Release checkout | **1.1.3**, Chrome **1.1.3**, plugin **1.1.3.0**, protocol **1** | Maintainer authorized release October 29; development target promoted, final stable-source CI/packages and GitHub publication pending; no 1.1.3 store submission is recorded |
+| Release checkout | **1.1.3**, Chrome **1.1.3**, plugin **1.1.3.0**, protocol **1** | Authorized promotion complete; tag source `5a8447431167`, final stable-source CI/packages and GitHub publication verified; no next development target selected |
 
 ## Development validation
 
@@ -21,21 +21,22 @@ The [runtime record](verification/runtime.md#current-evidence) is the source for
 | Startup and destination playback | Maintainer reported new-window recovery normal, then confirmed destination recovery before refactoring | Preserve that confirmation; it is not a complete post-refactor/hardware inventory |
 | First Previous at a restored selection | Later real log shows healthy playing state; the site button similarly restarts the same song after time has advanced; boundary regression is included in the passing 218-test full run | Actual queue/history absence remains an interpretation; a restart at zero without observable evidence can remain unconfirmed |
 | Security dependencies | Dated locked installation/audit and schema comparisons support the scoped Zod override | Review the override when utils declares a patched range; audit results are time-specific |
-| Development packages | Clean `131b5ef3ebe2` [review build](verification/runtime.md#development-artifact-inventory): official validator/packager passed; checksums, all payload files, versions and legal notices match source | Linux local development packages; CI archive metadata checked separately, without downloading those bytes; stable/tagged packages still need verification after promotion |
+| Development packages | Clean `131b5ef3ebe2` [review build](verification/runtime.md#development-artifact-inventory): official validator/packager passed; checksums, all payload files, versions and legal notices match source | Linux development packages; that review checked CI metadata only. Final stable-source archives and public bytes were subsequently verified below |
 
 ## Published release and historical verification
 
 | Area | Completed evidence | Scope limits |
 | --- | --- | --- |
-| Release | Exact-source Windows/Ubuntu [CI 39136965856](https://github.com/minjungw00/music-deck-bridge/actions/runs/39136965856): 154 Node tests, two Python tests, Chromium integration, audit with zero reported vulnerabilities, official packaging, source comparison and anonymous public download hashes/bytes | GitHub package verification; store uploads are separate |
-| Operation | Maintainer confirmed released 1.1.2, the Chrome-store extension with the released plugin, then both published store components on October 24 | Exact processed-package identity and detailed DRM results not supplied separately |
+| Latest release, 1.1.3 | Exact-source Windows/Ubuntu [CI 40786383387](https://github.com/minjungw00/music-deck-bridge/actions/runs/40786383387): 218 Node tests, two Python tests, Chromium integration, audit with zero reported vulnerabilities, official packaging, source comparison and anonymous public download hashes/bytes | GitHub package verification; no 1.1.3 store submission or new hardware/DRM sign-off |
+| Earlier release, 1.1.2 | Exact-source Windows/Ubuntu [CI 39136965856](https://github.com/minjungw00/music-deck-bridge/actions/runs/39136965856): 154 Node tests, two Python tests, Chromium integration and verified public package bytes | Historical scope retained in [release verification](verification/releases.md#v112) |
+| Earlier operation, 1.1.2 | Maintainer confirmed released 1.1.2, the Chrome-store extension with the released plugin, then both published store components on October 24 | Exact processed-package identity and detailed DRM results not supplied separately |
 | Device and recovery | Earlier itemized maintainer checks cover displays, controls, pairing recovery, retained settings and rollback | Each historical sign-off retains its original scope |
 | Installation investigation | Explorer descendant-folder handles were observed; closing the folder allowed the same installer to succeed | No installer code fix or universal cause is claimed |
 | Media and copy | Actual device capture retained; sample popup renderings show 1.1.1; sized exports and verbatim v1.1.1 submitted descriptions preserved | Later submitted copy and exact uploaded package/media identities were not supplied |
 
 ## Remaining work
 
-The final development review found no additional code change to make. The maintainer subsequently authorized the 1.1.3 release. Follow the direct GitHub publication path in the [release checklist](development.md#release-checklist): verify the exact stable/tagged source CI and packages and disclose outstanding manual coverage in release notes. The latest [review record](verification/runtime.md#october-29-pre-release-review) distinguishes automated results from maintainer confirmation and outstanding Windows/hardware/DRM coverage. Store processing remains separate.
+The authorized 1.1.3 GitHub release is complete through the direct publication path in the [release checklist](development.md#release-checklist). Exact tagged-source CI, both OS package payloads, release inventories and anonymous public downloads passed verification. Release notes disclose outstanding manual coverage; the [runtime record](verification/runtime.md#current-evidence) preserves the scope of maintainer confirmation. Store processing remains separate, with no 1.1.3 submission recorded.
 
 - The Elgato installation-copy correction is still a [local draft](../store-assets/elgato/how-to-use.en.md). Apply and record it as a later listing revision when submitted; preserve actual submitted snapshots.
 - For later store revisions, retain version identifiers, uploaded-file hashes, selected media and supplied descriptions. Refresh version-labelled sample media to match the submitted build.

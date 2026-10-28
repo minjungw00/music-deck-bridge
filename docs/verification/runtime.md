@@ -6,8 +6,9 @@ Evidence reviewed October 29, 2026 (Asia/Seoul). [Release verification](releases
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
-| Latest full local review, source `131b5ef3ebe2` | Locked installation, 218 Node tests, two Python packaging tests, syntax/JSON/manifests, audit with zero reported vulnerabilities and Chromium 156.0.8078.4 MV3 integration | Disposable local player model; no independent Windows/site observation |
-| Exact-source [CI 40785323853](https://github.com/minjungw00/music-deck-bridge/actions/runs/40785323853) | Windows and Ubuntu jobs passed installation, checks, tests, audit, official packaging and artifact upload; Ubuntu also passed Chromium integration | Job/step and artifact metadata read from GitHub API; CI archive bytes were not downloaded in this review |
+| Latest full local run, release source `5a8447431167` | 218 Node tests, two Python packaging tests, syntax/JSON/manifests, audit with zero reported vulnerabilities and Chromium 156.0.8078.4 MV3 integration | Disposable local player model; no independent Windows/site observation |
+| Exact-source [CI 40786383387](https://github.com/minjungw00/music-deck-bridge/actions/runs/40786383387) | Windows and Ubuntu passed locked installation, 218 Node tests, two Python tests, checks, audit and official packaging; Ubuntu also passed Chromium integration. Both archives were downloaded and their metadata, checksums and all payload files compared | Automated fixtures and package/source verification; hardware/site/DRM operation remains separate |
+| Released 1.1.3 | Tag, final package inventory, draft downloads and anonymous public download bytes verified; [release record](releases.md#v113) | No new final-release hardware/DRM sign-off or store submission |
 | Previous-boundary review, `7318a3a` | Three targeted first-item/same-track fixtures; the added fixture is included in the later 218-test full run | Models restart evidence, not the site's actual queue/history contents |
 | 1.1.3 maintainer reports | New-window playback appeared normal after startup recovery; operation confirmed after destination recovery | Confirmation precedes the playback refactor and is not an itemized environment inventory |
 | Later first-Previous comparison | Site button behaves similarly; after more than five seconds it restarts the same song | Queue/history absence is an interpretation, not a measured queue fact |
@@ -38,7 +39,7 @@ Chromium uses temporary profiles and local HTTPS fixtures. Qt uses a reference r
 
 ## 1.1.3 dependency review
 
-Checked October 29 on Linux with Node.js 24.19.0 and npm 11.17.0. The target remains `1.1.3-dev` (Chrome numeric 1.1.3, plugin 1.1.3.0, protocol 1).
+Checked October 29 on Linux with Node.js 24.19.0 and npm 11.17.0. During this dependency review the target was `1.1.3-dev` (Chrome numeric 1.1.3, plugin 1.1.3.0, protocol 1); the subsequently authorized [1.1.3 release](releases.md#v113) retains these dependencies.
 
 | Dependency | Adopted change | Evidence and constraint |
 | --- | --- | --- |

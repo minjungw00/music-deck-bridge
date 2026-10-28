@@ -152,7 +152,7 @@ Previous can restart the current song instead of choosing another track. At the 
 
 ### Now Playing key text
 
-In the 1.1.3 development line, non-square album art is fitted proportionally in the key with black margins, including when the text backdrop is enabled. This source change is separate from the currently published store packages; see [version status](release-readiness.md).
+From 1.1.3, non-square album art is fitted proportionally in the key with black margins, including when the text backdrop is enabled. GitHub and store versions may differ; see [version status](release-readiness.md).
 
 Configure each key independently in its action settings:
 

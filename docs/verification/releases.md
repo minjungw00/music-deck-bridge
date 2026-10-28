@@ -1,10 +1,30 @@
 # Release verification
 
-Publication evidence: October 18, 2026 (Asia/Seoul). On October 29 a read-only [latest-release API check](https://api.github.com/repos/minjungw00/music-deck-bridge/releases/latest) still identifies v1.1.2 as non-draft/non-prerelease, with the same three asset names, sizes and package SHA-256 digests below. That recheck is metadata verification, not a new download/rehash or runtime test. Store submissions are recorded [separately](stores.md).
+Publication evidence updated October 29, 2026 (Asia/Seoul). The [latest-release API](https://api.github.com/repos/minjungw00/music-deck-bridge/releases/latest) identifies v1.1.3 as non-draft/non-prerelease. Store submissions are recorded [separately](stores.md).
+
+## v1.1.3
+
+[Published](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.1.3) October 29 at 08:22:07 KST, following explicit maintainer authorization. Annotated tag `v1.1.3` resolves to source `5a844743116783b6025823bcbfb497e7190ec492`. Source/Chrome **1.1.3**, plugin **1.1.3.0**, protocol **1**. The selected target was promoted without selecting a new development cycle.
+
+Scope: proportional Current Track key artwork, bounded startup/destination playback recovery, independent dispatch/result confirmation, bounded diagnostics, playback refactoring and SDK/CLI/security dependency updates. [Runtime evidence](runtime.md#current-evidence) separates maintainer-confirmed recovery before the refactor from automated coverage of the final source. The release notes disclose unconfirmed Previous outcomes at a restored selection's beginning and outstanding independent Windows hardware/native-startup, signed-in Music and identified Maker Console DRM execution coverage.
+
+[Exact-source CI 40786383387](https://github.com/minjungw00/music-deck-bridge/actions/runs/40786383387) passed on Windows and Ubuntu. Both job logs confirm 218 Node tests, two Python packaging tests, checks, audit with zero reported vulnerabilities and official Elgato validation/packaging. Ubuntu also passed Chromium 156.0.8078.4 MV3 integration using a local player fixture. A separate local run of the stable source passed these checks as well; its modeled later Pause timings were 33/33 ms, not device measurements. Repository security settings and open alerts were [rechecked](../security-readiness.md) before release.
+
+Both downloaded CI artifacts matched GitHub's outer-archive digest and their source/run/version metadata and checksum inventories. All 60 plugin and 25 Chrome payload files matched the source-verified local packages; Windows/Ubuntu payload bytes were identical. The CLI-normalized plugin manifest was compared to source as JSON. CI `BUILD-INFO.json` describes a CI build (`channel: development`) of stable source 1.1.3; that file is retained for provenance and excluded from the release assets.
+
+The release preserves Windows CI package bytes. A draft was uploaded and its three files downloaded and compared before publication; subsequent anonymous public downloads matched all three prepared release files byte-for-byte. GitHub reports v1.1.3 as latest, non-draft and non-prerelease. Previous tags/assets, submitted packages and delivered development folders were preserved. No 1.1.3 store submission was performed.
+
+| Public asset | Bytes | SHA-256 |
+| --- | --- | --- |
+| `io.github.minjungw00.musicdeckbridge.streamDeckPlugin` | 522218 | `77989618b96aec355b353eac7a94a7691b1a65bd3a402379d3700b5be1e3b4f9` |
+| `music-deck-bridge-chrome-1.1.3.zip` | 57209 | `cd4cb574f1fa41d25f3af1bf00d5ae262b76325dbe9fa667290f86a05c540bdd` |
+| `SHA256SUMS.txt` | 221 | `92a184d0c071ee2737ff3a9a18fc0b50972f36718a781639406678437665afc5` |
 
 ## v1.1.2
 
 [Published](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.1.2) October 18 at 23:43 KST. Tag source: `0e0401f2f2635677c14cdb9f967410dda51bbe29`. Source/Chrome **1.1.2**, plugin **1.1.2.0**, protocol **1**.
+
+Before the October 29 v1.1.3 promotion, a read-only latest-release API check still identified v1.1.2 with the same asset names, sizes and package digests below. That earlier recheck was metadata verification, not a fresh download/rehash or runtime test.
 
 Scope: role-based plugin/extension/content/inspector modules, pairing persistence and management ordering, port lifecycle, bounded/retryable display output, artwork deduplication and tab/page recovery. The maintainer confirmed normal operation before release; that report and its limits are recorded in [runtime verification](runtime.md#112-refactor).
 
@@ -14,7 +34,7 @@ Release-time API checks found no open Dependabot or secret-scanning alerts; exis
 
 Both downloaded OS artifacts matched source/run/version metadata and checksums. Their 60 plugin and 24 Chrome payload files were identical across OSes and matched the tagged source, accounting for the official CLI removing the plugin manifest's final newline.
 
-The release preserves Windows CI archive bytes. Draft downloads and anonymous public downloads matched all three prepared release files byte-for-byte; GitHub reports v1.1.2 as the latest, non-draft, non-prerelease release. Store submissions and Console-processed DRM execution remain separate.
+The release preserves Windows CI archive bytes. Draft downloads and anonymous public downloads matched all three prepared release files byte-for-byte; at publication GitHub reported v1.1.2 as the latest, non-draft, non-prerelease release. Store submissions and Console-processed DRM execution remain separate.
 
 | Public asset | Bytes | SHA-256 |
 | --- | --- | --- |
