@@ -133,6 +133,8 @@ A separate temporary copy of clean pre-change commit `70f661e9053b` fails all fo
 
 Recovery validation passes: syntax/JSON/manifests, 211 Node tests, two Python packaging tests and Chromium 156.0.8078.4 MV3 integration. The attempt-cap fixture keeps navigation preparation open beyond the nominal fifth-request time, proving the four-request bound separately from expiry. Chromium models an ignored first API call for fresh Play/Pause, Current Track, Previous and Next tabs: each reaches playing state after recovery without a second physical input; navigation occurs once and subsequent Pause issues no additional Play. Both activation flags remain false in these automatic calls. This validates local implementation and fixtures; the maintainer's actual Windows operation remains unconfirmed for this revision.
 
+Recovery artifacts from clean commit `7145a38d90ba` use build ID `1.1.3-dev+g7145a38d90ba.local20261028201730142` under `dist/development/`, with `dirty: false`. Official Stream Deck packaging and all checksums pass; both archived recovery/diagnostic modules match their source. The plugin runtime matches the preceding diagnostic candidate byte for byte, so only the extension needs replacement. Previous artifacts remain intact.
+
 ## Protocol compatibility
 
 The [protocol contract](../protocol.md) passed shared-engine, real HTTP bridge, SDK inspector and worker fixtures:
