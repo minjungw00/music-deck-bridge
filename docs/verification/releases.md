@@ -12,7 +12,7 @@ Scope: proportional Current Track key artwork, bounded startup/destination playb
 
 Both downloaded CI artifacts matched GitHub's outer-archive digest and their source/run/version metadata and checksum inventories. All 60 plugin and 25 Chrome payload files matched the source-verified local packages; Windows/Ubuntu payload bytes were identical. The CLI-normalized plugin manifest was compared to source as JSON. CI `BUILD-INFO.json` describes a CI build (`channel: development`) of stable source 1.1.3; that file is retained for provenance and excluded from the release assets.
 
-The release preserves Windows CI package bytes. A draft was uploaded and its three files downloaded and compared before publication; subsequent anonymous public downloads matched all three prepared release files byte-for-byte. GitHub reports v1.1.3 as latest, non-draft and non-prerelease. Previous tags/assets, submitted packages and delivered development folders were preserved. No 1.1.3 store submission was performed.
+The release preserves Windows CI package bytes. A draft was uploaded and its three files downloaded and compared before publication; subsequent anonymous public downloads matched all three prepared release files byte-for-byte. GitHub reports v1.1.3 as latest, non-draft and non-prerelease. Previous tags/assets, submitted packages and delivered development folders were preserved. No store submission was performed as part of the October 29 GitHub release. The [later Elgato public listing observation](stores.md#public-description-correction) has its own scope. The hashes below identify GitHub assets.
 
 | Public asset | Bytes | SHA-256 |
 | --- | --- | --- |

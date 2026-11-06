@@ -1,15 +1,17 @@
 # Release readiness
 
-Reviewed October 29, 2026 (Asia/Seoul). General installation starts with the [official stores](installation.en.md#method-1-official-stores). Public releases, local development and store processing have separate evidence.
+Updated November 7, 2026 (Asia/Seoul) with the November 6 Elgato listing observation. General installation starts with the [official stores](installation.en.md#method-1-official-stores). Public releases, local development and store processing have separate evidence.
 
 ## Current versions and distribution
 
 | Channel | Version / state | Evidence |
 | --- | --- | --- |
 | GitHub | **v1.1.3**, Chrome **1.1.3**, plugin **1.1.3.0**, protocol **1** | Published October 29 at 08:22 KST; latest non-draft/non-prerelease API result and anonymous download bytes verified · [Release record](verification/releases.md#v113) |
-| Elgato Marketplace | Public listing **1.1.2**; last reported plugin submission **1.1.2.0** | Public version/copy inspected October 29; normal store operation maintainer-confirmed October 24 · [Store record](verification/stores.md) |
-| Chrome Web Store | Last reported submission **1.1.2**, published | Maintainer-confirmed publication/operation October 24; current page/version could not be independently read · [Store record](verification/stores.md) |
+| Elgato Marketplace | Public listing **1.1.3**, dated **November 2, 2026** on the page | November 6 observation confirmed the version and corrected installation copy. Last maintainer-reported submission was **1.1.2** / plugin **1.1.2.0** · [Store record](verification/stores.md) |
+| Chrome Web Store | Publication reported October 24. Current listed version is unverified. | Last maintainer-reported submission was **1.1.2** · [Store record](verification/stores.md) |
 | Release checkout | **1.1.3**, Chrome **1.1.3**, plugin **1.1.3.0**, protocol **1** | Authorized promotion complete; tag source `5a8447431167`, final stable-source CI/packages and GitHub publication verified; no next development target selected |
+
+The [Elgato listing now recommends Add to Chrome and offers the GitHub Releases ZIP as an optional manual method](verification/stores.md#public-description-correction). The October 29 draft is historical reference copy.
 
 ## Development validation
 
@@ -27,7 +29,7 @@ The [runtime record](verification/runtime.md#current-evidence) is the source for
 
 | Area | Completed evidence | Scope limits |
 | --- | --- | --- |
-| Latest release, 1.1.3 | Exact-source Windows/Ubuntu [CI 40786383387](https://github.com/minjungw00/music-deck-bridge/actions/runs/40786383387): 218 Node tests, two Python tests, Chromium integration, audit with zero reported vulnerabilities, official packaging, source comparison and anonymous public download hashes/bytes | GitHub package verification; no 1.1.3 store submission or new hardware/DRM sign-off |
+| Latest GitHub release, 1.1.3 | Exact-source Windows/Ubuntu [CI 40786383387](https://github.com/minjungw00/music-deck-bridge/actions/runs/40786383387): 218 Node tests, two Python tests, Chromium integration, audit with zero reported vulnerabilities, official packaging, source comparison and anonymous public download hashes/bytes | GitHub packages only. Store package identity and new hardware/DRM operation remain unverified. |
 | Earlier release, 1.1.2 | Exact-source Windows/Ubuntu [CI 39136965856](https://github.com/minjungw00/music-deck-bridge/actions/runs/39136965856): 154 Node tests, two Python tests, Chromium integration and verified public package bytes | Historical scope retained in [release verification](verification/releases.md#v112) |
 | Earlier operation, 1.1.2 | Maintainer confirmed released 1.1.2, the Chrome-store extension with the released plugin, then both published store components on October 24 | Exact processed-package identity and detailed DRM results not supplied separately |
 | Device and recovery | Earlier itemized maintainer checks cover displays, controls, pairing recovery, retained settings and rollback | Each historical sign-off retains its original scope |
@@ -36,10 +38,9 @@ The [runtime record](verification/runtime.md#current-evidence) is the source for
 
 ## Remaining work
 
-The authorized 1.1.3 GitHub release is complete through the direct publication path in the [release checklist](development.md#release-checklist). Exact tagged-source CI, both OS package payloads, release inventories and anonymous public downloads passed verification. Release notes disclose outstanding manual coverage; the [runtime record](verification/runtime.md#current-evidence) preserves the scope of maintainer confirmation. Store processing remains separate, with no 1.1.3 submission recorded.
+The authorized 1.1.3 GitHub release is complete through the direct publication path in the [release checklist](development.md#release-checklist). Exact tagged-source CI, both OS package payloads, release inventories and anonymous public downloads passed verification. Release notes disclose outstanding manual coverage. The [runtime record](verification/runtime.md#current-evidence) preserves the scope of maintainer confirmation.
 
-- The Elgato installation-copy correction is still a [local draft](../store-assets/elgato/how-to-use.en.md). Apply and record it as a later listing revision when submitted; preserve actual submitted snapshots.
-- For later store revisions, retain version identifiers, uploaded-file hashes, selected media and supplied descriptions. Refresh version-labelled sample media to match the submitted build.
+- Record the 1.1.3 Maker Console submission and review history, version identifier, uploaded-file identity and SHA-256, selected media and exact submitted description when available.
 - Record separately obtained Console-processed package identity and detailed DRM results. Completed store-operation validation does not need repeating solely for missing metadata.
 - For future wire changes, test the implemented version ranges and explicit component identity/status behavior.
 - Extend evidence to independent/clean Windows environments and idle/port-conflict scenarios outside the existing maintainer-confirmed scope.

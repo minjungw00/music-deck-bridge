@@ -1,14 +1,14 @@
-# Elgato How to Use — proposed replacement
+# Elgato How to Use — October 29 draft
 
-Local draft for the listing displaying **1.1.2**; not submitted or published and not a package release. The [store record](../../docs/verification/stores.md#public-description-correction) holds dated public-copy observations. Actual [v1.1.1 submitted text](../submitted/v1.1.1/elgato-en.md) stays verbatim.
+This replacement was prepared locally for the listing displaying **1.1.2** and remained unpublished as of October 29, 2026. The [November 6 public listing observation](../../docs/verification/stores.md#public-description-correction) records the revised 1.1.3 guidance. The relationship between this draft and the exact submitted text is unverified. See the separate [v1.1.1 submitted text](../submitted/v1.1.1/elgato-en.md).
 
-## Replacement scope
+## Original replacement scope
 
 Replace the public English description from `How to Use:` through the final unofficial/affiliation sentence immediately before `What's new?`. Keep the preceding component notice, companion Chrome Web Store link and feature description. The draft uses that retained companion link for Add to Chrome, and a separate GitHub URL for the optional ZIP method.
 
 Check the **complete** resulting description against the [250–1,500 character guidelines](https://docs.elgato.com/guidelines/products/#description), including retained text and whitespace. Re-read the current listing/Console before applying; a local draft is not evidence of publication.
 
-## New text to paste
+## Draft text
 
 ```text
 How to Use:

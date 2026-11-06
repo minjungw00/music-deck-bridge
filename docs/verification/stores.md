@@ -1,17 +1,17 @@
 # Store submissions
 
-Last updated: October 29, 2026 (Asia/Seoul). **Both stores are published and normal operation is maintainer-confirmed as reported on October 24.** During the October 24 update, store dashboards, page contents/displayed versions and runtime operation were not independently inspected; neither supplied listing could be opened by the browsing tool. The later public-description inspection below has a separate scope.
+Last updated: November 7, 2026 (Asia/Seoul). The Elgato public listing displayed **1.1.3** on November 6. The October 24 maintainer report of both stores' publication and normal operation is historical and has a separate scope.
 
 ## Current listings
 
-| Store | Last reported submission | Public listing and ID |
-| --- | --- | --- |
-| Elgato Marketplace | 1.1.2 / plugin 1.1.2.0 | [Music Deck Bridge](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd) · `044e81d9-9671-4277-bcb9-ce8b6d38c3fd` |
-| Chrome Web Store | 1.1.2 | [Music Deck Bridge](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca) · `ldipcjgadbppphalmibkofhigjffnlca` |
+| Store | Public status | Last maintainer-reported submission | Listing and ID |
+| --- | --- | --- | --- |
+| Elgato Marketplace | **1.1.3**, dated **November 2, 2026** on the listing, as observed November 6 | Historical **1.1.2** / plugin **1.1.2.0** | [Music Deck Bridge](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd) · `044e81d9-9671-4277-bcb9-ce8b6d38c3fd` |
+| Chrome Web Store | Publication reported October 24. Current listing version and copy remain unverified. | Historical **1.1.2** | [Music Deck Bridge](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca) · `ldipcjgadbppphalmibkofhigjffnlca` |
 
-The October 24 report confirms normal operation of the published store components without an itemized installation/migration or control inventory. See [runtime confirmation](runtime.md#official-store-components).
+The October 24 report confirms normal operation of the then-published store components without an itemized installation/migration or control inventory. The listings, store dashboards and runtime operation were not independently inspected for that report. See [runtime confirmation](runtime.md#official-store-components).
 
-GitHub [v1.1.3](releases.md#v113) was published October 29. No 1.1.3 store submission or approval was performed or reported; the listing and submitted-description evidence below remains scoped to the earlier store versions.
+GitHub [v1.1.3](releases.md#v113) was published October 29. No store submission was performed as part of that GitHub release. The November 6 observation establishes Elgato public listing status by that date. Maker Console submission and review history, internal version identifiers and the meaning of the displayed date in that workflow remain unverified.
 
 ## Submitted description history
 
@@ -32,15 +32,17 @@ The three snapshots remain verbatim, including temporary GitHub companion-downlo
 
 ## Public description correction
 
-The maintainer reported that an October 28, 2026 inspection of the [public Elgato listing](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd) showed **1.1.2** and a Chrome Web Store link, but its How to Use still described the extension as awaiting publication and used the Chrome Web Store address as a ZIP download location. An independent browser read on October 29 found the same displayed version and installation wording. This establishes an inconsistency in the public Elgato description; it does not establish the current Chrome Web Store description or Maker Console contents, neither of which was inspected.
+On November 6, 2026, the [public Elgato listing](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd) showed **1.1.3** with the displayed date **November 2, 2026**. Its English How to Use recommends installing the companion extension via **Add to Chrome** in the Chrome Web Store. It offers the packaged Chrome extension ZIP from GitHub Releases as an optional manual method, with extraction and Chrome's **Load unpacked** step. This observation covers the listing text. The exact submitted description and any connection to the local draft remain unverified.
 
-The [proposed English How to Use replacement](../../store-assets/elgato/how-to-use.en.md) separates Add to Chrome installation from optional GitHub Releases ZIP installation, following the [English installation guide](../installation.en.md). The October 29 documentation revision shortens the draft to fit the [description limit](https://docs.elgato.com/guidelines/products/#description) with the retained prefix, preserving the same-PC notice, feature description, six-digit PIN's ten-minute validity and compatibility requirements. The old v1.1.1 prefix with its companion URL updated plus this replacement totals 1,460 characters; the actual complete Console text must still be counted when applying. The draft has not been submitted or published. Actual submitted snapshots remain unchanged; no new installation/runtime result is implied.
+The maintainer's October 28 inspection and an independent October 29 read found **1.1.2** with the earlier How to Use text. It still described the extension as awaiting publication and pointed to the Chrome Web Store address for a ZIP download.
 
-The same review re-read the public Elgato page as 1.1.2 with the contradictory unpublished-extension/ZIP instruction still present. Chrome Web Store could not be opened by the tool, so its current description/version was not reverified. The [Chrome listing guide](https://developer.chrome.com/docs/webstore/cws-dashboard-listing#graphic_assets) identifies the small promotional tile as optional; the local upload guide now reflects that, while preserving all prepared images. This is documentation/reference verification, not store approval or a new submission.
+The October 29 [English How to Use draft](../../store-assets/elgato/how-to-use.en.md) was local and unpublished at that review. It proposed the same split between installation methods, following the [English installation guide](../installation.en.md). The draft and the old v1.1.1 prefix with its companion URL updated totaled 1,460 characters against the [description limit](https://docs.elgato.com/guidelines/products/#description). That count applies to the historical draft and prefix.
+
+The October 29 review could not open the Chrome Web Store listing. It did confirm from the [Chrome listing guide](https://developer.chrome.com/docs/webstore/cws-dashboard-listing#graphic_assets) that the small promotional tile is optional and updated the local upload guide.
 
 ## Package and media provenance
 
-[Public v1.1.2](releases.md#v112) and [v1.1.1](releases.md#v111) records retain source, CI and GitHub package hashes. Exact uploaded-file hashes, store version identifiers, selected media and publication settings were not supplied. Equality with public packages or local exports is not independently established.
+[GitHub release verification](releases.md) retains source, CI and public package hashes for v1.1.3 and earlier releases. The Elgato listing does not identify the 1.1.3 upload file or its SHA-256, selected media, publication settings or a Console-processed installer. The relationship between the store package and the GitHub asset remains unverified. No installation or DRM execution of an identified 1.1.3 store package has been verified.
 
 [Prepared media](media.md), [maintainer-confirmed operation](runtime.md#official-store-components) and [Console-processed DRM evidence](marketplace-drm.md) have distinct scopes.
 
@@ -48,4 +50,3 @@ The same review re-read the public Elgato page as 1.1.2 with the contradictory u
 
 - Record later store revisions with version identifiers, uploaded-file hashes, media selections and supplied descriptions when available.
 - Preserve separately obtained processed-installer identity and detailed DRM results in the [DRM record](marketplace-drm.md). Completed operation does not need repeating solely for missing metadata.
-- README and both installation guides link to both stores. When revising live listings, replace temporary companion-download instructions with those public links and preserve the historical submitted snapshots.

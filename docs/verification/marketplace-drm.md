@@ -1,6 +1,6 @@
 # Marketplace DRM verification
 
-Last updated: October 24, 2026 (Asia/Seoul). **Normal operation of both published store components is maintainer-confirmed.** This record tracks the narrower processed-package identity and detailed DRM coverage; it does not reopen that completed confirmation.
+The October 24, 2026 maintainer report confirmed normal operation of the then-published store components. This record tracks the narrower processed-package identity and detailed DRM coverage.
 
 See [store status](stores.md), [runtime confirmation](runtime.md#official-store-components) and [public source/package hashes](releases.md#v112).
 
@@ -8,13 +8,13 @@ See [store status](stores.md), [runtime confirmation](runtime.md#official-store-
 
 ## Package identity
 
-For the last reported submission, **v1.1.2**, the exact uploaded-file hash and Console-processed installer were not supplied. If obtained, retain the processed version ID, processing status, download time and SHA-256 separately from the GitHub original. Preserve public GitHub assets.
+For the historical **v1.1.2** submission, the exact uploaded-file hash and Console-processed installer were not supplied. The [Elgato public listing displayed **1.1.3** on November 6, 2026](stores.md#public-description-correction). The 1.1.3 Maker Console version ID, uploaded-file hash, processing status, processed installer and DRM execution results remain unverified. If obtained, retain the processed version ID, processing status, download time and SHA-256 separately from the GitHub original. Preserve public GitHub assets.
 
 The published 1.1.2 source inspected for this record uses SDK 3.0.2, manifest SDKVersion 3, Stream Deck minimum 7.1, a constant UUID and state outside the plugin folder. Packaging and opaque-manifest fixtures cover static paths; they do not verify encryption/integrity behavior.
 
 Use Elgato's [DRM testing instructions](https://docs.elgato.com/streamdeck/sdk/introduction/distribution/#testing-with-drm) and [Console version downloads](https://docs.elgato.com/maker-console/managing-products/#versions). An additional DRM-only submission, if needed, follows the documented **Publish after review unselected** procedure.
 
-The separate 1.1.3 development checkout uses SDK 3.0.3; its [local dependency tests](runtime.md#113-dependency-review) do not identify or validate a new Console-processed package.
+The separate 1.1.3 development checkout uses SDK 3.0.3. Its [local dependency tests](runtime.md#113-dependency-review) cover the development build. The [1.1.3 GitHub release evidence](releases.md#v113) covers the tagged source and GitHub packages.
 
 ## Windows execution record
 

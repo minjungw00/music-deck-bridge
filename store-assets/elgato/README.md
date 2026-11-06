@@ -2,7 +2,7 @@
 
 Use this guide to select Marketplace upload files and regenerate exports. See the [shared submission workflow](../README.md#submission-workflow) for package/copy provenance and publication records.
 
-For the current installation-copy correction, use the [proposed English How to Use replacement](how-to-use.en.md). It identifies the existing public section and provides text to paste; it has not been submitted or published.
+See the [store record](../../docs/verification/stores.md#public-description-correction) for the current public installation guidance. The [October 29 How to Use draft](how-to-use.en.md) is historical reference copy.
 
 ## Upload files
 
@@ -49,7 +49,7 @@ Use the [shared capture plan](../README.md#screenshot-capture-plan) for new scre
 
 The [product guidelines](https://docs.elgato.com/guidelines/products/) require a 288×288 PNG app icon, 1920×960 PNG thumbnail/gallery images, English text and at least three gallery items (up to ten). The prepared upload set includes the icon, a separate thumbnail and three gallery images. Review the actual Console fields when submitting media.
 
-The same [product guidelines](https://docs.elgato.com/guidelines/products/#description) specify an English description of 250–1,500 characters, with unformatted introductory text. Check the complete description, including retained text, when applying the How to Use draft.
+The same [product guidelines](https://docs.elgato.com/guidelines/products/#description) specify an English description of 250–1,500 characters, with unformatted introductory text. When revising the listing, check the complete description, including retained text.
 
 The root README shares the [1920×960 Marketplace thumbnail](listing/thumbnail-1920x960.png). The smaller image in `screenshots/` is the canonical capture source, not the sized gallery upload.
 
