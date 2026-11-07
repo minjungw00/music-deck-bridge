@@ -30,7 +30,7 @@
     "prebuild:dev": "npm run build:plugin"
   },
   "dependencies": {
-    "@elgato/streamdeck": "3.0.3",
+    "@elgato/streamdeck": "3.0.4",
     "image-size": "2.0.4"
   },
   "devDependencies": {
@@ -40,8 +40,8 @@
     "ws": "8.22.1"
   },
   "overrides": {
-    "@elgato/utils@0.6.1": {
-      "zod": "4.6.7"
+    "@elgato/utils": {
+      "zod": "^4.6.7"
     }
   }
 }
