@@ -1,19 +1,22 @@
 # Runtime verification
 
-Evidence reviewed October 29, 2026 (Asia/Seoul). [Release verification](releases.md) holds published source, CI and package hashes. This record separates local models, maintainer reports and independently observed operation.
+Evidence through November 7, 2026 (Asia/Seoul). [Release verification](releases.md) holds published source, CI and package hashes. This record separates local models, maintainer reports and independently observed operation.
 
 ## Current evidence
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
+| November 7 post-release `main` [CI 42381040754](https://github.com/minjungw00/music-deck-bridge/actions/runs/42381040754), source `ae5ed0b8bcff9ce310fb47b613ef69f2f7b94890` | Windows and Ubuntu each passed locked installation, 220 Node tests (0 failures), two Python packaging tests, code checks and Chrome/Stream Deck packaging. `npm audit` reported zero vulnerabilities on both. Ubuntu also passed the MV3 integration test in Chromium | Development source and CI packages only. Physical Stream Deck operation on Windows and execution of store-processed DRM packages remain unverified |
 | Latest full local run, release source `5a8447431167` | 218 Node tests, two Python packaging tests, syntax/JSON/manifests, audit with zero reported vulnerabilities and Chromium 156.0.8078.4 MV3 integration | Disposable local player model; no independent Windows/site observation |
-| Exact-source [CI 40786383387](https://github.com/minjungw00/music-deck-bridge/actions/runs/40786383387) | Windows and Ubuntu passed locked installation, 218 Node tests, two Python tests, checks, audit and official packaging; Ubuntu also passed Chromium integration. Both archives were downloaded and their metadata, checksums and all payload files compared | Automated fixtures and package/source verification; hardware/site/DRM operation remains separate |
+| v1.1.3 exact-source [CI 40786383387](https://github.com/minjungw00/music-deck-bridge/actions/runs/40786383387) | Windows and Ubuntu passed locked installation, 218 Node tests, two Python tests, checks, audit and official packaging; Ubuntu also passed Chromium integration. Both archives were downloaded and their metadata, checksums and all payload files compared | Automated fixtures and package/source verification; hardware/site/DRM operation remains separate |
 | Released 1.1.3 | Tag, final package inventory, draft downloads and anonymous public download bytes verified; [release record](releases.md#v113) | Hardware operation and execution of an identified DRM package remain unverified. See the [separate public listing observation](stores.md#public-description-correction). |
 | Previous-boundary review, `7318a3a` | Three targeted first-item/same-track fixtures; the added fixture is included in the later 218-test full run | Models restart evidence, not the site's actual queue/history contents |
 | 1.1.3 maintainer reports | New-window playback appeared normal after startup recovery; operation confirmed after destination recovery | Confirmation precedes the playback refactor and is not an itemized environment inventory |
 | Later first-Previous comparison | Site button behaves similarly; after more than five seconds it restarts the same song | Queue/history absence is an interpretation, not a measured queue fact |
 | Released 1.1.2 | Maintainer-confirmed release/store operation, including both published stores on October 24 | Detailed identified DRM and clean-environment coverage remain separate |
 | October 29 documentation review | Syntax/resources/versions, two Python packaging tests and 359 local links/images across 34 Markdown files pass; submitted originals and ten build identities preserved | Documentation-only changes; no new full runtime run or package publication |
+
+The November 7 `main` run used `@elgato/streamdeck` 3.0.4, `@elgato/cli` 1.10.4 and `ws` 8.22.1. The scoped `@elgato/utils` override specifies Zod `^4.6.7` and the lockfile resolves 4.6.7. The tests in [PR #8](https://github.com/minjungw00/music-deck-bridge/pull/8) resolve `@elgato/utils` through the installed SDK and load `zod/v4-mini` and the JSON-RPC schemas through utils. The two added tests cover element validation for in-range and oversized arrays and JSON-RPC request and response validation.
 
 ## Automated and rendering checks
 

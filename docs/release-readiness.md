@@ -1,6 +1,6 @@
 # Release readiness
 
-Updated November 7, 2026 (Asia/Seoul) with the November 6 Elgato listing observation. General installation starts with the [official stores](installation.en.md#method-1-official-stores). Public releases, local development and store processing have separate evidence.
+Updated November 7, 2026 (Asia/Seoul) with the November 6 Elgato listing observation and November 7 `main` CI results. General installation starts with the [official stores](installation.en.md#method-1-official-stores). Public releases, development and store processing have separate evidence.
 
 ## Current versions and distribution
 
@@ -19,7 +19,8 @@ The [runtime record](verification/runtime.md#current-evidence) is the source for
 
 | Area | Current evidence | Remaining limit |
 | --- | --- | --- |
-| Final development checks | At `131b5ef3ebe2`: fresh locked install, 218 Node tests, two Python tests, syntax/resources/versions, audit with zero reported vulnerabilities and Chromium MV3 integration; exact-source [Windows/Ubuntu CI](https://github.com/minjungw00/music-deck-bridge/actions/runs/40785323853) passed | Automated fixtures; no independent Windows/site operation |
+| November 7 post-release `main` CI | At `ae5ed0b8bcff`, [CI 42381040754](https://github.com/minjungw00/music-deck-bridge/actions/runs/42381040754) passed on Windows and Ubuntu with 220 Node tests (0 failures) and two Python packaging tests on each OS, code checks, zero vulnerabilities reported by `npm audit` and Chrome/Stream Deck packaging. Ubuntu also passed Chromium MV3 integration | Development CI only. Physical Stream Deck operation on Windows and execution of store-processed DRM packages remain unverified |
+| October 29 pre-release checks | At `131b5ef3ebe2`: fresh locked install, 218 Node tests, two Python tests, syntax/resources/versions, audit with zero reported vulnerabilities and Chromium MV3 integration; exact-source [Windows/Ubuntu CI](https://github.com/minjungw00/music-deck-bridge/actions/runs/40785323853) passed | Automated fixtures; no independent Windows/site operation |
 | Startup and destination playback | Maintainer reported new-window recovery normal, then confirmed destination recovery before refactoring | Preserve that confirmation; it is not a complete post-refactor/hardware inventory |
 | First Previous at a restored selection | Later real log shows healthy playing state; the site button similarly restarts the same song after time has advanced; boundary regression is included in the passing 218-test full run | Actual queue/history absence remains an interpretation; a restart at zero without observable evidence can remain unconfirmed |
 | Security dependencies | Dated locked installation/audit and schema comparisons support the scoped Zod override | Review the override when utils declares a patched range; audit results are time-specific |
