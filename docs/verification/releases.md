@@ -20,6 +20,22 @@ All three files downloaded from the draft matched the prepared inventory before 
 | `music-deck-bridge-chrome-1.2.0.zip` | 160154 | `a7ffb9eefe5d813da5232dca6a7f00144bfc6a2d977cbdb1917921d8b4ee6b79` |
 | `SHA256SUMS.txt` | 221 | `94c2cee7dac2465c28a3306fe0d106cfdce4a4870dd6944cd7fcc006894d3fca` |
 
+The maintainer subsequently judged canonical replacement acceptable before store publication and authorized it as an exception to the existing preservation rule. Replacement preparation retains verified copies of all six files and the preceding notes/metadata; the corrected source will use the normal three-file inventory and an archived reference to the original tag. Exact-source validation and actual replacement remain pending. The original and temporary r1 observations below/above retain their historical scope.
+
+### r1 Chrome revision
+
+At the maintainer's request, the existing 1.2.0 release received a separately identified Chrome **r1** revision on November 14 at **01:28:19 KST**. Application versions remain Chrome/source 1.2.0 and plugin 1.2.0.0. The immutable original `v1.2.0` tag and all three original asset IDs, sizes and bytes remain unchanged. Source revision tag `v1.2.0-r1` points to `8933d1cca5fb1b60c183b2f88bb405d9beb6acb9`; the automatically generated source archives under the original release still refer to the original tag.
+
+The fix adds Open YouTube Music to an empty popup and reuses/focuses existing tabs without pairing. [Exact-source CI 43462436276](https://github.com/minjungw00/music-deck-bridge/actions/runs/43462436276) passed on Windows and Ubuntu: 297 Node tests, two Python cases, checks, audit with zero reported vulnerabilities and official packaging on each OS; Ubuntu passed all three Chromium fixtures. All 44 Chrome and 76 plugin payloads matched source and each other across platforms. The plugin payload also matched the original published package, which is reused byte-for-byte. The renamed r1 Chrome ZIP preserves Windows CI archive bytes; renaming does not change its internal numeric version.
+
+The new three assets were anonymously downloaded and matched the prepared files. The original three were also downloaded again and matched their retained hashes/bytes. `SHA256SUMS-r1.txt` covers the revised Chrome ZIP, revision metadata and reused original plugin; the original checksum inventory remains intact. Release notes recommend the r1 download and source links above the original note text, which was preserved verbatim. No new store submission, real-site, physical-device, Windows PWA/native-startup or processed DRM execution was performed; [runtime coverage](runtime.md#november-14-post-release-popup-opening-fix) retains fixture scope.
+
+| Added asset | Bytes | SHA-256 |
+| --- | --- | --- |
+| `music-deck-bridge-chrome-1.2.0-r1.zip` | 160682 | `676fc6674be20b8c99f47fe920f377b3b5d5f914eb3993b9fc6fa376f6279864` |
+| `BUILD-INFO-r1.json` | 1151 | `a358fa6145b9163fb161dad7d5cd7c5a1d3a69df4aebb370b8dd19b0e6fc1e50` |
+| `SHA256SUMS-r1.txt` | 309 | `90b7fb2a64114cfc867d674ce79e5c0c9ed73f52bf45b9436da7b90f66fd0dca` |
+
 ## v1.1.3
 
 [Published](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.1.3) October 29 at 08:22:07 KST, following explicit maintainer authorization. Annotated tag `v1.1.3` resolves to source `5a844743116783b6025823bcbfb497e7190ec492`. Source/Chrome **1.1.3**, plugin **1.1.3.0**, protocol **1**. The selected target was promoted without selecting a new development cycle.

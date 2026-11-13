@@ -6,16 +6,18 @@ Updated November 14, 2026 (Asia/Seoul) after the maintainer-authorized 1.2.0 Git
 
 | Channel | Version / state | Evidence |
 | --- | --- | --- |
-| GitHub | **v1.2.0**, Chrome **1.2.0**, plugin **1.2.0.0**, protocol **1** | Published November 14 at 00:42:50 KST; latest non-draft/non-prerelease API result and all three anonymous download files verified · [Release record](verification/releases.md#v120) |
+| GitHub | **v1.2.0**, Chrome **1.2.0**, plugin **1.2.0.0**, protocol **1** | Published November 14 at 00:42:50 KST; Chrome **r1** added at 01:28:19 KST. All six public asset downloads verified; original files preserved · [Release record](verification/releases.md#v120) |
 | Elgato Marketplace | Public listing **1.1.3**, dated **November 2, 2026** on the page | November 14 direct observation confirmed the version and current installation copy. Last maintainer-reported submission was **1.1.2** / plugin **1.1.2.0** · [Store record](verification/stores.md) |
 | Chrome Web Store | **1.1.3**, updated **October 30, 2026** on the official English/Korean pages directly read November 14. | Official version/date/copy now independently observed; earlier third-party and user reports retain their original scope. Last maintainer-reported submission was **1.1.2** · [Store record and scope limits](verification/stores.md#chrome-web-store-publication-evidence) |
-| Release source | **1.2.0**, Chrome **1.2.0** (development label removed), plugin **1.2.0.0**, protocol **1** | Tag `v1.2.0` resolves to `ff139a755b25`; exact-source Windows/Ubuntu CI and package/public-byte verification completed. No next development cycle selected; no 1.2.0 store submission/publication is recorded |
+| Release source | **1.2.0**, Chrome **1.2.0** (development label removed), plugin **1.2.0.0**, protocol **1** | Original tag `v1.2.0` remains at `ff139a755b25`; Chrome revision source `v1.2.0-r1` is `8933d1cca5fb`. Exact-source Windows/Ubuntu CI and all package/public-byte comparisons completed. No next development cycle selected; no 1.2.0 store submission/publication is recorded |
 
-The maintainer has requested the popup-opening fix in the existing 1.2.0 release. Revision **r1** is being prepared with source tag `v1.2.0-r1`, a separately named Chrome archive and revision metadata/checksums. Application versions and original release files remain fixed; exact-source CI and public attachment verification are pending.
+Use the [Chrome 1.2.0 r1 ZIP](https://github.com/minjungw00/music-deck-bridge/releases/download/v1.2.0/music-deck-bridge-chrome-1.2.0-r1.zip) for the popup-opening fix, with the original plugin installer. [Revision provenance/checksums](verification/releases.md#r1-chrome-revision) distinguish these added files from the preserved original release.
 
 The [Elgato listing now recommends Add to Chrome and offers the GitHub Releases ZIP as an optional manual method](verification/stores.md#public-description-correction). The October 29 draft is historical reference copy.
 
 [1.2.0 store copy and UTM links](../store-assets/drafts/v1.2.0/README.md) are prepared for review. They have not been submitted or published; [November 14 observations](verification/stores.md#november-14-public-listing-review-and-120-drafts) distinguish the current listings from the proposals.
+
+The maintainer subsequently authorized replacing the canonical 1.2.0 tag/Chrome archive before store publication, explicitly overriding preservation for this release. Corrected source and standard three-file packaging are being prepared for exact-source CI; the initial source/files and temporary r1 evidence are retained. Replacement and cleanup remain pending.
 
 ## Development validation
 
@@ -23,6 +25,7 @@ The [runtime record](verification/runtime.md#current-evidence) is the source for
 
 | Area | Current evidence | Remaining limit |
 | --- | --- | --- |
+| November 14 1.2.0 r1 | [CI 43462436276](https://github.com/minjungw00/music-deck-bridge/actions/runs/43462436276): both OSes passed 297 Node tests, two Python tests, checks/audit/official packaging; Ubuntu passed three browser fixtures. All six public assets verified | Fixture operation; no new store/real-site/hardware/processed-package validation |
 | November 14 stable 1.2.0 | [Exact-source CI 43454249656](https://github.com/minjungw00/music-deck-bridge/actions/runs/43454249656): both OSes passed 288 Node tests, two Python tests, static/audit/official packaging; Ubuntu passed three browser fixtures | Local full Node run passed 286/288; separate clock monitor/targeted comparisons and scope limits are retained in [runtime evidence](verification/runtime.md#november-14-stable-release-checks) |
 | November 14 review / refactor | Final local 288 Node tests, two Python packaging tests, static checks and three Chromium fixtures passed; [review scope and initial failed-run comparison](verification/runtime.md#november-14-code-review-and-refactor) | One initial unchanged startup-retry fixture failed; cause unresolved after isolated baseline/current passes and a passing full rerun. Real Music, hardware and Windows operation remain separate |
 | November 13 standalone / slider revision | 256 Node tests, two Python packaging tests, static checks and Chromium MV3 passed, including stopped-plugin/token-free controls and restored state synchronization; [runtime record](verification/runtime.md#november-13-standalone-player-and-volume-slider) | Local player model and labeled visual fixtures; actual Music, hardware and Windows behavior remain separate |

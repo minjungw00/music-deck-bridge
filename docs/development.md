@@ -133,15 +133,13 @@ node scripts/artifacts.mjs verify
 
 The commands require the nonempty packages matching `package.json`, generate checksums and reject stale versions, unexpected files, malformed inventories or changed bytes. `dist/staging/` is allowed locally and excluded from uploads. No additional Node dependencies are required.
 
-An initial GitHub release contains exactly:
+A GitHub release contains exactly:
 
 ```text
 io.github.minjungw00.musicdeckbridge.streamDeckPlugin
 music-deck-bridge-chrome-<version>.zip
 SHA256SUMS.txt
 ```
-
-An explicitly authorized [post-publication revision](versioning.md#post-publication-revisions) may append separately named revision files to this inventory. Preserve the original tag, three assets and note text; identify the later source, checksums and recommended download independently.
 
 Marketplace processing is separate. Review Elgato's [DRM distribution requirements](https://docs.elgato.com/streamdeck/sdk/introduction/distribution/), including official SDK v2+ for Node.js DRM, and retain processed-package evidence in the [DRM record](verification/marketplace-drm.md).
 
