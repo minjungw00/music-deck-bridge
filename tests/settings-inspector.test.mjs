@@ -15,6 +15,7 @@ function makeInspector(action='io.github.minjungw00.musicdeckbridge.nowplaying',
     'artworkTextOptions','artworkArtistRow','artworkShowArtist','artworkBackgroundRow','artworkTitleBackground','artworkTitleModeRow','artworkTitleMode','optArtworkTruncate','optArtworkScroll',
     'artworkOptions','artworkFitRow','artworkFit','optArtworkHeight','optArtworkWidth','artworkFitHint','artworkTitleRow','artworkShowTitle',
     'volumeSection','volumeFeedbackOptions','volumeValueRow','volumeShowValue','volumePercentRow','volumeShowPercent',
+    'volumeDurationOptions','feedbackDurationRow','volumeFeedbackSeconds','feedbackDurationLabel','feedbackDurationMin','feedbackDurationMax','feedbackDurationHint',
     'portRow','serverPort','applyPort','portStatus'];
   const elems=Object.fromEntries(ids.map(id=>[id,{
     id, textContent:'',value:id==='volumeStep'?'4':'',listeners:{},attrs:{},dataset:{},
@@ -114,6 +115,37 @@ test('volume feedback settings use number-only defaults and appear only on volum
   }
   assert.match(html, /setting="volumeShowValue" default="true"/);
   assert.match(html, /setting="volumeShowPercent" default="false"/);
+});
+
+test('volume duration range localizes, preserves concurrent edits and saves zero without losing other settings', async () => {
+  for (const [language, unit, label] of [['ko', '초', '숫자 유지 시간'], ['en', 's', 'Display duration']]) {
+    for (const action of ['volumeup', 'volumedown']) {
+      const pi = makeInspector('io.github.minjungw00.musicdeckbridge.' + action, language); await pi.ready();
+      assert.equal(pi.elems.feedbackDurationLabel.textContent, '2' + unit);
+      assert.equal(pi.elems.feedbackDurationRow.attrs.label, label);
+      pi.elems.volumeStep.listeners.input({ target: { value: '4' } });
+      pi.elems.volumeFeedbackSeconds.listeners.input({ target: { value: '0' } });
+      assert.equal(pi.elems.feedbackDurationLabel.textContent, '0' + unit);
+      assert.equal(pi.elems.volumeFeedbackSeconds.attrs['aria-valuetext'], '0' + unit);
+      assert.equal(pi.calls.at(-1).payload.type, 'volume-duration-preview');
+      assert.equal(pi.calls.at(-1).payload.value, 0);
+      pi.subscribers.settings({ payload: { settings: { volumeStep: 3, volumeFeedbackSeconds: 2 } } });
+      assert.equal(pi.elems.volumeStep.value, '4');
+      assert.equal(pi.elems.volumeFeedbackSeconds.value, '0');
+      pi.elems.volumeFeedbackSeconds.listeners.change({ target: { value: '0' } });
+      assert.equal(pi.calls.at(-1).settings.volumeFeedbackSeconds, 0);
+      assert.equal(pi.calls.at(-1).settings.volumeStep, 4);
+      assert.equal(pi.calls.at(-1).settings.customFlag, true);
+      pi.elems.volumeStep.listeners.change({ target: { value: '4' } });
+      assert.equal(pi.calls.at(-1).settings.volumeFeedbackSeconds, 0);
+      pi.subscribers.settings({ payload: { settings: { volumeStep: 4, volumeFeedbackSeconds: 0 } } });
+      pi.subscribers.settings({ payload: { settings: { volumeFeedbackSeconds: 3 } } });
+      assert.equal(pi.elems.feedbackDurationLabel.textContent, '3' + unit);
+      pi.elems.volumeShowValue.value = false; pi.elems.volumeShowValue.listeners.valuechange();
+      assert.equal(pi.elems.volumeDurationOptions.classList.hidden, true);
+    }
+  }
+  assert.match(html, /id="volumeFeedbackSeconds" type="range" min="0" max="3" step="0.1" value="2"/);
 });
 
 test('current-track dial exposes its localized persisted display selector only on that action', async () => {

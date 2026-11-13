@@ -7,7 +7,7 @@
 - Remove baked corner rounding from device key/state backgrounds; retain the brand/store marks and circular popup presentation.
 - Match the Mute key to the Volume Dial: show the volume icon while unmuted and the mute icon only for confirmed mute state.
 - Add Volume Up / Down keys with matching speaker +/− artwork and independent 1–5 percentage-point steps (default: 4), reusing the existing volume command channel and immediate settings preview.
-- Add per-key volume-number and percent-sign settings. By default, briefly replace only the pressed volume key's symbol with the reported number inside its shared circular badge. Wait for command success and a fresh player snapshot, restore the icon after two seconds and renew the display for repeated inputs.
+- Add per-key volume-number and percent-sign settings with a 0–3 second duration slider in 0.1-second steps (default: numbers on, percent sign off, 2 seconds). Wait for command success and a fresh player snapshot, then briefly replace the pressed key's symbol with the reported number. Zero keeps the icon; repeated inputs renew the interval and live settings retain concurrent volume-step edits.
 - Reuse the exact Stream Deck PNG icons, including playback, rating and mute states; show only their circular area and give rating buttons the same layout as transport buttons.
 - Group connection settings in a collapsible section, align PIN/port guidance under matching headers and add explicit Stream Deck connection headers. Place the optional plugin guidance above PIN pairing.
 - Preserve popup bottom spacing when expanded connection settings exceed the popup height.

@@ -17,7 +17,7 @@
     #pinOutput:empty { display: none; }
     .inline { display: flex; align-items: center; gap: 8px; }
     .connection-actions { flex-wrap: wrap; align-items: flex-start; }
-    #stepLabel { color: #fff; font-variant-numeric: tabular-nums; min-width: 24px; }
+    #stepLabel, #feedbackDurationLabel { color: #fff; font-variant-numeric: tabular-nums; min-width: 24px; }
     .port-input { width: 88px; min-width: 72px; }
     .connection { border-top: 1px solid #515151; padding-top: 10px; margin-top: 8px; }
     sdpi-item { color: #e6e6e6; }
@@ -119,6 +119,17 @@
       <sdpi-item id="volumeValueRow" label="Volume feedback">
         <sdpi-checkbox id="volumeShowValue" setting="volumeShowValue" default="true" label="Show volume number on press"></sdpi-checkbox>
       </sdpi-item>
+      <div id="volumeDurationOptions">
+        <sdpi-item id="feedbackDurationRow" label="Display duration">
+          <div class="native-range">
+            <span id="feedbackDurationMin" aria-hidden="true">0s</span>
+            <input id="volumeFeedbackSeconds" type="range" min="0" max="3" step="0.1" value="2" aria-label="Display duration" aria-describedby="feedbackDurationHint">
+            <span id="feedbackDurationMax" aria-hidden="true">3s</span>
+            <output id="feedbackDurationLabel" for="volumeFeedbackSeconds">2s</output>
+          </div>
+        </sdpi-item>
+        <p id="feedbackDurationHint" class="hint">At 0s, the key keeps its icon.</p>
+      </div>
       <sdpi-item id="volumePercentRow" label="Number format">
         <sdpi-checkbox id="volumeShowPercent" setting="volumeShowPercent" default="false" label="Show percent sign"></sdpi-checkbox>
       </sdpi-item>

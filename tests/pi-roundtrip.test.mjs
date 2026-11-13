@@ -269,7 +269,8 @@ for (const protectedManifest of [false, true]) {
     for (const [name, volume] of [['volumeup', 53], ['volumedown', 50], ['volumeup', 100], ['volumedown', 0]]) {
       await waitFor(() => toggleImage(name) === `imgs/actions/${name}/key@2x.png`);
       const percent = name === 'volumedown';
-      send('didReceiveSettings', name, { settings: { volumeStep: 3, volumeShowPercent: percent } });
+      send('didReceiveSettings', name, { settings: { volumeStep: 3, volumeShowPercent: percent,
+        volumeFeedbackSeconds: percent ? 1 : .5 } });
       if (volume === 0 || volume === 100) {
         state.volume = volume;
         await post('/sync', { token, clientId: 1, state });
@@ -292,6 +293,12 @@ for (const protectedManifest of [false, true]) {
     await post('/sync', { token, clientId: 1, state });
     await new Promise(resolve => setTimeout(resolve, 180));
     assert.equal(toggleImage('volumeup'), 'imgs/actions/volumeup/key@2x.png', 'disabled number feedback retains the icon');
+    send('didReceiveSettings', 'volumeup', { settings: { volumeFeedbackSeconds: 0 } });
+    await browserCommand('volumeup', 'volume_delta', 1);
+    state.volume = 8;
+    await post('/sync', { token, clientId: 1, state });
+    await new Promise(resolve => setTimeout(resolve, 180));
+    assert.equal(toggleImage('volumeup'), 'imgs/actions/volumeup/key@2x.png', 'zero duration keeps the icon while volume controls still work');
     send('willDisappear', 'nowplaying', { controller: 'Keypad', settings: {}, coordinates: { column: 0, row: 0 }, state: 0 });
     const count = messages.length;
     state.title = 'Changed after disappearance';

@@ -23,6 +23,7 @@ function harness() {
   for (const name of ['volumeup', 'volumedown']) event('willAppear', name);
   return { images, requests, alerts, timers, renderer,
     settings(settings, context = 'volumeup') { event('didReceiveSettings', context, context, { settings }); },
+    duration(value, context = 'volumeup') { event('sendToPlugin', context, context, { type: 'volume-duration-preview', value }); },
     press(context = 'volumeup') { event('keyDown', context); return requests.at(-1); },
     sync(volume, id = '1') { selected = id === null ? null : [id, { volume, lastMediaSyncAt: time }]; renderer.paint(); },
     async ack(request, ok = true) { request.resolve(ok); await flush(); },
@@ -58,6 +59,64 @@ test('fresh unchanged 0/100 snapshots show actual boundaries without adding the 
     await h.ack(h.press(name)); h.sync(volume);
     assert.match(svg(h.images.get(name)), new RegExp(`>${volume}</text>`));
   }
+});
+
+test('duration supports 0–3 seconds per key and defaults to two for absent or invalid settings', async () => {
+  for (const [seconds, milliseconds] of [[0, 0], ['0', 0], [.1, 100], [1.5, 1500], ['1.5', 1500], [3, 3000],
+    [undefined, 2000], [null, 2000], [false, 2000], ['', 2000], [-1, 2000], [4, 2000], [NaN, 2000], ['wrong', 2000]]) {
+    const h = harness(); h.settings({ volumeFeedbackSeconds: seconds });
+    await h.ack(h.press()); h.sync(54);
+    if (milliseconds === 0) {
+      assert.equal(h.images.get('volumeup'), icon('volumeup'));
+      assert.equal(h.timers.size, 0);
+    } else {
+      h.advance(milliseconds - 1);
+      assert.match(h.images.get('volumeup'), /^data:image\/svg/);
+      h.advance(1);
+      assert.equal(h.images.get('volumeup'), icon('volumeup'));
+    }
+  }
+  const h = harness();
+  h.settings({ volumeFeedbackSeconds: .5 }, 'volumeup');
+  h.settings({ volumeFeedbackSeconds: 3 }, 'volumedown');
+  await h.ack(h.press()); await h.ack(h.press('volumedown')); h.sync(50);
+  h.advance(500);
+  assert.equal(h.images.get('volumeup'), icon('volumeup'));
+  assert.match(h.images.get('volumedown'), /^data:image\/svg/);
+  h.advance(2500);
+  assert.equal(h.images.get('volumedown'), icon('volumedown'));
+});
+
+test('live duration changes retain elapsed time and repeated confirmed inputs start a new interval', async () => {
+  const h = harness();
+  await h.ack(h.press()); h.sync(54); h.advance(1000);
+  h.settings({ volumeFeedbackSeconds: 3 }); h.advance(1500);
+  assert.match(h.images.get('volumeup'), /^data:image\/svg/);
+  await h.ack(h.press()); h.sync(58); h.advance(1000);
+  h.settings({ volumeFeedbackSeconds: 1.5 }); h.advance(499);
+  assert.match(h.images.get('volumeup'), /^data:image\/svg/);
+  h.advance(1);
+  assert.equal(h.images.get('volumeup'), icon('volumeup'));
+});
+
+test('duration preview survives stale settings and zero cancels pending feedback without canceling the command', async () => {
+  const h = harness();
+  h.duration(.5); h.settings({ volumeFeedbackSeconds: 2 });
+  await h.ack(h.press()); h.sync(54); h.advance(500);
+  assert.equal(h.images.get('volumeup'), icon('volumeup'));
+  const pending = h.press();
+  h.duration(0); h.settings({ volumeFeedbackSeconds: null });
+  h.sync(58); await h.ack(pending);
+  assert.equal(h.images.get('volumeup'), icon('volumeup'));
+  assert.equal(h.timers.size, 0);
+  h.duration(4); h.duration(-1);
+  await h.ack(h.press()); h.sync(62);
+  assert.equal(h.images.get('volumeup'), icon('volumeup'), 'invalid preview values cannot replace zero');
+  h.settings({ volumeFeedbackSeconds: 0 }); h.settings({ volumeFeedbackSeconds: 3 });
+  await h.ack(h.press()); h.sync(66); h.advance(2999);
+  assert.match(h.images.get('volumeup'), /^data:image\/svg/);
+  h.advance(1);
+  assert.equal(h.images.get('volumeup'), icon('volumeup'));
 });
 
 test('repeated inputs extend feedback and live snapshots update its number without extending the timer', async () => {

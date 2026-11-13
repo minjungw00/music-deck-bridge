@@ -13,11 +13,15 @@ let lastPin = '';
 let lastPinExpiresAt = 0;
 let portIsDirty = false;
 let volumeKey = false;
-const { validVolume, createVolumeEditor } = MusicDeckVolumeEditor;
+const { validVolume, validDuration, createVolumeEditor } = MusicDeckVolumeEditor;
 const editor = createVolumeEditor({
   onValue(value) { $('volumeStep').value = String(value); updateVolumeLabel(); },
   onPreview(value) {
     if (connectedToHost) void client.send('sendToPlugin', { type: 'volume-preview', value }).catch(() => {});
+  },
+  onDurationValue(value) { $('volumeFeedbackSeconds').value = String(value); updateDurationLabel(); },
+  onDurationPreview(value) {
+    if (connectedToHost) void client.send('sendToPlugin', { type: 'volume-duration-preview', value }).catch(() => {});
   },
   onSave(settings) {
     if (connectedToHost) void client.setSettings(settings).catch(() => {});
@@ -64,6 +68,11 @@ function localize() {
   $('volumeHint').textContent = t(volumeKey ? 'volumeKeyHint' : 'volumeHint');
   for (const id of ['volumeValueRow', 'volumePercentRow']) $(id).setAttribute('label', t(id));
   for (const id of ['volumeShowValue', 'volumeShowPercent']) $(id).setAttribute('label', t(id));
+  $('feedbackDurationRow').setAttribute('label', t('feedbackDurationRow'));
+  $('volumeFeedbackSeconds').setAttribute('aria-label', t('feedbackDurationRow'));
+  $('feedbackDurationMin').textContent = `0${t('feedbackDurationUnit')}`;
+  $('feedbackDurationMax').textContent = `3${t('feedbackDurationUnit')}`;
+  $('feedbackDurationHint').textContent = t('feedbackDurationHint');
   $('installExtension').textContent = t('installExtension');
   $('companionHint').textContent = t('companionHint');
   $('pinRow').setAttribute('label', t('pinRow'));
@@ -74,6 +83,7 @@ function localize() {
   if (!$('portStatus').dataset?.hasResult) $('portStatus').textContent = t('portHint');
   if (!currentStatus) $('pairState').textContent = t('checking');
   updateVolumeLabel();
+  updateDurationLabel();
 }
 function updateVolumeLabel() {
   const value = validVolume($('volumeStep').value) ?? 4;
@@ -81,6 +91,12 @@ function updateVolumeLabel() {
 }
 function updateVolumeFeedbackOptions(showValue = $('volumeShowValue').value) {
   $('volumePercentRow').classList.toggle('hidden', showValue === false);
+  $('volumeDurationOptions').classList.toggle('hidden', showValue === false);
+}
+function updateDurationLabel() {
+  const label = `${validDuration($('volumeFeedbackSeconds').value) ?? 2}${t('feedbackDurationUnit')}`;
+  $('feedbackDurationLabel').textContent = label;
+  $('volumeFeedbackSeconds').setAttribute('aria-valuetext', label);
 }
 $('volumeShowValue').addEventListener('valuechange', () => {
   editor.receive({ volumeShowValue: $('volumeShowValue').value !== false });
@@ -175,6 +191,8 @@ $('generatePin').addEventListener('click', () => { lastPin = ''; void requestCon
 // Read event.target.value from the native input while persistence is pending.
 $('volumeStep').addEventListener('input', event => editor.input(event.target.value));
 $('volumeStep').addEventListener('change', event => editor.change(event.target.value));
+$('volumeFeedbackSeconds').addEventListener('input', event => editor.durationInput(event.target.value));
+$('volumeFeedbackSeconds').addEventListener('change', event => editor.durationChange(event.target.value));
 $('serverPort').addEventListener('input', () => { portIsDirty = true; });
 $('applyPort').addEventListener('click', () => {
   const port = Number($('serverPort').value);
