@@ -1,13 +1,14 @@
 # Runtime verification
 
-Evidence through November 7, 2026 (Asia/Seoul). [Release verification](releases.md) holds published source, CI and package hashes. This record separates local models, maintainer reports and independently observed operation.
+Evidence through November 13, 2026 (Asia/Seoul). [Release verification](releases.md) holds published source, CI and package hashes. This record separates local models, maintainer reports and independently observed operation.
 
 ## Current evidence
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
+| November 13 local 1.1.4-dev popup update | 226 Node tests, two Python packaging tests, syntax/resources/versions and Chromium 156.0.8078.4 MV3 integration passed. The actual toolbar popup displayed changed fixture metadata without reopening or a Status click | Local HTTPS player model; no signed-in YouTube Music, physical Stream Deck or Windows observation |
 | November 7 post-release `main` [CI 42381040754](https://github.com/minjungw00/music-deck-bridge/actions/runs/42381040754), source `ae5ed0b8bcff9ce310fb47b613ef69f2f7b94890` | Windows and Ubuntu each passed locked installation, 220 Node tests (0 failures), two Python packaging tests, code checks and Chrome/Stream Deck packaging. `npm audit` reported zero vulnerabilities on both. Ubuntu also passed the MV3 integration test in Chromium | Development source and CI packages only. Physical Stream Deck operation on Windows and execution of store-processed DRM packages remain unverified |
-| Latest full local run, release source `5a8447431167` | 218 Node tests, two Python packaging tests, syntax/JSON/manifests, audit with zero reported vulnerabilities and Chromium 156.0.8078.4 MV3 integration | Disposable local player model; no independent Windows/site observation |
+| October 29 full local run, release source `5a8447431167` | 218 Node tests, two Python packaging tests, syntax/JSON/manifests, audit with zero reported vulnerabilities and Chromium 156.0.8078.4 MV3 integration | Disposable local player model; no independent Windows/site observation |
 | v1.1.3 exact-source [CI 40786383387](https://github.com/minjungw00/music-deck-bridge/actions/runs/40786383387) | Windows and Ubuntu passed locked installation, 218 Node tests, two Python tests, checks, audit and official packaging; Ubuntu also passed Chromium integration. Both archives were downloaded and their metadata, checksums and all payload files compared | Automated fixtures and package/source verification; hardware/site/DRM operation remains separate |
 | Released 1.1.3 | Tag, final package inventory, draft downloads and anonymous public download bytes verified; [release record](releases.md#v113) | Hardware operation and execution of an identified DRM package remain unverified. See the [separate public listing observation](stores.md#public-description-correction). |
 | Previous-boundary review, `7318a3a` | Three targeted first-item/same-track fixtures; the added fixture is included in the later 218-test full run | Models restart evidence, not the site's actual queue/history contents |
@@ -27,6 +28,12 @@ The November 7 `main` run used `@elgato/streamdeck` 3.0.4, `@elgato/cli` 1.10.4 
 | Key/dial output | Settings, profile reappearance, rotation/press/touch, proportional artwork, artist placement, backdrops and scrolling; Qt 6.10.3 reference rendering |
 | Popup | English/Korean sample responses at 290 CSS px; 80×36 buttons, 28px heading icon and no overflow |
 | Distribution | Real worker import graph, serialized MAIN entry point, package allowlists/notices, fixed development versions and source/checksum metadata |
+
+### November 13 popup refresh
+
+The preceding popup queried status only at startup and on a Status click. The new periodic-refresh regression fails against that source because no automatic request occurs. Six added Node fixtures cover track/artwork changes, player disappearance, connection loss/recovery, non-overlapping reads, pending pair/unpair/port changes, stale replies, retained action feedback, hidden documents and popup cleanup. The updated MV3 test opens the actual toolbar popup through `chrome.action.openPopup()` and reads its CDP target while the local player metadata changes; it does not substitute an extension tab for the popup's runtime sender.
+
+The Stream Deck inspector groups the extension installation button with PIN generation under Connection, with the generated PIN below its button. Chromium rendering with a temporary Windows Korean font confirmed the empty PIN is hidden and generated digits sit below the PIN button without clipping at 340/400 CSS px in English and Korean. This is a browser rendering check, not Stream Deck host validation. The fixed development target, protocol, pairing identity and image-download behavior are unchanged. Image failures remain separate from successful playback connectivity.
 
 ### October 29 pre-release review
 

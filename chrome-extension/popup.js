@@ -16,15 +16,26 @@ for (const [id, key] of [['heading','heading'],['subtitle','subtitle'],['compani
 }
 let latestRequest = 0;
 let portRevision = 0;
-function info(message, ok = false) {
-  $('status').textContent = message;
-  $('status').style.color = ok ? '#8ceba2' : '#fbabb6';
+let pendingActions = 0;
+let statusRequests = 0;
+let closed = false;
+function display(id, message, ok = false) {
+  if ($(id).textContent !== message) $(id).textContent = message;
+  $(id).style.color = ok ? '#8ceba2' : '#fbabb6';
+}
+function info(message, ok = false) { display('feedback', message, ok); }
+function onAction(id, handler) {
+  $(id).addEventListener('click', async () => {
+    const request = ++latestRequest;
+    pendingActions++;
+    try { await handler(request); }
+    finally { pendingActions--; }
+  });
 }
 function showVersions(value) {
   $('versions').textContent = value ? `${chrome.i18n.getMessage('pluginLabel')} ${value.pluginVersion || '—'} · ${chrome.i18n.getMessage('extensionLabel')} ${value.extensionVersion || '—'}\n${chrome.i18n.getMessage('protocolLabel')}: ${value.negotiatedProtocolVersion || '—'}${value.legacy ? ` (${chrome.i18n.getMessage('legacyProtocol')})` : ''}` : '';
 }
-$('connect').addEventListener('click', async () => {
-  const request = ++latestRequest;
+onAction('connect', async request => {
   const pin = $('pin').value.trim();
   if (!/^\d{6}$/.test(pin)) return info(text.invalid);
   info(text.checking);
@@ -37,32 +48,37 @@ $('connect').addEventListener('click', async () => {
     info(text.connected, true);
   } catch (e) { if (request === latestRequest) info(e.message); }
 });
-$('refresh').addEventListener('click', async () => {
-  const request = ++latestRequest;
+async function refreshStatus(automatic = false) {
+  if (closed || (automatic && (pendingActions || statusRequests || document.hidden))) return;
+  // Background reads cannot supersede a user action, including a pending write.
+  const request = automatic ? latestRequest : ++latestRequest;
+  if (!automatic) info('');
+  statusRequests++;
   try {
     const r = await chrome.runtime.sendMessage({ type:'check' });
-    if (request !== latestRequest) return;
+    if (closed || request !== latestRequest) return;
     showVersions(r?.compatibility);
-    if (!r?.ok) return info(r?.error || text.unknown);
-    if (!r.active) return info(text.paired, true);
+    if (!r?.ok) return display('status', r?.error || text.unknown);
+    if (!r.active) return display('status', text.paired, true);
     const cover = coverMessages.get(r.coverStatus) || coverMessages.get('waiting');
     const data = `${text.player} · ${r.standalone ? text.app : text.tab}\n${text.current}: ${r.track || text.waiting}\n${text.artwork}: ${cover}`;
-    info(r.playerStale ? `${data}\n${text.stale}` : data, !r.playerStale);
-  } catch (e) { if (request === latestRequest) info(e.message); }
-});
-$('forget').addEventListener('click', async () => {
-  const request = ++latestRequest;
+    display('status', r.playerStale ? `${data}\n${text.stale}` : data, !r.playerStale);
+  } catch (e) { if (!closed && request === latestRequest) display('status', e.message); }
+  finally { statusRequests--; }
+}
+$('refresh').addEventListener('click', () => refreshStatus());
+onAction('forget', async request => {
   try {
     const result = await chrome.runtime.sendMessage({ type:'unpair' });
     if (request !== latestRequest) return;
     if (!result?.ok) return info(result?.error || text.fail);
     showVersions(null);
+    display('status', '');
     info(text.removed, true);
   } catch (error) { if (request === latestRequest) info(error.message); }
 });
 $('port').addEventListener('input', () => { portRevision++; });
-$('savePort').addEventListener('click', async () => {
-  const request = ++latestRequest;
+onAction('savePort', async request => {
   const revision = ++portRevision;
   const port = Number($('port').value);
   if (!Number.isInteger(port) || port < 1024 || port > 65535) return info(text.portInvalid);
@@ -82,3 +98,8 @@ $('savePort').addEventListener('click', async () => {
   } catch {}
 })();
 $('refresh').click();
+const statusTimer = setInterval(() => { void refreshStatus(true); }, 1000);
+window.addEventListener('pagehide', () => {
+  closed = true;
+  clearInterval(statusTimer);
+}, { once: true });

@@ -34,7 +34,8 @@ for (const locale of ['en', 'ko', 'fr']) {
       } },
     };
     const document = { documentElement: {}, getElementById: element };
-    vm.runInNewContext(source, { chrome, document });
+    vm.runInNewContext(source, { chrome, document, setInterval: () => 1, clearInterval() {},
+      window: { addEventListener() {} } });
     // Drain startup status/port promises before exercising user input.
     await new Promise(resolve => setImmediate(resolve));
     assert.equal(document.title, 'Music Deck Bridge');
@@ -61,20 +62,20 @@ for (const locale of ['en', 'ko', 'fr']) {
     }
     element('pin').value = '12';
     await element('connect').click();
-    assert.equal(element('status').textContent, catalog.invalid.message);
+    assert.equal(element('feedback').textContent, catalog.invalid.message);
     assert.ok(!calls.some(call => call.type === 'pair'));
     element('pin').value = '123456';
     await element('connect').click();
     assert.equal(element('pin').value, '');
-    assert.equal(element('status').textContent, catalog.connected.message);
+    assert.equal(element('feedback').textContent, catalog.connected.message);
     unpairFailed = true;
     await element('forget').click();
-    assert.equal(element('status').textContent, catalog.unpairFailed.message);
+    assert.equal(element('feedback').textContent, catalog.unpairFailed.message);
     unpairFailed = false;
     await element('forget').click();
-    assert.equal(element('status').textContent, catalog.removed.message);
+    assert.equal(element('feedback').textContent, catalog.removed.message);
     element('port').value = '1';
     await element('savePort').click();
-    assert.equal(element('status').textContent, catalog.portInvalid.message);
+    assert.equal(element('feedback').textContent, catalog.portInvalid.message);
   });
 }

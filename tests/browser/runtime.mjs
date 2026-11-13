@@ -315,6 +315,43 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   assert.ok(navigation.calls >= 2);
   const music = browser.pages().find(page => page.url().startsWith(musicURL));
   assert.equal(await music.evaluate(() => document.body.dataset.next), '1', 'no duplicate effect after navigation');
+  // Keep the real extension popup open while content metadata changes. No
+  // manual status click or popup reopen should be needed to see the new track.
+  // Chromium exposes the toolbar popup as a CDP target without a Playwright
+  // page event. A regular extension tab has a different runtime message sender.
+  const popupSession = await browser.browser().newBrowserCDPSession();
+  await worker.evaluate(() => chrome.action.openPopup());
+  const popup = await until(async () => (await popupSession.send('Target.getTargets')).targetInfos
+    .find(target => target.url === `${origin}/popup.html`), 'toolbar popup target');
+  const { sessionId } = await popupSession.send('Target.attachToTarget', { targetId: popup.targetId, flatten: false });
+  let popupCommand = 0, popupStatus = '';
+  async function readPopupStatus() {
+    const id = ++popupCommand;
+    let listener;
+    const response = new Promise(resolve => {
+      listener = event => {
+        const message = JSON.parse(event.message);
+        if (event.sessionId === sessionId && message.id === id) resolve(message);
+      };
+      popupSession.on('Target.receivedMessageFromTarget', listener);
+    });
+    try {
+      await popupSession.send('Target.sendMessageToTarget', { sessionId, message: JSON.stringify({ id,
+        method: 'Runtime.evaluate', params: { expression: 'document.getElementById("status")?.textContent || ""', returnByValue: true } }) });
+      const message = await response;
+      assert.equal(message.error, undefined);
+      return popupStatus = message.result.result.value;
+    } finally { popupSession.off('Target.receivedMessageFromTarget', listener); }
+  }
+  try {
+    await until(async () => (await readPopupStatus()).includes('Fixture song'), 'initial popup track');
+    await music.evaluate(() => { document.querySelector('ytmusic-player-bar .title').textContent = 'Updated fixture song'; });
+    await until(async () => (await readPopupStatus()).includes('Updated fixture song'), 'live popup track');
+  } catch (error) { t.diagnostic(`Last toolbar popup status: ${popupStatus}`); throw error; }
+  finally {
+    await popupSession.send('Target.closeTarget', { targetId: popup.targetId });
+    await popupSession.detach();
+  }
   const compatibility = await worker.evaluate(async token => {
     const current = await post('/status', { token });
     const original = fetch;
@@ -366,5 +403,5 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   } finally {
     await music.evaluate(() => { document.querySelector('ytmusic-player-bar .play-pause-button').click = globalThis.originalPlayClick; delete globalThis.originalPlayClick; });
   }
-  t.diagnostic(`Chromium ${browser.browser().version()}; ignored-initial-Play startup recovery, ignored destination Play recovery after Previous/Next followed by Pause, unstarted API-ready selection delay, Play-gated media/track initialization, cold-tab and post-launch controls, stalled/no-seek Previous followed by responsive Pause/Next, stale-monitor cancellation and receiver recovery passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
+  t.diagnostic(`Chromium ${browser.browser().version()}; ignored-initial-Play startup recovery, ignored destination Play recovery after Previous/Next followed by Pause, unstarted API-ready selection delay, Play-gated media/track initialization, cold-tab and post-launch controls, stalled/no-seek Previous followed by responsive Pause/Next, stale-monitor cancellation, receiver recovery and live popup track updates passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
 });
