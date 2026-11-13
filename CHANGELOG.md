@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.1.4-dev — Unreleased
+## v1.2.0-dev — Unreleased
 
 - Add companion-component store installation links to the Stream Deck property inspector and Chrome extension popup, with English and Korean guidance that both components are required.
 - Group the extension installation and PIN buttons under Connection in the Stream Deck inspector, with the generated PIN below its button.
