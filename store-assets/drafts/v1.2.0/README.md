@@ -36,14 +36,14 @@ Chrome Web Store는 [공식 GA 안내](https://developer.chrome.com/docs/webstor
 
 ## 나머지 필드
 
-이름은 Music Deck Bridge입니다. 공개된 1.2.0 r1 ZIP의 Chrome 짧은 설명은 다음과 같습니다.
+이름은 Music Deck Bridge입니다. 공개된 1.2.0 ZIP의 Chrome 짧은 설명은 다음과 같습니다.
 
 | 언어 | 현재 패키지의 짧은 설명 |
 | --- | --- |
 | 영어 | Control YouTube Music from Elgato Stream Deck using a Chrome extension. |
 | 한국어 | Chrome 확장 프로그램을 통해 Elgato Stream Deck에서 YouTube Music을 조작합니다. |
 
-Chrome 짧은 설명은 [manifest의 description](https://developer.chrome.com/docs/extensions/reference/manifest/description)에서 제공되며 상세 설명과 다릅니다. 위 문구는 1.2.0 r1 ZIP을 사용하는 경우의 값입니다. 이를 바꾸려면 공개 파일을 교체하지 않고 별도 패키지 개정으로 다뤄야 합니다.
+Chrome 짧은 설명은 [manifest의 description](https://developer.chrome.com/docs/extensions/reference/manifest/description)에서 제공되며 상세 설명과 다릅니다. 위 문구는 교체된 1.2.0 ZIP을 사용하는 경우의 값입니다. 이를 바꾸려면 공개 파일을 교체하지 않고 별도 패키지 개정으로 다뤄야 합니다.
 
 Elgato의 제품 UI 언어 선택 항목은 English, Korean, Chinese (Simplified), Chinese (Traditional), Japanese, Spanish, French, German에 맞춥니다. Chrome의 8개 UI 카탈로그와 상세 설명 번역 언어는 별개입니다. 기존 공개 개인정보 분류는 인증 정보·사용자 활동·웹사이트 콘텐츠이며, 제출 폼은 1.2.0의 [개인정보 처리방침](../../../PRIVACY.md)에 맞춰 검토합니다. 새 문안은 확장 단독 제어와 외부 앨범 이미지 요청을 포함하며 모든 통신이 로컬이라고 안내하지 않습니다.
 
@@ -51,10 +51,10 @@ Elgato의 제품 UI 언어 선택 항목은 English, Korean, Chinese (Simplified
 
 | 구성요소 | 공개된 1.2.0 파일 | SHA-256 |
 | --- | --- | --- |
-| Chrome | [music-deck-bridge-chrome-1.2.0-r1.zip](https://github.com/minjungw00/music-deck-bridge/releases/download/v1.2.0/music-deck-bridge-chrome-1.2.0-r1.zip) | `676fc6674be20b8c99f47fe920f377b3b5d5f914eb3993b9fc6fa376f6279864` |
+| Chrome | [music-deck-bridge-chrome-1.2.0.zip](https://github.com/minjungw00/music-deck-bridge/releases/download/v1.2.0/music-deck-bridge-chrome-1.2.0.zip) | `f423aef0414da08480ceaef4145b4b1ef0866107eb8b375e285a8a3324341397` |
 | Elgato | [io.github.minjungw00.musicdeckbridge.streamDeckPlugin](https://github.com/minjungw00/music-deck-bridge/releases/download/v1.2.0/io.github.minjungw00.musicdeckbridge.streamDeckPlugin) | `e60149ca97452c8cb5a5690f468b2b51d75e4fa2dc8a93ad4883e676ddc5acb9` |
 
-Chrome 제출용 파일은 팝업의 YouTube Music 열기 수정이 포함된 **r1**입니다. 숫자 버전은 1.2.0이며, 원본 ZIP과 태그는 보존되어 있습니다. [r1 출처·체크섬](../../../docs/verification/releases.md#r1-chrome-revision)으로 제출 파일을 식별하세요.
+Chrome 제출용 파일은 팝업의 YouTube Music 열기 수정이 포함된 **교체된 1.2.0 ZIP**입니다. 사용자의 명시적 요청으로 정식 스토어 게시 전에 기존 이름의 파일과 태그를 교체했으며, 임시 r1 첨부는 제거했습니다. [현재 체크섬과 교체 기록](../../../docs/verification/releases.md#current-corrected-publication)으로 제출 파일을 식별하세요.
 
 [릴리즈 검증](../../../docs/verification/releases.md#v120)은 GitHub 패키지의 근거입니다. 업로드·심사·스토어 게시·처리된 설치 파일의 실행 결과는 제출 후 별도로 기록합니다.
 

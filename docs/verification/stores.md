@@ -29,7 +29,9 @@ New store-to-store links use `utm_source=elgato_marketplace` or `chrome_web_stor
 
 GitHub [1.2.0](releases.md#v120) is published; that is separate from the stores' observed 1.1.3 state and these proposed listing revisions. The exact uploaded store archives, Console history and processed installers remain unverified.
 
-The later maintainer-authorized [1.2.0 Chrome r1 attachment](releases.md#r1-chrome-revision) includes the popup-opening fix while preserving the original GitHub tag/files and numeric version. The prepared submission index now selects `music-deck-bridge-chrome-1.2.0-r1.zip` (SHA-256 `676fc6674be20b8c99f47fe920f377b3b5d5f914eb3993b9fc6fa376f6279864`) with the unchanged plugin. This is package preparation; no store upload/review/publication is recorded.
+The later maintainer-authorized [temporary 1.2.0 Chrome r1 attachment](releases.md#temporary-r1-chrome-revision-superseded) included the popup-opening fix while preserving the original GitHub tag/files and numeric version. At that stage the prepared submission index selected `music-deck-bridge-chrome-1.2.0-r1.zip` (SHA-256 `676fc6674be20b8c99f47fe920f377b3b5d5f914eb3993b9fc6fa376f6279864`) with the unchanged plugin. This is package preparation; no store upload/review/publication is recorded.
+
+The maintainer subsequently authorized replacing the canonical GitHub 1.2.0 package/tag before store publication. The submission index now selects the corrected `music-deck-bridge-chrome-1.2.0.zip` (SHA-256 `f423aef0414da08480ceaef4145b4b1ef0866107eb8b375e285a8a3324341397`) with the unchanged plugin. The temporary r1 attachments were removed; initial/r1 source and hash history remains in [release verification](releases.md#current-corrected-publication). No store upload or publication was performed by this task.
 
 ## Chrome Web Store publication evidence
 
