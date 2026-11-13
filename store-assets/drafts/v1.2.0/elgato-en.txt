@@ -1,13 +1,13 @@
-Control YouTube Music from Stream Deck keys and Stream Deck + dials while listening in Chrome or its installed YouTube Music app. See the song, artist and artwork. Adjust playback, volume and ratings without switching to the player.
+Control YouTube Music from Stream Deck keys and Stream Deck + dials while listening in Chrome or its installed YouTube Music app. See the current song, artist and album artwork. Control your music without switching to the player.
+
+Features: Play/pause, previous/next, Like/Dislike, volume adjustment, mute and Open YouTube Music. Stream Deck + provides volume and track-navigation dials. Ratings require an available control in the signed-in player.
 
 This plugin requires the companion Chrome extension on the same Windows PC:
 https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca?utm_source=elgato_marketplace&utm_medium=referral&utm_campaign=companion_setup
 
-Features: Play/pause, previous/next, mute, Like/Dislike and Open YouTube Music. Customize current-track text and artwork. Volume Up/Down keys offer 1–5 percentage-point steps and optional volume numbers, percent signs and a 0–3 second display duration (0 hides numbers). Stream Deck + adds volume and track dials. Ratings need an available signed-in player control.
-
-Setup: Install the extension with Add to Chrome. Add a Music Deck Bridge action, select Generate PIN in its settings, then enter the six-digit PIN in the extension popup within 10 minutes. Open music.youtube.com or the YouTube Music Chrome app.
+Setup: Install the extension with Add to Chrome. Add a Music Deck Bridge action and select Generate PIN in its settings. Enter the six-digit PIN in the extension popup within 10 minutes, then open music.youtube.com or the YouTube Music Chrome app.
 
 The Chrome popup also works without Stream Deck.
+Requires Windows 10/11, Chrome 116+ and Stream Deck 7.1+. Dial actions require Stream Deck +.
 UI: English, Korean, Simplified/Traditional Chinese, Japanese, Spanish, French and German.
-Requires Windows 10/11, Chrome 116+ and Stream Deck 7.1+. Dials require Stream Deck +. No separate Node.js/npm/Python installation.
 Unofficial; not affiliated with Google, YouTube, Elgato or Corsair.

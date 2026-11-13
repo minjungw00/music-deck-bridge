@@ -1,14 +1,14 @@
-Chrome 도구 모음의 팝업에서 YouTube Music을 제어하거나, Music Deck Bridge를 Elgato Stream Deck에 연결해 버튼과 다이얼로 조작하세요. Chrome 탭이나 Chrome으로 설치한 YouTube Music 앱에서 음악을 들으며 현재 곡, 아티스트, 앨범 이미지를 확인할 수 있습니다.
+Chrome 팝업이나 Elgato Stream Deck에서 YouTube Music을 제어하세요. Chrome 탭 또는 Chrome으로 설치한 YouTube Music 앱에서 음악을 들으며 현재 곡, 아티스트, 앨범 이미지를 확인할 수 있습니다.
 
-팝업은 Stream Deck, PIN 연결 또는 추가 로컬 서버 없이 사용할 수 있습니다. Stream Deck 버튼·다이얼로 제어하려면 같은 Windows PC에 이 확장 프로그램과 동반 플러그인을 함께 설치하세요.
+주요 기능
+- 재생·일시정지, 이전·다음 곡, 좋아요·싫어요, 볼륨 조절, 음소거.
+- 현재 곡 제목, 아티스트, 앨범 이미지 표시.
+- Stream Deck 버튼 제어 및 YouTube Music 실행.
+- Stream Deck +의 볼륨·곡 이동 다이얼.
 
-팝업 컨트롤
-재생·일시정지, 이전·다음 곡, 좋아요·싫어요, 음소거·해제, 볼륨 슬라이더를 제공합니다. 팝업이 열린 동안 곡 정보와 버튼 상태가 갱신됩니다. 좋아요·싫어요는 로그인된 YouTube Music 플레이어에서 해당 버튼을 사용할 수 있어야 동작합니다.
+팝업은 Stream Deck 없이 사용할 수 있습니다. Stream Deck 제어에는 같은 Windows PC에 동반 플러그인이 필요합니다. 좋아요·싫어요는 로그인된 YouTube Music 플레이어에서 해당 기능을 사용할 수 있어야 동작합니다.
 
-STREAM DECK 컨트롤
-버튼에 앨범 이미지, 곡 제목, 아티스트를 표시하고 텍스트 위치·배경·스크롤을 설정할 수 있습니다. 재생, 곡 이동, 평가, 음소거, YouTube Music 실행 버튼을 지원합니다. 볼륨 상승·하강 버튼은 각각 1–5퍼센트포인트의 조절 간격을 설정할 수 있으며, 확인된 볼륨 숫자를 0–3초 동안 표시하거나 퍼센트 기호를 추가할 수 있습니다. 0초로 설정하면 숫자를 표시하지 않습니다. Stream Deck +에서는 볼륨·현재 곡 다이얼과 곡 정보·비율을 유지한 앨범 이미지 표시를 사용할 수 있습니다.
-
-바로 시작하기
+시작하기
 1. Chrome에 이 확장 프로그램을 추가합니다.
 2. music.youtube.com이나 YouTube Music Chrome 앱을 열고 곡을 재생합니다.
 3. 도구 모음에서 확장 프로그램의 팝업을 열어 조작합니다.
@@ -17,17 +17,16 @@ STREAM DECK 연결 — 선택 사항
 1. Elgato Marketplace에서 동반 플러그인을 설치합니다.
 https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd?utm_source=chrome_web_store&utm_medium=referral&utm_campaign=companion_setup
 2. Stream Deck에 Music Deck Bridge 액션을 배치하고 설정에서 'PIN 발급'을 누릅니다.
-3. 팝업에 10분 이내에 6자리 PIN을 입력한 뒤 연결합니다. 두 구성요소의 기본 포트는 17864입니다.
-연결 기능을 모두 사용하려면 플러그인과 확장 프로그램을 1.2.0으로 업데이트하세요. 연결된 상태에서는 팝업과 기기의 입력이 플러그인의 명령 경로를 사용하며 실제 플레이어 상태를 반영합니다.
+3. 팝업에 10분 이내에 6자리 PIN을 입력한 뒤 연결합니다.
 
 사용 환경 및 언어
-Windows 10/11, Google Chrome 116 이상. Stream Deck 제어에는 Stream Deck 소프트웨어 7.1 이상과 기기가 필요하며, 다이얼은 Stream Deck + 전용입니다. 완성된 패키지에는 Node.js·npm·Python의 별도 설치가 필요하지 않습니다.
+Windows 10/11, Google Chrome 116 이상. Stream Deck 제어에는 Stream Deck 소프트웨어 7.1 이상과 기기가 필요하며, 다이얼은 Stream Deck + 전용입니다.
 UI 지원: 영어, 한국어, 중국어 간체·번체, 일본어, 스페인어, 프랑스어, 독일어.
 
 개인정보
-연결 인증 정보와 포트는 로컬에 저장합니다. 연결된 상태에서는 같은 컴퓨터의 플러그인과 인증된 연결을 사용하고, 단독 제어는 Chrome API를 사용합니다. 앨범 이미지는 확장 프로그램 또는 플러그인이 허용된 Google·YouTube 이미지 서버에서 받아오므로 모든 통신이 로컬인 것은 아닙니다. 청취 데이터를 프로젝트 관리자에게 보내지 않으며 프로젝트 운영 분석 서버도 없습니다.
+연결 인증 정보는 로컬에 저장합니다. 앨범 이미지는 Google·YouTube 이미지 서버에서 받아옵니다. 청취 데이터를 프로젝트 관리자에게 보내지 않습니다. 자세한 내용은 개인정보 처리방침을 확인하세요.
 
-Google·YouTube·Elgato·Corsair의 공식 제품이나 제휴·보증 제품이 아닌 독립적인 비공식 연동 도구입니다.
+Google·YouTube·Elgato·Corsair의 공식 제품이나 제휴 제품이 아닌 독립적인 비공식 연동 도구입니다.
 
 설치 안내: https://github.com/minjungw00/music-deck-bridge/blob/main/docs/installation.ko.md
 개인정보 처리방침: https://github.com/minjungw00/music-deck-bridge/blob/main/PRIVACY.md

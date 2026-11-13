@@ -1,12 +1,12 @@
-Control YouTube Music from the Chrome toolbar popup, or connect Music Deck Bridge to Elgato Stream Deck for key and dial control. See the current song, artist and album artwork while you listen in a Chrome tab or the YouTube Music app installed through Chrome.
+Control YouTube Music from the Chrome popup or Elgato Stream Deck. See the current song, artist and album artwork while listening in a Chrome tab or the YouTube Music app installed through Chrome.
 
-The popup works without Stream Deck, PIN pairing or an additional local server. Stream Deck key and dial control requires the companion plugin and this extension on the same Windows PC.
+FEATURES
+- Play/pause, previous/next, Like/Dislike, volume adjustment and mute.
+- Current song, artist and album artwork display.
+- Stream Deck key controls and Open YouTube Music.
+- Volume and track-navigation dials on Stream Deck +.
 
-POPUP CONTROLS
-Play/pause, previous/next, Like/Dislike, mute/unmute and a volume slider. Track information and control states update while the popup is open. Like/Dislike requires an available rating control in the signed-in YouTube Music player.
-
-STREAM DECK CONTROLS
-Show artwork, title and artist on a key, with configurable text placement, backgrounds and scrolling. Use playback, navigation, rating, mute and Open YouTube Music keys. Volume Up / Down keys have independent 1–5 percentage-point steps and optional confirmed volume numbers, with or without a percent sign, displayed for 0–3 seconds (0 disables the number display). Stream Deck + adds volume and current-track dials with configurable song information or fitted artwork.
+The popup works without Stream Deck. Stream Deck control requires the companion plugin on the same Windows PC. Like/Dislike requires an available rating control in the signed-in YouTube Music player.
 
 GET STARTED
 1. Add this extension to Chrome.
@@ -17,15 +17,14 @@ OPTIONAL STREAM DECK CONNECTION
 1. Install the companion plugin from Elgato Marketplace:
 https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd?utm_source=chrome_web_store&utm_medium=referral&utm_campaign=companion_setup
 2. Add a Music Deck Bridge action in Stream Deck, open its settings and select Generate PIN.
-3. Enter the six-digit PIN in the extension popup within 10 minutes, then select Connect. Both components use port 17864 by default.
-Update both components to 1.2.0 for the full paired feature set. While connected, popup and device inputs use the plugin's command channel and reflect the observed player state.
+3. Enter the six-digit PIN in the extension popup within 10 minutes, then select Connect.
 
 REQUIREMENTS AND LANGUAGES
-Windows 10/11 and Google Chrome 116+. For Stream Deck controls: Stream Deck software 7.1+ and a Stream Deck device. Dial actions require Stream Deck +. Prebuilt packages need no separate Node.js, npm or Python installation.
+Windows 10/11 and Google Chrome 116+. Stream Deck control requires Stream Deck software 7.1+ and a Stream Deck device. Dial actions require Stream Deck +.
 UI: English, Korean, Simplified Chinese, Traditional Chinese, Japanese, Spanish, French and German.
 
 PRIVACY
-Pairing credentials and the bridge port are stored locally. Connected control uses an authenticated connection to the plugin on the same computer. Standalone control uses Chrome APIs. Album images are requested from approved Google/YouTube image hosts by the extension or plugin; not all traffic is local. No listening data is sent to the project maintainer and there is no project-operated analytics server.
+Pairing credentials are stored locally. Album images are retrieved from Google/YouTube image servers. No listening data is sent to the project maintainer. See the privacy policy for details.
 
 Unofficial integration; not affiliated with or endorsed by Google, YouTube, Elgato or Corsair.
 
