@@ -129,6 +129,9 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
           const image = `imgs/actions/toggle/${state?.playing ? 'pause' : 'key'}@2x.png`;
           writeImage(context, item, image);
           writeTitle(context, item, '');
+        } else if (kind === 'mute') {
+          const image = `imgs/actions/${state?.muted ? 'mute' : 'volume'}/key@2x.png`;
+          writeImage(context, item, image);
         } else if (kind === 'open') {
           writeTitle(context, item, '');
         } else if (kind === 'like' || kind === 'dislike') {

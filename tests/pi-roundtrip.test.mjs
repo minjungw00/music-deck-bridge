@@ -114,6 +114,7 @@ for (const protectedManifest of [false, true]) {
     const pauseImage = 'imgs/actions/toggle/pause@2x.png';
     // Before any player state is available, show Play with the offline title.
     await waitFor(() => toggleImage() === playImage);
+    await waitFor(() => toggleImage('mute') === 'imgs/actions/volume/key@2x.png');
     const dialFeedback = () => messages.findLast(m => m.event === 'setFeedback' && m.context === 'trackdial')?.payload;
     const dialLayout = () => messages.findLast(m => m.event === 'setFeedbackLayout' && m.context === 'trackdial')?.payload.layout;
     await waitFor(() => dialLayout() === '$A1' && dialFeedback()?.icon === playImage);
@@ -183,6 +184,7 @@ for (const protectedManifest of [false, true]) {
         ...(['like', 'dislike'].includes(type) ? { trackKey: JSON.stringify([state.title, state.artist]) } : {}) });
     }
     assert.equal(toggleImage(), pauseImage, 'key presses must wait for confirmed browser playback state');
+    assert.equal(toggleImage('mute'), 'imgs/actions/volume/key@2x.png', 'Mute key presses must wait for confirmed browser mute state');
     // Reappearing keys and another instance of the same action follow the player.
     send('willDisappear', 'toggle');
     const reappearStart = messages.length;
@@ -205,10 +207,12 @@ for (const protectedManifest of [false, true]) {
     assert.equal(volumeFeedback().icon, 'imgs/actions/volume/key@2x.png', 'press alone does not predict mute state');
     state.muted = true;
     await post('/sync', { token, clientId: 1, state });
-    await waitFor(() => volumeFeedback()?.icon === 'imgs/actions/mute/key@2x.png');
+    await waitFor(() => volumeFeedback()?.icon === 'imgs/actions/mute/key@2x.png' &&
+      toggleImage('mute') === volumeFeedback().icon);
     state.muted = false;
     await post('/sync', { token, clientId: 1, state });
-    await waitFor(() => volumeFeedback()?.icon === 'imgs/actions/volume/key@2x.png');
+    await waitFor(() => volumeFeedback()?.icon === 'imgs/actions/volume/key@2x.png' &&
+      toggleImage('mute') === volumeFeedback().icon);
     await command('touchTap', 'volume', {}, { type: 'mute', amount: 0 });
     await command('dialRotate', 'trackdial', { ticks: -1 }, { type: 'prev', amount: 0 });
     await command('dialRotate', 'trackdial', { ticks: 1 }, { type: 'next', amount: 0 });

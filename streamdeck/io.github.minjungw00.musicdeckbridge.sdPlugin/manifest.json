@@ -78,7 +78,7 @@
       ],
       "States": [
         {
-          "Image": "imgs/actions/mute/key",
+          "Image": "imgs/actions/volume/key",
           "TitleAlignment": "bottom",
           "FontSize": 12,
           "ShowTitle": true
