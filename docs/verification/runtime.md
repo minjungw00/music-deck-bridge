@@ -31,6 +31,12 @@ The November 7 `main` run used `@elgato/streamdeck` 3.0.4, `@elgato/cli` 1.10.4 
 | Popup | English/Korean sample responses at 290 CSS px; 80×36 buttons, 28px heading icon and no overflow |
 | Distribution | Real worker import graph, serialized MAIN entry point, package allowlists/notices, fixed development versions and source/checksum metadata |
 
+### November 13 popup overflow and playback report
+
+In a Chromium rendering check with the real popup HTML/JS and labeled sample replies, expanding connection settings at 320×600 CSS px left the final version text at the viewport bottom (English 0px, Korean −0.06px). The body's 600px height cap excluded its bottom padding from the overflowing content. Moving the scroll/height constraint to the root preserved the body's padding: the same comparison measured 27px and 26.94px below the final text, with no horizontal overflow. Collapsed settings retained their existing height. These are local rendering measurements, not Windows toolbar observations.
+
+The maintainer reported `playback-unconfirmed` after connecting an extension while YouTube Music was already open. The site's own Play button also failed; selecting another track restored control. This supports an unavailable/stalled site-player state rather than establishing an extension-only delivery failure. The underlying cause was not independently reproduced. No playback-engine fix, automatic reload, track change or successful real-site retest is claimed for this report.
+
 ### November 13 popup refresh
 
 The preceding popup queried status only at startup and on a Status click. The new periodic-refresh regression fails against that source because no automatic request occurs. Six added Node fixtures cover track/artwork changes, player disappearance, connection loss/recovery, non-overlapping reads, pending pair/unpair/port changes, stale replies, retained action feedback, hidden documents and popup cleanup. The updated MV3 test opens the actual toolbar popup through `chrome.action.openPopup()` and reads its CDP target while the local player metadata changes; it does not substitute an extension tab for the popup's runtime sender.
