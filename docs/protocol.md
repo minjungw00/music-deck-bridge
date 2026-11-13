@@ -30,6 +30,10 @@ Protocol bounds are integers from 1 to 65535, with minimum no greater than maxim
 
 The current implementation supports **protocol 1 only**. It preserves existing endpoints, token/origin authentication and command representations. Old components that omit both protocol fields use the known implicit **legacy protocol 1**. No application-version heuristic infers compatibility or feature availability. A legacy connection preserves the old command contract; it does not promise that older components implement newer optional actions.
 
+The optional 1.2.0 popup feature is advertised by `/status` with `popupControls: true` and a `player` snapshot (`id`, `key`, title/artist, playing/rating/volume/mute state and `coverKey`). Without this capability the extension retains status display and disables popup controls. This additive capability keeps protocol 1.
+
+`/control` accepts only `toggle`, `prev`, `next`, `like`, `dislike`, `mute` or `volume_delta`, with `playerId` and `trackKey` matching the selected snapshot. Volume changes require a nonzero integer `amount` between -100 and 100; popup buttons request -5 or +5. It uses the existing command channel and responds after its result. Optional `playerKey` on browser commands enforces the selected player/track again immediately before dispatch and prevents fallback to another tab if the displayed player closes. `/artwork` requires the same identity plus a matching `coverKey` and returns only cached raster data. Both retain paired-origin/token/protocol checks; stale player/track requests fail without dispatch. A track key uses the video ID when available and otherwise the normalized title/artist pair, matching the existing rating guard.
+
 | Combination | Result |
 | --- | --- |
 | Explicit 1 ↔ explicit 1 | Compatible, negotiated 1 |

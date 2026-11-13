@@ -32,6 +32,11 @@ def stage(component, output):
         "property-inspector/locales.js", "property-inspector/volume-editor.js", "en.json", "ko.json",
         "layouts/current-track-artwork.json",
     ])
+    if component == "chrome":
+        files += [f"icons/controls/{name}.png" for name in (
+            "previous", "play", "pause", "next", "like", "like-selected",
+            "dislike", "dislike-selected", "mute", "volume",
+        )]
     for folder in folders:
         files.extend(str(p.relative_to(source)) for p in sorted((source / folder).rglob("*.png")))
     for name in files:

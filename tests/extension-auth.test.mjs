@@ -72,3 +72,13 @@ test('content scripts cannot invoke unpair or read the token through messages', 
   assert.equal((await h.send({ type: 'unpair' }, { tab: { id: 1 }, url: 'https://music.youtube.com/' })).ok, false);
   assert.deepEqual(h.events, [['restrict', 'TRUSTED_CONTEXTS']]);
 });
+
+for (const type of ['control', 'artwork']) {
+  test(`content scripts cannot invoke popup ${type} operations`, async () => {
+    const h = harness();
+    const response = await h.send({ type, command: 'toggle', playerId: '1', trackKey: 'aaaaaaaaaaa' },
+      { tab: { id: 1 }, frameId: 0, url: 'https://music.youtube.com/' });
+    assert.equal(response.ok, false);
+    assert.ok(!h.events.some(event => event[0] === 'post'));
+  });
+}

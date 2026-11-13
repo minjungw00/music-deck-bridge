@@ -67,11 +67,36 @@ function createHttpBridge({ session, players, commands, covers, getPorts, onDeck
     if (req.url === '/status') {
       const chosen = players.selected();
       return sendHttp(res, 200, { paired: true, compatibility: session.compatibility, active: !!chosen,
+        popupControls: true, player: chosen ? playerInfo(chosen) : null,
         track: chosen ? chosen[1].title : '', standalone: chosen ? chosen[1].standalone : false,
         extensionOnline: session.extensionOnline(),
         playerStale: !!chosen && Date.now() - chosen[1].lastMediaSyncAt > PLAYER_STALE_MS,
         coverDetected: Boolean(chosen?.[1].cover),
         coverStatus: covers.status(chosen?.[1].cover) }, origin);
+    }
+    if (req.url === '/control' || req.url === '/artwork') {
+      if (req.url === '/control' && (!['toggle', 'prev', 'next', 'like', 'dislike', 'mute', 'volume_delta'].includes(body.command) ||
+          (body.command === 'volume_delta' && (!Number.isInteger(body.amount) || body.amount === 0 || Math.abs(body.amount) > 100)))) {
+        return sendHttp(res, 400, { error: 'Invalid popup command' }, origin);
+      }
+      const chosen = players.selected();
+      const player = chosen && playerInfo(chosen);
+      // Bind popup operations to the displayed player and track. Never apply a
+      // late rating to a different song or silently select a different tab.
+      if (!player || String(body.playerId) !== player.id || body.trackKey !== player.key) {
+        return sendHttp(res, 200, { ok: false, reason: 'player-changed' }, origin);
+      }
+      if (req.url === '/artwork') {
+        const image = body.coverKey === player.coverKey ? covers.image(chosen[1].cover) : '';
+        return sendHttp(res, 200, { ok: true, image }, origin);
+      }
+      if (Date.now() - chosen[1].lastMediaSyncAt > PLAYER_STALE_MS ||
+          (['like', 'dislike'].includes(body.command) && chosen[1].rating === null)) {
+        return sendHttp(res, 200, { ok: false, reason: 'player-not-ready' }, origin);
+      }
+      const ok = await commands.request(body.command, body.command === 'volume_delta' ? body.amount : 0, { playerKey: player.key });
+      return sendHttp(res, 200, { ok: ok === true,
+        ...(!ok ? { reason: ok === null ? 'command-superseded' : 'command-failed' } : {}) }, origin);
     }
     if (req.url === '/browser-listen') {
       // Reconcile after Chrome/worker restart too: tab-close notifications can be
@@ -122,6 +147,11 @@ function createHttpBridge({ session, players, commands, covers, getPorts, onDeck
     return http.createServer((req, res) => { void requestHandler(req, res).catch(() => {
       if (!res.headersSent) sendHttp(res, 500, { error: 'Internal error' }, req.headers.origin);
     }); });
+  }
+  function playerInfo([id, state]) {
+    return { id: String(id), key: state.trackId || JSON.stringify([state.title, state.artist]),
+      title: state.title, artist: state.artist, playing: state.playing, rating: state.rating, volume: state.volume, muted: state.muted,
+      coverKey: state.cover };
   }
   function bindPort(port) {
     return new Promise((resolve, reject) => {

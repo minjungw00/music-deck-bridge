@@ -14,7 +14,8 @@ for (const locale of ['en', 'ko', 'fr']) {
     const nodes = new Map();
     function element(id) {
       if (!nodes.has(id)) nodes.set(id, {
-        value: '', textContent: '', style: {}, handlers: {},
+        value: '', textContent: '', style: {}, handlers: {}, attrs: {},
+        setAttribute(key, value) { this.attrs[key] = value; }, removeAttribute(key) { delete this.attrs[key]; },
         addEventListener(event, handler) { this.handlers[event] = handler; },
         click() { return this.handlers.click(); },
       });
@@ -58,8 +59,12 @@ for (const locale of ['en', 'ko', 'fr']) {
       status = { ok: true, active: true, standalone: true, track: 'Test song', coverStatus: code };
       await element('refresh').click();
       assert.equal(element('status').textContent,
-        `${catalog.player.message} · ${catalog.app.message}\n${catalog.current.message}: Test song\n${catalog.artwork.message}: ${catalog[key].message}`);
+        `${catalog.player.message} · ${catalog.app.message}${code === 'ready' ? '' : `\n${catalog.artwork.message}: ${catalog[key].message}`}\n${catalog.controlUpdate.message}`);
     }
+    assert.equal(element('trackTitle').textContent, 'Test song');
+    assert.equal(element('connectionStatusLabel').textContent, catalog.connectionStatusLabel.message);
+    assert.equal(element('settingsSummary').textContent, catalog.settingsSummary.message);
+    assert.equal(element('playPause').attrs['aria-label'], catalog.play.message);
     element('pin').value = '12';
     await element('connect').click();
     assert.equal(element('feedback').textContent, catalog.invalid.message);

@@ -10,7 +10,7 @@ function deferred() {
 }
 const flush = async () => { for (let i = 0; i < 20; i++) await Promise.resolve(); };
 
-function harness({ paired = true, pairReply, tokenWrite, portReply } = {}) {
+function harness({ paired = true, pairReply, tokenWrite, portReply, controlReply } = {}) {
   const context = vm.createContext({});
   vm.runInContext(readFileSync(new URL('../chrome-extension/background/management-service.js', import.meta.url), 'utf8'), context);
   const state = { token: paired ? 'old-fixture-token' : '', serverToken: paired ? 'old-fixture-token' : '',
@@ -44,6 +44,8 @@ function harness({ paired = true, pairReply, tokenWrite, portReply } = {}) {
         await portReply;
         return { port: body.port };
       }
+      if (route === '/control') { await controlReply; return { ok: true }; }
+      if (route === '/artwork') return { ok: true, image: '' };
       assert.equal(route, '/status');
       return { paired: true, serverPort: state.serverPort };
     },
@@ -105,4 +107,33 @@ test('failed revocation preserves credentials and allows queued port changes and
   assert.equal((await h.service.unpair()).ok, true);
   assert.equal(h.state.serverToken, '');
   assert.equal(h.state.token, '');
+});
+
+test('popup control waits for preceding credential persistence without blocking later status or unpair', async () => {
+  const write = deferred(), result = deferred();
+  const h = harness({ paired: false, tokenWrite: write.promise, controlReply: result.promise });
+  const pair = h.service.pair({ pin: '654321' }); await flush();
+  let complete = false;
+  const command = h.service.control({ command: 'next', playerId: '12', trackKey: 'aaaaaaaaaaa' })
+    .then(reply => { complete = true; return reply; });
+  await flush();
+  assert.deepEqual(h.requests.map(r => r.route), ['/pair']);
+  write.resolve(); await pair; await flush();
+  assert.equal(h.requests.at(-1).route, '/control');
+  assert.equal(complete, false);
+  assert.equal((await h.service.check()).ok, true);
+  assert.equal((await h.service.unpair()).ok, true);
+  assert.equal(complete, false, 'command confirmation is independent of the management queue');
+  result.resolve(); await command;
+});
+
+test('popup control rejects unknown commands and absent pairing without a control request', async () => {
+  const h = harness({ paired: false });
+  await assert.rejects(h.service.control({ command: 'open' }), /control/);
+  for (const amount of [undefined, 0, 101, -101, '5', 0.5]) {
+    await assert.rejects(h.service.control({ command: 'volume_delta', amount }), /control/);
+  }
+  assert.equal((await h.service.control({ command: 'toggle' })).reason, 'pairing-required');
+  assert.equal((await h.service.artwork({})).ok, false);
+  assert.deepEqual(h.requests, []);
 });

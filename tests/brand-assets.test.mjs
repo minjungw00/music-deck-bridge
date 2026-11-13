@@ -14,6 +14,16 @@ const assets = [
 ];
 const actionFamilies = ['nowplaying', 'toggle', 'prev', 'next', 'mute', 'volume', 'open', 'like', 'dislike'];
 
+test('popup controls reuse the exact Stream Deck key artwork for every displayed state', async () => {
+  const icons = { previous: 'prev/key', play: 'toggle/key', pause: 'toggle/pause', next: 'next/key',
+    like: 'like/key', 'like-selected': 'like/selected', dislike: 'dislike/key',
+    'dislike-selected': 'dislike/selected', mute: 'mute/key', volume: 'volume/key' };
+  for (const [name, source] of Object.entries(icons)) {
+    assert.deepEqual(await readFile(new URL(`chrome-extension/icons/controls/${name}.png`, root)),
+      await readFile(new URL(`${plugin}imgs/actions/${source}@2x.png`, root)), name);
+  }
+});
+
 // Decode our noninterlaced RGBA8 PNGs using only Node's standard library.
 // Testing committed pixels keeps Pillow optional for ordinary builds and CI.
 async function png(path) {

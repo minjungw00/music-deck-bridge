@@ -6,26 +6,55 @@
   <title>Music Deck Bridge</title>
   <style>
     * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
     :root { color-scheme: dark; }
-    body { width: 290px; margin: 0; padding: 17px; font: 13px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background: #151923; color: #fff; }
+    body { width: 320px; max-height: 600px; overflow-y: auto; margin: 0; padding: 17px; font: 13px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background: #151923; color: #fff; }
     .brand { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
     .brand img { flex: none; }
     h1 { font-size: 15px; margin: 0; }
+    h2, label, summary { display: block; margin: 14px 0 5px; font-size: 13px; font-weight: 600; }
     p { margin: 8px 0 12px; color: #bac0ce; }
-    label { display: block; margin: 10px 0 5px; font-weight: 600; }
+    button, input { font: inherit; }
     input { width: 100%; padding: 9px; border: 1px solid #636a78; border-radius: 6px; background: #202433; color: white; letter-spacing: .3em; font-size: 16px; }
-    button { min-height: 36px; padding: 8px 10px; background: #d000a4; border: 0; border-radius: 6px; color: white; cursor: pointer; font: inherit; font-weight: 600; line-height: 20px; white-space: nowrap; }
+    button { min-height: 36px; padding: 8px 10px; background: #d000a4; border: 0; border-radius: 6px; color: white; cursor: pointer; font-weight: 600; line-height: 20px; white-space: nowrap; }
     button.secondary { background: #414759; }
+    button:disabled { opacity: .4; cursor: default; }
+    button[aria-pressed="true"] { background: #653054; color: #ffb9ec; }
     .store-link { color: #9cc9ff; text-decoration: underline; }
-    input:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid #f72575; outline-offset: 2px; }
+    input:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid #f72575; outline-offset: 2px; }
     .port-row { display: flex; gap: 8px; }
     .port-row input { flex: 1; min-width: 0; font-size: 13px; letter-spacing: 0; padding: 8px; }
-    .small-hint { font-size: 11px; line-height: 1.35; color: #abb3c5; margin: 4px 0 10px; }
+    .small-hint { font-size: 11px; line-height: 1.45; color: #abb3c5; margin: 4px 0 10px; }
     .controls { display: flex; gap: 8px; margin-top: 12px; }
     .controls > button { flex: 1; min-width: 0; }
-    #status { margin: 10px 0 0; min-height: 35px; white-space: pre-wrap; font-size: 12px; }
-    #feedback { margin: 10px 0 0; white-space: pre-wrap; font-size: 12px; }
-    #feedback:empty { display: none; }
+    .track { display: flex; gap: 12px; align-items: center; margin: 8px 0 12px; }
+    .cover { flex: none; width: 72px; height: 72px; border-radius: 8px; background: #252b3a; }
+    img.cover { object-fit: contain; background: #000; }
+    #coverFallback { display: grid; place-items: center; color: #7f899f; }
+    #coverFallback svg { width: 30px; height: 30px; }
+    .track-text { min-width: 0; }
+    #trackTitle { margin: 0; color: white; font-weight: 600; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    #trackArtist { margin: 3px 0 0; color: #abb3c5; overflow-wrap: anywhere; }
+    svg { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .transport { display: flex; justify-content: center; gap: 12px; }
+    .transport button { display: grid; place-items: center; width: 60px; min-height: 40px; }
+    .transport button > span { display: flex; }
+    .transport button { width: 52px; min-height: 52px; padding: 0; background: transparent; }
+    .transport img { width: 52px; height: 52px; }
+    .ratings img { width: 32px; height: 32px; }
+    .volume-controls { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
+    .volume-controls button { min-width: 36px; padding: 6px; }
+    #mute { background: transparent; padding: 0; }
+    #mute img { display: block; width: 40px; height: 40px; }
+    #volumeValue { min-width: 42px; text-align: center; font-variant-numeric: tabular-nums; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    .ratings { display: flex; gap: 8px; margin-top: 8px; }
+    .ratings button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; font-size: 12px; }
+    details { border-top: 1px solid #303747; margin-top: 14px; }
+    summary { display: list-item; cursor: pointer; }
+    .connection-status { border-top: 1px solid #303747; margin-top: 14px; }
+    #status, #feedback, #controlFeedback { margin: 8px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; }
+    #feedback:empty, #controlFeedback:empty, #trackArtist:empty { display: none; }
   </style>
 </head>
 <body>
@@ -34,22 +63,53 @@
     <h1 id="heading">Music Deck Bridge</h1>
   </header>
   <p id="subtitle" class="small-hint">For YouTube Music · Stream Deck integration</p>
-  <p id="companionHint" class="small-hint">Both this extension and the Stream Deck plugin are required.</p>
-  <p><a id="installPlugin" class="store-link" href="https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd?utm_source=chrome_extension&amp;utm_medium=referral&amp;utm_campaign=companion_setup" target="_blank" rel="noopener noreferrer">Install Stream Deck plugin</a></p>
-  <p id="guide">Generate a PIN from a Stream Deck action and enter it here.</p>
-  <label id="pinLabel" for="pin">Connection PIN</label>
-  <input id="pin" maxlength="6" inputmode="numeric" autocomplete="off" placeholder="000000" />
-  <div class="controls">
-    <button id="connect">Connect</button>
-    <button id="refresh" class="secondary">Status</button>
-    <button id="forget" class="secondary">Unpair</button>
-  </div>
-  <label id="portLabel" for="port">Local server port</label>
-  <div class="port-row"><input id="port" type="number" min="1024" max="65535" inputmode="numeric" value="17864"/><button id="savePort" class="secondary">Apply</button></div>
-  <p id="portHint" class="small-hint">Same port as Stream Deck. When connected, changing it here also changes the local server.</p>
-  <div id="feedback" role="status" aria-live="polite"></div>
-  <div id="status" role="status" aria-live="polite"></div>
-  <p id="versions" class="small-hint"></p>
+  <section aria-labelledby="nowPlayingLabel">
+    <h2 id="nowPlayingLabel">Now playing</h2>
+    <div class="track">
+      <img id="artwork" class="cover" alt="" hidden />
+      <div id="coverFallback" class="cover" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13M9 9l11-2"/><ellipse cx="6" cy="18" rx="3" ry="2"/><ellipse cx="17" cy="16" rx="3" ry="2"/></svg></div>
+      <div class="track-text"><p id="trackTitle">Waiting for YouTube Music</p><p id="trackArtist"></p></div>
+    </div>
+    <div class="transport">
+      <button id="previous" aria-label="Previous track" title="Previous track" disabled><img src="icons/controls/previous.png" alt="" /></button>
+      <button id="playPause" aria-label="Play" title="Play" disabled><span id="playIcon"><img src="icons/controls/play.png" alt="" /></span><span id="pauseIcon" hidden><img src="icons/controls/pause.png" alt="" /></span></button>
+      <button id="next" aria-label="Next track" title="Next track" disabled><img src="icons/controls/next.png" alt="" /></button>
+    </div>
+    <div class="ratings">
+      <button id="like" class="secondary" aria-pressed="false" disabled><img id="likeIcon" src="icons/controls/like.png" alt="" /><span id="likeLabel">Like</span></button>
+      <button id="dislike" class="secondary" aria-pressed="false" disabled><img id="dislikeIcon" src="icons/controls/dislike.png" alt="" /><span id="dislikeLabel">Dislike</span></button>
+    </div>
+    <div class="volume-controls" role="group" aria-labelledby="volumeLabel">
+      <span id="volumeLabel" class="sr-only">Volume</span>
+      <button id="mute" aria-label="Mute" title="Mute" aria-pressed="false" disabled><img id="muteIcon" src="icons/controls/volume.png" alt="" /></button>
+      <button id="volumeDown" class="secondary" aria-label="Decrease volume" title="Decrease volume" disabled>−</button>
+      <output id="volumeValue" aria-labelledby="volumeLabel">—</output>
+      <button id="volumeUp" class="secondary" aria-label="Increase volume" title="Increase volume" disabled>+</button>
+    </div>
+    <p id="controlFeedback" role="status" aria-live="polite"></p>
+  </section>
+  <details id="connectionSettings" open>
+    <summary id="settingsSummary">Connection settings</summary>
+    <label id="pinLabel" for="pin">Connection PIN</label>
+    <p id="guide" class="small-hint">Generate a PIN in Stream Deck action settings and enter it here.</p>
+    <input id="pin" maxlength="6" inputmode="numeric" autocomplete="off" placeholder="000000" aria-describedby="guide" />
+    <div class="controls">
+      <button id="connect">Connect</button>
+      <button id="refresh" class="secondary">Status</button>
+      <button id="forget" class="secondary">Unpair</button>
+    </div>
+    <label id="portLabel" for="port">Local server port</label>
+    <p id="portHint" class="small-hint">Use the same port as Stream Deck. When connected, changing it here also updates the server.</p>
+    <div class="port-row"><input id="port" type="number" min="1024" max="65535" inputmode="numeric" value="17864" aria-describedby="portHint"/><button id="savePort" class="secondary">Apply</button></div>
+    <p id="companionHint" class="small-hint">Both this extension and the Stream Deck plugin are required.</p>
+    <p><a id="installPlugin" class="store-link" href="https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd?utm_source=chrome_extension&amp;utm_medium=referral&amp;utm_campaign=companion_setup" target="_blank" rel="noopener noreferrer">Install Stream Deck plugin</a></p>
+  </details>
+  <section class="connection-status" aria-labelledby="connectionStatusLabel">
+    <h2 id="connectionStatusLabel">Connection status</h2>
+    <div id="feedback" role="status" aria-live="polite"></div>
+    <div id="status" role="status" aria-live="polite"></div>
+    <p id="versions" class="small-hint"></p>
+  </section>
   <script src="popup.js"></script>
 </body>
 </html>

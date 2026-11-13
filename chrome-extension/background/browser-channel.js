@@ -46,12 +46,13 @@
       if (!['open', ...PLAYER_COMMANDS].includes(command?.type)) return false;
       const deadline = Math.min(Number(command.expiresAt) || Date.now() + 30000, Date.now() + 30000);
       const allowed = async (confirm = false) => !client.blocked() && Date.now() < deadline && await stillPaired(confirm) && !client.blocked() && Date.now() < deadline;
-      const denied = () => failed(client.blocked() ? 'protocol-incompatible' : diagnostic.reason === 'bridge-unavailable' ? 'bridge-unavailable' :
+      const denied = () => failed(client.blocked() ? 'protocol-incompatible' : ['bridge-unavailable', 'player-changed'].includes(diagnostic.reason) ? diagnostic.reason :
         Date.now() >= deadline ? 'command-timeout' : 'authorization-lost');
       if (!await allowed()) return denied();
       const query = () => chrome.tabs.query({ url: MUSIC_URL + '*' });
       const select = tabs => tabs.find(tab => tab.id === command.preferredTabId) || tabs.find(tab => tab.active) || tabs[0];
       let tab = select(await query());
+      if (command.playerKey && (!tab || tab.id !== command.preferredTabId)) return failed('player-changed');
       let opened = command.nativeLaunched === true;
       if (!tab) {
         if (!await allowed(true)) return denied();
@@ -155,7 +156,14 @@
                   if (await pairedToken() !== token) return false;
                   // Recheck server-side authorization before each dispatch.
                   if (confirm) {
-                    try { await post('/status', { token }); }
+                    try {
+                      const status = await post('/status', { token });
+                      if (command.playerKey && (status.player?.id !== String(command.preferredTabId) ||
+                          status.player?.key !== command.playerKey)) {
+                        diagnostic.reason = 'player-changed';
+                        return false;
+                      }
+                    }
                     catch (error) {
                       diagnostic.reason = error.httpStatus === 401 ? 'authorization-lost' : 'bridge-unavailable';
                       return false;

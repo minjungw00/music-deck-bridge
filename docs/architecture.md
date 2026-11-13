@@ -56,6 +56,8 @@ The inspector keeps its translations and volume editing model separate from DOM/
 
 The management service serializes pairing, unpairing and port changes through both HTTP completion and local persistence. Status/port reads share that queue so they observe preceding operations; failure releases the queue for subsequent requests. Browser command polling remains independent. The popup applies status/version results only for its latest action and uses a separate port edit revision to protect newer input from delayed reads/save responses.
 
+Popup controls wait for preceding credential writes, then release the management queue before awaiting `/control` execution. The plugin validates the displayed player/track and reuses `commands.request`; long navigation confirmation does not block later Pause, status or unpair. Playback/rating/volume/mute indicators follow observed snapshots. Popup controls reuse byte-identical copies of the Stream Deck key PNGs; the asset generator and packaging include those copies. The popup loads artwork through `/artwork` only when the selected ready cover changes, discards stale replies and accepts bounded PNG/JPEG/WebP data URLs. It reuses the plugin cache without adding image-host permissions. Connection settings collapse after a successful initial status unless the user has already opened them.
+
 ### Display output
 
 Image/title output caches record a value only when the SDK output promise succeeds. Pending writes serialize per field and coalesce newer values; rejection or a skipped output permits retry on the next repaint. This confirms SDK submission, not physical-device rendering.

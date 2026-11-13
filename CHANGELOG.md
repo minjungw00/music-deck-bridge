@@ -2,6 +2,10 @@
 
 ## v1.2.0-dev — Unreleased
 
+- Retarget the unreleased 1.1.4 development work to 1.2.0 at maintainer request.
+- Add a popup player with cached album artwork, track/artist, observed play/pause and like/dislike state, Previous/Next, rating, mute/unmute and 5-point volume controls using the existing authenticated command channel. Bind requests to the displayed player/track; keep Pause available during pending navigation.
+- Reuse the exact Stream Deck PNG icons, including playback, rating and mute states.
+- Group connection settings in a collapsible section, align PIN/port guidance under matching headers and add a Connection status header.
 - Add companion-component store installation links to the Stream Deck property inspector and Chrome extension popup, with English and Korean guidance that both components are required.
 - Group the extension installation and PIN buttons under Connection in the Stream Deck inspector, with the generated PIN below its button.
 - Refresh the extension popup's track and connection status every second while visible. Keep action feedback separate, skip overlapping polls and pending management actions, and stop polling when the popup closes.

@@ -58,6 +58,11 @@ class PackagingTests(unittest.TestCase):
             self.assertFalse(any(name.startswith("chrome-extension/") for name in names))
             for name in manifest["icons"].values():
                 self.assertEqual(bundle.read(name), (self.root / "chrome-extension" / name).read_bytes())
+            controls = list((self.root / "chrome-extension/icons/controls").glob("*.png"))
+            self.assertEqual(len(controls), 10)
+            for image in controls:
+                name = image.relative_to(self.root / "chrome-extension").as_posix()
+                self.assertEqual(bundle.read(name), image.read_bytes())
 
     def test_streamdeck_staging_preserves_runtime_resources_and_licenses(self):
         plugin = self.root / "streamdeck" / packaging_tool.PLUGIN

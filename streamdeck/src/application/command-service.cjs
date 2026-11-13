@@ -4,7 +4,7 @@ const limit = (value, min, max) => Math.max(min, Math.min(max, value));
 const COMMAND_ERRORS = new Set(['pairing-required', 'extension-unavailable', 'command-timeout',
   'authorization-lost', 'injection-unavailable', 'receiver-unavailable', 'delivery-uncertain',
   'player-rejected', 'player-not-ready', 'browser-api-failed', 'bridge-unavailable', 'command-failed',
-  'autoplay-blocked', 'player-error', 'playback-unconfirmed', 'command-superseded', 'protocol-incompatible', 'invalid-protocol']);
+  'autoplay-blocked', 'player-error', 'playback-unconfirmed', 'command-superseded', 'protocol-incompatible', 'invalid-protocol', 'player-changed']);
 
 // A channel port supplies reply(data, status) and onClose(callback); no HTTP objects enter this service.
 function createCommandService({ getSession, selectedEntry, launch, log,
@@ -117,7 +117,8 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     clearTimeout(nativeLaunchTimer); nativeLaunchTimer = null;
     browserWaiter.reply({ commands: [{ id: request.id, type: request.type, amount: request.amount,
       expiresAt: request.expiresAt, nativeLaunched: nativeTabPending,
-      preferredTabId: request.preferredTabId, ...(request.trackKey ? { trackKey: request.trackKey } : {}) }] });
+      preferredTabId: request.preferredTabId, ...(request.trackKey ? { trackKey: request.trackKey } : {}),
+      ...(request.playerKey ? { playerKey: request.playerKey } : {}) }] });
     nativeTabPending = false;
   }
   function listenForBrowser(channel, { concurrent = false } = {}) {
@@ -141,7 +142,7 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     });
     flushBrowserRequest();
   }
-  async function requestPlayerCommand(type, amount = 0) {
+  async function requestPlayerCommand(type, amount = 0, { playerKey } = {}) {
     if (!['open', 'toggle', 'prev', 'next', 'mute', 'volume_delta', 'like', 'dislike'].includes(type)) return false;
     if (getSession().pairingRequired) { lastCommandError = 'pairing-required'; return false; }
     if (getSession().blocked) { lastCommandError = getSession().errorCode; return false; }
@@ -159,6 +160,7 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     const request = {
       id: newId(), type, amount, promise, state: 'queued', order: ++latestRequest,
       expiresAt: now() + 45000, preferredTabId: entry ? Number(entry[0]) : null,
+      playerKey,
       trackKey: (type === 'like' || type === 'dislike') && state?.title ?
         state.trackId || JSON.stringify([state.title, state.artist]) : null,
       finish(ok, reason = 'command-failed') {

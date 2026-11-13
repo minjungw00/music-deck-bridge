@@ -139,5 +139,59 @@
   },
   "legacyProtocol": {
     "message": "legacy connection"
+  },
+  "nowPlayingLabel": {
+    "message": "Now playing"
+  },
+  "playerWaiting": {
+    "message": "Waiting for YouTube Music"
+  },
+  "settingsSummary": {
+    "message": "Connection settings"
+  },
+  "connectionStatusLabel": {
+    "message": "Connection status"
+  },
+  "previous": {
+    "message": "Previous track"
+  },
+  "next": {
+    "message": "Next track"
+  },
+  "play": {
+    "message": "Play"
+  },
+  "pause": {
+    "message": "Pause"
+  },
+  "likeLabel": {
+    "message": "Like"
+  },
+  "dislikeLabel": {
+    "message": "Dislike"
+  },
+  "controlFailed": {
+    "message": "Could not confirm the command. Check YouTube Music before trying again."
+  },
+  "controlChanged": {
+    "message": "The selected track changed. Try again on the current track."
+  },
+  "controlUpdate": {
+    "message": "Update the Stream Deck plugin to use popup controls."
+  },
+  "volumeLabel": {
+    "message": "Volume"
+  },
+  "mute": {
+    "message": "Mute"
+  },
+  "unmute": {
+    "message": "Unmute"
+  },
+  "volumeDown": {
+    "message": "Decrease volume by 5 points"
+  },
+  "volumeUp": {
+    "message": "Increase volume by 5 points"
   }
 }

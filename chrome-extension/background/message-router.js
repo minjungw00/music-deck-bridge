@@ -3,7 +3,7 @@
   function createMessageRouter({ chrome, client, pageControls, management, players }) {
     const { playerPlayback, controlPlayerVolume } = pageControls;
     const managementMethods = Object.freeze({ __proto__: null, pair: 'pair', check: 'check',
-      'get-port': 'getPort', 'set-port': 'setPort', unpair: 'unpair' });
+      'get-port': 'getPort', 'set-port': 'setPort', unpair: 'unpair', control: 'control', artwork: 'artwork' });
     function onMessage(msg, sender, respond) {
       if (client.blocked() && ['player-playback', 'player-playback-result', 'player-volume'].includes(msg?.type)) {
         respond({ ok: false, reason: 'protocol-incompatible' }); return false;

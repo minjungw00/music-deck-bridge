@@ -12,7 +12,8 @@ function harness() {
   const timers = new Map(), windowHandlers = {};
   let nextTimer = 0;
   function element(id) {
-    if (!nodes.has(id)) nodes.set(id, { value: '', textContent: '', style: {}, handlers: {},
+    if (!nodes.has(id)) nodes.set(id, { value: '', textContent: '', style: {}, handlers: {}, attrs: {}, hidden: false, disabled: false,
+      setAttribute(key, value) { this.attrs[key] = value; }, removeAttribute(key) { delete this.attrs[key]; },
       addEventListener(type, run) { this.handlers[type] = run; },
       click() { return this.handlers.click(); }, input() { this.handlers.input({ target: this }); } });
     return nodes.get(id);
@@ -116,11 +117,12 @@ test('an open popup refreshes tracks, artwork failures, player closure and conne
   await h.tick();
   assert.equal(h.requests.length, 0, 'a slow poll must finish before another starts');
   first.resolve({ ok: true, active: true, track: 'First song', coverStatus: 'ready' }); await flush();
-  assert.match(h.element('status').textContent, /First song/);
+  assert.equal(h.element('trackTitle').textContent, 'First song');
   await h.tick();
   h.take('check').resolve({ ok: true, active: true, track: 'Next song', coverStatus: 'failed' }); await flush();
-  assert.match(h.element('status').textContent, /Next song.*\nartwork: coverFailed/);
-  assert.doesNotMatch(h.element('status').textContent, /First song/);
+  assert.equal(h.element('trackTitle').textContent, 'Next song');
+  assert.match(h.element('status').textContent, /artwork: coverFailed/);
+  assert.doesNotMatch(h.element('trackTitle').textContent, /First song/);
   await h.tick();
   h.take('check').resolve({ ok: true, active: false }); await flush();
   assert.equal(h.element('status').textContent, 'paired');
@@ -129,7 +131,7 @@ test('an open popup refreshes tracks, artwork failures, player closure and conne
   assert.equal(h.element('status').textContent, 'bridge offline');
   await h.tick();
   h.take('check').resolve({ ok: true, active: true, track: 'Recovered song' }); await flush();
-  assert.match(h.element('status').textContent, /Recovered song/);
+  assert.equal(h.element('trackTitle').textContent, 'Recovered song');
 });
 
 for (const [button, type, response] of [
@@ -148,7 +150,7 @@ for (const [button, type, response] of [
     assert.ok(feedback);
     await h.tick();
     h.take('check').resolve({ ok: true, active: true, track: 'Current song', compatibility }); await flush();
-    assert.match(h.element('status').textContent, /Current song/);
+    assert.equal(h.element('trackTitle').textContent, 'Current song');
     assert.equal(h.element('feedback').textContent, feedback);
   });
 }
@@ -161,11 +163,11 @@ test('a stale automatic read cannot replace a newer action or its versions, and 
   const versions = h.element('versions').textContent;
   oldReply.resolve({ ok: true, active: true, track: 'Old song', compatibility: { pluginVersion: '9.9.9' } }); await flush();
   assert.equal(h.element('feedback').textContent, 'invalid');
-  assert.doesNotMatch(h.element('status').textContent, /Old song/);
+  assert.doesNotMatch(h.element('trackTitle').textContent, /Old song/);
   assert.equal(h.element('versions').textContent, versions);
   await h.tick();
   h.take('check').resolve({ ok: true, active: true, track: 'New song', compatibility }); await flush();
-  assert.match(h.element('status').textContent, /New song/);
+  assert.equal(h.element('trackTitle').textContent, 'New song');
   assert.equal(h.element('feedback').textContent, 'invalid');
 });
 
@@ -183,4 +185,120 @@ test('hidden popups skip polling and closing clears the timer and discards outst
   assert.equal(h.element('status').textContent, status);
   await h.tick();
   assert.equal(h.requests.length, 0);
+});
+
+const playerState = (changes = {}) => ({ ok: true, active: true, popupControls: true, coverStatus: 'missing',
+  compatibility, player: { id: '12', key: 'aaaaaaaaaaa', title: 'Player song', artist: 'Artist', playing: true,
+    rating: 'INDIFFERENT', coverKey: '', volume: 50, muted: false, ...changes } });
+async function showState(h, state = playerState()) {
+  await h.tick(); h.take('check').resolve(state); await flush();
+}
+
+test('player controls follow observed playback, rating, capability and connection state', async () => {
+  const h = harness(); await h.ready();
+  assert.equal(h.element('playPause').disabled, true);
+  await showState(h);
+  assert.equal(h.element('playPause').disabled, false);
+  assert.equal(h.element('playPause').attrs['aria-label'], 'pause');
+  assert.equal(h.element('pauseIcon').hidden, false);
+  assert.equal(h.element('trackArtist').textContent, 'Artist');
+  await showState(h, playerState({ playing: false, rating: 'LIKE' }));
+  assert.equal(h.element('playPause').attrs['aria-label'], 'play');
+  assert.equal(h.element('like').attrs['aria-pressed'], 'true');
+  assert.equal(h.element('dislike').attrs['aria-pressed'], 'false');
+  await showState(h, playerState({ rating: null }));
+  assert.equal(h.element('like').disabled, true);
+  assert.equal(h.element('playPause').disabled, false);
+  await showState(h, { ...playerState(), playerStale: true });
+  assert.equal(h.element('playPause').disabled, true);
+  await showState(h, { ok: true, active: true, track: 'Legacy song' });
+  assert.equal(h.element('trackTitle').textContent, 'Legacy song');
+  assert.equal(h.element('playPause').disabled, true);
+  assert.match(h.element('status').textContent, /controlUpdate/);
+  await showState(h, { ok: false, error: 'offline' });
+  assert.equal(h.element('trackTitle').textContent, 'playerWaiting');
+  assert.equal(h.element('like').attrs['aria-pressed'], 'false');
+});
+
+for (const [id, command] of [['previous', 'prev'], ['playPause', 'toggle'], ['next', 'next'], ['like', 'like'], ['dislike', 'dislike'], ['mute', 'mute'], ['volumeDown', 'volume_delta'], ['volumeUp', 'volume_delta']]) {
+  test(`popup ${command} binds the request to the displayed track and waits for observed state`, async () => {
+    const h = harness(); await h.ready(); await showState(h);
+    const operation = h.element(id).click(), request = h.take('control');
+    assert.equal(request.command, command);
+    assert.equal(request.playerId, '12');
+    assert.equal(request.trackKey, 'aaaaaaaaaaa');
+    if (command === 'volume_delta') assert.equal(request.amount, id === 'volumeDown' ? -5 : 5);
+    assert.equal(h.element(id).disabled, true);
+    await h.element(id).click();
+    assert.equal(h.requests.length, 0, 'disabled controls must not duplicate the action');
+    assert.equal(h.element('playPause').attrs['aria-label'], 'pause', 'no optimistic playback state');
+    assert.equal(h.element('like').attrs['aria-pressed'], 'false', 'no optimistic rating');
+    request.resolve({ ok: true }); await operation;
+    h.take('check').resolve(playerState({ playing: false, rating: 'LIKE', muted: true, volume: 55 })); await flush();
+    assert.equal(h.element('playPause').attrs['aria-label'], 'play');
+    assert.equal(h.element('like').attrs['aria-pressed'], 'true');
+    assert.equal(h.element('likeIcon').src, 'icons/controls/like-selected.png');
+    assert.equal(h.element('volumeValue').textContent, '55%');
+    assert.equal(h.element('mute').attrs['aria-pressed'], 'true');
+    assert.equal(h.element('muteIcon').src, 'icons/controls/mute.png');
+  });
+}
+
+test('Pause stays available during navigation and an older command result cannot replace its feedback', async () => {
+  const h = harness(); await h.ready(); await showState(h);
+  const next = h.element('next').click(), nextReply = h.take('control');
+  assert.equal(h.element('playPause').disabled, false);
+  const pause = h.element('playPause').click(), pauseReply = h.take('control');
+  pauseReply.resolve({ ok: false, reason: 'player-changed' }); await pause;
+  assert.equal(h.element('controlFeedback').textContent, 'controlChanged');
+  nextReply.resolve({ ok: false, reason: 'command-superseded' }); await next;
+  assert.equal(h.element('controlFeedback').textContent, 'controlChanged');
+  h.take('check').resolve(playerState({ playing: false })); await flush();
+});
+
+test('artwork replies cannot replace a newer track and untrusted images retain the placeholder', async () => {
+  const h = harness(); await h.ready();
+  await showState(h, { ...playerState({ coverKey: 'cover-a' }), coverStatus: 'ready' });
+  const first = h.take('artwork');
+  assert.equal(first.trackKey, 'aaaaaaaaaaa');
+  await showState(h, { ...playerState({ key: 'bbbbbbbbbbb', coverKey: 'cover-b' }), coverStatus: 'ready' });
+  const second = h.take('artwork');
+  first.resolve({ ok: true, image: 'data:image/png;base64,AQID' }); await flush();
+  assert.equal(h.element('artwork').hidden, true);
+  second.resolve({ ok: true, image: 'data:image/svg+xml;base64,AQID' }); await flush();
+  assert.equal(h.element('artwork').hidden, true);
+  assert.equal(h.element('coverFallback').hidden, false);
+  await showState(h, { ...playerState({ key: 'ccccccccccc', coverKey: 'cover-c' }), coverStatus: 'ready' });
+  h.take('artwork').resolve({ ok: true, image: 'data:image/png;base64,AQID' }); await flush();
+  assert.equal(h.element('artwork').hidden, false);
+  assert.equal(h.element('coverFallback').hidden, true);
+  await showState(h, { ok: false });
+  assert.equal(h.element('artwork').hidden, true);
+  assert.equal(h.element('playPause').disabled, true);
+});
+
+test('connection settings honor a user opening them before the startup check finishes', async () => {
+  const h = harness();
+  h.element('connectionSettings').open = true;
+  await h.element('settingsSummary').click();
+  await h.ready();
+  assert.equal(h.element('connectionSettings').open, true);
+});
+
+test('volume controls respect observed bounds, remain available during navigation and reset offline', async () => {
+  const h = harness(); await h.ready();
+  await showState(h, playerState({ volume: 0 }));
+  assert.equal(h.element('volumeDown').disabled, true);
+  assert.equal(h.element('volumeUp').disabled, false);
+  await showState(h, playerState({ volume: 100, muted: true }));
+  assert.equal(h.element('volumeUp').disabled, true);
+  assert.equal(h.element('mute').attrs['aria-label'], 'unmute');
+  await showState(h);
+  const next = h.element('next').click(), reply = h.take('control');
+  assert.equal(h.element('mute').disabled, false);
+  assert.equal(h.element('volumeDown').disabled, false);
+  reply.resolve({ ok: true }); await next;
+  h.take('check').resolve({ ok: false }); await flush();
+  assert.equal(h.element('volumeValue').textContent, '—');
+  assert.equal(h.element('mute').disabled, true);
 });

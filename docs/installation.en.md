@@ -119,7 +119,9 @@ The files are written to `dist/` with the same names as release packages. Stream
 
 The extension prefers an installed Chrome YouTube Music app if both it and a regular tab are open.
 
-In 1.1.4 development builds, the popup checks the current track and connection every second while visible; **Status** also refreshes immediately. Album art status describes a separate image download in the plugin. Missing image URLs, rejected hosts or download failures can leave artwork unavailable even when playback control is connected.
+In 1.2.0 development builds, the popup shows artwork, track/artist, Play/Pause, Previous/Next, Like/Dislike, Mute/Unmute and volume controls in 5-percentage-point steps with the current volume shown. The buttons reuse the Stream Deck artwork, including selected states. It checks state every second while visible; **Status** also refreshes immediately. Buttons follow observed playback/rating state and are disabled without a fresh connected player; Pause remains available while navigation is pending. Older plugins without popup support require an update.
+
+Open **Connection settings** for PIN pairing and port changes; the section starts expanded when unpaired. Album art comes from the plugin’s existing image cache. Missing image URLs, rejected hosts or download failures can leave artwork unavailable even when playback control is connected.
 
 Reinstalling the Chrome extension removes its local pairing token even if the plugin still stores previous credentials. Generate a new PIN in the Stream Deck action settings and pair the reinstalled extension. If using a custom port, match it in the popup first. Updating files in the same unpacked folder and reloading avoids removing extension storage.
 

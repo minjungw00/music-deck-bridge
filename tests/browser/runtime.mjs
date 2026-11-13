@@ -21,8 +21,8 @@ const fixture = (restored = false, ignoredStartupRequests = 0) => `<!doctype htm
  <button class="volume" onclick="muted=!muted;record('mute')">Mute</button>
  <div id="volume-slider" style="width:100px;height:20px" aria-valuenow="50"></div>
  <ytmusic-like-button-renderer like-status="INDIFFERENT">
-  <div id="button-shape-like"><button onclick="record('like')">Like</button></div>
-  <div id="button-shape-dislike"><button onclick="record('dislike')">Dislike</button></div>
+  <div id="button-shape-like"><button onclick="rate('LIKE')">Like</button></div>
+  <div id="button-shape-dislike"><button onclick="rate('DISLIKE')">Dislike</button></div>
  </ytmusic-like-button-renderer>
 </ytmusic-player-bar>
 <script>
@@ -33,6 +33,11 @@ const ignoredStartupRequests=${ignoredStartupRequests};
 const playerListeners=new Map();
 const tracks=['aaaaaaaaaaa','bbbbbbbbbbb','ccccccccccc','ddddddddddd','eeeeeeeeeee'];
 function record(key){ document.body.dataset[key]=String(Number(document.body.dataset[key]||0)+1); }
+function rate(value){
+ const renderer=document.querySelector('ytmusic-like-button-renderer');
+ renderer.setAttribute('like-status',renderer.getAttribute('like-status')===value?'INDIFFERENT':value);
+ record(value==='LIKE'?'like':'dislike');
+}
 function control(type){
  if(!ready){record('early');return;}
  if(type==='toggle'&&restored&&!initialized){record('ignoredRestoredClick');return;}
@@ -325,7 +330,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     .find(target => target.url === `${origin}/popup.html`), 'toolbar popup target');
   const { sessionId } = await popupSession.send('Target.attachToTarget', { targetId: popup.targetId, flatten: false });
   let popupCommand = 0, popupStatus = '';
-  async function readPopupStatus() {
+  async function popupEvaluate(expression = 'document.getElementById("trackTitle")?.textContent || ""') {
     const id = ++popupCommand;
     let listener;
     const response = new Promise(resolve => {
@@ -337,21 +342,55 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     });
     try {
       await popupSession.send('Target.sendMessageToTarget', { sessionId, message: JSON.stringify({ id,
-        method: 'Runtime.evaluate', params: { expression: 'document.getElementById("status")?.textContent || ""', returnByValue: true } }) });
+        method: 'Runtime.evaluate', params: { expression, returnByValue: true } }) });
       const message = await response;
       assert.equal(message.error, undefined);
+      assert.equal(message.result.exceptionDetails, undefined);
       return popupStatus = message.result.result.value;
     } finally { popupSession.off('Target.receivedMessageFromTarget', listener); }
   }
   try {
-    await until(async () => (await readPopupStatus()).includes('Fixture song'), 'initial popup track');
+    await until(async () => (await popupEvaluate()).includes('Fixture song'), 'initial popup track');
     await music.evaluate(() => { document.querySelector('ytmusic-player-bar .title').textContent = 'Updated fixture song'; });
-    await until(async () => (await readPopupStatus()).includes('Updated fixture song'), 'live popup track');
+    await until(async () => (await popupEvaluate()).includes('Updated fixture song'), 'live popup track');
+    for (const desired of [false, true]) {
+      await until(() => popupEvaluate('!document.getElementById("playPause").disabled'), 'popup playback ready');
+      await popupEvaluate('document.getElementById("playPause").click()');
+      await until(() => music.evaluate(desired => playing === desired, desired), 'popup playback state');
+      await until(() => popupEvaluate(`!document.getElementById("playPause").disabled && document.getElementById("${desired ? 'pauseIcon' : 'playIcon'}").getClientRects().length > 0`), 'observed popup playback icon');
+    }
+    for (const [button, delta] of [['previous', -1], ['next', 1]]) {
+      const before = await music.evaluate(() => index);
+      await until(() => popupEvaluate(`!document.getElementById("${button}").disabled`), 'popup navigation ready');
+      await popupEvaluate(`document.getElementById("${button}").click()`);
+      await until(() => music.evaluate(expected => index === expected && playing, before + delta), 'popup navigation and playback');
+    }
+    for (const [button, rating] of [['like', 'LIKE'], ['dislike', 'DISLIKE']]) {
+      await until(() => popupEvaluate(`!document.getElementById("${button}").disabled`), 'popup rating ready');
+      await popupEvaluate(`document.getElementById("${button}").click()`);
+      await until(() => music.evaluate(rating => document.querySelector('ytmusic-like-button-renderer').getAttribute('like-status') === rating, rating), 'popup site rating');
+      await until(() => popupEvaluate(`document.getElementById("${button}").getAttribute("aria-pressed") === "true"`), 'observed popup rating');
+    }
+    for (const [button, delta] of [['volumeDown', -5], ['volumeUp', 5]]) {
+      const before = await music.evaluate(() => Number(document.querySelector('#volume-slider').value));
+      await until(() => popupEvaluate(`!document.getElementById("${button}").disabled`), 'popup volume ready');
+      await popupEvaluate(`document.getElementById("${button}").click()`);
+      await until(() => music.evaluate(expected => Number(document.querySelector('#volume-slider').value) === expected, before + delta), 'popup site volume');
+      await until(() => popupEvaluate(`document.getElementById("volumeValue").textContent === "${before + delta}%"`), 'observed popup volume');
+    }
+    for (const desired of [true, false]) {
+      await until(() => popupEvaluate('!document.getElementById("mute").disabled'), 'popup mute ready');
+      await popupEvaluate('document.getElementById("mute").click()');
+      await until(() => music.evaluate(desired => muted === desired, desired), 'popup site mute');
+      await until(() => popupEvaluate(`document.getElementById("mute").getAttribute("aria-pressed") === "${desired}"`), 'observed popup mute');
+    }
+    assert.equal(await popupEvaluate('[...document.querySelectorAll(".transport img,.ratings img,#mute img")].every(img => img.complete && img.naturalWidth === 144)'), true, 'shared Stream Deck PNG resources loaded');
   } catch (error) { t.diagnostic(`Last toolbar popup status: ${popupStatus}`); throw error; }
   finally {
     await popupSession.send('Target.closeTarget', { targetId: popup.targetId });
     await popupSession.detach();
   }
+  const nextBeforeMismatch = await music.evaluate(() => document.body.dataset.next);
   const compatibility = await worker.evaluate(async token => {
     const current = await post('/status', { token });
     const original = fetch;
@@ -375,7 +414,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   assert.equal(compatibility.executed, false);
   assert.equal(compatibility.token, token);
   assert.equal(compatibility.recovered.compatible, true);
-  assert.equal(await music.evaluate(() => document.body.dataset.next), '1', 'incompatible input had no page effect');
+  assert.equal(await music.evaluate(() => document.body.dataset.next), nextBeforeMismatch, 'incompatible input had no page effect');
   // Inject a script failure in the local page model to verify diagnostics travel
   // through the actual MAIN/content/worker result path without raw error text.
   await music.evaluate(() => {
@@ -403,5 +442,5 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   } finally {
     await music.evaluate(() => { document.querySelector('ytmusic-player-bar .play-pause-button').click = globalThis.originalPlayClick; delete globalThis.originalPlayClick; });
   }
-  t.diagnostic(`Chromium ${browser.browser().version()}; ignored-initial-Play startup recovery, ignored destination Play recovery after Previous/Next followed by Pause, unstarted API-ready selection delay, Play-gated media/track initialization, cold-tab and post-launch controls, stalled/no-seek Previous followed by responsive Pause/Next, stale-monitor cancellation, receiver recovery and live popup track updates passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
+  t.diagnostic(`Chromium ${browser.browser().version()}; startup/destination recovery, interrupted Previous, receiver recovery, live toolbar popup track updates, shared icons and popup play/pause, Previous/Next, like/dislike, volume and mute passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
 });

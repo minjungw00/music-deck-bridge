@@ -308,3 +308,36 @@ test('server-side revocation during startup prevents input even when local crede
   assert.ok(!h.calls.some(call => call[0] === 'message'));
   assert.equal(h.storage.bridgeToken, 'revoked-token');
 });
+
+test('popup commands cannot fall back to another tab when their displayed player disappears', async () => {
+  for (const tabs of [[], [{ id: 2, active: true, windowId: 10 }]]) {
+    const h = harness({ tabs });
+    const diagnostic = {};
+    assert.equal(await h.api.performBrowserCommand({ type: 'next', preferredTabId: 1, playerKey: 'original-track' }, undefined, diagnostic), false);
+    assert.equal(diagnostic.reason, 'player-changed');
+    assert.ok(!h.calls.some(call => ['message', 'create', 'update', 'focus'].includes(call[0])));
+  }
+});
+
+test('popup commands recheck the selected track before dispatch after receipt', async () => {
+  const h = harness({ tabs: [{ id: 1, windowId: 10 }] });
+  await new Promise(resolve => setImmediate(resolve));
+  h.storage.bridgeToken = 'paired-token';
+  let polls = 0;
+  const acknowledgments = [];
+  h.context.fetch = async (url, options) => {
+    if (url.endsWith('/status')) return { ok: true, json: async () => ({ player: { id: '1', key: 'new-track' } }) };
+    if (url.endsWith('/browser-result')) {
+      acknowledgments.push(JSON.parse(options.body));
+      return { ok: true, json: async () => ({ ok: true }) };
+    }
+    return { ok: true, json: async () => polls++ === 0 ? { commands: [
+      { id: 'popup', type: 'like', preferredTabId: 1, playerKey: 'old-track', trackKey: 'old-track' },
+    ] } : {} };
+  };
+  await h.api.startBrowserListener();
+  assert.equal(acknowledgments.length, 1);
+  assert.equal(acknowledgments[0].ok, false);
+  assert.equal(acknowledgments[0].reason, 'player-changed');
+  assert.ok(!h.calls.some(call => call[0] === 'message'));
+});

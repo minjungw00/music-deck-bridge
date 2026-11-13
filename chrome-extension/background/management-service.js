@@ -76,12 +76,30 @@
         return { ok: true };
       },
       async getPort() { return { ok: true, port: await configuredPort() }; },
+      async artwork({ playerId, trackKey, coverKey }) {
+        const token = await pairedToken();
+        if (!token) return { ok: false };
+        return post('/artwork', { token, playerId, trackKey, coverKey });
+      },
     };
+    const controlToken = serialize(() => pairedToken());
+    async function control({ command, playerId, trackKey, amount }) {
+      if (!['toggle', 'prev', 'next', 'like', 'dislike', 'mute', 'volume_delta'].includes(command) ||
+          (command === 'volume_delta' && (!Number.isInteger(amount) || amount === 0 || Math.abs(amount) > 100))) {
+        throw new Error(translate('controlFailed') || 'Could not control the player.');
+      }
+      // Wait for preceding credential/port writes, then release the management
+      // queue. Outcome confirmation must not block status, unpair or later Pause.
+      const token = await controlToken();
+      if (!token) return { ok: false, reason: 'pairing-required' };
+      return post('/control', { token, command, playerId, trackKey,
+        ...(command === 'volume_delta' ? { amount } : {}) }, 50000);
+    }
     // Include reads: status can update compatibility/port, and both reads must
     // see credentials and configuration after preceding writes have settled.
     return { pair: serialize(operations.pair), unpair: serialize(operations.unpair),
       setPort: serialize(operations.setPort), check: serialize(operations.check),
-      getPort: serialize(operations.getPort) };
+      getPort: serialize(operations.getPort), artwork: serialize(operations.artwork), control };
   }
   root.MusicDeckManagementService = Object.freeze({ create: createManagementService });
 })(globalThis);

@@ -46,9 +46,16 @@ for (const action of ['prev', 'toggle', 'next', 'like', 'open', 'nowplaying', 'm
 }
 for (const locale of ['en', 'ko']) {
   const catalog = await json(`chrome-extension/_locales/${locale}/messages.json`);
-  const settings = { locale, catalog, title: data.title, version: pkg.version,
+  const settings = { locale, catalog, title: data.title, artist: data.artist, cover, version: pkg.version,
     extensionVersion: manifest.version_name || manifest.version, protocol: data.protocol };
-  data.popups[locale] = template.replace('src="icons/128.png"', `src="${icon}"`)
+  let popupTemplate = template.replace('src="icons/128.png"', `src="${icon}"`);
+  for (const name of ['previous', 'play', 'pause', 'next', 'like', 'like-selected', 'dislike', 'dislike-selected', 'mute', 'volume']) {
+    const path = `icons/controls/${name}.png`;
+    settings.controlIcons ||= {};
+    settings.controlIcons[path] = 'data:image/png;base64,' + (await readFile(join(root, 'chrome-extension', path))).toString('base64');
+    popupTemplate = popupTemplate.replaceAll(`src="${path}"`, `src="${settings.controlIcons[path]}"`);
+  }
+  data.popups[locale] = popupTemplate
     .replace('<script src="popup.js"></script>', `<script>const previewFixture=${scriptJSON(settings)};\n${inline(fixtureJS)}\n${inline(popupJS)}</script>`);
 }
 // Bundle the presentation API without importing the plugin's runtime entry point.

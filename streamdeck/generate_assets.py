@@ -167,6 +167,11 @@ def main():
         outputs[f"{plugin}/actions/toggle/pause{suffix}.png"] = ("pause", 72 * scale, True)
         for kind in ("like", "dislike"):
             outputs[f"{plugin}/actions/{kind}/selected{suffix}.png"] = (kind + "_selected", 72 * scale, True)
+    # Popup buttons reuse the same 2x key artwork, including observed states.
+    for name, kind in {"previous": "prev", "play": "toggle", "pause": "pause", "next": "next",
+                       "like": "like", "like-selected": "like_selected", "dislike": "dislike",
+                       "dislike-selected": "dislike_selected", "mute": "mute", "volume": "volume"}.items():
+        outputs[f"chrome-extension/icons/controls/{name}.png"] = (kind, 144, True)
     for name, spec in outputs.items():
         target = args.output_root / name
         target.parent.mkdir(parents=True, exist_ok=True)

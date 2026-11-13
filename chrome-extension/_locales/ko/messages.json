@@ -139,5 +139,59 @@
   },
   "legacyProtocol": {
     "message": "기존 연결"
+  },
+  "nowPlayingLabel": {
+    "message": "현재 곡"
+  },
+  "playerWaiting": {
+    "message": "YouTube Music 재생 대기 중"
+  },
+  "settingsSummary": {
+    "message": "연결 설정"
+  },
+  "connectionStatusLabel": {
+    "message": "연결 상태"
+  },
+  "previous": {
+    "message": "이전 곡"
+  },
+  "next": {
+    "message": "다음 곡"
+  },
+  "play": {
+    "message": "재생"
+  },
+  "pause": {
+    "message": "일시정지"
+  },
+  "likeLabel": {
+    "message": "좋아요"
+  },
+  "dislikeLabel": {
+    "message": "싫어요"
+  },
+  "controlFailed": {
+    "message": "명령 결과를 확인하지 못했습니다. 다시 시도하기 전에 YouTube Music을 확인하세요."
+  },
+  "controlChanged": {
+    "message": "선택된 곡이 변경되었습니다. 현재 곡에서 다시 시도하세요."
+  },
+  "controlUpdate": {
+    "message": "팝업 컨트롤을 사용하려면 Stream Deck 플러그인을 업데이트하세요."
+  },
+  "volumeLabel": {
+    "message": "볼륨"
+  },
+  "mute": {
+    "message": "음소거"
+  },
+  "unmute": {
+    "message": "음소거 해제"
+  },
+  "volumeDown": {
+    "message": "볼륨 5% 줄이기"
+  },
+  "volumeUp": {
+    "message": "볼륨 5% 높이기"
   }
 }
