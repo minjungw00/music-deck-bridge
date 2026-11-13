@@ -9,6 +9,7 @@ const html = readFileSync(join(dir,'property-inspector','settings.html'),'utf8')
 function makeInspector(action='io.github.minjungw00.musicdeckbridge.nowplaying', language='ko') {
   const ids=['keyTitleRow','showTitle','keyArtistRow','showArtist','keyArtistPositionRow','artistPosition','optKeyArtistBelow','optKeyArtistInline','keyBackgroundRow','titleBackground',
     'artworkArtistPositionRow','artworkArtistPosition','optArtworkArtistBelow','optArtworkArtistInline','titleModeRow','optTruncate','optScroll','titleHint','volumeRow','volumeHint',
+    'companionRow','installExtension','companionHint',
     'versionInfo','pinRow','generatePin','pairHint','pairState','commandStatus','volumeStep','stepLabel','pinOutput',
     'trackSection','dialSection','dialDisplayRow','dialDisplay','optDialInfo','optDialArtwork','dialDisplayHint',
     'artworkTextOptions','artworkArtistRow','artworkShowArtist','artworkBackgroundRow','artworkTitleBackground','artworkTitleModeRow','artworkTitleMode','optArtworkTruncate','optArtworkScroll',

@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.1.4-dev — Unreleased
+
+- Add companion-component store installation links to the Stream Deck property inspector and Chrome extension popup, with English and Korean guidance that both components are required.
+- Tag the links with `utm_source=streamdeck_plugin` or `chrome_extension`, `utm_medium=referral` and `utm_campaign=companion_setup`. Chrome store attribution is supported; Elgato UTM reporting remains unverified.
+
 ## v1.1.3 — 2026-10-29
 
 - Fit non-square Current Track key artwork proportionally with centered black margins, including title-backdrop variants.

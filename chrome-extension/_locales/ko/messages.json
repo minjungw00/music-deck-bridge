@@ -2,6 +2,12 @@
   "heading": {
     "message": "Music Deck Bridge"
   },
+  "companionHint": {
+    "message": "이 확장 프로그램과 Stream Deck 플러그인이 모두 필요합니다."
+  },
+  "installPlugin": {
+    "message": "Stream Deck 플러그인 설치"
+  },
   "guide": {
     "message": "Stream Deck 설정에서 PIN을 발급한 후 여기 입력하세요."
   },

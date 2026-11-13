@@ -1,6 +1,7 @@
 'use strict';
 /* Property inspector using the official sdpi-components controls and Stream Deck client. */
 const client = SDPIComponents.streamDeckClient;
+const CHROME_STORE_URL = 'https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca?utm_source=streamdeck_plugin&utm_medium=referral&utm_campaign=companion_setup';
 const $ = id => document.getElementById(id);
 const strings = MusicDeckInspectorStrings;
 let language = 'en';
@@ -60,6 +61,9 @@ function localize() {
   $('volumeRow').setAttribute('label', t('volumeRow'));
   $('volumeStep').setAttribute('aria-label', t('volumeRow'));
   $('volumeHint').textContent = t('volumeHint');
+  $('companionRow').setAttribute('label', t('companionRow'));
+  $('installExtension').textContent = t('installExtension');
+  $('companionHint').textContent = t('companionHint');
   $('pinRow').setAttribute('label', t('pinRow'));
   $('generatePin').textContent = t('generate');
   $('pairHint').textContent = t('pairHint');
@@ -148,6 +152,11 @@ client.didReceiveSettings.subscribe(msg => {
   editor.receive(msg.payload?.settings);
   updateArtworkOptions(editor.settings.dialDisplay || 'info', editor.settings.artworkShowTitle === true, editor.settings.artworkShowArtist === true);
   $('keyArtistPositionRow').classList.toggle('hidden', editor.settings.showArtist === false);
+});
+$('installExtension').addEventListener('click', async () => {
+  $('companionHint').textContent = t('companionHint');
+  try { await client.send('openUrl', { url: CHROME_STORE_URL }); }
+  catch { $('companionHint').textContent = t('storeOpenFailed'); }
 });
 $('generatePin').addEventListener('click', () => { lastPin = ''; void requestConnection('generate-pin'); });
 // Read event.target.value from the native input while persistence is pending.

@@ -16,7 +16,8 @@
     input { width: 100%; padding: 9px; border: 1px solid #636a78; border-radius: 6px; background: #202433; color: white; letter-spacing: .3em; font-size: 16px; }
     button { min-height: 36px; padding: 8px 10px; background: #d000a4; border: 0; border-radius: 6px; color: white; cursor: pointer; font: inherit; font-weight: 600; line-height: 20px; white-space: nowrap; }
     button.secondary { background: #414759; }
-    input:focus-visible, button:focus-visible { outline: 2px solid #f72575; outline-offset: 2px; }
+    .store-link { color: #9cc9ff; text-decoration: underline; }
+    input:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid #f72575; outline-offset: 2px; }
     .port-row { display: flex; gap: 8px; }
     .port-row input { flex: 1; min-width: 0; font-size: 13px; letter-spacing: 0; padding: 8px; }
     .small-hint { font-size: 11px; line-height: 1.35; color: #abb3c5; margin: 4px 0 10px; }
@@ -31,6 +32,8 @@
     <h1 id="heading">Music Deck Bridge</h1>
   </header>
   <p id="subtitle" class="small-hint">For YouTube Music · Stream Deck integration</p>
+  <p id="companionHint" class="small-hint">Both this extension and the Stream Deck plugin are required.</p>
+  <p><a id="installPlugin" class="store-link" href="https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd?utm_source=chrome_extension&amp;utm_medium=referral&amp;utm_campaign=companion_setup" target="_blank" rel="noopener noreferrer">Install Stream Deck plugin</a></p>
   <p id="guide">Generate a PIN from a Stream Deck action and enter it here.</p>
   <label id="pinLabel" for="pin">Connection PIN</label>
   <input id="pin" maxlength="6" inputmode="numeric" autocomplete="off" placeholder="000000" />

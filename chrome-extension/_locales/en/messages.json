@@ -2,6 +2,12 @@
   "heading": {
     "message": "Music Deck Bridge"
   },
+  "companionHint": {
+    "message": "Both this extension and the Stream Deck plugin are required."
+  },
+  "installPlugin": {
+    "message": "Install Stream Deck plugin"
+  },
   "guide": {
     "message": "Generate a PIN in Stream Deck action settings and enter it here."
   },
