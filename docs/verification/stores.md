@@ -1,17 +1,23 @@
 # Store submissions
 
-Last updated: November 7, 2026 (Asia/Seoul). The Elgato public listing displayed **1.1.3** on November 6. The October 24 maintainer report of both stores' publication and normal operation is historical and has a separate scope.
+Last updated: November 13, 2026 (Asia/Seoul). The Elgato public listing displayed **1.1.3** on November 6. The October 24 maintainer report of both stores' publication and normal operation is historical and has a separate scope.
 
 ## Current listings
 
 | Store | Public status | Last maintainer-reported submission | Listing and ID |
 | --- | --- | --- | --- |
 | Elgato Marketplace | **1.1.3**, dated **November 2, 2026** on the listing, as observed November 6 | Historical **1.1.2** / plugin **1.1.2.0** | [Music Deck Bridge](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd) · `044e81d9-9671-4277-bcb9-ce8b6d38c3fd` |
-| Chrome Web Store | Publication reported October 24. Current listing version and copy remain unverified. | Historical **1.1.2** | [Music Deck Bridge](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca) · `ldipcjgadbppphalmibkofhigjffnlca` |
+| Chrome Web Store | **1.1.3** publication directly confirmed by the user on November 13. Official update date and current copy remain unverified. | Historical **1.1.2** | [Music Deck Bridge](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca) · `ldipcjgadbppphalmibkofhigjffnlca` |
 
 The October 24 report confirms normal operation of the then-published store components without an itemized installation/migration or control inventory. The listings, store dashboards and runtime operation were not independently inspected for that report. See [runtime confirmation](runtime.md#official-store-components).
 
 GitHub [v1.1.3](releases.md#v113) was published October 29. No store submission was performed as part of that GitHub release. The November 6 observation establishes Elgato public listing status by that date. Maker Console submission and review history, internal version identifiers and the meaning of the displayed date in that workflow remain unverified.
+
+## Chrome Web Store publication evidence
+
+On November 13, 2026, the user reported directly confirming the official Chrome Web Store publication of **1.1.3**. This report establishes user-confirmed publication; the listing could not be independently opened during this review.
+
+The November 10 Chrome-Stats observation supplied for this review reported **1.1.3** and **Last updated: 2026-10-30**. A November 13 retrieval of the [same record](https://chrome-stats.com/d/ldipcjgadbppphalmibkofhigjffnlca) returned those fields in a snapshot marked **Data ingested on: 2026-11-08**; the November 10 collection date was not independently verified. The October 30 update date remains a third-party observation, not a confirmed official update or publication date. Current official listing copy, submission/review history, store-package SHA-256, identity with the GitHub release asset and installation/runtime results for an identified 1.1.3 store package remain unverified.
 
 ## Submitted description history
 
