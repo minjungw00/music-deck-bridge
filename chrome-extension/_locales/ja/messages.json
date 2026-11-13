@@ -190,5 +190,11 @@
   },
   "uiLanguageCode": {
     "message": "ja"
+  },
+  "openPlayer": {
+    "message": "YouTube Music を開く"
+  },
+  "openPlayerFailed": {
+    "message": "YouTube Music を開けませんでした。もう一度お試しください。"
   }
 }

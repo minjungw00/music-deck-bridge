@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add Open YouTube Music to the empty Chrome popup. Open a missing tab or focus an existing tab/app without PIN pairing; coalesce repeated requests and report failures in all supported UI languages.
+
 ## v1.2.0 — 2026-11-14
 
 - Separate popup volume editing/coalescing from connection and player wiring; retain captured command routes and discard queued edits on popup closure.

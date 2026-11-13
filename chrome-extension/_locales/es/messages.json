@@ -190,5 +190,11 @@
   },
   "uiLanguageCode": {
     "message": "es"
+  },
+  "openPlayer": {
+    "message": "Abrir YouTube Music"
+  },
+  "openPlayerFailed": {
+    "message": "No se pudo abrir YouTube Music. Inténtalo de nuevo."
   }
 }

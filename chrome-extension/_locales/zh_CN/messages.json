@@ -190,5 +190,11 @@
   },
   "uiLanguageCode": {
     "message": "zh-CN"
+  },
+  "openPlayer": {
+    "message": "打开 YouTube Music"
+  },
+  "openPlayerFailed": {
+    "message": "无法打开 YouTube Music，请重试。"
   }
 }

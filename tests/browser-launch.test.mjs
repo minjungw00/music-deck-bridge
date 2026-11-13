@@ -341,3 +341,34 @@ test('popup commands recheck the selected track before dispatch after receipt', 
   assert.equal(acknowledgments[0].reason, 'player-changed');
   assert.ok(!h.calls.some(call => call[0] === 'message'));
 });
+
+test('popup Open creates one fixed music tab without pairing and coalesces concurrent requests', async () => {
+  const h = harness();
+  const results = await Promise.all([h.send({ type: 'open-player', url: 'https://untrusted.test/' }, {}),
+    h.send({ type: 'open-player' }, {})]);
+  assert.ok(results.every(result => result.ok));
+  const creates = h.calls.filter(call => call[0] === 'create');
+  assert.equal(creates.length, 1);
+  assert.equal(creates[0][1].url, 'https://music.youtube.com/');
+  assert.equal(creates[0][1].active, true);
+  assert.ok(h.calls.some(call => call[0] === 'focus' && call[1] === 30));
+  assert.ok(!h.calls.some(call => ['message', 'script'].includes(call[0])), 'Open does not dispatch playback');
+  assert.equal(h.storage.bridgeToken, '');
+});
+
+test('popup Open reuses an existing loading music tab and focuses its window', async () => {
+  const h = harness({ tabs: [{ id: 4, windowId: 20, active: false, status: 'loading' }] });
+  assert.equal((await h.send({ type: 'open-player' }, {})).ok, true);
+  assert.ok(!h.calls.some(call => ['create', 'message'].includes(call[0])));
+  assert.ok(h.calls.some(call => call[0] === 'update' && call[1] === 4));
+  assert.ok(h.calls.some(call => call[0] === 'focus' && call[1] === 20));
+});
+
+test('a failed popup Open releases the pending operation for an explicit retry', async () => {
+  const h = harness(), create = h.context.chrome.tabs.create;
+  h.context.chrome.tabs.create = async () => { throw Error('Browser unavailable'); };
+  assert.equal((await h.send({ type: 'open-player' }, {})).ok, false);
+  h.context.chrome.tabs.create = create;
+  assert.equal((await h.send({ type: 'open-player' }, {})).ok, true);
+  assert.equal(h.calls.filter(call => call[0] === 'create').length, 1);
+});

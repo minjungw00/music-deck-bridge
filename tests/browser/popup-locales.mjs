@@ -19,7 +19,7 @@ test('native extension catalogs and toolbar popup render all eight UI languages 
         args: [`--disable-extensions-except=${extension}`, `--load-extension=${extension}`, `--lang=${language}`] });
       const worker = browser.serviceWorkers()[0] || await browser.waitForEvent('serviceworker');
       const catalog = await worker.evaluate(() => Object.fromEntries(['uiLanguageCode','connect','refresh','forget','portLabel',
-        'settingsSummary','previous','next','play','mute'].map(key => [key, chrome.i18n.getMessage(key)])));
+        'settingsSummary','previous','next','play','mute','openPlayer'].map(key => [key, chrome.i18n.getMessage(key)])));
       assert.equal(catalog.uiLanguageCode, language);
       const rootSession = await browser.browser().newBrowserCDPSession();
       await worker.evaluate(() => chrome.action.openPopup());
@@ -56,7 +56,7 @@ test('native extension catalogs and toolbar popup render all eight UI languages 
       }
       assert.ok(ready, language);
       const ui = await evaluate(`(() => ({lang:document.documentElement.lang,
-        labels:Object.fromEntries(['connect','refresh','forget','portLabel','settingsSummary'].map(id=>[id,document.getElementById(id).textContent])),
+        labels:Object.fromEntries(['connect','refresh','forget','portLabel','settingsSummary','openPlayer'].map(id=>[id,document.getElementById(id).textContent])),
         controls:Object.fromEntries(['previous','next','playPause','mute'].map(id=>[id,document.getElementById(id).getAttribute('aria-label')])),
         clipped:[...document.querySelectorAll('button:not(.media-button)')].filter(button=>button.scrollWidth>button.clientWidth).map(button=>button.id),
         overflow:document.documentElement.scrollWidth>innerWidth}))()`);
@@ -65,10 +65,26 @@ test('native extension catalogs and toolbar popup render all eight UI languages 
       for (const [key, value] of Object.entries(ui.controls)) assert.equal(value, catalog[key === 'playPause' ? 'play' : key]);
       assert.deepEqual(ui.clipped, [], `${language}: clipped button labels`);
       assert.equal(ui.overflow, false, `${language}: horizontal overflow`);
+      if (language === 'en') {
+        await browser.route('https://music.youtube.com/**', route => route.fulfill({
+          contentType: 'text/html', body: '<!doctype html><title>Music opening fixture</title><p>Music opening fixture</p>' }));
+        assert.equal(await worker.evaluate(async () => (await chrome.tabs.query({ url: 'https://music.youtube.com/*' })).length), 0);
+        await evaluate('document.getElementById("openPlayer").click()');
+        let musicTabs = [];
+        for (let attempt = 0; attempt < 100 && !musicTabs.length; attempt++) {
+          musicTabs = await worker.evaluate(() => chrome.tabs.query({ url: 'https://music.youtube.com/*' }));
+          if (!musicTabs.length) await delay(20);
+        }
+        assert.equal(musicTabs.length, 1, 'empty toolbar popup opens the fixed Music URL');
+        assert.equal(musicTabs[0].active, true);
+        assert.equal((await worker.evaluate(() => localPlayer.open())).ok, true);
+        assert.equal(await worker.evaluate(async () => (await chrome.tabs.query({ url: 'https://music.youtube.com/*' })).length), 1,
+          'opening again reuses the existing tab');
+      }
     } finally {
       await browser?.close();
       await rm(profile, { recursive: true, force: true });
     }
   }
-  t.diagnostic('Native chrome.i18n catalogs and actual toolbar targets; fresh local Chromium profiles, no signed-in Music or Windows host.');
+  t.diagnostic('Native chrome.i18n catalogs and actual toolbar targets; empty popup opens/reuses a Music tab without pairing. Fresh local Chromium profiles and routed page fixture, no signed-in Music or Windows host.');
 });

@@ -4,6 +4,7 @@
     const leases = new Map();
     const native = MusicDeckBrowserChannel.create({ chrome, client: { blocked: () => false }, contentScripts });
     let sequence = 0;
+    let opening = null;
     const clean = value => String(value || '').replace(/[\x00-\x1f\x7f]/g, ' ').trim().slice(0, 180);
     const cover = source => root.MusicDeckArtworkPolicy.parse(source)?.href || '';
     async function snapshot(tab) {
@@ -39,6 +40,16 @@
       return { ok: true, active: !!player, mode: 'local', popupControls: true, popupVolume: true,
         player, standalone: player?.standalone === true, coverStatus: player?.coverKey ? 'ready' : 'missing' };
     }
+    function open() {
+      // Coalesce simultaneous clicks across popups; Open never dispatches playback.
+      if (!opening) opening = (async () => {
+        const selected = await check();
+        const ok = await native.perform({ type: 'open',
+          preferredTabId: selected.player ? Number(selected.player.id) : undefined });
+        return { ok };
+      })().finally(() => { opening = null; });
+      return opening;
+    }
     async function control({ command, amount, playerId, trackKey }) {
       if (!['toggle', 'prev', 'next', 'like', 'dislike', 'mute', 'volume_set'].includes(command) ||
           (command === 'volume_set' && (!Number.isInteger(amount) || amount < 0 || amount > 100))) {
@@ -67,7 +78,7 @@
         if (remaining) leases.set(tabId, remaining); else leases.delete(tabId);
       }
     }
-    return { check, control, controlling: tabId => leases.has(tabId) };
+    return { check, open, control, controlling: tabId => leases.has(tabId) };
   }
   root.MusicDeckLocalPlayer = Object.freeze({ create: createLocalPlayer });
 })(globalThis);

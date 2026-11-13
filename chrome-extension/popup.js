@@ -3,7 +3,7 @@ const $ = id => document.getElementById(id);
 const asset = path => chrome.runtime.getURL?.(path) || path;
 const language = chrome.i18n.getMessage('uiLanguageCode') || 'en';
 const text = Object.fromEntries(
-  ["heading","subtitle","companionHint","installPlugin","guide","pin","connect","refresh","forget","portLabel","savePort","portHint","portInvalid","portSaved","portLocal","invalid","checking","fail","connected","unknown","player","app","tab","current","waiting","artwork","stale","paired","removed","nowPlayingLabel","playerWaiting","settingsSummary","connectionStatusLabel","previous","next","play","pause","likeLabel","dislikeLabel","controlFailed","controlChanged","controlUpdate","volumeLabel","mute","unmute"]
+  ["heading","subtitle","companionHint","installPlugin","guide","pin","connect","refresh","forget","portLabel","savePort","portHint","portInvalid","portSaved","portLocal","invalid","checking","fail","connected","unknown","player","app","tab","current","waiting","artwork","stale","paired","removed","nowPlayingLabel","playerWaiting","settingsSummary","connectionStatusLabel","previous","next","play","pause","likeLabel","dislikeLabel","controlFailed","controlChanged","controlUpdate","volumeLabel","mute","unmute","openPlayer","openPlayerFailed"]
     .map(key => [key, chrome.i18n.getMessage(key)])
 );
 const coverMessages = new Map([
@@ -12,7 +12,7 @@ const coverMessages = new Map([
 ].map(([code, key]) => [code, chrome.i18n.getMessage(key)]));
 document.documentElement.lang = language;
 document.title = chrome.i18n.getMessage('extensionName');
-for (const [id, key] of [['heading','heading'],['subtitle','subtitle'],['companionHint','companionHint'],['installPlugin','installPlugin'],['guide','guide'],['pinLabel','pin'],['connect','connect'],['refresh','refresh'],['forget','forget'],['portLabel','portLabel'],['savePort','savePort'],['portHint','portHint'],['nowPlayingLabel','nowPlayingLabel'],['settingsSummary','settingsSummary'],['connectionStatusLabel','connectionStatusLabel'],['likeLabel','likeLabel'],['dislikeLabel','dislikeLabel']]) {
+for (const [id, key] of [['heading','heading'],['subtitle','subtitle'],['companionHint','companionHint'],['installPlugin','installPlugin'],['guide','guide'],['pinLabel','pin'],['connect','connect'],['refresh','refresh'],['forget','forget'],['portLabel','portLabel'],['savePort','savePort'],['portHint','portHint'],['nowPlayingLabel','nowPlayingLabel'],['settingsSummary','settingsSummary'],['connectionStatusLabel','connectionStatusLabel'],['likeLabel','likeLabel'],['dislikeLabel','dislikeLabel'],['openPlayer','openPlayer']]) {
   $(id).textContent = text[key];
 }
 let latestRequest = 0;
@@ -21,6 +21,7 @@ let pendingActions = 0;
 let statusRequests = 0;
 let closed = false;
 let currentPlayer = null;
+let openingPlayer = false;
 let controlsAvailable = false;
 let volumeSupported = false;
 let settingsInitialized = false;
@@ -40,6 +41,9 @@ function updateIcon(id, path) {
   if ($(id).getAttribute('src') !== source) $(id).src = source;
 }
 function updateControls() {
+  $('openPlayer').hidden = Boolean(currentPlayer);
+  $('openPlayer').disabled = openingPlayer || closed;
+  $('openPlayer').setAttribute('aria-busy', String(openingPlayer));
   const enabled = controlsAvailable && currentPlayer && !pendingActions;
   const busy = [...pendingControls.values()];
   for (const [id, command] of Object.entries(controlButtons)) {
@@ -247,6 +251,22 @@ for (const [id, command] of Object.entries(controlButtons)) {
     await executeControl(command, currentPlayer);
   });
 }
+$('openPlayer').addEventListener('click', async () => {
+  if (openingPlayer || closed) return;
+  openingPlayer = true;
+  const request = ++latestControl;
+  display('controlFeedback', '');
+  updateControls();
+  try {
+    const result = await chrome.runtime.sendMessage({ type: 'open-player' });
+    if (!closed && request === latestControl && !result?.ok) display('controlFeedback', text.openPlayerFailed);
+  } catch {
+    if (!closed && request === latestControl) display('controlFeedback', text.openPlayerFailed);
+  } finally {
+    openingPlayer = false;
+    if (!closed) { updateControls(); void refreshStatus(true); void refreshLocalPlayer(); }
+  }
+});
 clearArtwork();
 showPlayer(null);
 $('refresh').click();

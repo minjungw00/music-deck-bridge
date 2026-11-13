@@ -43,8 +43,9 @@
         return true;
       }
       const managementMethod = managementMethods[msg?.type];
-      if (localPlayer && !sender.tab && ['player-status', 'local-control'].includes(msg?.type)) {
-        const operation = msg.type === 'player-status' ? () => localPlayer.check() : () => localPlayer.control(msg);
+      if (localPlayer && !sender.tab && ['player-status', 'local-control', 'open-player'].includes(msg?.type)) {
+        const operation = msg.type === 'player-status' ? () => localPlayer.check() :
+          msg.type === 'open-player' ? () => localPlayer.open() : () => localPlayer.control(msg);
         Promise.resolve().then(operation).then(respond).catch(() => respond({ ok: false, reason: 'player-unavailable' }));
         return true;
       }

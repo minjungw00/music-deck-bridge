@@ -379,3 +379,45 @@ test('a queued volume edit retains its captured route when the bridge recovers',
   assert.ok(!h.requests.some(request => request.type === 'control'), 'failure cannot replay through the recovered bridge');
   h.close();
 });
+
+test('the empty popup opens Music without a player and suppresses duplicate clicks', async () => {
+  const h = harness(); await h.ready();
+  assert.equal(h.element('openPlayer').hidden, false);
+  assert.equal(h.element('openPlayer').disabled, false);
+  const action = h.element('openPlayer').click();
+  const open = h.take('open-player');
+  assert.deepEqual(Object.keys(open).sort(), ['reject', 'resolve', 'type']);
+  assert.equal(h.element('openPlayer').disabled, true);
+  assert.equal(h.element('openPlayer').getAttribute('aria-busy'), 'true');
+  await h.element('openPlayer').click();
+  assert.ok(!h.requests.some(request => request.type === 'open-player'));
+  open.resolve({ ok: true }); await action;
+  h.take('check').resolve(playerState()); await flush();
+  assert.equal(h.element('openPlayer').hidden, true);
+  await showState(h, { ok: true, active: false });
+  assert.equal(h.element('openPlayer').hidden, false);
+});
+
+for (const reject of [false, true]) {
+  test(`a failed Open ${reject ? 'rejection' : 'response'} shows feedback and permits retry`, async () => {
+    const h = harness(); await h.ready();
+    const action = h.element('openPlayer').click(), reply = h.take('open-player');
+    if (reject) reply.reject(Error('Browser unavailable')); else reply.resolve({ ok: false });
+    await action;
+    assert.equal(h.element('controlFeedback').textContent, 'openPlayerFailed');
+    assert.equal(h.element('openPlayer').disabled, false);
+    h.close();
+  });
+}
+
+test('a late Open failure cannot overwrite a newer player command result', async () => {
+  const h = harness(); await h.ready();
+  const opening = h.element('openPlayer').click(), openReply = h.take('open-player');
+  await showState(h);
+  const control = h.element('playPause').click();
+  h.take('control').resolve({ ok: false }); await control;
+  assert.equal(h.element('controlFeedback').textContent, 'controlFailed');
+  openReply.resolve({ ok: false }); await opening;
+  assert.equal(h.element('controlFeedback').textContent, 'controlFailed');
+  h.close();
+});

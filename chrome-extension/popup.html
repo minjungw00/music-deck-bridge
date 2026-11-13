@@ -37,6 +37,7 @@
     #coverFallback { display: grid; place-items: center; color: #7f899f; }
     #coverFallback svg { width: 30px; height: 30px; }
     .track-text { min-width: 0; }
+    #openPlayer { width: 100%; }
     #trackTitle { margin: 0; color: white; font-weight: 600; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     #trackArtist { margin: 3px 0 0; color: #abb3c5; overflow-wrap: anywhere; }
     svg { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -74,6 +75,7 @@
       <div id="coverFallback" class="cover" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13M9 9l11-2"/><ellipse cx="6" cy="18" rx="3" ry="2"/><ellipse cx="17" cy="16" rx="3" ry="2"/></svg></div>
       <div class="track-text"><p id="trackTitle">Waiting for YouTube Music</p><p id="trackArtist"></p></div>
     </div>
+    <button id="openPlayer" class="secondary">Open YouTube Music</button>
     <div class="player-controls">
       <button id="previous" class="media-button" aria-label="Previous track" title="Previous track" disabled><img src="icons/controls/previous.png" alt="" /></button>
       <button id="playPause" class="media-button" aria-label="Play" title="Play" disabled><span id="playIcon" class="play-state"><img src="icons/controls/play.png" alt="" /></span><span id="pauseIcon" class="play-state" hidden><img src="icons/controls/pause.png" alt="" /></span></button>

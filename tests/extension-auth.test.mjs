@@ -83,7 +83,7 @@ for (const type of ['control', 'artwork']) {
   });
 }
 
-for (const type of ['player-status', 'local-control']) {
+for (const type of ['player-status', 'local-control', 'open-player']) {
   test(`content scripts cannot invoke standalone popup ${type}`, async () => {
     const h = harness();
     const response = await h.send({ type, command: 'toggle' }, { tab: { id: 1 }, frameId: 0, url: 'https://music.youtube.com/' });

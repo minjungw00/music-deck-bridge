@@ -46,6 +46,7 @@ for (const locale of ['en', 'ko', 'zh-CN', 'zh-TW', 'ja', 'es', 'fr', 'de', 'pt-
     assert.equal(element('subtitle').textContent, catalog.subtitle.message);
     assert.equal(document.documentElement.lang, catalog.uiLanguageCode.message);
     assert.equal(element('connect').textContent, catalog.connect.message);
+    assert.equal(element('openPlayer').textContent, catalog.openPlayer.message);
     assert.equal(element('status').textContent, catalog.paired.message);
     status = { ok: false, error: catalog.updateExtension.message, compatibility: {
       compatible: false, pluginVersion: '2.0.0', extensionVersion: '1.0.2-dev', updateRequired: 'extension' } };

@@ -19,9 +19,9 @@ function harness() {
     return [{ result: state }];
   } } };
   const context = vm.createContext({ chrome, URL, Date, MusicDeckArtworkPolicy: artwork, MusicDeckBrowserChannel: { create: () => ({ async perform(command, allowed) {
-    assert.equal(service.controlling(command.preferredTabId), true);
+    assert.equal(service.controlling(command.preferredTabId), command.type !== 'open');
     inputs.push(command); beforeDispatch();
-    return allowed(true);
+    return command.type === 'open' ? true : allowed(true);
   } }) } });
   vm.runInContext(readFileSync(new URL('../chrome-extension/background/local-player.js', import.meta.url), 'utf8'), context);
   service = context.MusicDeckLocalPlayer.create({ chrome, pageControls: { playerPlayback() {} }, contentScripts: [] });
@@ -65,4 +65,12 @@ test('standalone controls and artwork reject invalid commands, volume and non-CD
   h.states.get(2).cover = 'https://lh3.googleusercontent.com/image';
   assert.equal((await h.service.check()).player.coverKey, 'https://lh3.googleusercontent.com/image');
   assert.equal(h.inputs.length, 0);
+});
+
+test('popup Open prefers the selected PWA and never acquires a playback lease', async () => {
+  const h = harness();
+  assert.equal((await h.service.open()).ok, true);
+  assert.equal(h.inputs[0].type, 'open');
+  assert.equal(h.inputs[0].preferredTabId, 2);
+  assert.equal(h.service.controlling(2), false);
 });
