@@ -78,7 +78,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-## @elgato/streamdeck 3.0.3 — MIT
+## @elgato/streamdeck 3.0.4 — MIT
 
 Bundled into the Stream Deck runtime by esbuild. Source: [Elgato SDK](https://github.com/elgatosf/streamdeck).
 
@@ -106,7 +106,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## @elgato/utils 0.6.1 and @elgato/schemas 0.5.3 — MIT
+## @elgato/utils 0.6.2 and @elgato/schemas 0.6.0 — MIT
 
 Bundled into the Stream Deck runtime by esbuild. Source: [Elgato SDK](https://github.com/elgatosf/streamdeck).
 
@@ -163,7 +163,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## ws 8.22.0 — MIT
+## ws 8.22.1 — MIT
 
 Bundled into the Stream Deck runtime by esbuild. Source: [ws](https://github.com/websockets/ws).
 
