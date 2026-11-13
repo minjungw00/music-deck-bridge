@@ -11,7 +11,7 @@
 
 ## 1.2.0 제출용 수정안
 
-[제출 안내와 UTM 링크 표](drafts/v1.2.0/README.md)에 [Chrome 한국어](drafts/v1.2.0/chrome-ko.txt)·[영어](drafts/v1.2.0/chrome-en.txt), [Elgato 영어](drafts/v1.2.0/elgato-en.txt), [Elgato 변경 사항](drafts/v1.2.0/elgato-whats-new.en.txt)을 정리했습니다. 현재 공개 스토어와 1.2.0 구현을 바탕으로 한 미제출 초안이며, 위 실제 제출 원문과 구분합니다.
+[8개 언어별 설명문과 UTM 링크 표](drafts/v1.2.0/README.md)에 Chrome·Elgato 설명문 16개를 정리했습니다. Chrome는 각 로케일의 상세 설명용이며, Elgato는 영어가 게시용이고 나머지 7개 언어는 영어 필수 지침에 따른 참고 번역입니다. [영어 변경 사항](drafts/v1.2.0/elgato-whats-new.en.txt)은 별도 필드입니다. 모두 미제출 초안으로, 위 실제 제출 원문과 구분합니다.
 
 ## 메타데이터 제안
 

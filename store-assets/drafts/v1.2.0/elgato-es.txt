@@ -1,0 +1,13 @@
+Controla YouTube Music con las teclas de Stream Deck y los diales de Stream Deck + mientras escuchas en Chrome o en su aplicación de YouTube Music. Consulta la canción, el artista y la portada. Controla tu música sin cambiar al reproductor.
+
+Funciones: reproducción/pausa, pista anterior/siguiente, Me gusta/No me gusta, volumen, silencio y apertura de YouTube Music. Stream Deck + ofrece diales de volumen y cambio de pista. Las valoraciones requieren iniciar sesión y un control disponible en el reproductor.
+
+Requiere la extensión de Chrome complementaria en el mismo PC con Windows:
+https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca?utm_source=elgato_marketplace&utm_medium=referral&utm_campaign=companion_setup
+
+Configuración: instala la extensión con «Añadir a Chrome». Añade una acción de Music Deck Bridge en Stream Deck y selecciona «Generar PIN» en sus ajustes. Introduce el PIN de seis dígitos en la ventana emergente antes de que pasen 10 minutos, selecciona «Conectar» y abre music.youtube.com o la aplicación de YouTube Music para Chrome.
+
+La ventana emergente de Chrome también funciona sin Stream Deck.
+Requiere Windows 10/11, Chrome 116+ y Stream Deck 7.1+. Los diales requieren Stream Deck +.
+Interfaz: inglés, coreano, chino simplificado/tradicional, japonés, español, francés y alemán.
+Integración no oficial, sin afiliación ni respaldo de Google, YouTube, Elgato o Corsair.

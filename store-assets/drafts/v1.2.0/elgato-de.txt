@@ -1,0 +1,13 @@
+Steuere YouTube Music über die Tasten des Stream Deck und die Drehregler des Stream Deck +, in Chrome oder der YouTube-Music-App für Chrome. Sieh Titel, Interpret und Albumcover. Steuere deine Musik, ohne zum Player zu wechseln.
+
+Funktionen: Wiedergabe/Pause, vorheriger/nächster Titel, Gefällt mir/Gefällt mir nicht, Lautstärke, Stummschaltung und Öffnen von YouTube Music. Stream Deck + bietet Drehregler für Lautstärke und Titelwechsel. Bewertungen benötigen eine Anmeldung und verfügbare Schaltflächen im Player.
+
+Benötigt die zugehörige Chrome-Erweiterung auf demselben Windows-PC:
+https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca?utm_source=elgato_marketplace&utm_medium=referral&utm_campaign=companion_setup
+
+Einrichtung: Installiere die Erweiterung mit „Zu Chrome hinzufügen“. Füge in Stream Deck eine Aktion von Music Deck Bridge hinzu und wähle in den Einstellungen „PIN erzeugen“. Gib die sechsstellige PIN innerhalb von 10 Minuten im Popup ein, wähle „Verbinden“ und öffne music.youtube.com oder die YouTube-Music-App für Chrome.
+
+Das Chrome-Popup funktioniert auch ohne Stream Deck.
+Benötigt Windows 10/11, Chrome 116+ und Stream Deck 7.1+. Drehregler benötigen Stream Deck +.
+Oberfläche: Englisch, Koreanisch, vereinfachtes/traditionelles Chinesisch, Japanisch, Spanisch, Französisch, Deutsch.
+Inoffizielle Integration ohne Verbindung zu oder Unterstützung durch Google, YouTube, Elgato oder Corsair.

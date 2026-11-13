@@ -1,0 +1,33 @@
+Chrome のポップアップや Elgato Stream Deck から YouTube Music を操作できます。Chrome のタブや Chrome からインストールした YouTube Music アプリで音楽を聴きながら、再生中の曲、アーティスト、アルバム画像を確認できます。
+
+主な機能
+- 再生/一時停止、前の曲/次の曲、高評価/低評価、音量調整、ミュート。
+- 再生中の曲名、アーティスト、アルバム画像の表示。
+- Stream Deck のキー操作と YouTube Music の起動。
+- Stream Deck + のダイヤルによる音量調整と曲の切り替え。
+
+ポップアップは Stream Deck がなくても使えます。Stream Deck から操作するには、同じ Windows PC に連携プラグインが必要です。高評価/低評価は、YouTube Music にログインし、プレーヤーで評価機能を利用できる場合に動作します。
+
+使い始めるには
+1. この拡張機能を Chrome に追加します。
+2. music.youtube.com または YouTube Music Chrome アプリを開き、曲を再生します。
+3. ツールバーから拡張機能のポップアップを開いて操作します。
+
+STREAM DECK との接続（任意）
+1. Elgato Marketplace から連携プラグインをインストールします。
+https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd?utm_source=chrome_web_store&utm_medium=referral&utm_campaign=companion_setup
+2. Stream Deck に Music Deck Bridge のアクションを追加し、設定で「PIN を発行」を選びます。
+3. 10 分以内に 6 桁の PIN をポップアップに入力し、「接続」を選びます。
+
+動作環境と言語
+Windows 10/11、Google Chrome 116 以降。Stream Deck からの操作には Stream Deck ソフトウェア 7.1 以降とデバイスが必要です。ダイヤル操作には Stream Deck + が必要です。
+UI 言語：英語、韓国語、簡体字中国語、繁体字中国語、日本語、スペイン語、フランス語、ドイツ語。
+
+プライバシー
+ペアリング情報はローカルに保存されます。アルバム画像は Google/YouTube の画像サーバーから取得します。視聴データをプロジェクト管理者へ送信することはありません。詳細はプライバシーポリシーをご覧ください。
+
+独立した非公式の連携ツールです。Google、YouTube、Elgato、Corsair との提携関係や、各社からの推奨はありません。
+
+インストールガイド（英語）：https://github.com/minjungw00/music-deck-bridge/blob/main/docs/installation.en.md
+プライバシーポリシー：https://github.com/minjungw00/music-deck-bridge/blob/main/PRIVACY.md
+サポート：https://github.com/minjungw00/music-deck-bridge/issues

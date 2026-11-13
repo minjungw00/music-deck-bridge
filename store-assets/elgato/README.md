@@ -4,7 +4,7 @@ Use this guide to select Marketplace upload files and regenerate exports. See th
 
 See the [store record](../../docs/verification/stores.md#public-description-correction) for the current public installation guidance. The [October 29 How to Use draft](how-to-use.en.md) is historical reference copy.
 
-Use the [complete 1.2.0 English description, separate release notes and UTM links](../drafts/v1.2.0/README.md) for this update. Replace the complete Overview/How to Use text together, rather than retaining the old component-required prefix. Refresh the 1.1.1 popup media below for 1.2.0.
+Use the [1.2.0 English publishing copy, seven reference translations, separate release notes and UTM links](../drafts/v1.2.0/README.md) for this update. Replace the complete Overview/How to Use text together, rather than retaining the old component-required prefix. Refresh the 1.1.1 popup media below for 1.2.0.
 
 ## Upload files
 

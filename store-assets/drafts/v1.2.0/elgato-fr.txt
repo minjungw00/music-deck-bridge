@@ -1,0 +1,13 @@
+Contrôlez YouTube Music avec les touches du Stream Deck et les molettes du Stream Deck +, dans Chrome ou son application YouTube Music. Consultez le morceau, l’artiste et la pochette. Gérez votre musique sans passer au lecteur.
+
+Fonctions : lecture/pause, piste précédente/suivante, J’aime/Je n’aime pas, volume, mode muet et ouverture de YouTube Music. Stream Deck + offre des molettes de volume et de changement de piste. Les évaluations nécessitent une connexion et des commandes disponibles dans le lecteur.
+
+Ce plugin nécessite l’extension Chrome compagnon sur le même PC Windows :
+https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca?utm_source=elgato_marketplace&utm_medium=referral&utm_campaign=companion_setup
+
+Installation : ajoutez l’extension avec « Ajouter à Chrome ». Ajoutez une action Music Deck Bridge dans Stream Deck et choisissez « Générer un PIN » dans ses paramètres. Saisissez le PIN à six chiffres dans la fenêtre contextuelle dans les 10 minutes, sélectionnez « Associer », puis ouvrez music.youtube.com ou l’application YouTube Music pour Chrome.
+
+La fenêtre contextuelle fonctionne aussi sans Stream Deck.
+Windows 10/11, Chrome 116+ et Stream Deck 7.1+ requis. Les molettes nécessitent Stream Deck +.
+Interface : anglais, coréen, chinois simplifié/traditionnel, japonais, espagnol, français, allemand.
+Intégration non officielle, sans affiliation ni approbation de Google, YouTube, Elgato ou Corsair.

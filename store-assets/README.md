@@ -12,7 +12,7 @@ Start with the store-specific upload guide below. These guides cover future subm
 
 ## Current listing revision
 
-Use the [1.2.0 submission copy and link table](drafts/v1.2.0/README.md) for the new store update. It supplies Chrome English/Korean and Elgato English descriptions, separate Elgato release notes and store-specific UTM links. These are drafts; [verbatim prior submissions](listing.en.md#submitted-descriptions) remain separate. Existing popup exports depict 1.1.1 and need refreshed 1.2.0 visuals.
+Use the [1.2.0 submission copy and link table](drafts/v1.2.0/README.md) for the new store update. It supplies Chrome and Elgato descriptions for all eight supported UI locales, separate English Elgato release notes and store-specific UTM links. Chrome copies are localized listing drafts; Elgato English is the publishing copy and the other seven are reference translations under its English-description requirement. These are drafts; [verbatim prior submissions](listing.en.md#submitted-descriptions) remain separate. Existing popup exports depict 1.1.1 and need refreshed 1.2.0 visuals.
 
 ## Official product images
 

@@ -33,6 +33,25 @@ The later maintainer-authorized [temporary 1.2.0 Chrome r1 attachment](releases.
 
 The maintainer subsequently authorized replacing the canonical GitHub 1.2.0 package/tag before store publication. The submission index now selects the corrected `music-deck-bridge-chrome-1.2.0.zip` (SHA-256 `f423aef0414da08480ceaef4145b4b1ef0866107eb8b375e285a8a3324341397`) with the unchanged plugin. The temporary r1 attachments were removed; initial/r1 source and hash history remains in [release verification](releases.md#current-corrected-publication). No store upload or publication was performed by this task.
 
+### Eight-language description drafts
+
+At the maintainer's request, the prepared set now contains **16 product descriptions**: Chrome and Elgato copies for `en`, `ko`, `zh_CN`, `zh_TW`, `ja`, `es`, `fr` and `de`, matching both products' UI locale coverage. The previously simplified general feature descriptions remain the basis; per-key step sizes, numeric-feedback durations, version-update instructions and implementation details are excluded. Elgato setup now explicitly selects the localized Connect button after entering the PIN, including in the English base copy. Guide links in the six new Chrome translations identify the existing English guide rather than implying translated guides exist. UI language coverage does not commit customer-support or legal-policy translations.
+
+[Chrome's listing guide](https://developer.chrome.com/docs/webstore/cws-dashboard-listing#localize-your-listing) supports per-locale descriptions matching packaged `_locales` directories and asks for consistent feature claims. [Elgato's description guide](https://docs.elgato.com/guidelines/products/#description) requires English and 250–1,500 characters; its [Language field](https://docs.elgato.com/maker-console/managing-products/#details) lists product-supported languages rather than establishing localized-description fields. Consequently, English is the Elgato publishing draft and the other seven are reference translations; no non-English publishing support was established.
+
+All 16 UTF-8 files passed checks for exact locale coverage, shared URL destinations, UTM values and plain-text formatting. Every Elgato body fits 250–1,500 characters including line breaks (maximum 1,462 with CRLF). The index's eight short-description values match the released catalogs and fit 132 characters. All relative documentation links resolve. These checks do not constitute native-speaker review or Console acceptance. Existing submitted snapshots, runtime sources, versions and released archives are unchanged; no upload/publication was performed.
+
+| Locale | Chrome characters (LF) | Elgato characters (LF) |
+| --- | --- | --- |
+| `en` | 2091 | 1248 |
+| `ko` | 1484 | 943 |
+| `zh_CN` | 1303 | 803 |
+| `zh_TW` | 1321 | 809 |
+| `ja` | 1504 | 909 |
+| `es` | 2548 | 1419 |
+| `fr` | 2661 | 1449 |
+| `de` | 2493 | 1440 |
+
 ## Chrome Web Store publication evidence
 
 On November 13, 2026, the user reported directly confirming the official Chrome Web Store publication of **1.1.3**. This report establishes user-confirmed publication; the listing could not be independently opened during this review.

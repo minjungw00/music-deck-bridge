@@ -4,18 +4,26 @@
 
 ## 복사할 문안
 
-| 스토어 필드 | 파일 | 적용 방법 |
+| 언어 / 로케일 | Chrome 상세 설명 | Elgato 제품 설명 |
 | --- | --- | --- |
-| Chrome 상세 설명 — 영어/기본 | [chrome-en.txt](chrome-en.txt) | 전체 교체 |
-| Chrome 상세 설명 — 한국어 | [chrome-ko.txt](chrome-ko.txt) | 해당 언어의 상세 설명 전체 교체 |
-| Elgato Overview / Description — 영어 | [elgato-en.txt](elgato-en.txt) | 기존 Overview와 How to Use 전체를 합쳐 교체; 기존 앞부분을 덧붙이지 않음 |
-| Elgato What's new — 영어 | [elgato-whats-new.en.txt](elgato-whats-new.en.txt) | 1.2.0 버전의 변경 사항 필드 |
+| English / `en` | [Chrome](chrome-en.txt) | [Elgato](elgato-en.txt) — 영어 게시용 |
+| 한국어 / `ko` | [Chrome](chrome-ko.txt) | [Elgato](elgato-ko.txt) — 참고 번역 |
+| 简体中文 / `zh_CN` | [Chrome](chrome-zh_CN.txt) | [Elgato](elgato-zh_CN.txt) — 참고 번역 |
+| 繁體中文 / `zh_TW` | [Chrome](chrome-zh_TW.txt) | [Elgato](elgato-zh_TW.txt) — 참고 번역 |
+| 日本語 / `ja` | [Chrome](chrome-ja.txt) | [Elgato](elgato-ja.txt) — 참고 번역 |
+| Español / `es` | [Chrome](chrome-es.txt) | [Elgato](elgato-es.txt) — 참고 번역 |
+| Français / `fr` | [Chrome](chrome-fr.txt) | [Elgato](elgato-fr.txt) — 참고 번역 |
+| Deutsch / `de` | [Chrome](chrome-de.txt) | [Elgato](elgato-de.txt) — 참고 번역 |
+
+Chrome는 [공식 현지화 안내](https://developer.chrome.com/docs/webstore/cws-dashboard-listing#localize-your-listing)에 따라 각 로케일의 상세 설명 전체를 교체합니다. Elgato는 [공식 설명 가이드](https://docs.elgato.com/guidelines/products/#description)가 영어를 요구하므로 영어 본문을 게시용으로 사용하고, 다른 7개 언어는 참고 번역으로 제공합니다. Maker Console의 지원 언어 목록과 설명문 번역 필드는 구분합니다. 비영어 설명의 별도 게시 지원은 확인하지 않았습니다.
+
+Elgato 영어 본문은 기존 Overview와 How to Use를 합친 전체 교체용입니다. 버전별 [영어 What's new](elgato-whats-new.en.txt)는 별도 변경 사항 필드에 사용합니다.
 
 본문은 순수 텍스트이며 Markdown 별표를 사용하지 않습니다. Elgato 설명은 줄바꿈을 포함해 250–1,500자 범위에 맞췄습니다. 변경 사항은 별도 필드이므로 설명 뒤에 합치지 않습니다. [공식 설명 가이드](https://docs.elgato.com/guidelines/products/#description)를 기준으로 실제 Console의 최종 문자 수도 확인하세요.
 
 제품 설명은 용도·주요 기능·설치·사용 환경을 중심으로 작성합니다. 기능별 세부 설정 수치, 특정 버전으로의 업데이트 지시, 내부 명령 처리 방식은 제품 설명에 넣지 않습니다. 버전별 변경 사항은 별도 What's new 필드에서 다룹니다.
 
-확장 팝업 단독 제어와 Stream Deck 연결을 구분했습니다. Windows 10/11·Chrome 116+를 지원 대상으로 유지하고, Stream Deck 제어에만 플러그인·기기·Stream Deck 7.1+를 요구합니다. UI 언어는 8개이며 스토어 설명문은 기존 범위인 Chrome 영어·한국어와 Elgato 영어를 제공합니다. UI 번역 목록이 고객 지원·법적 고지 언어를 확정하지는 않습니다.
+확장 팝업 단독 제어와 Stream Deck 연결을 구분했습니다. Windows 10/11·Chrome 116+를 지원 대상으로 유지하고, Stream Deck 제어에만 플러그인·기기·Stream Deck 7.1+를 요구합니다. 지원 UI 언어와 같은 8개 로케일에 대해 Chrome·Elgato 설명문 16개를 제공합니다. 기존 영어·한국어 기준 문안의 기능과 조건을 유지해 번역했습니다. UI 번역 목록이 고객 지원·법적 고지 언어를 확정하지는 않습니다.
 
 각 문안은 해당 구성요소의 1.2.0 게시에 맞춰 사용하세요. 동반 스토어 업데이트가 아직 공개되지 않은 경우의 수동 설치 경로는 [1.2.0 릴리즈](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.2.0)와 설치 안내에 있습니다. 이전 버전의 두 구성요소를 설치한 상태를 1.2.0 전체 기능의 근거로 삼지 않습니다.
 
@@ -24,9 +32,10 @@
 | 배치 위치 | 연결 대상 URL |
 | --- | --- |
 | Elgato 설명의 Chrome 설치 링크 및 Related Download | https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca?utm_source=elgato_marketplace&utm_medium=referral&utm_campaign=companion_setup |
-| Chrome 영어·한국어 설명의 동반 플러그인 설치 링크 | https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd?utm_source=chrome_web_store&utm_medium=referral&utm_campaign=companion_setup |
+| Chrome 전체 언어 설명의 동반 플러그인 설치 링크 | https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd?utm_source=chrome_web_store&utm_medium=referral&utm_campaign=companion_setup |
 | Elgato Setup Guide / Chrome 설치 안내 — 영어 | https://github.com/minjungw00/music-deck-bridge/blob/main/docs/installation.en.md |
 | Chrome 설치 안내 — 한국어 | https://github.com/minjungw00/music-deck-bridge/blob/main/docs/installation.ko.md |
+| Chrome 중국어·일본어·스페인어·프랑스어·독일어 설명의 설치 안내 — 영어 문서임을 표시 | https://github.com/minjungw00/music-deck-bridge/blob/main/docs/installation.en.md |
 | 양쪽 Privacy Policy | https://github.com/minjungw00/music-deck-bridge/blob/main/PRIVACY.md |
 | 양쪽 Support / Get help | https://github.com/minjungw00/music-deck-bridge/issues |
 
@@ -38,14 +47,20 @@ Chrome Web Store는 [공식 GA 안내](https://developer.chrome.com/docs/webstor
 
 이름은 Music Deck Bridge입니다. 공개된 1.2.0 ZIP의 Chrome 짧은 설명은 다음과 같습니다.
 
-| 언어 | 현재 패키지의 짧은 설명 |
+| 언어 / 로케일 | 현재 패키지의 짧은 설명 |
 | --- | --- |
-| 영어 | Control YouTube Music from Elgato Stream Deck using a Chrome extension. |
-| 한국어 | Chrome 확장 프로그램을 통해 Elgato Stream Deck에서 YouTube Music을 조작합니다. |
+| English / `en` | Control YouTube Music from Elgato Stream Deck using a Chrome extension. |
+| 한국어 / `ko` | Chrome 확장 프로그램을 통해 Elgato Stream Deck에서 YouTube Music을 조작합니다. |
+| 简体中文 / `zh_CN` | 通过 Chrome 扩展，使用 Elgato Stream Deck 控制 YouTube Music。 |
+| 繁體中文 / `zh_TW` | 透過 Chrome 擴充功能，使用 Elgato Stream Deck 控制 YouTube Music。 |
+| 日本語 / `ja` | Chrome 拡張機能を使い、Elgato Stream Deck から YouTube Music を操作できます。 |
+| Español / `es` | Controla YouTube Music desde Elgato Stream Deck con una extensión de Chrome. |
+| Français / `fr` | Contrôlez YouTube Music depuis Elgato Stream Deck à l’aide d’une extension Chrome. |
+| Deutsch / `de` | YouTube Music über eine Chrome-Erweiterung mit Elgato Stream Deck steuern. |
 
 Chrome 짧은 설명은 [manifest의 description](https://developer.chrome.com/docs/extensions/reference/manifest/description)에서 제공되며 상세 설명과 다릅니다. 위 문구는 교체된 1.2.0 ZIP을 사용하는 경우의 값입니다. 이를 바꾸려면 공개 파일을 교체하지 않고 별도 패키지 개정으로 다뤄야 합니다.
 
-Elgato의 제품 UI 언어 선택 항목은 English, Korean, Chinese (Simplified), Chinese (Traditional), Japanese, Spanish, French, German에 맞춥니다. Chrome의 8개 UI 카탈로그와 상세 설명 번역 언어는 별개입니다. 기존 공개 개인정보 분류는 인증 정보·사용자 활동·웹사이트 콘텐츠이며, 제출 폼은 1.2.0의 [개인정보 처리방침](../../../PRIVACY.md)에 맞춰 검토합니다. 새 문안은 확장 단독 제어와 외부 앨범 이미지 요청을 포함하며 모든 통신이 로컬이라고 안내하지 않습니다.
+Elgato의 제품 UI 언어 선택 항목은 English, Korean, Chinese (Simplified), Chinese (Traditional), Japanese, Spanish, French, German에 맞춥니다. Chrome의 로케일 선택은 패키지의 `_locales` 이름과 맞춥니다. 이번 초안에는 그 8개 언어의 상세 설명이 모두 있습니다. 기존 공개 개인정보 분류는 인증 정보·사용자 활동·웹사이트 콘텐츠이며, 제출 폼은 1.2.0의 [개인정보 처리방침](../../../PRIVACY.md)에 맞춰 검토합니다. 새 문안은 확장 단독 제어와 외부 앨범 이미지 요청을 포함하며 모든 통신이 로컬이라고 안내하지 않습니다.
 
 ## 사용할 패키지와 이미지
 

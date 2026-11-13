@@ -2,7 +2,7 @@
 
 Use this guide to select Chrome upload files and regenerate exports. See the [shared submission workflow](../README.md#submission-workflow) for package/copy provenance and publication records.
 
-Use the [1.2.0 English/Korean copy and UTM links](../drafts/v1.2.0/README.md) for this update. The existing popup media below depict 1.1.1 with plugin-required guidance; refresh them to match 1.2.0 rather than relabeling those sources.
+Use the [1.2.0 eight-language copy and UTM links](../drafts/v1.2.0/README.md) for this update. The existing popup media below depict 1.1.1 with plugin-required guidance; refresh them to match 1.2.0 rather than relabeling those sources.
 
 ## Upload files
 

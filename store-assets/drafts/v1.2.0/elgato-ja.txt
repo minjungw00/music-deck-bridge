@@ -1,0 +1,13 @@
+Stream Deck のキーや Stream Deck + のダイヤルから YouTube Music を操作できます。Chrome のタブや Chrome からインストールした YouTube Music アプリで、再生中の曲、アーティスト、アルバム画像を確認できます。プレーヤーに切り替えずに音楽を操作しましょう。
+
+主な機能：再生/一時停止、前の曲/次の曲、高評価/低評価、音量調整、ミュート、YouTube Music の起動。Stream Deck + では音量と曲の切り替えをダイヤルで操作できます。評価機能にはログインと、プレーヤーで利用可能な評価ボタンが必要です。
+
+このプラグインには、同じ Windows PC に連携用の Chrome 拡張機能が必要です。
+https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca?utm_source=elgato_marketplace&utm_medium=referral&utm_campaign=companion_setup
+
+設定：拡張機能のページで「Chrome に追加」を選びます。Stream Deck に Music Deck Bridge のアクションを追加し、設定で「PIN を発行」を選びます。10 分以内に 6 桁の PIN をポップアップに入力して「接続」を選び、music.youtube.com または YouTube Music Chrome アプリを開きます。
+
+Chrome のポップアップは Stream Deck がなくても使えます。
+Windows 10/11、Chrome 116 以降、Stream Deck 7.1 以降が必要です。ダイヤル操作には Stream Deck + が必要です。
+UI：英語、韓国語、簡体字中国語、繁体字中国語、日本語、スペイン語、フランス語、ドイツ語。
+独立した非公式ツールです。Google、YouTube、Elgato、Corsair との提携関係や各社からの推奨はありません。

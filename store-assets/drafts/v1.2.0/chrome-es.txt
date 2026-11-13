@@ -1,0 +1,33 @@
+Controla YouTube Music desde la ventana emergente de Chrome o Elgato Stream Deck. Consulta la canción, el artista y la portada del álbum mientras escuchas música en una pestaña de Chrome o en la aplicación de YouTube Music instalada desde Chrome.
+
+FUNCIONES
+- Reproducción/pausa, pista anterior/siguiente, Me gusta/No me gusta, ajuste de volumen y silencio.
+- Visualización de la canción, el artista y la portada del álbum.
+- Control con las teclas de Stream Deck y apertura de YouTube Music.
+- Diales de volumen y navegación entre pistas en Stream Deck +.
+
+La ventana emergente funciona sin Stream Deck. Para controlar la música desde Stream Deck, necesitas el plugin complementario en el mismo PC con Windows. Me gusta/No me gusta requiere iniciar sesión en YouTube Music y que el control de valoración esté disponible en el reproductor.
+
+PRIMEROS PASOS
+1. Añade esta extensión a Chrome.
+2. Abre music.youtube.com o la aplicación de YouTube Music para Chrome y reproduce una canción.
+3. Abre la ventana emergente de la extensión desde la barra de herramientas para usar los controles.
+
+CONEXIÓN OPCIONAL CON STREAM DECK
+1. Instala el plugin complementario desde Elgato Marketplace:
+https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd?utm_source=chrome_web_store&utm_medium=referral&utm_campaign=companion_setup
+2. Añade una acción de Music Deck Bridge en Stream Deck, abre su configuración y selecciona «Generar PIN».
+3. Introduce el PIN de seis dígitos en la ventana emergente antes de que pasen 10 minutos y selecciona «Conectar».
+
+REQUISITOS E IDIOMAS
+Windows 10/11 y Google Chrome 116 o posterior. El control desde Stream Deck requiere el software Stream Deck 7.1 o posterior y un dispositivo Stream Deck. Las acciones de los diales requieren Stream Deck +.
+Interfaz: inglés, coreano, chino simplificado, chino tradicional, japonés, español, francés y alemán.
+
+PRIVACIDAD
+Las credenciales de vinculación se guardan localmente. Las portadas se obtienen de servidores de imágenes de Google/YouTube. No se envían datos de escucha al responsable del proyecto. Consulta la política de privacidad para obtener más información.
+
+Integración independiente y no oficial, sin afiliación ni respaldo de Google, YouTube, Elgato o Corsair.
+
+Guía de instalación (en inglés): https://github.com/minjungw00/music-deck-bridge/blob/main/docs/installation.en.md
+Política de privacidad: https://github.com/minjungw00/music-deck-bridge/blob/main/PRIVACY.md
+Soporte: https://github.com/minjungw00/music-deck-bridge/issues

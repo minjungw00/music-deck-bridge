@@ -5,7 +5,7 @@ Features: Play/pause, previous/next, Like/Dislike, volume adjustment, mute and O
 This plugin requires the companion Chrome extension on the same Windows PC:
 https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca?utm_source=elgato_marketplace&utm_medium=referral&utm_campaign=companion_setup
 
-Setup: Install the extension with Add to Chrome. Add a Music Deck Bridge action and select Generate PIN in its settings. Enter the six-digit PIN in the extension popup within 10 minutes, then open music.youtube.com or the YouTube Music Chrome app.
+Setup: Install the extension with Add to Chrome. Add a Music Deck Bridge action and select Generate PIN in its settings. Enter the six-digit PIN in the extension popup within 10 minutes, select Connect, then open music.youtube.com or the YouTube Music Chrome app.
 
 The Chrome popup also works without Stream Deck.
 Requires Windows 10/11, Chrome 116+ and Stream Deck 7.1+. Dial actions require Stream Deck +.

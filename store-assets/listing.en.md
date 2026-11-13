@@ -11,7 +11,7 @@ The maintainer supplied these descriptions as the actual **v1.1.1** submissions.
 
 ## Prepared 1.2.0 revision
 
-Use the [submission index and UTM field table](drafts/v1.2.0/README.md): [Chrome English](drafts/v1.2.0/chrome-en.txt), [Chrome Korean](drafts/v1.2.0/chrome-ko.txt), [Elgato English](drafts/v1.2.0/elgato-en.txt) and [Elgato What's new](drafts/v1.2.0/elgato-whats-new.en.txt). These are unsubmitted drafts based on the current public listings and released 1.2.0 behavior. The historical submissions above remain verbatim.
+Use the [eight-language submission index and UTM field table](drafts/v1.2.0/README.md) for all 16 Chrome/Elgato descriptions. Chrome has a description for each supported locale; Elgato English is publishing copy and its other seven descriptions are reference translations under the English-description requirement. [English Elgato What's new](drafts/v1.2.0/elgato-whats-new.en.txt) remains separate. These are unsubmitted drafts; the historical submissions above remain verbatim.
 
 ## Metadata suggestions
 

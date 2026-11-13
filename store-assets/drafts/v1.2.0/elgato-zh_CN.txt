@@ -1,0 +1,13 @@
+使用 Stream Deck 按键和 Stream Deck + 旋钮控制 YouTube Music，在 Chrome 标签页或通过 Chrome 安装的 YouTube Music 应用中听歌。查看当前歌曲、艺人和专辑封面。无需切换到播放器即可控制音乐。
+
+主要功能：播放/暂停、上一首/下一首、喜欢/不喜欢、音量调节、静音和打开 YouTube Music。Stream Deck + 支持音量和歌曲切换旋钮。评价功能需要登录播放器，且相应控件必须可用。
+
+此插件需要在同一台 Windows 电脑上安装配套 Chrome 扩展程序：
+https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca?utm_source=elgato_marketplace&utm_medium=referral&utm_campaign=companion_setup
+
+安装：在扩展程序页面选择“添加至 Chrome”。在 Stream Deck 中添加 Music Deck Bridge 操作，在设置中选择“生成 PIN”。在 10 分钟内将六位 PIN 输入扩展程序的弹出窗口，选择“连接”，然后打开 music.youtube.com 或 YouTube Music Chrome 应用。
+
+Chrome 弹出窗口也可在没有 Stream Deck 的情况下使用。
+需要 Windows 10/11、Chrome 116 或更高版本以及 Stream Deck 7.1 或更高版本。旋钮操作需要 Stream Deck +。
+界面语言：英语、韩语、简体中文、繁体中文、日语、西班牙语、法语和德语。
+独立的非官方集成工具，与 Google、YouTube、Elgato 或 Corsair 无隶属关系，也未获得其认可。

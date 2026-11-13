@@ -1,0 +1,33 @@
+Steuere YouTube Music über das Chrome-Popup oder Elgato Stream Deck. Sieh dir den aktuellen Titel, den Interpreten und das Albumcover an, während du Musik in einem Chrome-Tab oder in der über Chrome installierten YouTube-Music-App hörst.
+
+FUNKTIONEN
+- Wiedergabe/Pause, vorheriger/nächster Titel, Gefällt mir/Gefällt mir nicht, Lautstärke und Stummschaltung.
+- Anzeige von Titel, Interpret und Albumcover.
+- Steuerung über Stream-Deck-Tasten und Öffnen von YouTube Music.
+- Drehregler für Lautstärke und Titelwechsel auf Stream Deck +.
+
+Das Popup funktioniert ohne Stream Deck. Für die Steuerung über Stream Deck wird das zugehörige Plugin auf demselben Windows-PC benötigt. Bewertungen erfordern eine Anmeldung bei YouTube Music und verfügbare Bewertungsschaltflächen im Player.
+
+ERSTE SCHRITTE
+1. Füge diese Erweiterung zu Chrome hinzu.
+2. Öffne music.youtube.com oder die YouTube-Music-App für Chrome und spiele einen Titel ab.
+3. Öffne das Popup der Erweiterung über die Symbolleiste, um die Musik zu steuern.
+
+OPTIONALE VERBINDUNG MIT STREAM DECK
+1. Installiere das zugehörige Plugin aus dem Elgato Marketplace:
+https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd?utm_source=chrome_web_store&utm_medium=referral&utm_campaign=companion_setup
+2. Füge in Stream Deck eine Aktion von Music Deck Bridge hinzu, öffne ihre Einstellungen und wähle „PIN erzeugen“.
+3. Gib die sechsstellige PIN innerhalb von 10 Minuten im Popup ein und wähle „Verbinden“.
+
+VORAUSSETZUNGEN UND SPRACHEN
+Windows 10/11 und Google Chrome 116 oder neuer. Für die Steuerung über Stream Deck sind die Stream-Deck-Software ab Version 7.1 und ein Stream-Deck-Gerät erforderlich. Drehregler-Aktionen benötigen Stream Deck +.
+Oberfläche: Englisch, Koreanisch, vereinfachtes Chinesisch, traditionelles Chinesisch, Japanisch, Spanisch, Französisch und Deutsch.
+
+DATENSCHUTZ
+Kopplungsdaten werden lokal gespeichert. Albumcover werden von Google-/YouTube-Bildservern abgerufen. Es werden keine Hördaten an die Projektverantwortlichen gesendet. Einzelheiten stehen in der Datenschutzerklärung.
+
+Unabhängige, inoffizielle Integration ohne Verbindung zu oder Unterstützung durch Google, YouTube, Elgato oder Corsair.
+
+Installationsanleitung (Englisch): https://github.com/minjungw00/music-deck-bridge/blob/main/docs/installation.en.md
+Datenschutzerklärung: https://github.com/minjungw00/music-deck-bridge/blob/main/PRIVACY.md
+Support: https://github.com/minjungw00/music-deck-bridge/issues
