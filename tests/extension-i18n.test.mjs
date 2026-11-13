@@ -2,15 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
+import { createRequire } from 'node:module';
+const { resolve } = createRequire(import.meta.url)('../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/property-inspector/language.js');
 
 const source = readFileSync(new URL('../chrome-extension/popup.js', import.meta.url), 'utf8');
 const english = JSON.parse(readFileSync(new URL('../chrome-extension/_locales/en/messages.json', import.meta.url)));
 
-for (const locale of ['en', 'ko', 'fr']) {
+for (const locale of ['en', 'ko', 'zh-CN', 'zh-TW', 'ja', 'es', 'fr', 'de', 'pt-BR']) {
   test(`popup localizes controls, PIN validation and pairing state for ${locale}`, async () => {
-    const catalog = locale === 'ko'
-      ? JSON.parse(readFileSync(new URL('../chrome-extension/_locales/ko/messages.json', import.meta.url)))
-      : english;
+    const catalog = JSON.parse(readFileSync(new URL(`../chrome-extension/_locales/${resolve(locale)}/messages.json`, import.meta.url)));
     const nodes = new Map();
     function element(id) {
       if (!nodes.has(id)) nodes.set(id, {
@@ -45,7 +45,7 @@ for (const locale of ['en', 'ko', 'fr']) {
     assert.equal(document.title, 'Music Deck Bridge');
     assert.equal(element('heading').textContent, 'Music Deck Bridge');
     assert.equal(element('subtitle').textContent, catalog.subtitle.message);
-    assert.equal(document.documentElement.lang, locale === 'ko' ? 'ko' : 'en');
+    assert.equal(document.documentElement.lang, catalog.uiLanguageCode.message);
     assert.equal(element('connect').textContent, catalog.connect.message);
     assert.equal(element('status').textContent, catalog.paired.message);
     status = { ok: false, error: catalog.updateExtension.message, compatibility: {

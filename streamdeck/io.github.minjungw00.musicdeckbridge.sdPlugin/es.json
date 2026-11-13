@@ -1,0 +1,66 @@
+{
+  "Name": "Music Deck Bridge",
+  "Description": "Controla YouTube Music desde Elgato Stream Deck con una extensión de Chrome.",
+  "io.github.minjungw00.musicdeckbridge.nowplaying": {
+    "Name": "Reproduciendo",
+    "Tooltip": "Muestra la portada, el título y el artista. Pulsa para reproducir/pausar o abrir YouTube Music si está cerrado."
+  },
+  "io.github.minjungw00.musicdeckbridge.toggle": {
+    "Name": "Reproducir / Pausar",
+    "Tooltip": "Reproduce o pausa, o abre YouTube Music si no hay ningún reproductor abierto."
+  },
+  "io.github.minjungw00.musicdeckbridge.prev": {
+    "Name": "Canción anterior",
+    "Tooltip": "Reproduce la canción anterior."
+  },
+  "io.github.minjungw00.musicdeckbridge.next": {
+    "Name": "Canción siguiente",
+    "Tooltip": "Reproduce la canción siguiente."
+  },
+  "io.github.minjungw00.musicdeckbridge.mute": {
+    "Name": "Silenciar",
+    "Tooltip": "Activa o desactiva el silencio."
+  },
+  "io.github.minjungw00.musicdeckbridge.volumeup": {
+    "Name": "Subir volumen",
+    "Tooltip": "Sube el volumen de YouTube Music en el paso configurado."
+  },
+  "io.github.minjungw00.musicdeckbridge.volumedown": {
+    "Name": "Bajar volumen",
+    "Tooltip": "Baja el volumen de YouTube Music en el paso configurado."
+  },
+  "io.github.minjungw00.musicdeckbridge.volume": {
+    "Name": "Dial de volumen",
+    "Tooltip": "Gira para ajustar el volumen; pulsa o toca para silenciar.",
+    "Encoder": {
+      "TriggerDescription": {
+        "Push": "Silenciar",
+        "Touch": "Silenciar",
+        "Rotate": "Volumen"
+      }
+    }
+  },
+  "io.github.minjungw00.musicdeckbridge.trackdial": {
+    "Name": "Dial de canción actual",
+    "Tooltip": "Gira para ir a la canción anterior/siguiente; pulsa o toca para reproducir/pausar. Muestra información o la portada.",
+    "Encoder": {
+      "TriggerDescription": {
+        "Push": "Reproducir / Pausar",
+        "Touch": "Reproducir / Pausar",
+        "Rotate": "Canción anterior / Canción siguiente"
+      }
+    }
+  },
+  "io.github.minjungw00.musicdeckbridge.open": {
+    "Name": "Abrir YouTube Music",
+    "Tooltip": "Abre YouTube Music o enfoca su ventana existente."
+  },
+  "io.github.minjungw00.musicdeckbridge.like": {
+    "Name": "Me gusta",
+    "Tooltip": "Marca la canción actual con Me gusta; pulsa de nuevo para quitarlo."
+  },
+  "io.github.minjungw00.musicdeckbridge.dislike": {
+    "Name": "No me gusta",
+    "Tooltip": "Marca la canción actual con No me gusta; pulsa de nuevo para quitarlo."
+  }
+}

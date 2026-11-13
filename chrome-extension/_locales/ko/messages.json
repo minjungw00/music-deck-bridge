@@ -187,5 +187,8 @@
   },
   "unmute": {
     "message": "음소거 해제"
+  },
+  "uiLanguageCode": {
+    "message": "ko"
   }
 }

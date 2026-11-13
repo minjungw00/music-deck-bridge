@@ -1,7 +1,7 @@
 'use strict';
 const $ = id => document.getElementById(id);
 const asset = path => chrome.runtime.getURL?.(path) || path;
-const language = (chrome.i18n?.getUILanguage?.() || navigator.language || 'en').toLowerCase().startsWith('ko') ? 'ko' : 'en';
+const language = chrome.i18n.getMessage('uiLanguageCode') || 'en';
 const text = Object.fromEntries(
   ["heading","subtitle","companionHint","installPlugin","guide","pin","connect","refresh","forget","portLabel","savePort","portHint","portInvalid","portSaved","portLocal","invalid","checking","fail","connected","unknown","player","app","tab","current","waiting","artwork","stale","paired","removed","nowPlayingLabel","playerWaiting","settingsSummary","connectionStatusLabel","previous","next","play","pause","likeLabel","dislikeLabel","controlFailed","controlChanged","controlUpdate","volumeLabel","mute","unmute"]
     .map(key => [key, chrome.i18n.getMessage(key)])

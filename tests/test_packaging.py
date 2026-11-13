@@ -44,7 +44,7 @@ class PackagingTests(unittest.TestCase):
                 self.assertEqual(manifest["version_name"], expected_version)
             for name in (*packaging_tool.LEGAL, "background.js", "protocol.js", "content.js", "popup.js",
                          manifest["action"]["default_popup"], *manifest["icons"].values(),
-                         "_locales/en/messages.json", "_locales/ko/messages.json"):
+                         *[f"_locales/{locale}/messages.json" for locale in packaging_tool.LOCALES]):
                 self.assertIn(name, names)
             worker = bundle.read(manifest["background"]["service_worker"]).decode("utf-8")
             for arguments in re.findall(r"importScripts\((.*?)\)", worker, re.S):
@@ -57,6 +57,9 @@ class PackagingTests(unittest.TestCase):
             self.assertFalse(any("auth.json" in name or name.endswith(".pem") or ":" in name for name in names))
             self.assertFalse(any(name.startswith("chrome-extension/") for name in names))
             for name in manifest["icons"].values():
+                self.assertEqual(bundle.read(name), (self.root / "chrome-extension" / name).read_bytes())
+            for locale in packaging_tool.LOCALES:
+                name = f"_locales/{locale}/messages.json"
                 self.assertEqual(bundle.read(name), (self.root / "chrome-extension" / name).read_bytes())
             controls = list((self.root / "chrome-extension/icons/controls").glob("*.png"))
             self.assertEqual(len(controls), 10)
@@ -77,10 +80,13 @@ class PackagingTests(unittest.TestCase):
             packaging_tool.ROOT = original
         manifest = json.loads((staged / "manifest.json").read_text())
         for name in (*packaging_tool.LEGAL, manifest["CodePath"], manifest["PropertyInspectorPath"],
-                     "property-inspector/settings.js", "property-inspector/sdpi-components.js", "en.json", "ko.json",
+                     "property-inspector/settings.js", "property-inspector/sdpi-components.js",
+                     *[f"{locale}.json" for locale in packaging_tool.LOCALES],
                      "layouts/current-track-artwork.json"):
             self.assertTrue((staged / name).is_file(), name)
         inspector = staged / manifest["PropertyInspectorPath"]
+        for locale in packaging_tool.LOCALES:
+            self.assertEqual((staged / f"{locale}.json").read_bytes(), (plugin / f"{locale}.json").read_bytes())
         for module in re.findall(r'<script src="([^"]+)"', inspector.read_text(encoding="utf-8")):
             resource = inspector.parent / module
             self.assertTrue(resource.is_file(), f"Missing inspector dependency: {module}")

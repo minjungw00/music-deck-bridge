@@ -187,5 +187,8 @@
   },
   "unmute": {
     "message": "Unmute"
+  },
+  "uiLanguageCode": {
+    "message": "en"
   }
 }

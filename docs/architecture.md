@@ -9,11 +9,11 @@ flowchart LR
   P -->|HTTPS artwork download| CDN[Google and YouTube image servers]
 ```
 
-The Stream Deck manifest launches `streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/bin/plugin.js` with the local WebSocket registration arguments. It bundles the official `@elgato/streamdeck` 3.0.3 SDK, which owns registration, event routing and display/inspector output. The ten `SingletonAction` registrations forward events to the local bridge. The runtime does not load the manifest itself; the SDK handles protected manifests.
+The Stream Deck manifest launches `streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/bin/plugin.js` with the local WebSocket registration arguments. It bundles the official `@elgato/streamdeck` 3.0.4 SDK, which owns registration, event routing and display/inspector output. The twelve `SingletonAction` registrations forward events to the local bridge. The runtime does not load the manifest itself; the SDK handles protected manifests.
 
 The entry point is `streamdeck/src/plugin.cjs`; esbuild produces the standalone deployed bundle.
 
-The property inspector bundles sdpi-components v4.0.1 locally for offline settings UI. Stream Deck passes its language to the plugin/settings; Chrome resolves the extension's en/ko catalogs independently.
+The property inspector bundles sdpi-components v4.0.1 locally for offline settings UI. Stream Deck passes its language to the plugin/settings; `property-inspector/language.js` normalizes supported host language codes for both settings and device captions. Chrome independently resolves its eight UI catalogs; the popup takes its document language from the selected catalog. The supported UI locales are `en`, `ko`, `zh_CN`, `zh_TW`, `ja`, `es`, `fr` and `de`; unsupported plugin locales fall back to English.
 
 - [Code boundaries](#code-boundaries)
 - [Pairing and requests](#pairing-and-requests)
@@ -205,7 +205,7 @@ Port `17864` is the default; both components accept integers 1024–65535. Start
 
 ### Artwork downloads
 
-Artwork downloads validate the HTTPS host, each redirect, content type and a 2 MB limit. The artwork store tracks in-flight promises per source URL, deduplicates overlapping requests and only updates the selected cover when its download completes. `/status` returns a `coverStatus` code: `missing`, `blocked`, `ready`, `downloading`, `waiting` or `failed`. The Chrome popup translates these codes using its own en/ko catalog; unknown codes use the localized waiting message. See [privacy](../PRIVACY.md) for the allowlist and data lifecycle.
+Artwork downloads validate the HTTPS host, each redirect, content type and a 2 MB limit. The artwork store tracks in-flight promises per source URL, deduplicates overlapping requests and only updates the selected cover when its download completes. `/status` returns a `coverStatus` code: `missing`, `blocked`, `ready`, `downloading`, `waiting` or `failed`. The Chrome popup translates these codes using its selected UI catalog; unknown codes use the localized waiting message. See [privacy](../PRIVACY.md) for the allowlist and data lifecycle.
 
 ## Plugin identity
 

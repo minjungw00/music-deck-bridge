@@ -31,11 +31,25 @@
   },
   "io.github.minjungw00.musicdeckbridge.volume": {
     "Name": "Volume Dial",
-    "Tooltip": "Turn to adjust volume; push or touch to mute."
+    "Tooltip": "Turn to adjust volume; push or touch to mute.",
+    "Encoder": {
+      "TriggerDescription": {
+        "Push": "Mute",
+        "Rotate": "Adjust YouTube Music volume",
+        "Touch": "Mute"
+      }
+    }
   },
   "io.github.minjungw00.musicdeckbridge.trackdial": {
     "Name": "Current Track Dial",
-    "Tooltip": "Turn for previous/next track; push or touch to play/pause. Show song info or album artwork."
+    "Tooltip": "Turn for previous/next track; push or touch to play/pause. Show song info or album artwork.",
+    "Encoder": {
+      "TriggerDescription": {
+        "Push": "Play / Pause",
+        "Rotate": "Previous / next track",
+        "Touch": "Play / Pause"
+      }
+    }
   },
   "io.github.minjungw00.musicdeckbridge.open": {
     "Name": "Open YouTube Music",

@@ -1,0 +1,66 @@
+{
+  "Name": "Music Deck Bridge",
+  "Description": "Chrome 拡張機能を使い、Elgato Stream Deck から YouTube Music を操作できます。",
+  "io.github.minjungw00.musicdeckbridge.nowplaying": {
+    "Name": "再生中の曲",
+    "Tooltip": "アルバムアート・曲名・アーティストを表示。押すと再生/一時停止。プレーヤーがない場合は YouTube Music を開きます。"
+  },
+  "io.github.minjungw00.musicdeckbridge.toggle": {
+    "Name": "再生 / 一時停止",
+    "Tooltip": "再生/一時停止。プレーヤーがない場合は YouTube Music を開きます。"
+  },
+  "io.github.minjungw00.musicdeckbridge.prev": {
+    "Name": "前の曲",
+    "Tooltip": "前の曲を再生します。"
+  },
+  "io.github.minjungw00.musicdeckbridge.next": {
+    "Name": "次の曲",
+    "Tooltip": "次の曲を再生します。"
+  },
+  "io.github.minjungw00.musicdeckbridge.mute": {
+    "Name": "ミュート",
+    "Tooltip": "ミュートを切り替えます。"
+  },
+  "io.github.minjungw00.musicdeckbridge.volumeup": {
+    "Name": "音量を上げる",
+    "Tooltip": "設定した幅で YouTube Music の音量を上げます。"
+  },
+  "io.github.minjungw00.musicdeckbridge.volumedown": {
+    "Name": "音量を下げる",
+    "Tooltip": "設定した幅で YouTube Music の音量を下げます。"
+  },
+  "io.github.minjungw00.musicdeckbridge.volume": {
+    "Name": "音量ダイヤル",
+    "Tooltip": "回すと音量を調整し、押すかタッチするとミュートします。",
+    "Encoder": {
+      "TriggerDescription": {
+        "Push": "ミュート",
+        "Touch": "ミュート",
+        "Rotate": "音量"
+      }
+    }
+  },
+  "io.github.minjungw00.musicdeckbridge.trackdial": {
+    "Name": "現在の曲ダイヤル",
+    "Tooltip": "回すと前の曲/次の曲。押すかタッチすると再生/一時停止。曲情報またはアルバムアートを表示します。",
+    "Encoder": {
+      "TriggerDescription": {
+        "Push": "再生 / 一時停止",
+        "Touch": "再生 / 一時停止",
+        "Rotate": "前の曲 / 次の曲"
+      }
+    }
+  },
+  "io.github.minjungw00.musicdeckbridge.open": {
+    "Name": "YouTube Music を開く",
+    "Tooltip": "YouTube Music を開くか、既存のウィンドウに移動します。"
+  },
+  "io.github.minjungw00.musicdeckbridge.like": {
+    "Name": "高評価",
+    "Tooltip": "現在の曲を高評価にします。もう一度押すと解除します。"
+  },
+  "io.github.minjungw00.musicdeckbridge.dislike": {
+    "Name": "低評価",
+    "Tooltip": "現在の曲を低評価にします。もう一度押すと解除します。"
+  }
+}

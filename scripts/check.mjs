@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import vm from 'node:vm';
+import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
 import { checkVersions } from './version.mjs';
 
@@ -40,15 +42,22 @@ for (const icon of [sd.Icon, sd.CategoryIcon]) {
   await exists(join(plugin, icon + '.png'));
   await exists(join(plugin, icon + '@2x.png'));
 }
-for (const locale of ['en', 'ko']) {
-  const labels = await json(join(plugin, locale + '.json'));
-  for (const id of uuids) assert.ok(labels[id]?.Name, `${locale}: missing ${id}`);
-}
+const { supported } = createRequire(import.meta.url)(join(plugin, 'property-inspector/language.js'));
+assert.deepEqual(supported, ['en', 'ko', 'zh_CN', 'zh_TW', 'ja', 'es', 'fr', 'de']);
+const inspectorContext = {};
+vm.runInNewContext(await readFile(join(plugin, 'property-inspector/locales.js'), 'utf8'), inspectorContext);
+const inspectorStrings = inspectorContext.MusicDeckInspectorStrings;
+assert.deepEqual(Object.keys(inspectorStrings).sort(), [...supported].sort());
 const en = await json(join(extension, '_locales/en/messages.json'));
-const ko = await json(join(extension, '_locales/ko/messages.json'));
-assert.deepEqual(Object.keys(en).sort(), Object.keys(ko).sort());
-for (const messages of [en, ko]) {
-  for (const [key, value] of Object.entries(messages)) assert.ok(value.message?.trim(), `Empty translation: ${key}`);
+assert.deepEqual((await readdir(join(extension, '_locales'))).sort(), [...supported].sort());
+for (const locale of supported) {
+  const labels = await json(join(plugin, locale + '.json'));
+  for (const id of uuids) assert.ok(labels[id]?.Name && labels[id]?.Tooltip, `${locale}: missing ${id}`);
+  const messages = await json(join(extension, `_locales/${locale}/messages.json`));
+  assert.deepEqual(Object.keys(messages).sort(), Object.keys(en).sort(), locale);
+  for (const [key, value] of Object.entries(messages)) assert.ok(value.message?.trim(), `${locale}: empty ${key}`);
+  assert.deepEqual(Object.keys(inspectorStrings[locale]).sort(), Object.keys(inspectorStrings.en).sort(), locale);
+  for (const [key, value] of Object.entries(inspectorStrings[locale])) assert.ok(value?.trim(), `${locale}: empty ${key}`);
 }
 for (const [, key] of JSON.stringify(chrome).matchAll(/__MSG_(\w+)__/g)) assert.ok(en[key], `Missing message: ${key}`);
 for (const file of [chrome.background.service_worker, chrome.action.default_popup,

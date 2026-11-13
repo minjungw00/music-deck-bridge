@@ -1,0 +1,66 @@
+{
+  "Name": "Music Deck Bridge",
+  "Description": "通过 Chrome 扩展，使用 Elgato Stream Deck 控制 YouTube Music。",
+  "io.github.minjungw00.musicdeckbridge.nowplaying": {
+    "Name": "正在播放",
+    "Tooltip": "显示封面、歌曲名和歌手。按下以播放/暂停；未打开播放器时会打开 YouTube Music。"
+  },
+  "io.github.minjungw00.musicdeckbridge.toggle": {
+    "Name": "播放 / 暂停",
+    "Tooltip": "播放或暂停；未打开播放器时会打开 YouTube Music。"
+  },
+  "io.github.minjungw00.musicdeckbridge.prev": {
+    "Name": "上一首",
+    "Tooltip": "播放上一首歌曲。"
+  },
+  "io.github.minjungw00.musicdeckbridge.next": {
+    "Name": "下一首",
+    "Tooltip": "播放下一首歌曲。"
+  },
+  "io.github.minjungw00.musicdeckbridge.mute": {
+    "Name": "静音",
+    "Tooltip": "开启或取消静音。"
+  },
+  "io.github.minjungw00.musicdeckbridge.volumeup": {
+    "Name": "提高音量",
+    "Tooltip": "按设置的幅度提高 YouTube Music 音量。"
+  },
+  "io.github.minjungw00.musicdeckbridge.volumedown": {
+    "Name": "降低音量",
+    "Tooltip": "按设置的幅度降低 YouTube Music 音量。"
+  },
+  "io.github.minjungw00.musicdeckbridge.volume": {
+    "Name": "音量旋钮",
+    "Tooltip": "旋转调节音量；按下或轻触以静音。",
+    "Encoder": {
+      "TriggerDescription": {
+        "Push": "静音",
+        "Touch": "静音",
+        "Rotate": "音量"
+      }
+    }
+  },
+  "io.github.minjungw00.musicdeckbridge.trackdial": {
+    "Name": "当前歌曲旋钮",
+    "Tooltip": "旋转切换上一首/下一首；按下或轻触以播放/暂停。显示歌曲信息或专辑封面。",
+    "Encoder": {
+      "TriggerDescription": {
+        "Push": "播放 / 暂停",
+        "Touch": "播放 / 暂停",
+        "Rotate": "上一首 / 下一首"
+      }
+    }
+  },
+  "io.github.minjungw00.musicdeckbridge.open": {
+    "Name": "打开 YouTube Music",
+    "Tooltip": "打开 YouTube Music 或切换到已有窗口。"
+  },
+  "io.github.minjungw00.musicdeckbridge.like": {
+    "Name": "喜欢",
+    "Tooltip": "喜欢当前歌曲；再次按下可取消。"
+  },
+  "io.github.minjungw00.musicdeckbridge.dislike": {
+    "Name": "不喜欢",
+    "Tooltip": "不喜欢当前歌曲；再次按下可取消。"
+  }
+}

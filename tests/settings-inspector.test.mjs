@@ -55,7 +55,7 @@ test('uses bundled official SDPI components in dark style and locale-aware label
   assert.equal(pi.elems.optScroll.textContent,'왼쪽으로 스크롤');
   assert.equal(pi.elems.trackSection.classList.removed[0],'hidden');
   assert.equal(pi.calls[0].payload.type,'get-connection');
-  const en=makeInspector('io.github.minjungw00.musicdeckbridge.volume','fr');await en.ready();
+  const en=makeInspector('io.github.minjungw00.musicdeckbridge.volume','it');await en.ready();
   assert.equal(en.sandbox.document.documentElement.lang,'en');
   assert.equal(en.elems.volumeRow.attrs.label,'Volume per tick');
   assert.equal(en.elems.portRow.attrs.label,'Local server port');

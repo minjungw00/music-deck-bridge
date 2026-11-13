@@ -31,7 +31,9 @@ Public releases and development builds are tracked separately in [release readin
 | Browser | Google Chrome 116+ |
 | Stream Deck software | 7.1+ (provides Node.js 24) |
 | Device | Key actions target Stream Deck key models; encoder actions require Stream Deck + |
-| Languages | English / 한국어 |
+| UI languages (1.2.0-dev) | English / 한국어 / 简体中文 / 繁體中文 / 日本語 / Español / Français / Deutsch |
+
+UI translations cover the Stream Deck plugin and Chrome extension. Customer-support and legal-notice language coverage is not committed by this list. Installation guides and previously submitted store descriptions retain their existing scope.
 
 ## Features
 
@@ -42,7 +44,7 @@ Public releases and development builds are tracked separately in [release readin
 - Volume dial with 1–5 percentage points per tick; push or touch to mute.
 - Volume Up / Down keys with independently configurable 1–5 percentage points per press (default: 4); briefly show the reported volume after each successful input. Each key has number/percent settings and a 0–3 second duration slider (default: numbers on, percent sign off, 2 seconds).
 - Current Track Dial: turn for previous/next track (up to five per event), push or touch to play/pause, and choose song info or fitted album artwork with optional song/artist text.
-- English and Korean settings; truncated or scrolling track titles.
+- UI translations for all eight Stream Deck languages; truncated or scrolling track titles.
 - Six-digit PIN pairing, an authenticated loopback bridge, a configurable shared port and protocol compatibility checks with targeted update guidance.
 - Preference for an installed Chrome app when both an app and browser tab are open.
 
@@ -73,7 +75,7 @@ npm test
 
 ```text
 streamdeck/        Plugin source, bundle/resources and icon generator
-chrome-extension/ Chrome Manifest V3 extension and en/ko locales
+chrome-extension/ Chrome Manifest V3 extension and UI locale catalogs
 tests/            Node.js regression tests and Python packaging tests
 scripts/          Validation and packaging tools
 docs/             Architecture, installation and development guides

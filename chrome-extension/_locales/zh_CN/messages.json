@@ -1,0 +1,194 @@
+{
+  "heading": {
+    "message": "Music Deck Bridge"
+  },
+  "companionHint": {
+    "message": "此弹出窗口无需 Stream Deck 即可使用。要使用 Stream Deck 控制，请安装并连接插件。"
+  },
+  "installPlugin": {
+    "message": "安装 Stream Deck 插件"
+  },
+  "guide": {
+    "message": "在 Stream Deck 操作设置中生成 PIN，然后在此输入。"
+  },
+  "pin": {
+    "message": "连接 PIN"
+  },
+  "connect": {
+    "message": "连接"
+  },
+  "refresh": {
+    "message": "状态"
+  },
+  "forget": {
+    "message": "取消配对"
+  },
+  "portLabel": {
+    "message": "本地服务器端口"
+  },
+  "savePort": {
+    "message": "应用"
+  },
+  "portHint": {
+    "message": "使用与 Stream Deck 相同的端口。连接后，在此更改端口也会同步更改服务器端口。"
+  },
+  "portInvalid": {
+    "message": "端口必须是 1024 至 65535 之间的整数。"
+  },
+  "portSaved": {
+    "message": "本地服务器端口已更改为："
+  },
+  "portLocal": {
+    "message": "仅保存了 Chrome 端口。请将 Stream Deck 设置中的端口调整为相同值。"
+  },
+  "invalid": {
+    "message": "请输入六位数字 PIN。"
+  },
+  "checking": {
+    "message": "正在检查连接…"
+  },
+  "fail": {
+    "message": "连接失败。"
+  },
+  "connected": {
+    "message": "已连接 · 请打开或刷新 YouTube Music。"
+  },
+  "unknown": {
+    "message": "无法检查连接。"
+  },
+  "player": {
+    "message": "已连接"
+  },
+  "app": {
+    "message": "应用"
+  },
+  "tab": {
+    "message": "浏览器标签页"
+  },
+  "current": {
+    "message": "正在播放"
+  },
+  "waiting": {
+    "message": "等待中"
+  },
+  "artwork": {
+    "message": "专辑封面"
+  },
+  "coverMissing": {
+    "message": "页面上没有找到封面地址"
+  },
+  "coverBlocked": {
+    "message": "不允许使用此封面主机"
+  },
+  "coverReady": {
+    "message": "可以显示"
+  },
+  "coverDownloading": {
+    "message": "正在下载图片"
+  },
+  "coverWaiting": {
+    "message": "正在等待图片"
+  },
+  "coverFailed": {
+    "message": "图片下载失败"
+  },
+  "stale": {
+    "message": "播放器响应缓慢，请检查 Chrome 的内存节省设置。"
+  },
+  "paired": {
+    "message": "已配对 · 请打开或刷新 YouTube Music 窗口。"
+  },
+  "removed": {
+    "message": "已取消配对。请输入新的 PIN 以重新连接。"
+  },
+  "extensionName": {
+    "message": "Music Deck Bridge"
+  },
+  "extensionShortName": {
+    "message": "Music Deck Bridge"
+  },
+  "extensionDescription": {
+    "message": "通过 Chrome 扩展，使用 Elgato Stream Deck 控制 YouTube Music。"
+  },
+  "notPaired": {
+    "message": "没有配对凭据。重新安装扩展后，请在 Stream Deck 操作设置中生成新 PIN 并重新配对。若使用自定义端口，请确保两端一致。"
+  },
+  "subtitle": {
+    "message": "适用于 YouTube Music · 集成 Stream Deck"
+  },
+  "unpairFailed": {
+    "message": "无法取消配对。请启动 Stream Deck，检查端口后重试。"
+  },
+  "updatePlugin": {
+    "message": "通信协议不兼容，请更新 Stream Deck 插件。"
+  },
+  "updateExtension": {
+    "message": "通信协议不兼容，请更新 Chrome 扩展。"
+  },
+  "protocolInvalid": {
+    "message": "兼容性信息无效，请更新两个组件后重新检查。"
+  },
+  "pluginLabel": {
+    "message": "插件"
+  },
+  "extensionLabel": {
+    "message": "扩展"
+  },
+  "protocolLabel": {
+    "message": "协议"
+  },
+  "legacyProtocol": {
+    "message": "旧版连接"
+  },
+  "nowPlayingLabel": {
+    "message": "正在播放"
+  },
+  "playerWaiting": {
+    "message": "正在等待 YouTube Music"
+  },
+  "settingsSummary": {
+    "message": "Stream Deck 连接设置"
+  },
+  "connectionStatusLabel": {
+    "message": "Stream Deck 连接状态"
+  },
+  "previous": {
+    "message": "上一首"
+  },
+  "next": {
+    "message": "下一首"
+  },
+  "play": {
+    "message": "播放"
+  },
+  "pause": {
+    "message": "暂停"
+  },
+  "likeLabel": {
+    "message": "喜欢"
+  },
+  "dislikeLabel": {
+    "message": "不喜欢"
+  },
+  "controlFailed": {
+    "message": "无法确认命令结果，请先检查 YouTube Music，再决定是否重试。"
+  },
+  "controlChanged": {
+    "message": "所选歌曲已更改，请对当前歌曲重试。"
+  },
+  "controlUpdate": {
+    "message": "请更新 Stream Deck 插件以使用弹出窗口控制。"
+  },
+  "volumeLabel": {
+    "message": "音量"
+  },
+  "mute": {
+    "message": "静音"
+  },
+  "unmute": {
+    "message": "取消静音"
+  },
+  "uiLanguageCode": {
+    "message": "zh-CN"
+  }
+}

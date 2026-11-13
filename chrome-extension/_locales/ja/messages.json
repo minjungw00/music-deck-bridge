@@ -1,0 +1,194 @@
+{
+  "heading": {
+    "message": "Music Deck Bridge"
+  },
+  "companionHint": {
+    "message": "このポップアップは Stream Deck なしでも使えます。Stream Deck で操作する場合はプラグインをインストールして接続してください。"
+  },
+  "installPlugin": {
+    "message": "Stream Deck プラグインをインストール"
+  },
+  "guide": {
+    "message": "Stream Deck のアクション設定で PIN を発行し、ここに入力してください。"
+  },
+  "pin": {
+    "message": "接続 PIN"
+  },
+  "connect": {
+    "message": "接続"
+  },
+  "refresh": {
+    "message": "状態"
+  },
+  "forget": {
+    "message": "解除"
+  },
+  "portLabel": {
+    "message": "ローカルサーバーポート"
+  },
+  "savePort": {
+    "message": "適用"
+  },
+  "portHint": {
+    "message": "Stream Deck と同じポートを使用してください。接続中にここで変更すると、サーバーにも適用されます。"
+  },
+  "portInvalid": {
+    "message": "ポートは1024～65535の整数にしてください。"
+  },
+  "portSaved": {
+    "message": "ローカルサーバーポートを変更しました："
+  },
+  "portLocal": {
+    "message": "Chrome のポートのみ保存しました。Stream Deck の設定も同じポートにしてください。"
+  },
+  "invalid": {
+    "message": "6桁の PIN を入力してください。"
+  },
+  "checking": {
+    "message": "接続を確認中…"
+  },
+  "fail": {
+    "message": "接続に失敗しました。"
+  },
+  "connected": {
+    "message": "接続済み · YouTube Music を開くか再読み込みしてください。"
+  },
+  "unknown": {
+    "message": "接続を確認できません。"
+  },
+  "player": {
+    "message": "接続済み"
+  },
+  "app": {
+    "message": "アプリ"
+  },
+  "tab": {
+    "message": "ブラウザーのタブ"
+  },
+  "current": {
+    "message": "再生中"
+  },
+  "waiting": {
+    "message": "待機中"
+  },
+  "artwork": {
+    "message": "アルバムアート"
+  },
+  "coverMissing": {
+    "message": "ページにアルバムアートの URL がありません"
+  },
+  "coverBlocked": {
+    "message": "アルバムアートのホストは許可されていません"
+  },
+  "coverReady": {
+    "message": "表示の準備完了"
+  },
+  "coverDownloading": {
+    "message": "画像をダウンロード中"
+  },
+  "coverWaiting": {
+    "message": "画像を待っています"
+  },
+  "coverFailed": {
+    "message": "画像のダウンロードに失敗しました"
+  },
+  "stale": {
+    "message": "プレーヤーの応答が遅れています。Chrome のメモリセーバー設定を確認してください。"
+  },
+  "paired": {
+    "message": "接続済み · YouTube Music のウィンドウを開くか再読み込みしてください。"
+  },
+  "removed": {
+    "message": "接続を解除しました。新しい PIN を入力すると再接続できます。"
+  },
+  "extensionName": {
+    "message": "Music Deck Bridge"
+  },
+  "extensionShortName": {
+    "message": "Music Deck Bridge"
+  },
+  "extensionDescription": {
+    "message": "Chrome 拡張機能を使い、Elgato Stream Deck から YouTube Music を操作できます。"
+  },
+  "notPaired": {
+    "message": "接続用の認証情報がありません。拡張機能を再インストールした場合は、Stream Deck のアクション設定で新しい PIN を発行して再接続してください。カスタムポートは両側で合わせてください。"
+  },
+  "subtitle": {
+    "message": "YouTube Music 用 · Stream Deck 連携"
+  },
+  "unpairFailed": {
+    "message": "接続を解除できませんでした。Stream Deck を起動し、ポートを確認して再試行してください。"
+  },
+  "updatePlugin": {
+    "message": "通信プロトコルに互換性がありません。Stream Deck プラグインを更新してください。"
+  },
+  "updateExtension": {
+    "message": "通信プロトコルに互換性がありません。Chrome 拡張機能を更新してください。"
+  },
+  "protocolInvalid": {
+    "message": "互換性情報が無効です。両方のコンポーネントを更新して再確認してください。"
+  },
+  "pluginLabel": {
+    "message": "プラグイン"
+  },
+  "extensionLabel": {
+    "message": "拡張機能"
+  },
+  "protocolLabel": {
+    "message": "プロトコル"
+  },
+  "legacyProtocol": {
+    "message": "従来の接続"
+  },
+  "nowPlayingLabel": {
+    "message": "再生中"
+  },
+  "playerWaiting": {
+    "message": "YouTube Music を待っています"
+  },
+  "settingsSummary": {
+    "message": "Stream Deck の接続設定"
+  },
+  "connectionStatusLabel": {
+    "message": "Stream Deck の接続状態"
+  },
+  "previous": {
+    "message": "前の曲"
+  },
+  "next": {
+    "message": "次の曲"
+  },
+  "play": {
+    "message": "再生"
+  },
+  "pause": {
+    "message": "一時停止"
+  },
+  "likeLabel": {
+    "message": "高評価"
+  },
+  "dislikeLabel": {
+    "message": "低評価"
+  },
+  "controlFailed": {
+    "message": "コマンドの結果を確認できませんでした。再試行する前に YouTube Music を確認してください。"
+  },
+  "controlChanged": {
+    "message": "選択された曲が変わりました。現在の曲でもう一度お試しください。"
+  },
+  "controlUpdate": {
+    "message": "ポップアップで操作するには Stream Deck プラグインを更新してください。"
+  },
+  "volumeLabel": {
+    "message": "音量"
+  },
+  "mute": {
+    "message": "ミュート"
+  },
+  "unmute": {
+    "message": "ミュート解除"
+  },
+  "uiLanguageCode": {
+    "message": "ja"
+  }
+}

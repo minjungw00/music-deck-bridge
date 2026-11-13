@@ -20,7 +20,7 @@
     #stepLabel, #feedbackDurationLabel { color: #fff; font-variant-numeric: tabular-nums; min-width: 24px; }
     .port-input { width: 88px; min-width: 72px; }
     .connection { border-top: 1px solid #515151; padding-top: 10px; margin-top: 8px; }
-    sdpi-item { color: #e6e6e6; }
+    sdpi-item { color: #e6e6e6; overflow-wrap: anywhere; }
     sdpi-button { white-space: nowrap; }
     /* Native range, matching the direct event.target.value approach used by Elgato's Discord plugin. */
     .native-range { display: flex; align-items: center; gap: 8px; min-height: 28px; width: 100%; }
@@ -155,6 +155,7 @@
     </sdpi-item>
     <p id="portStatus" class="hint" aria-live="polite">Shared by every Stream Deck action. Chrome follows automatically when connected.</p>
   </section>
+  <script src="language.js"></script>
   <script src="locales.js"></script>
   <script src="volume-editor.js"></script>
   <script src="settings.js"></script>

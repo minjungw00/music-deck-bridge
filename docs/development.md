@@ -55,7 +55,7 @@ CI checks and packages both components on Windows and Ubuntu, including pull req
 | --- | --- |
 | `streamdeck/src/` | Plugin modules; `plugin.cjs` composes domain, application, adapter and presentation layers |
 | `streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/` | Plugin resources and generated `bin/plugin.js`; deployable after `npm run build:plugin` |
-| `chrome-extension/` | Chrome source, loaded unpacked directly; popup/manifest strings are in `_locales/en` and `_locales/ko` |
+| `chrome-extension/` | Chrome source, loaded unpacked directly; popup/manifest strings are in `_locales/<locale>/messages.json` for each supported UI language |
 | `scripts/package.py` | Explicit package allowlists; add every new runtime resource here |
 | `streamdeck/generate_assets.py` | Geometric brand/action icon source; committed PNGs need no Python packages to build or package |
 | `store-assets/` | Listing copy, source captures, sample popup renderings and sized upload images |
@@ -77,7 +77,7 @@ npm run test:browser
 
 OpenSSL generates an ephemeral test certificate. Ubuntu CI runs this check automatically.
 
-The inspector fixture loads the real bundled SDPI components and checks rendered labels in their Shadow DOM with a mock Stream Deck host. It covers fresh/saved settings and English/Korean without changing checkbox values to trigger rendering.
+The inspector fixture loads the real bundled SDPI components and checks rendered labels and dropdown options in their Shadow DOM with a mock Stream Deck host. It covers fresh/saved settings in all supported UI locales without changing values to trigger rendering. A separate toolbar fixture opens native extension catalogs for all eight languages and checks text buttons for clipping.
 
 The test uses a fresh temporary profile and local HTTPS fixture mapped to `music.youtube.com`. Certificate validation is disabled only in that test browser. It exercises real extension storage, authenticated loopback requests, cold-tab navigation, script injection, command/result messages and existing-tab reuse.
 
@@ -149,7 +149,7 @@ Keep the selected development target fixed until a maintainer authorizes promoti
 
 1. Review [repository security settings](security-readiness.md), the [reporting route](../SECURITY.md), bundled library versions/licenses and package notices.
 2. Pass local/CI checks and the official validator/packager. For actual DRM coverage, download the Maker Console processed build with publishing disabled and record its install/run results; local SDK fixtures do not complete this step.
-3. Verify relevant Windows 10/11 installation, removal, updates and reset on Stream Deck hardware. Cover keys/dials, en/ko UI, Chrome tab/app, artwork, idle recovery, reload/re-pairing, live ports and conflicts. Respect completed maintainer validation within its stated scope.
+3. Verify relevant Windows 10/11 installation, removal, updates and reset on Stream Deck hardware. Cover keys/dials, supported UI languages, Chrome tab/app, artwork, idle recovery, reload/re-pairing, live ports and conflicts. Respect completed maintainer validation within its stated scope.
 4. Prepare actual screenshots/video, store descriptions, permission/privacy declarations and upload assets.
 5. When authorized, run `npm run version:release -- X.Y.Z` for the current target, update CHANGELOG, pass final checks and create the matching `vX.Y.Z` tag. Development versions cannot pass the release gate.
 6. Choose the publication path below and verify downloaded asset names and checksums before publication. GitHub publication and store approval remain separate results.

@@ -37,7 +37,8 @@ function setLabel(id, value) {
   element.requestUpdate?.();
 }
 function localize() {
-  document.documentElement.lang = language;
+  document.documentElement.lang = MusicDeckLanguage.html(language);
+  document.title = `Music Deck Bridge – ${t('settingsTitle')}`;
   setLabel('titleModeRow', t('titleRow'));
   $('optTruncate').textContent = t('truncate');
   $('optScroll').textContent = t('scroll');
@@ -222,7 +223,7 @@ void (async () => {
     updateVolumeFeedbackOptions(editor.settings.volumeShowValue !== false);
     updateArtworkOptions(editor.settings.dialDisplay || 'info', editor.settings.artworkShowTitle === true, editor.settings.artworkShowArtist === true);
     $('keyArtistPositionRow').classList.toggle('hidden', editor.settings.showArtist === false);
-    language = info?.application?.language === 'ko' ? 'ko' : 'en';
+    language = MusicDeckLanguage.resolve(info?.application?.language);
     const action = actionInfo?.action || '';
     volumeKey = action.endsWith('.volumeup') || action.endsWith('.volumedown');
     localize();

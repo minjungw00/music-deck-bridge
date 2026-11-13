@@ -18,6 +18,7 @@
 - Group the extension installation and PIN buttons under Connection in the Stream Deck inspector, with the generated PIN below its button.
 - Refresh translated inspector labels on first open, including checkboxes with no saved value; opening settings no longer needs an input before Korean descriptions appear.
 - Refresh cached dropdown options after translating the inspector, retaining their saved/default selections.
+- Add UI catalogs for all eight official Stream Deck languages: English, Korean, Simplified/Traditional Chinese, Japanese, Spanish, French and German. Cover inspector options, action descriptions, device captions and Chrome popup/status UI; keep customer-support and legal-notice language commitments separate.
 - Refresh the extension popup's track and connection status every second while visible. Keep action feedback separate, skip overlapping polls and pending management actions, and stop polling when the popup closes.
 - Tag the links with `utm_source=streamdeck_plugin` or `chrome_extension`, `utm_medium=referral` and `utm_campaign=companion_setup`. Chrome store attribution is supported; Elgato UTM reporting remains unverified.
 

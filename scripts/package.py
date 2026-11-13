@@ -9,6 +9,7 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 PLUGIN = "io.github.minjungw00.musicdeckbridge.sdPlugin"
+LOCALES = ("en", "ko", "zh_CN", "zh_TW", "ja", "es", "fr", "de")
 LEGAL = ("LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md", "PRIVACY.md")
 
 
@@ -26,10 +27,11 @@ def stage(component, output):
                "background/management-service.js", "background/player-sync-service.js",
                "content/metadata.js", "content/commands.js", "content/runtime.js", "content.js", "popup.html", "popup.js",
                "icons/16.png", "icons/48.png", "icons/128.png",
-               "_locales/en/messages.json", "_locales/ko/messages.json"] if component == "chrome" else [
+               *[f"_locales/{locale}/messages.json" for locale in LOCALES]] if component == "chrome" else [
         "bin/plugin.js", "property-inspector/settings.html",
         "property-inspector/settings.js", "property-inspector/sdpi-components.js",
-        "property-inspector/locales.js", "property-inspector/volume-editor.js", "en.json", "ko.json",
+        "property-inspector/language.js", "property-inspector/locales.js", "property-inspector/volume-editor.js",
+        *[f"{locale}.json" for locale in LOCALES],
         "layouts/current-track-artwork.json",
     ])
     if component == "chrome":

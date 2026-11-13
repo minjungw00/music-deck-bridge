@@ -1,5 +1,6 @@
 'use strict';
 const { PLUGIN_ID, ACTION_NAMES } = require('../domain/actions.cjs');
+const { resolve: resolveLanguage } = require('../../io.github.minjungw00.musicdeckbridge.sdPlugin/property-inspector/language.js');
 
 function createDeckAdapter({ onEvent, onConnected, log, isTest = false }) {
   let streamDeck, sdOnline = false, locale = 'en';
@@ -29,7 +30,7 @@ function createDeckAdapter({ onEvent, onConnected, log, isTest = false }) {
     }
     const sdk = require('@elgato/streamdeck');
     streamDeck = sdk.default;
-    locale = streamDeck.info.application.language === 'ko' ? 'ko' : 'en';
+    locale = resolveLanguage(streamDeck.info.application.language);
     class BridgeAction extends sdk.SingletonAction {
       constructor(name) { super(); this.manifestId = `${PLUGIN_ID}.${name}`; }
       forward(ev) {

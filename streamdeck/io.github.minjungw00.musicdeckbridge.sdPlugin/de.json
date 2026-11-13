@@ -1,0 +1,66 @@
+{
+  "Name": "Music Deck Bridge",
+  "Description": "YouTube Music über eine Chrome-Erweiterung mit Elgato Stream Deck steuern.",
+  "io.github.minjungw00.musicdeckbridge.nowplaying": {
+    "Name": "Aktuelle Wiedergabe",
+    "Tooltip": "Zeigt Cover, Titel und Interpret. Drücken für Wiedergabe/Pause oder zum Öffnen von YouTube Music, falls geschlossen."
+  },
+  "io.github.minjungw00.musicdeckbridge.toggle": {
+    "Name": "Wiedergabe / Pause",
+    "Tooltip": "Wiedergabe/Pause oder YouTube Music öffnen, wenn kein Player geöffnet ist."
+  },
+  "io.github.minjungw00.musicdeckbridge.prev": {
+    "Name": "Vorheriger Titel",
+    "Tooltip": "Spielt den vorherigen Titel ab."
+  },
+  "io.github.minjungw00.musicdeckbridge.next": {
+    "Name": "Nächster Titel",
+    "Tooltip": "Spielt den nächsten Titel ab."
+  },
+  "io.github.minjungw00.musicdeckbridge.mute": {
+    "Name": "Stummschalten",
+    "Tooltip": "Schaltet die Stummschaltung ein oder aus."
+  },
+  "io.github.minjungw00.musicdeckbridge.volumeup": {
+    "Name": "Lautstärke erhöhen",
+    "Tooltip": "Erhöht die Lautstärke von YouTube Music um den eingestellten Schritt."
+  },
+  "io.github.minjungw00.musicdeckbridge.volumedown": {
+    "Name": "Lautstärke verringern",
+    "Tooltip": "Verringert die Lautstärke von YouTube Music um den eingestellten Schritt."
+  },
+  "io.github.minjungw00.musicdeckbridge.volume": {
+    "Name": "Lautstärkeregler",
+    "Tooltip": "Drehen zum Anpassen der Lautstärke; drücken oder berühren zum Stummschalten.",
+    "Encoder": {
+      "TriggerDescription": {
+        "Push": "Stummschalten",
+        "Touch": "Stummschalten",
+        "Rotate": "Lautstärke"
+      }
+    }
+  },
+  "io.github.minjungw00.musicdeckbridge.trackdial": {
+    "Name": "Regler für aktuellen Titel",
+    "Tooltip": "Drehen für vorherigen/nächsten Titel; drücken oder berühren für Wiedergabe/Pause. Zeigt Titelinformationen oder Albumcover.",
+    "Encoder": {
+      "TriggerDescription": {
+        "Push": "Wiedergabe / Pause",
+        "Touch": "Wiedergabe / Pause",
+        "Rotate": "Vorheriger Titel / Nächster Titel"
+      }
+    }
+  },
+  "io.github.minjungw00.musicdeckbridge.open": {
+    "Name": "YouTube Music öffnen",
+    "Tooltip": "Öffnet YouTube Music oder aktiviert das vorhandene Fenster."
+  },
+  "io.github.minjungw00.musicdeckbridge.like": {
+    "Name": "Gefällt mir",
+    "Tooltip": "Markiert den aktuellen Titel mit Gefällt mir; erneut drücken zum Entfernen."
+  },
+  "io.github.minjungw00.musicdeckbridge.dislike": {
+    "Name": "Gefällt mir nicht",
+    "Tooltip": "Markiert den aktuellen Titel mit Gefällt mir nicht; erneut drücken zum Entfernen."
+  }
+}

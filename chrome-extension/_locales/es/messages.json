@@ -1,0 +1,194 @@
+{
+  "heading": {
+    "message": "Music Deck Bridge"
+  },
+  "companionHint": {
+    "message": "Esta ventana funciona sin Stream Deck. Instala y conecta el complemento para usar los controles de Stream Deck."
+  },
+  "installPlugin": {
+    "message": "Instalar complemento de Stream Deck"
+  },
+  "guide": {
+    "message": "Genera un PIN en los ajustes de la acción de Stream Deck e introdúcelo aquí."
+  },
+  "pin": {
+    "message": "PIN de conexión"
+  },
+  "connect": {
+    "message": "Conectar"
+  },
+  "refresh": {
+    "message": "Estado"
+  },
+  "forget": {
+    "message": "Olvidar"
+  },
+  "portLabel": {
+    "message": "Puerto del servidor local"
+  },
+  "savePort": {
+    "message": "Aplicar"
+  },
+  "portHint": {
+    "message": "Usa el mismo puerto que Stream Deck. Si estás conectado, los cambios aquí también se aplican al servidor."
+  },
+  "portInvalid": {
+    "message": "El puerto debe ser un entero entre 1024 y 65535."
+  },
+  "portSaved": {
+    "message": "Puerto del servidor local cambiado a:"
+  },
+  "portLocal": {
+    "message": "Solo se guardó el puerto de Chrome. Usa el mismo puerto en los ajustes de Stream Deck."
+  },
+  "invalid": {
+    "message": "Introduce un PIN de seis dígitos."
+  },
+  "checking": {
+    "message": "Comprobando conexión…"
+  },
+  "fail": {
+    "message": "Error de conexión."
+  },
+  "connected": {
+    "message": "Conectado · Abre o recarga YouTube Music."
+  },
+  "unknown": {
+    "message": "No se pudo comprobar la conexión."
+  },
+  "player": {
+    "message": "Conectado"
+  },
+  "app": {
+    "message": "aplicación"
+  },
+  "tab": {
+    "message": "pestaña del navegador"
+  },
+  "current": {
+    "message": "Reproduciendo"
+  },
+  "waiting": {
+    "message": "En espera"
+  },
+  "artwork": {
+    "message": "Portada del álbum"
+  },
+  "coverMissing": {
+    "message": "No se encontró la URL de la portada en la página"
+  },
+  "coverBlocked": {
+    "message": "El servidor de la portada no está permitido"
+  },
+  "coverReady": {
+    "message": "Lista para mostrar"
+  },
+  "coverDownloading": {
+    "message": "Descargando imagen"
+  },
+  "coverWaiting": {
+    "message": "Esperando imagen"
+  },
+  "coverFailed": {
+    "message": "Error al descargar la imagen"
+  },
+  "stale": {
+    "message": "El reproductor tarda en responder. Comprueba el ahorro de memoria de Chrome."
+  },
+  "paired": {
+    "message": "Vinculado · Abre o recarga una ventana de YouTube Music."
+  },
+  "removed": {
+    "message": "Desvinculado. Introduce un PIN nuevo para volver a conectar."
+  },
+  "extensionName": {
+    "message": "Music Deck Bridge"
+  },
+  "extensionShortName": {
+    "message": "Music Deck Bridge"
+  },
+  "extensionDescription": {
+    "message": "Controla YouTube Music desde Elgato Stream Deck con una extensión de Chrome."
+  },
+  "notPaired": {
+    "message": "No hay credenciales de vinculación. Si reinstalaste la extensión, genera un PIN nuevo en los ajustes de la acción de Stream Deck y vuelve a vincularla. Si usas un puerto personalizado, debe coincidir en ambos lados."
+  },
+  "subtitle": {
+    "message": "Para YouTube Music · Integración con Stream Deck"
+  },
+  "unpairFailed": {
+    "message": "No se pudo desvincular. Inicia Stream Deck, comprueba el puerto e inténtalo de nuevo."
+  },
+  "updatePlugin": {
+    "message": "Los protocolos de conexión son incompatibles. Actualiza el complemento de Stream Deck."
+  },
+  "updateExtension": {
+    "message": "Los protocolos de conexión son incompatibles. Actualiza la extensión de Chrome."
+  },
+  "protocolInvalid": {
+    "message": "Información de compatibilidad no válida. Actualiza ambos componentes y vuelve a comprobarlo."
+  },
+  "pluginLabel": {
+    "message": "Complemento"
+  },
+  "extensionLabel": {
+    "message": "Extensión"
+  },
+  "protocolLabel": {
+    "message": "Protocolo"
+  },
+  "legacyProtocol": {
+    "message": "conexión antigua"
+  },
+  "nowPlayingLabel": {
+    "message": "Reproduciendo"
+  },
+  "playerWaiting": {
+    "message": "Esperando a YouTube Music"
+  },
+  "settingsSummary": {
+    "message": "Conexión con Stream Deck"
+  },
+  "connectionStatusLabel": {
+    "message": "Estado de conexión con Stream Deck"
+  },
+  "previous": {
+    "message": "Canción anterior"
+  },
+  "next": {
+    "message": "Canción siguiente"
+  },
+  "play": {
+    "message": "Reproducir"
+  },
+  "pause": {
+    "message": "Pausar"
+  },
+  "likeLabel": {
+    "message": "Me gusta"
+  },
+  "dislikeLabel": {
+    "message": "No me gusta"
+  },
+  "controlFailed": {
+    "message": "No se pudo confirmar el comando. Comprueba YouTube Music antes de volver a intentarlo."
+  },
+  "controlChanged": {
+    "message": "La canción seleccionada ha cambiado. Inténtalo de nuevo con la canción actual."
+  },
+  "controlUpdate": {
+    "message": "Actualiza el complemento de Stream Deck para usar estos controles."
+  },
+  "volumeLabel": {
+    "message": "Volumen"
+  },
+  "mute": {
+    "message": "Silenciar"
+  },
+  "unmute": {
+    "message": "Activar sonido"
+  },
+  "uiLanguageCode": {
+    "message": "es"
+  }
+}
