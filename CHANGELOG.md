@@ -2,6 +2,8 @@
 
 ## v1.2.0-dev — Unreleased
 
+- Share artwork URL admission across metadata extraction, standalone/popup display and plugin downloads; apply the existing credential/port restrictions consistently at extraction. Verify popup dependencies from the actual HTML script graph.
+
 - Retarget the unreleased 1.1.4 development work to 1.2.0 at maintainer request.
 - Add a popup player with cached album artwork, track/artist, observed play/pause and like/dislike state, Previous/Next, rating, mute/unmute and an absolute 0–100 volume slider. Connected control uses the existing authenticated command channel. Bind requests to the displayed player/track; keep Pause available during pending navigation.
 - Remove baked corner rounding from device key/state backgrounds; retain the brand/store marks and circular popup presentation.

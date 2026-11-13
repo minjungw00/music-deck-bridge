@@ -72,6 +72,10 @@ for (const [, argumentsText] of workerSource.matchAll(/importScripts\(([\s\S]*?)
   for (const [, file] of argumentsText.matchAll(/['"]([^'"]+)['"]/g)) await exists(join(extension, file));
 }
 
+// Follow popup script references so extracted controllers cannot be omitted.
+const popupSource = await readFile(join(extension, chrome.action.default_popup), 'utf8');
+for (const [, file] of popupSource.matchAll(/<script src="([^"]+)"><\/script>/g)) await exists(join(extension, file));
+
 // This is a basic accidental-secret check, not a replacement for GitHub secret scanning.
 const skip = new Set(['.git', 'node_modules', 'dist', '.venv', '__pycache__', 'coverage']);
 async function walk(dir) {

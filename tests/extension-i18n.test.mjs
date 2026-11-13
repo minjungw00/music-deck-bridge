@@ -1,11 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import vm from 'node:vm';
+import { loadPopup } from './helpers/popup.mjs';
 import { createRequire } from 'node:module';
 const { resolve } = createRequire(import.meta.url)('../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/property-inspector/language.js');
 
-const source = readFileSync(new URL('../chrome-extension/popup.js', import.meta.url), 'utf8');
 const english = JSON.parse(readFileSync(new URL('../chrome-extension/_locales/en/messages.json', import.meta.url)));
 
 for (const locale of ['en', 'ko', 'zh-CN', 'zh-TW', 'ja', 'es', 'fr', 'de', 'pt-BR']) {
@@ -38,7 +37,7 @@ for (const locale of ['en', 'ko', 'zh-CN', 'zh-TW', 'ja', 'es', 'fr', 'de', 'pt-
       } },
     };
     const document = { documentElement: {}, getElementById: element };
-    vm.runInNewContext(source, { chrome, document, setInterval: () => 1, clearInterval() {},
+    loadPopup({ chrome, document, setInterval: () => 1, clearInterval() {},
       window: { addEventListener() {} } });
     // Drain startup status/port promises before exercising user input.
     await new Promise(resolve => setImmediate(resolve));

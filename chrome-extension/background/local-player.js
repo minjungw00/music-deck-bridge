@@ -5,13 +5,7 @@
     const native = MusicDeckBrowserChannel.create({ chrome, client: { blocked: () => false }, contentScripts });
     let sequence = 0;
     const clean = value => String(value || '').replace(/[\x00-\x1f\x7f]/g, ' ').trim().slice(0, 180);
-    function cover(source) {
-      try {
-        const url = new URL(source);
-        return url.protocol === 'https:' && !url.username && !url.password && !url.port &&
-          /^(?:i\.ytimg\.com|img\.youtube\.com|yt3\.ggpht\.com|yt3\.googleusercontent\.com|lh\d+\.googleusercontent\.com)$/.test(url.hostname) ? url.href : '';
-      } catch { return ''; }
-    }
+    const cover = source => root.MusicDeckArtworkPolicy.parse(source)?.href || '';
     async function snapshot(tab) {
       if (!Number.isInteger(tab.id) || tab.discarded || tab.frozen) return null;
       const target = { tabId: tab.id, frameIds: [0] };
@@ -19,7 +13,7 @@
         globalThis.MusicDeckContentMetadata?.create({ document, window, location, navigator }).current() || null });
       let data = (await read())[0]?.result;
       if (!data) {
-        await chrome.scripting.executeScript({ target, world: 'ISOLATED', files: ['content/metadata.js'] });
+        await chrome.scripting.executeScript({ target, world: 'ISOLATED', files: ['artwork-policy.js', 'content/metadata.js'] });
         data = (await read())[0]?.result;
       }
       if (!data?.title) return null;

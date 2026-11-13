@@ -1,6 +1,6 @@
 'use strict';
 // Classic MV3 composition root. The modules expose factories without starting work on import.
-if (typeof importScripts === 'function') importScripts('protocol.js',
+if (typeof importScripts === 'function') importScripts('protocol.js', 'artwork-policy.js',
   'background/bridge-client.js', 'background/browser-channel.js',
   'background/player-playback.js', 'background/page-controls.js', 'background/local-player.js', 'background/management-service.js',
   'background/player-sync-service.js', 'background/message-router.js');

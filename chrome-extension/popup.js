@@ -85,9 +85,8 @@ function clearArtwork() {
 async function loadArtwork(player, key, revision) {
   try {
     if (player.mode === 'local') {
-      const url = new URL(player.coverKey);
-      if (url.protocol !== 'https:' || url.username || url.password || url.port ||
-          !/^(?:i\.ytimg\.com|img\.youtube\.com|yt3\.ggpht\.com|yt3\.googleusercontent\.com|lh\d+\.googleusercontent\.com)$/.test(url.hostname)) return;
+      const url = MusicDeckArtworkPolicy.parse(player.coverKey);
+      if (!url) return;
       $('artwork').src = url.href;
       $('artwork').hidden = false;
       $('coverFallback').hidden = true;

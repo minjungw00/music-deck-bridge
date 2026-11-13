@@ -212,3 +212,5 @@ Artwork downloads validate the HTTPS host, each redirect, content type and a 2 M
 The plugin UUID is `io.github.minjungw00.musicdeckbridge`; action UUIDs append an action name, such as `.nowplaying` or `.volume`. The package folder is `io.github.minjungw00.musicdeckbridge.sdPlugin`. Authentication and port configuration are stored under `%APPDATA%\MusicDeckBridge`.
 
 See [release checks](development.md#release-checklist) for distribution requirements.
+
+Artwork URL admission is shared by the content reader, standalone player, popup and plugin cache in `chrome-extension/artwork-policy.js`. It accepts only HTTPS Google/YouTube image hosts without credentials or a custom port. The plugin additionally bounds raster format, size and redirects. Popup fixtures and preview generation follow the HTML script order, and packaging checks cover every referenced script.

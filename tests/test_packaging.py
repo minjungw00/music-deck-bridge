@@ -51,6 +51,10 @@ class PackagingTests(unittest.TestCase):
                 for module in re.findall(r"['\"]([^'\"]+)['\"]", arguments):
                     self.assertIn(module, names, f"Missing worker dependency: {module}")
                     self.assertEqual(bundle.read(module), (self.root / "chrome-extension" / module).read_bytes())
+            popup = bundle.read(manifest["action"]["default_popup"]).decode("utf-8")
+            for module in re.findall(r'<script src="([^"]+)"', popup):
+                self.assertIn(module, names, f"Missing popup dependency: {module}")
+                self.assertEqual(bundle.read(module), (self.root / "chrome-extension" / module).read_bytes())
             for script in manifest["content_scripts"]:
                 for module in script["js"]:
                     self.assertIn(module, names, f"Missing content dependency: {module}")

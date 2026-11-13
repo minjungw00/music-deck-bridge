@@ -1,12 +1,6 @@
 'use strict';
-const COVERS = new Set(['i.ytimg.com', 'img.youtube.com', 'yt3.ggpht.com', 'yt3.googleusercontent.com']);
-function validCover(str) {
-  try {
-    const u = new URL(str);
-    return u.protocol === 'https:' && !u.username && !u.password && !u.port &&
-      (COVERS.has(u.hostname) || /^lh[0-9]+\.googleusercontent\.com$/.test(u.hostname));
-  } catch { return false; }
-}
+const artwork = require('../../../chrome-extension/artwork-policy.js');
+const validCover = source => artwork.parse(source) !== null;
 async function fetchCover(source, fetch = globalThis.fetch) {
   // Reject redirects off Google/YouTube image hosts; do not follow to arbitrary targets.
   let url = source;

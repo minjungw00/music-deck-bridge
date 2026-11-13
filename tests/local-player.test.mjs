@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
+import artwork from '../chrome-extension/artwork-policy.js';
 import { readFileSync } from 'node:fs';
 
 function harness() {
@@ -17,7 +18,7 @@ function harness() {
     if (options.world === 'MAIN') return [{ result: { playing: state.playing, muted: state.muted === true } }];
     return [{ result: state }];
   } } };
-  const context = vm.createContext({ chrome, URL, Date, MusicDeckBrowserChannel: { create: () => ({ async perform(command, allowed) {
+  const context = vm.createContext({ chrome, URL, Date, MusicDeckArtworkPolicy: artwork, MusicDeckBrowserChannel: { create: () => ({ async perform(command, allowed) {
     assert.equal(service.controlling(command.preferredTabId), true);
     inputs.push(command); beforeDispatch();
     return allowed(true);

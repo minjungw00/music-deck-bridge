@@ -1,9 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import vm from 'node:vm';
+import { loadPopup } from './helpers/popup.mjs';
 
-const source = readFileSync(new URL('../chrome-extension/popup.js', import.meta.url), 'utf8');
 const flush = async () => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
 const compatibility = { pluginVersion: '1.1.2-dev', extensionVersion: '1.1.2-dev', negotiatedProtocolVersion: 1 };
 
@@ -29,7 +27,7 @@ function harness({ local = { ok: true, active: false, mode: 'local' } } = {}) {
     } },
   };
   const document = { hidden: false, documentElement: {}, getElementById: element };
-  vm.runInNewContext(source, { chrome, document,
+  loadPopup({ chrome, document,
     setInterval(run, delay) { assert.equal(delay, 1000); timers.set(++nextTimer, run); return nextTimer; },
     clearInterval(id) { timers.delete(id); },
     window: { addEventListener(type, run) { windowHandlers[type] = run; } },

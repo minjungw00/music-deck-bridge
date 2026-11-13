@@ -1,11 +1,7 @@
 'use strict';
 (function (root) {
   function createMetadataReader({ document, window, location, navigator }) {
-    const KNOWN_IMAGE_HOST = /^(?:i\.ytimg\.com|img\.youtube\.com|yt3\.ggpht\.com|yt3\.googleusercontent\.com|lh\d+\.googleusercontent\.com)$/;
-    function eligibleArt(url) {
-      try { const u = new URL(url, location.href); return u.protocol === 'https:' && KNOWN_IMAGE_HOST.test(u.hostname); }
-      catch { return false; }
-    }
+    const eligibleArt = source => root.MusicDeckArtworkPolicy.parse(source, location.href) !== null;
     function media() {
       const all = [...document.querySelectorAll('video, audio')];
       return all.find(el => el.readyState > 0 && !el.paused) ||

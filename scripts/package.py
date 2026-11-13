@@ -21,7 +21,7 @@ def stage(component, output):
     # Explicit allowlists keep personal files, keys and runtime data out of artifacts.
     files = ["manifest.json"]
     folders = [] if component == "chrome" else ["imgs"]
-    files += (["background.js", "protocol.js",
+    files += (["background.js", "protocol.js", "artwork-policy.js",
                "background/bridge-client.js", "background/browser-channel.js",
                "background/player-playback.js", "background/page-controls.js", "background/local-player.js", "background/message-router.js",
                "background/management-service.js", "background/player-sync-service.js",

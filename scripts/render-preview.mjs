@@ -24,7 +24,8 @@ const pkg = await json('package.json');
 const manifest = await json('chrome-extension/manifest.json');
 const protocol = require('../chrome-extension/protocol.js');
 const template = await readFile(join(root, 'chrome-extension/popup.html'), 'utf8');
-const popupJS = await readFile(join(root, 'chrome-extension/popup.js'), 'utf8');
+const popupScripts = await Promise.all([...template.matchAll(/<script src="([^"]+)"><\/script>/g)]
+  .map(async ([tag, path]) => [tag, await readFile(join(root, 'chrome-extension', path), 'utf8')]));
 const fixtureJS = await readFile(join(root, 'store-assets/preview/popup-fixture.js'), 'utf8');
 const scriptJSON = value => JSON.stringify(value).replaceAll('<', '\\u003c');
 const inline = value => value.replaceAll(/<\/script/gi, '<\\/script');
@@ -55,8 +56,9 @@ for (const locale of ['en', 'ko']) {
     settings.controlIcons[path] = 'data:image/png;base64,' + (await readFile(join(root, 'chrome-extension', path))).toString('base64');
     popupTemplate = popupTemplate.replaceAll(`src="${path}"`, `src="${settings.controlIcons[path]}"`);
   }
-  data.popups[locale] = popupTemplate
-    .replace('<script src="popup.js"></script>', `<script>const previewFixture=${scriptJSON(settings)};\n${inline(fixtureJS)}\n${inline(popupJS)}</script>`);
+  for (const [tag, source] of popupScripts) popupTemplate = popupTemplate.replace(tag, `<script>${inline(source)}</script>`);
+  data.popups[locale] = popupTemplate.replace('<script>',
+    `<script>const previewFixture=${scriptJSON(settings)};\n${inline(fixtureJS)}\n`);
 }
 // Bundle the presentation API without importing the plugin's runtime entry point.
 const bundle = await build({ entryPoints: [join(root, 'streamdeck/src/presentation/renderer.cjs')],
