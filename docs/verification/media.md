@@ -1,6 +1,6 @@
 # Product image verification
 
-Evidence date: October 18, 2026 (Asia/Seoul). The maintainer selected the actual Stream Deck capture and two popup renderings as official source images. Store upload inventories and regeneration commands are in the [Chrome](../../store-assets/chrome/README.md) and [Marketplace](../../store-assets/elgato/README.md) guides.
+Source/store evidence: October 18, 2026; development key-background evidence: November 13, 2026 (Asia/Seoul). The maintainer selected the actual Stream Deck capture and two popup renderings as official source images. Store upload inventories and regeneration commands are in the [Chrome](../../store-assets/chrome/README.md) and [Marketplace](../../store-assets/elgato/README.md) guides.
 
 ## Source provenance
 
@@ -30,3 +30,9 @@ All **16 export PNGs** were checked for dimensions/mode and visually inspected. 
 The [root README thumbnail](../../store-assets/elgato/listing/thumbnail-1920x960.png) shares the Marketplace export; SHA-256 `a985e3deb2b01353492b68a7c3ee2a0517b04a4ff6e83c0adb6389874caf25e1`. Regenerate via `node scripts/render-elgato-store.mjs`. Cross-store variants use the source renderer's `--for chrome` or `--for elgato` option.
 
 These local files do not identify which media were uploaded. Actual submission provenance is tracked in [store submissions](stores.md); earlier per-export checksum inventories remain in Git history.
+
+## Development key backgrounds
+
+On November 13, the 1.2.0-dev renderer changed 24 device key/state PNGs and their ten matching popup copies to full-canvas square dark backgrounds. Pillow 12.0.0 generated candidates in a separate temporary directory before application. Decoded central 75% rectangles, covering the disc and symbol, matched the preceding images exactly; all 26 other generated brand/store/monochrome assets matched byte-for-byte. Existing submitted media, source captures, published packages and earlier development folders were preserved.
+
+An actual Chromium rendering of the cropped popup control row was byte-identical before/after the PNG replacement. The eight asset tests and two Python packaging tests passed, including opaque device-key corners, preserved monochrome/brand transparency, state glyphs, exact popup-copy equality and package bytes. This validates asset geometry and packaging; no physical keycap-radius match or new device operation is claimed.

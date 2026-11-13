@@ -41,7 +41,7 @@ The [Marketplace media renderer](../scripts/render-elgato-store.mjs) copies the 
 
 ## Action icons
 
-All ten actions use the main icon's circular badge, gradient magenta, white symbol and dark rounded surface. Now Playing uses the main play-disc mark; the other actions use recognizable playback, speaker/mute, dial, launch and thumb symbols.
+All ten actions use the main icon's circular badge, gradient magenta and white symbol on an edge-to-edge dark square key surface. Device key images do not bake in a corner radius; the representative brand and store icons retain their rounded design. Now Playing uses the main play-disc mark; the other actions use recognizable playback, speaker/mute, dial, launch and thumb symbols.
 
 | Action | Key preview |
 | --- | --- |
@@ -53,7 +53,7 @@ All ten actions use the main icon's circular badge, gradient magenta, white symb
 | Volume Dial | ![Volume Dial](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/volume/key.png) |
 | Current Track Dial | ![Current Track Dial](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/toggle/key.png) |
 
-Each family has a 72px key and 144px @2x key. The 20px/40px action-list badges use white with transparent symbol cutouts so they remain monochrome on Stream Deck's dark UI. All action exports use 4× supersampling before downsampling. The Chrome popup uses the same dark background, a deep-magenta primary button for white-text contrast and a magenta keyboard-focus outline. The property inspector retains the host's neutral SDPI style.
+Each family has a 72px key and 144px @2x key. The 20px/40px action-list badges use white with transparent symbol cutouts so they remain monochrome on Stream Deck's dark UI. All action exports use 4× supersampling before downsampling. Key and state PNGs have opaque corners; monochrome action-list badges retain transparent corners. Popup controls use matching 144px copies and display only the circular disc, preserving their round appearance. The Chrome popup uses the same dark background, a deep-magenta primary button for white-text contrast and a magenta keyboard-focus outline. The property inspector retains the host's neutral SDPI style.
 
 ### Playback and rating states
 
@@ -87,10 +87,10 @@ Run the normal [development checks](development.md#local-checks):
 
 | Check | Coverage |
 | --- | --- |
-| `tests/brand-assets.test.mjs` | Brand/store PNG dimensions, RGBA, transparent corners, palette, small play triangles and manifest references; 36 base action PNGs, symbols, monochrome cutouts and playback/rating variants at both key sizes |
+| `tests/brand-assets.test.mjs` | Brand/store PNG dimensions, RGBA, transparent corners, palette, small play triangles and manifest references; 36 base action PNGs, square device-key surfaces, monochrome cutouts and playback/rating variants at both key sizes |
 | Python packaging tests | Chrome ZIP and Stream Deck staging preserve the PNG bytes, including pause and selected-rating images |
 
-The Node checks use only the standard library. Current Track Dial shares the Play / Pause icon family. The generator produces 50 assets, including the store app icon and six additional state PNGs. Pillow is needed only for regeneration.
+The Node checks use only the standard library. Current Track Dial shares the Play / Pause icon family. The generator produces 60 assets, including the store app icon, six additional state PNGs and ten matching popup control copies. Pillow is needed only for regeneration.
 
 ## License and attribution
 

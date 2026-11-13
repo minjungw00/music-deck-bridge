@@ -9,7 +9,7 @@ DARK = "#151923"
 WHITE = "#FFFFFF"
 
 
-def brand_canvas(size, background):
+def brand_canvas(size, background, square_background=False):
     from PIL import Image, ImageDraw
 
     # Supersample curved edges even for the 512px export.
@@ -20,7 +20,11 @@ def brand_canvas(size, background):
     mask = Image.new("L", image.size)
     draw_mask = ImageDraw.Draw(mask)
     if background:
-        draw_mask.rounded_rectangle(box((8, 8, 504, 504)), radius=96 * scale, fill=255)
+        if square_background:
+            # Device key artwork fills its canvas; do not bake a guessed keycap radius.
+            draw_mask.rectangle((0, 0, *canvas), fill=255)
+        else:
+            draw_mask.rounded_rectangle(box((8, 8, 504, 504)), radius=96 * scale, fill=255)
         # Gentle upper-left light, keeping the small-size background flat.
         surface = Image.new("RGBA", (512, 512), DARK)
         if size > 48:
@@ -46,10 +50,10 @@ def brand_canvas(size, background):
     return image, scale
 
 
-def render_brand(size, background):
+def render_brand(size, background, square_background=False):
     from PIL import Image, ImageDraw
 
-    image, scale = brand_canvas(size, background)
+    image, scale = brand_canvas(size, background, square_background)
     box = lambda values: tuple(value * scale for value in values)
     draw = ImageDraw.Draw(image)
     ink = "white" if background else (0, 0, 0, 0)
@@ -76,12 +80,12 @@ def render_brand(size, background):
     return image.resize((size, size), Image.Resampling.LANCZOS)
 
 
-def render(kind, size, background):
+def render(kind, size, background, square_background=False):
     from PIL import Image, ImageDraw
 
     if kind in ("brand", "nowplaying"):
-        return render_brand(size, background)
-    image, scale = brand_canvas(size, background)
+        return render_brand(size, background, square_background)
+    image, scale = brand_canvas(size, background, square_background)
     box = lambda values: tuple(value * scale for value in values)
     # Use one circular badge and the same palette/surface as the main icon.
     # A mask makes action-list glyphs transparent cutouts in the white badge.
@@ -162,16 +166,16 @@ def main():
     for kind in ("nowplaying", "toggle", "prev", "next", "mute", "volume", "open", "like", "dislike"):
         for name, size, background in [("icon", 20, False), ("key", 72, True)]:
             for suffix, scale in [("", 1), ("@2x", 2)]:
-                outputs[f"{plugin}/actions/{kind}/{name}{suffix}.png"] = (kind, size * scale, background)
+                outputs[f"{plugin}/actions/{kind}/{name}{suffix}.png"] = (kind, size * scale, background, background)
     for suffix, scale in [("", 1), ("@2x", 2)]:
-        outputs[f"{plugin}/actions/toggle/pause{suffix}.png"] = ("pause", 72 * scale, True)
+        outputs[f"{plugin}/actions/toggle/pause{suffix}.png"] = ("pause", 72 * scale, True, True)
         for kind in ("like", "dislike"):
-            outputs[f"{plugin}/actions/{kind}/selected{suffix}.png"] = (kind + "_selected", 72 * scale, True)
+            outputs[f"{plugin}/actions/{kind}/selected{suffix}.png"] = (kind + "_selected", 72 * scale, True, True)
     # Popup buttons reuse the same 2x key artwork, including observed states.
     for name, kind in {"previous": "prev", "play": "toggle", "pause": "pause", "next": "next",
                        "like": "like", "like-selected": "like_selected", "dislike": "dislike",
                        "dislike-selected": "dislike_selected", "mute": "mute", "volume": "volume"}.items():
-        outputs[f"chrome-extension/icons/controls/{name}.png"] = (kind, 144, True)
+        outputs[f"chrome-extension/icons/controls/{name}.png"] = (kind, 144, True, True)
     for name, spec in outputs.items():
         target = args.output_root / name
         target.parent.mkdir(parents=True, exist_ok=True)

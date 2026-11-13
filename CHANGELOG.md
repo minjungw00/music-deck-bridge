@@ -4,6 +4,7 @@
 
 - Retarget the unreleased 1.1.4 development work to 1.2.0 at maintainer request.
 - Add a popup player with cached album artwork, track/artist, observed play/pause and like/dislike state, Previous/Next, rating, mute/unmute and an absolute 0–100 volume slider. Connected control uses the existing authenticated command channel. Bind requests to the displayed player/track; keep Pause available during pending navigation.
+- Remove baked corner rounding from device key/state backgrounds; retain the brand/store marks and circular popup presentation.
 - Reuse the exact Stream Deck PNG icons, including playback, rating and mute states; show only their circular area and give rating buttons the same layout as transport buttons.
 - Group connection settings in a collapsible section, align PIN/port guidance under matching headers and add explicit Stream Deck connection headers. Place the optional plugin guidance above PIN pairing.
 - Support standalone popup control through the same Chrome playback/volume engine without another server or token; keep the healthy paired bridge path and normal state synchronization after reconnection. Do not automatically resend failed commands through another path.

@@ -66,6 +66,14 @@ async function png(path) {
   return { width, height, pixel, at: (x, y) => pixel(Math.floor(x * width), Math.floor(y * height)) };
 }
 
+function squareKeySurface(image, path) {
+  for (const [x, y] of [[0, 0], [image.width - 1, 0], [0, image.height - 1], [image.width - 1, image.height - 1]]) {
+    const [r, g, b, alpha] = image.pixel(x, y);
+    assert.equal(alpha, 255, `${path}: key background must fill the corner`);
+    assert.ok(Math.max(r, g, b) < 45, `${path}: corner must use the dark key surface`);
+  }
+}
+
 test('brand and store PNGs have the required dimensions, alpha and safe corner margins', async () => {
   for (const [path, size] of [...assets, ['store-assets/elgato/app-icon.png', 288]]) {
     const image = await png(path);
@@ -150,7 +158,8 @@ test('action icons share the brand palette with distinct glyphs and monochrome l
       const image = await png(path);
       assert.equal(image.width, size, path);
       assert.equal(image.height, size, path);
-      assert.ok(image.pixel(0, 0)[3] <= 4, `${path}: clipped corner`);
+      if (colored) squareKeySurface(image, path);
+      else assert.ok(image.pixel(0, 0)[3] <= 4, `${path}: clipped monochrome badge`);
       let white = 0, magenta = 0, cutout = 0;
       for (let y = 0; y < size; y++) {
         for (let x = 0; x < size; x++) {
@@ -181,6 +190,7 @@ test('toggle artwork shows a single play symbol or two pause bars, never both to
       const image = await png(path);
       assert.equal(image.width, size, path);
       assert.equal(image.height, size, path);
+      squareKeySurface(image, path);
       let runs = 0, previousWhite = false;
       for (let x = Math.ceil(size * 0.27); x < size * 0.73; x++) {
         const [r, g, b, a] = image.pixel(x, Math.floor(size * 0.492));
@@ -200,6 +210,8 @@ test('rating selection fills the thumb while preserving the shared brand surface
       const selected = await png(`${plugin}imgs/actions/${kind}/selected${suffix}.png`);
       assert.equal(normal.width, selected.width);
       assert.equal(normal.height, selected.height);
+      squareKeySurface(normal, `${kind} key${suffix}`);
+      squareKeySurface(selected, `${kind} selected${suffix}`);
       const white = image => {
         let count = 0;
         for (let y = 0; y < image.height; y++) for (let x = 0; x < image.width; x++) {
