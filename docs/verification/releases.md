@@ -1,6 +1,24 @@
 # Release verification
 
-Publication evidence updated October 29, 2026 (Asia/Seoul). The [latest-release API](https://api.github.com/repos/minjungw00/music-deck-bridge/releases/latest) identifies v1.1.3 as non-draft/non-prerelease. Store submissions are recorded [separately](stores.md).
+Publication evidence updated November 14, 2026 (Asia/Seoul). The [latest-release API](https://api.github.com/repos/minjungw00/music-deck-bridge/releases/latest) identifies v1.2.0 as non-draft/non-prerelease. Store submissions are recorded [separately](stores.md).
+
+## v1.2.0
+
+[Published](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.2.0) November 14 at 00:42:50 KST through the explicitly authorized direct GitHub path. Annotated tag `v1.2.0` (`ed46318b90ec99f2265baac455c6f679df6ae792`) resolves to source `ff139a755b25d36fc103799fa58956789808cb82`. Source/Chrome **1.2.0**, plugin **1.2.0.0**, protocol **1**. The development label was removed without selecting another cycle.
+
+Scope: live popup controls/artwork, token-free standalone control using the shared Chrome engine, volume slider/mute, Volume Up / Down keys and configurable numeric feedback, PIN/setup layout, eight-language UI and localization fixes, shared artwork admission and volume-state refactoring. Release notes retain outstanding real-site/device/native-startup/DRM coverage and the local short-deadline fixture observations; [runtime evidence](runtime.md#november-14-stable-release-checks) separates the measured clock jumps from the unproven failure cause. No 1.2.0 store submission was performed.
+
+[Exact-source CI 43454249656](https://github.com/minjungw00/music-deck-bridge/actions/runs/43454249656) passed on Windows and Ubuntu: 288 Node tests, two Python packaging tests, static checks, zero reported npm audit vulnerabilities and official Elgato validation/packaging on each OS. Ubuntu also passed three Chromium fixtures (MV3 player, eight native popup catalogs and 64 inspector locale/action/settings combinations). Local stable-source static/audit/Python/browser checks passed; its first full Node run passed 286/288, followed by five passing targeted wall-clock and monotonic-clock comparisons. This is not recorded as a passing local full stable-source Node run.
+
+Both downloaded CI artifacts matched GitHub's outer-archive digests, source/run/version metadata and internal checksums. All 76 plugin / 44 extension payload files matched the source and each other across OSes, comparing the CLI-normalized manifest as JSON. CI metadata is retained separately and excluded from the three release assets. The release preserves the Windows CI archive bytes.
+
+All three files downloaded from the draft matched the prepared inventory before publication. Authenticated latest-release metadata then reported `draft: false`, `prerelease: false`; anonymous public downloads matched all three prepared files byte-for-byte and passed the release checksum verifier. Previous public tags/assets, submitted packages, delivered development folders and existing previews remain preserved. Repository [security settings and open alerts](../security-readiness.md) were rechecked without changing settings. Store publication and physical installation results remain separate.
+
+| Public asset | Bytes | SHA-256 |
+| --- | --- | --- |
+| `io.github.minjungw00.musicdeckbridge.streamDeckPlugin` | 548994 | `e60149ca97452c8cb5a5690f468b2b51d75e4fa2dc8a93ad4883e676ddc5acb9` |
+| `music-deck-bridge-chrome-1.2.0.zip` | 160154 | `a7ffb9eefe5d813da5232dca6a7f00144bfc6a2d977cbdb1917921d8b4ee6b79` |
+| `SHA256SUMS.txt` | 221 | `94c2cee7dac2465c28a3306fe0d106cfdce4a4870dd6944cd7fcc006894d3fca` |
 
 ## v1.1.3
 
