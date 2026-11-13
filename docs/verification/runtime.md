@@ -1,11 +1,12 @@
 # Runtime verification
 
-Evidence through November 13, 2026 (Asia/Seoul). [Release verification](releases.md) holds published source, CI and package hashes. This record separates local models, maintainer reports and independently observed operation.
+Evidence through November 14, 2026 (Asia/Seoul). [Release verification](releases.md) holds published source, CI and package hashes. This record separates local models, maintainer reports and independently observed operation.
 
 ## Current evidence
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
+| November 14 code review / refactor | Final full run: 288 Node tests, two Python packaging tests, static checks and three Chromium fixtures passed; generated English/Korean sample previews loaded their extracted modules and accepted volume input | An initial Node run failed one unchanged startup-retry case; baseline/current isolated comparisons and the full rerun passed. Cause unresolved. Local models; no new real-site, hardware or Windows observation |
 | November 13 standalone popup / slider revision | 256 Node tests, two Python packaging tests, static checks and Chromium 156.0.8078.4 MV3 integration passed. The toolbar popup controlled the local player with the plugin process stopped and no stored pairing token, then matched playing/rating/volume/mute state after restoring the existing pair and restarting the plugin | Local HTTPS player model. Direct artwork loading, circular layout and optional setup use labeled sample renders; no signed-in Music, physical-device or Windows observation |
 | November 13 local 1.2.0-dev popup controls | 249 Node tests, two Python packaging tests, static checks and Chromium 156.0.8078.4 MV3 integration passed. The actual toolbar popup exercised Play/Pause, Previous/Next, Like/Dislike, volume and mute through the authenticated bridge and reflected observed fixture state | Local HTTPS player model. Artwork cache/identity is exercised with a controlled cache; image decoding and layout use explicitly labeled sample data. No signed-in YouTube Music, physical Stream Deck or Windows observation |
 | November 13 local 1.1.4-dev popup update | 226 Node tests, two Python packaging tests, syntax/resources/versions and Chromium 156.0.8078.4 MV3 integration passed. The actual toolbar popup displayed changed fixture metadata without reopening or a Status click | Local HTTPS player model; no signed-in YouTube Music, physical Stream Deck or Windows observation |
@@ -28,8 +29,22 @@ The November 7 `main` run used `@elgato/streamdeck` 3.0.4, `@elgato/cli` 1.10.4 
 | Playback | Cold-tab inputs, delayed readiness, ignored startup/destination Play, one navigation click, bounded recovery, later Pause, supersession and receiver replacement |
 | Connection | Pairing persistence/order, removed credentials, browser/per-tab polling, native-launch decisions, player selection and protocol blocking/recovery |
 | Key/dial output | Settings, profile reappearance, rotation/press/touch, proportional artwork, artist placement, backdrops and scrolling; Qt 6.10.3 reference rendering |
-| Popup | English/Korean sample responses at 290 CSS px; 80×36 buttons, 28px heading icon and no overflow |
+| Popup | Real toolbar controls, captured routes, slider coalescing/closure, native catalogs and button bounds in all eight UI languages; separately labeled sample previews |
 | Distribution | Real worker import graph, serialized MAIN entry point, package allowlists/notices, fixed development versions and source/checksum metadata |
+
+### November 14 code review and refactor
+
+Review covered plugin composition/domain models, session persistence and revocation, HTTP origin/authentication gates, command delivery and port lifecycle, artwork/cache and SDK output; extension worker routing, MAIN controls, content lifecycle/metadata, popup and inspector; build/version/packaging code and regression fixtures. The implemented changes address duplicated artwork admission and state ownership rather than a newly reproduced playback failure.
+
+- `artwork-policy.js` now supplies the same HTTPS image-host/credential/port validation to metadata, standalone selection, popup display and plugin downloads. Extraction previously checked only scheme/host; downstream restrictions now apply there too. Redirect/raster/size limits remain in the plugin adapter.
+- Per-key feedback owns command/snapshot joining, cancellation and expiry; the controller delivers inputs and the renderer consumes frames. Device captions are separate from drawing.
+- Popup volume editing/coalescing owns its captured player/track/route and closure cleanup. Added regressions cover dropping queued edits on close and preserving the original route through bridge recovery without replay. Fixtures, packaging checks and preview generation follow actual popup script references.
+
+Static checks, the final 288-test Node run, both Python packaging tests and all three Chromium fixtures passed. The browser checks used Chromium 156.0.8078.4 against a local HTTPS player model, real MV3 toolbar targets, real bundled SDPI components (64 locale/action/settings combinations) and eight native extension catalog profiles. Generated English/Korean previews were separately exercised with labeled sample replies and a sample cover in a temporary directory. No store asset or existing preview was replaced.
+
+The first full Node run passed 287/288 tests: `an autoplay block on a startup retry stops recovery without a toggle fallback` returned `playback-unconfirmed` after approximately 243 ms instead of `autoplay-blocked`. The playback function, test and player harness are unchanged by this revision. The same isolated test passed on the pre-refactor `a81d0c2` source and current source (approximately 1.13 s each); the subsequent full run passed 288/288. This comparison does not establish the cause or a playback fix; the initial intermittent outcome remains unresolved.
+
+Version/protocol, action identities, permissions and credential paths remain fixed. These are implementation and fixture results; actual YouTube Music, physical Stream Deck and Windows operation were not independently observed for this refactor.
 
 ### November 13 popup overflow and playback report
 
