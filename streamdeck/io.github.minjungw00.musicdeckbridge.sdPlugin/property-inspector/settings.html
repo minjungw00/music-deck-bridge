@@ -13,9 +13,10 @@
     .hidden { display: none !important; }
     .hint { margin: -3px 12px 14px 116px; color: #bbb; font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
     .status { padding-left: 116px; margin: 7px 10px 10px 0; line-height: 1.45; font-size: 11px; color: #e6e6e6; overflow-wrap: anywhere; }
-    #pinOutput { color: #fff; font: 600 15px ui-monospace, Consolas, monospace; letter-spacing: .12em; padding: 0 0 0 8px; }
+    #pinOutput { display: block; color: #fff; font: 600 15px ui-monospace, Consolas, monospace; letter-spacing: .12em; padding-top: 6px; }
+    #pinOutput:empty { display: none; }
     .inline { display: flex; align-items: center; gap: 8px; }
-    .connection-actions { flex-wrap: wrap; }
+    .connection-actions { flex-wrap: wrap; align-items: flex-start; }
     #stepLabel { color: #fff; font-variant-numeric: tabular-nums; min-width: 24px; }
     .port-input { width: 88px; min-width: 72px; }
     .connection { border-top: 1px solid #515151; padding-top: 10px; margin-top: 8px; }
@@ -118,7 +119,7 @@
   <section class="connection">
     <sdpi-item id="pinRow" label="Connection">
       <div class="inline connection-actions">
-        <div class="inline"><sdpi-button id="generatePin">Generate PIN</sdpi-button><output id="pinOutput" aria-live="polite"></output></div>
+        <div><sdpi-button id="generatePin">Generate PIN</sdpi-button><output id="pinOutput" aria-live="polite"></output></div>
         <sdpi-button id="installExtension">Install Chrome extension</sdpi-button>
       </div>
     </sdpi-item>
