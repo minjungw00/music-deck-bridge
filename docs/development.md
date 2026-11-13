@@ -68,7 +68,7 @@ See [code boundaries](architecture.md#code-boundaries) for module ownership, [pl
 
 ## Browser integration regression
 
-On Linux, install Chromium once, then run the actual MV3 fixture:
+On Linux, install Chromium once, then run the MV3 and property-inspector fixtures:
 
 ```sh
 npx playwright install --with-deps chromium
@@ -76,6 +76,8 @@ npm run test:browser
 ```
 
 OpenSSL generates an ephemeral test certificate. Ubuntu CI runs this check automatically.
+
+The inspector fixture loads the real bundled SDPI components and checks rendered labels in their Shadow DOM with a mock Stream Deck host. It covers fresh/saved settings and English/Korean without changing checkbox values to trigger rendering.
 
 The test uses a fresh temporary profile and local HTTPS fixture mapped to `music.youtube.com`. Certificate validation is disabled only in that test browser. It exercises real extension storage, authenticated loopback requests, cold-tab navigation, script injection, command/result messages and existing-tab reuse.
 

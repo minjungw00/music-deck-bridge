@@ -29,56 +29,63 @@ const editor = createVolumeEditor({
 });
 
 const t = key => strings[language][key];
+function setLabel(id, value) {
+  const element = $(id);
+  element.setAttribute('label', value);
+  // The bundled SDPI localized-label comparator misses changed labels. Force a
+  // render without changing value/defaults or causing a settings save.
+  element.requestUpdate?.();
+}
 function localize() {
   document.documentElement.lang = language;
-  $('titleModeRow').setAttribute('label', t('titleRow'));
+  setLabel('titleModeRow', t('titleRow'));
   $('optTruncate').textContent = t('truncate');
   $('optScroll').textContent = t('scroll');
   $('titleHint').textContent = t('titleHint');
-  $('keyTitleRow').setAttribute('label', t('artworkTitle'));
-  $('showTitle').setAttribute('label', t('artworkShowTitle'));
-  $('keyArtistRow').setAttribute('label', t('artworkArtist'));
-  $('showArtist').setAttribute('label', t('artworkShowArtist'));
-  $('keyBackgroundRow').setAttribute('label', t('artworkBackground'));
-  $('titleBackground').setAttribute('label', t('artworkShowBackground'));
+  setLabel('keyTitleRow', t('artworkTitle'));
+  setLabel('showTitle', t('artworkShowTitle'));
+  setLabel('keyArtistRow', t('artworkArtist'));
+  setLabel('showArtist', t('artworkShowArtist'));
+  setLabel('keyBackgroundRow', t('artworkBackground'));
+  setLabel('titleBackground', t('artworkShowBackground'));
   for (const [row, below, inline] of [['keyArtistPositionRow', 'optKeyArtistBelow', 'optKeyArtistInline'],
     ['artworkArtistPositionRow', 'optArtworkArtistBelow', 'optArtworkArtistInline']]) {
-    $(row).setAttribute('label', t('artistPosition'));
+    setLabel(row, t('artistPosition'));
     $(below).textContent = t('artistBelow'); $(inline).textContent = t('artistInline');
   }
-  $('dialDisplayRow').setAttribute('label', t('dialDisplayRow'));
+  setLabel('dialDisplayRow', t('dialDisplayRow'));
   $('optDialInfo').textContent = t('dialInfo');
   $('optDialArtwork').textContent = t('dialArtwork');
   $('dialDisplayHint').textContent = t('dialDisplayHint');
-  $('artworkFitRow').setAttribute('label', t('artworkFit'));
+  setLabel('artworkFitRow', t('artworkFit'));
   $('optArtworkWidth').textContent = t('artworkWidth');
   $('optArtworkHeight').textContent = t('artworkHeight');
   $('artworkFitHint').textContent = t('artworkFitHint');
-  $('artworkTitleRow').setAttribute('label', t('artworkTitle'));
-  $('artworkShowTitle').setAttribute('label', t('artworkShowTitle'));
-  $('artworkArtistRow').setAttribute('label', t('artworkArtist'));
-  $('artworkShowArtist').setAttribute('label', t('artworkShowArtist'));
-  $('artworkBackgroundRow').setAttribute('label', t('artworkBackground'));
-  $('artworkTitleBackground').setAttribute('label', t('artworkShowBackground'));
-  $('artworkTitleModeRow').setAttribute('label', t('artworkTitleMode'));
+  setLabel('artworkTitleRow', t('artworkTitle'));
+  setLabel('artworkShowTitle', t('artworkShowTitle'));
+  setLabel('artworkArtistRow', t('artworkArtist'));
+  setLabel('artworkShowArtist', t('artworkShowArtist'));
+  setLabel('artworkBackgroundRow', t('artworkBackground'));
+  setLabel('artworkTitleBackground', t('artworkShowBackground'));
+  setLabel('artworkTitleModeRow', t('artworkTitleMode'));
   $('optArtworkTruncate').textContent = t('truncate');
   $('optArtworkScroll').textContent = t('scroll');
-  $('volumeRow').setAttribute('label', t(volumeKey ? 'volumeKeyRow' : 'volumeRow'));
+  setLabel('volumeRow', t(volumeKey ? 'volumeKeyRow' : 'volumeRow'));
   $('volumeStep').setAttribute('aria-label', t(volumeKey ? 'volumeKeyRow' : 'volumeRow'));
   $('volumeHint').textContent = t(volumeKey ? 'volumeKeyHint' : 'volumeHint');
-  for (const id of ['volumeValueRow', 'volumePercentRow']) $(id).setAttribute('label', t(id));
-  for (const id of ['volumeShowValue', 'volumeShowPercent']) $(id).setAttribute('label', t(id));
-  $('feedbackDurationRow').setAttribute('label', t('feedbackDurationRow'));
+  for (const id of ['volumeValueRow', 'volumePercentRow']) setLabel(id, t(id));
+  for (const id of ['volumeShowValue', 'volumeShowPercent']) setLabel(id, t(id));
+  setLabel('feedbackDurationRow', t('feedbackDurationRow'));
   $('volumeFeedbackSeconds').setAttribute('aria-label', t('feedbackDurationRow'));
   $('feedbackDurationMin').textContent = `0${t('feedbackDurationUnit')}`;
   $('feedbackDurationMax').textContent = `3${t('feedbackDurationUnit')}`;
   $('feedbackDurationHint').textContent = t('feedbackDurationHint');
   $('installExtension').textContent = t('installExtension');
   $('companionHint').textContent = t('companionHint');
-  $('pinRow').setAttribute('label', t('pinRow'));
+  setLabel('pinRow', t('pinRow'));
   $('generatePin').textContent = t('generate');
   $('pairHint').textContent = t('pairHint');
-  $('portRow').setAttribute('label', t('portRow'));
+  setLabel('portRow', t('portRow'));
   $('applyPort').textContent = t('applyPort');
   if (!$('portStatus').dataset?.hasResult) $('portStatus').textContent = t('portHint');
   if (!currentStatus) $('pairState').textContent = t('checking');

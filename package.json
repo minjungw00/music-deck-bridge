@@ -14,7 +14,7 @@
   },
   "scripts": {
     "test": "node --test --test-concurrency=4 tests/*.test.mjs",
-    "test:browser": "node --test tests/browser/runtime.mjs",
+    "test:browser": "node --test tests/browser/*.mjs",
     "pretest:browser": "npm run build:plugin",
     "check": "node scripts/check.mjs",
     "build:chrome": "node scripts/package.mjs chrome",
