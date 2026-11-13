@@ -9,14 +9,18 @@
 | Chrome 웹 스토어 | [한국어](submitted/v1.1.1/chrome-ko.md) · [영어](submitted/v1.1.1/chrome-en.md) |
 | Elgato Marketplace | [영어](submitted/v1.1.1/elgato-en.md) |
 
+## 1.2.0 제출용 수정안
+
+[제출 안내와 UTM 링크 표](drafts/v1.2.0/README.md)에 [Chrome 한국어](drafts/v1.2.0/chrome-ko.txt)·[영어](drafts/v1.2.0/chrome-en.txt), [Elgato 영어](drafts/v1.2.0/elgato-en.txt), [Elgato 변경 사항](drafts/v1.2.0/elgato-whats-new.en.txt)을 정리했습니다. 현재 공개 스토어와 1.2.0 구현을 바탕으로 한 미제출 초안이며, 위 실제 제출 원문과 구분합니다.
+
 ## 메타데이터 제안
 
 | 필드 | 제안 문안 |
 | --- | --- |
 | 이름 | **Music Deck Bridge** |
-| Chrome 짧은 설명 | Chrome 확장 프로그램으로 Elgato Stream Deck에서 YouTube Music을 제어하세요. |
+| 1.2.0 패키지의 Chrome 짧은 설명 | Chrome 확장 프로그램을 통해 Elgato Stream Deck에서 YouTube Music을 조작합니다. |
 
-짧은 설명과 아래 권한 설명은 작성 참고용이며, 해당 필드의 실제 제출값은 제공되지 않았습니다. Marketplace의 한국어 제출본은 제공되지 않았습니다.
+Chrome 짧은 설명은 공개된 1.2.0 카탈로그 및 현재 한국어 공개 페이지의 값과 일치합니다. 그 외 제안과 아래 권한 설명은 작성 참고용이며, Console의 실제 제출값은 제공되지 않았습니다. Marketplace의 한국어 제출본은 제공되지 않았습니다.
 
 ## 권한 설명
 

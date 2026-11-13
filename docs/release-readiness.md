@@ -1,17 +1,19 @@
 # Release readiness
 
-Updated November 14, 2026 (Asia/Seoul) after the maintainer-authorized 1.2.0 GitHub publication and anonymous download verification. General installation starts with the [official stores](installation.en.md#method-1-official-stores). Public releases, development and store processing have separate evidence.
+Updated November 14, 2026 (Asia/Seoul) after the maintainer-authorized 1.2.0 GitHub publication, anonymous download verification and direct inspection of the current store listings. General installation starts with the [official stores](installation.en.md#method-1-official-stores). Public releases, development and store processing have separate evidence.
 
 ## Current versions and distribution
 
 | Channel | Version / state | Evidence |
 | --- | --- | --- |
 | GitHub | **v1.2.0**, Chrome **1.2.0**, plugin **1.2.0.0**, protocol **1** | Published November 14 at 00:42:50 KST; latest non-draft/non-prerelease API result and all three anonymous download files verified · [Release record](verification/releases.md#v120) |
-| Elgato Marketplace | Public listing **1.1.3**, dated **November 2, 2026** on the page | November 6 observation confirmed the version and corrected installation copy. Last maintainer-reported submission was **1.1.2** / plugin **1.1.2.0** · [Store record](verification/stores.md) |
-| Chrome Web Store | **1.1.3** publication directly confirmed by the user on November 13. Official update date and current copy remain unverified. | Chrome-Stats reports last updated **October 30, 2026**; third-party date only. Last maintainer-reported submission was **1.1.2** · [Store record and scope limits](verification/stores.md#chrome-web-store-publication-evidence) |
+| Elgato Marketplace | Public listing **1.1.3**, dated **November 2, 2026** on the page | November 14 direct observation confirmed the version and current installation copy. Last maintainer-reported submission was **1.1.2** / plugin **1.1.2.0** · [Store record](verification/stores.md) |
+| Chrome Web Store | **1.1.3**, updated **October 30, 2026** on the official English/Korean pages directly read November 14. | Official version/date/copy now independently observed; earlier third-party and user reports retain their original scope. Last maintainer-reported submission was **1.1.2** · [Store record and scope limits](verification/stores.md#chrome-web-store-publication-evidence) |
 | Release source | **1.2.0**, Chrome **1.2.0** (development label removed), plugin **1.2.0.0**, protocol **1** | Tag `v1.2.0` resolves to `ff139a755b25`; exact-source Windows/Ubuntu CI and package/public-byte verification completed. No next development cycle selected; no 1.2.0 store submission/publication is recorded |
 
 The [Elgato listing now recommends Add to Chrome and offers the GitHub Releases ZIP as an optional manual method](verification/stores.md#public-description-correction). The October 29 draft is historical reference copy.
+
+[1.2.0 store copy and UTM links](../store-assets/drafts/v1.2.0/README.md) are prepared for review. They have not been submitted or published; [November 14 observations](verification/stores.md#november-14-public-listing-review-and-120-drafts) distinguish the current listings from the proposals.
 
 ## Development validation
 

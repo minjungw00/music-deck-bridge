@@ -10,6 +10,10 @@ Start with the store-specific upload guide below. These guides cover future subm
 | Chrome Web Store | [Upload guide and sized exports](chrome/README.md#upload-files): 128px icon, localized 1280×800 screenshots and optional 440×280 promotional tile |
 | Both | [Submitted descriptions and English guidance](listing.en.md) / [한국어](listing.ko.md) and public [privacy policy](https://github.com/minjungw00/music-deck-bridge/blob/main/PRIVACY.md) |
 
+## Current listing revision
+
+Use the [1.2.0 submission copy and link table](drafts/v1.2.0/README.md) for the new store update. It supplies Chrome English/Korean and Elgato English descriptions, separate Elgato release notes and store-specific UTM links. These are drafts; [verbatim prior submissions](listing.en.md#submitted-descriptions) remain separate. Existing popup exports depict 1.1.1 and need refreshed 1.2.0 visuals.
+
 ## Official product images
 
 Use these maintainer-selected source images for README and listing media:

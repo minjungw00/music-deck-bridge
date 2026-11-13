@@ -9,15 +9,19 @@ The maintainer supplied these descriptions as the actual **v1.1.1** submissions.
 | Elgato Marketplace | [English](submitted/v1.1.1/elgato-en.md) |
 | Chrome Web Store | [English](submitted/v1.1.1/chrome-en.md) · [Korean](submitted/v1.1.1/chrome-ko.md) |
 
+## Prepared 1.2.0 revision
+
+Use the [submission index and UTM field table](drafts/v1.2.0/README.md): [Chrome English](drafts/v1.2.0/chrome-en.txt), [Chrome Korean](drafts/v1.2.0/chrome-ko.txt), [Elgato English](drafts/v1.2.0/elgato-en.txt) and [Elgato What's new](drafts/v1.2.0/elgato-whats-new.en.txt). These are unsubmitted drafts based on the current public listings and released 1.2.0 behavior. The historical submissions above remain verbatim.
+
 ## Metadata suggestions
 
 | Field | Suggested value |
 | --- | --- |
 | Name | **Music Deck Bridge** |
-| Chrome short description | Control YouTube Music from Elgato Stream Deck using a Chrome extension. |
+| Chrome short description in the 1.2.0 package | Control YouTube Music from Elgato Stream Deck using a Chrome extension. |
 | Marketplace summary | Control the YouTube Music web player from Stream Deck keys and Stream Deck + dials. |
 
-These short-field suggestions and the permission explanations below are preparation guidance; actual submitted values for those fields were not supplied.
+The Chrome short description matches the released 1.2.0 catalog and the current English public listing. The other short-field suggestions and permission explanations are preparation guidance; exact submitted Console values were not supplied.
 
 ## Permission explanations
 

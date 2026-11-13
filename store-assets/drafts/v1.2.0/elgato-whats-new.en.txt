@@ -1,0 +1,7 @@
+Music Deck Bridge 1.2.0 adds Volume Up / Down keys, a Chrome popup player and UI translations for all eight Stream Deck languages.
+
+- Configure per-key volume steps, optional number/percent feedback and a 0–3 second display duration.
+- Control playback, tracks, ratings, mute and volume from Chrome, with live song information and artwork. Popup controls also work without Stream Deck; paired controls use the existing plugin channel.
+- Add Simplified/Traditional Chinese, Japanese, Spanish, French and German UI alongside English and Korean. Fix initial checkbox and dropdown translations.
+- Improve PIN/setup layout, companion installation links and popup spacing. Match Mute key artwork to the confirmed mute state.
+- Share artwork URL validation and separate volume feedback/editing from rendering and connection management.

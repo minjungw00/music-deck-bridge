@@ -2,6 +2,8 @@
 
 Use this guide to select Chrome upload files and regenerate exports. See the [shared submission workflow](../README.md#submission-workflow) for package/copy provenance and publication records.
 
+Use the [1.2.0 English/Korean copy and UTM links](../drafts/v1.2.0/README.md) for this update. The existing popup media below depict 1.1.1 with plugin-required guidance; refresh them to match 1.2.0 rather than relabeling those sources.
+
 ## Upload files
 
 Use the files in [listing/](listing/) for the Chrome Web Store upload fields:
@@ -40,7 +42,7 @@ The listing icon and promotional tile use the existing magenta main mark and act
 Retain the submitted version, ZIP hash, listing identifier and review outcome in the [store record](../../docs/verification/stores.md). For unpacked-to-store migration, use the [switching procedure](../../docs/installation.en.md#switching-installation-methods) and record new-PIN coverage separately from normal operation.
 
 - Capture English and Korean pairing/status screens without real PINs, tokens or personal listening details.
-- Use the [submitted English](../submitted/v1.1.1/chrome-en.md) / [Korean](../submitted/v1.1.1/chrome-ko.md) descriptions as the revision baseline; see [permission guidance](../listing.en.md#permission-explanations) when preparing changes.
+- Use the [prepared 1.2.0 descriptions](../drafts/v1.2.0/README.md); keep the [submitted English](../submitted/v1.1.1/chrome-en.md) / [Korean](../submitted/v1.1.1/chrome-ko.md) snapshots as history; see [permission guidance](../listing.en.md#permission-explanations) when preparing changes.
 - Declare each permission and reconcile store data-use answers with `PRIVACY.md` and the submitted version.
 - Submit the Chrome ZIP with `manifest.json` at its root, rather than the repository ZIP.
 
