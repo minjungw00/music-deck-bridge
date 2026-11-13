@@ -3,7 +3,7 @@
     "message": "Music Deck Bridge"
   },
   "companionHint": {
-    "message": "이 확장 프로그램과 Stream Deck 플러그인이 모두 필요합니다."
+    "message": "팝업은 확장 프로그램만으로 사용할 수 있습니다. Stream Deck으로 제어하려면 플러그인을 설치하고 연결하세요."
   },
   "installPlugin": {
     "message": "Stream Deck 플러그인 설치"
@@ -147,10 +147,10 @@
     "message": "YouTube Music 재생 대기 중"
   },
   "settingsSummary": {
-    "message": "연결 설정"
+    "message": "Stream Deck 연결 설정"
   },
   "connectionStatusLabel": {
-    "message": "연결 상태"
+    "message": "Stream Deck 연결 상태"
   },
   "previous": {
     "message": "이전 곡"
@@ -187,11 +187,5 @@
   },
   "unmute": {
     "message": "음소거 해제"
-  },
-  "volumeDown": {
-    "message": "볼륨 5% 줄이기"
-  },
-  "volumeUp": {
-    "message": "볼륨 5% 높이기"
   }
 }

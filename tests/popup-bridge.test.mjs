@@ -19,6 +19,9 @@ test('popup endpoints authenticate and bind controls/artwork to the selected pla
   for (const amount of [undefined, 0, 101, -101, 0.5, '5']) {
     assert.equal((await bridge.post('/control', { ...command, command: 'volume_delta', amount })).status, 400);
   }
+  for (const amount of [undefined, -1, 101, 0.5, '5']) {
+    assert.equal((await bridge.post('/control', { ...command, command: 'volume_set', amount })).status, 400);
+  }
   assert.equal((await bridge.post('/control', { ...command, playerId: '10' })).body.reason, 'player-changed');
   assert.equal((await bridge.post('/artwork', { ...command, coverKey: 'https://untrusted.test/image' })).body.image, '');
   await bridge.post('/sync', { token, clientId: 11, state: { ...state, standalone: true, trackId: 'bbbbbbbbbbb' } });
@@ -33,13 +36,10 @@ test('popup commands use the existing browser channel and wait for the execution
   const bridge = await createBridgeFixture(t);
   const { body: { token } } = await bridge.post('/pair', { pin: '654321' });
   await bridge.post('/sync', { token, clientId: 12, state });
-  for (const command of ['toggle', 'prev', 'next', 'like', 'dislike', 'mute', 'volume_delta']) {
+  for (const command of ['toggle', 'prev', 'next', 'like', 'dislike', 'mute', 'volume_delta', 'volume_set']) {
     const listening = bridge.post('/browser-listen', { token, clientIds: [12], concurrent: true });
-    // Establish the modern channel before sending a control: without a browser
-    // poll the service intentionally accepts legacy tab-queue delivery.
-    await new Promise(resolve => setTimeout(resolve, 40));
     let finished = false;
-    const control = bridge.post('/control', { token, command, playerId: '12', trackKey: 'aaaaaaaaaaa', ...(command === 'volume_delta' ? { amount: -5 } : {}) })
+    const control = bridge.post('/control', { token, command, playerId: '12', trackKey: 'aaaaaaaaaaa', ...(command === 'volume_delta' ? { amount: -5 } : command === 'volume_set' ? { amount: 0 } : {}) })
       .then(result => { finished = true; return result; });
     const { body: { commands } } = await listening;
     assert.equal(commands.length, 1);
@@ -47,6 +47,7 @@ test('popup commands use the existing browser channel and wait for the execution
     assert.equal(commands[0].preferredTabId, 12);
     assert.equal(commands[0].playerKey, 'aaaaaaaaaaa');
     if (command === 'volume_delta') assert.equal(commands[0].amount, -5);
+    if (command === 'volume_set') assert.equal(commands[0].amount, 0);
     if (['like', 'dislike'].includes(command)) assert.equal(commands[0].trackKey, 'aaaaaaaaaaa');
     assert.equal(finished, false, 'dispatch alone does not establish successful execution');
     await bridge.post('/browser-result', { token, id: commands[0].id, ok: command !== 'dislike' });

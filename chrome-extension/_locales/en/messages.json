@@ -3,7 +3,7 @@
     "message": "Music Deck Bridge"
   },
   "companionHint": {
-    "message": "Both this extension and the Stream Deck plugin are required."
+    "message": "The popup works without Stream Deck. Install and connect the plugin for Stream Deck controls."
   },
   "installPlugin": {
     "message": "Install Stream Deck plugin"
@@ -147,10 +147,10 @@
     "message": "Waiting for YouTube Music"
   },
   "settingsSummary": {
-    "message": "Connection settings"
+    "message": "Stream Deck connection settings"
   },
   "connectionStatusLabel": {
-    "message": "Connection status"
+    "message": "Stream Deck connection status"
   },
   "previous": {
     "message": "Previous track"
@@ -187,11 +187,5 @@
   },
   "unmute": {
     "message": "Unmute"
-  },
-  "volumeDown": {
-    "message": "Decrease volume by 5 points"
-  },
-  "volumeUp": {
-    "message": "Increase volume by 5 points"
   }
 }

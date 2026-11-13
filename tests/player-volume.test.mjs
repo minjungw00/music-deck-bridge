@@ -48,3 +48,14 @@ test('unavailable site controls leave audio unchanged', async () => {
   assert.equal(player.audio.volume, 0.25);
   assert.equal(player.state.savedVolume, 50);
 });
+
+test('absolute volume accepts zero and endpoints without accumulating deltas', async () => {
+  const player = playerHarness();
+  for (const amount of [85, 0, 100, 42]) {
+    assert.equal((await player.send({ type: 'player-volume', command: 'volume_set', amount })).ok, true);
+  }
+  assert.deepEqual(player.state.changes, [85, 0, 100, 42]);
+  for (const amount of [-1, 101, 0.5, '50']) {
+    assert.equal((await player.send({ type: 'player-volume', command: 'volume_set', amount })).ok, false);
+  }
+});

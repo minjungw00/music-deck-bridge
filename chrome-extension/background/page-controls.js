@@ -11,13 +11,13 @@
       button.click();
       return true;
     }
-    if (type !== 'volume_delta' || !Number.isFinite(amount)) return false;
+    if (!['volume_delta', 'volume_set'].includes(type) || !Number.isFinite(amount)) return false;
     const sliders = [...bar.querySelectorAll('#volume-slider, #expand-volume-slider')];
     const slider = sliders.find(item => item.getClientRects().length) || sliders[0];
     if (!slider || slider.disabled) return false;
     const current = Number(slider.value);
     if (!Number.isFinite(current)) return false;
-    const next = Math.max(0, Math.min(100, current + Math.max(-100, Math.min(100, amount))));
+    const next = Math.max(0, Math.min(100, type === 'volume_set' ? amount : current + Math.max(-100, Math.min(100, amount))));
     // A slider's 5-point step would round away the dial's 1–4 point steps.
     for (const item of sliders) item.step = 1;
     slider.value = next;

@@ -36,20 +36,19 @@
     #trackTitle { margin: 0; color: white; font-weight: 600; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     #trackArtist { margin: 3px 0 0; color: #abb3c5; overflow-wrap: anywhere; }
     svg { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-    .transport { display: flex; justify-content: center; gap: 12px; }
-    .transport button { display: grid; place-items: center; width: 60px; min-height: 40px; }
-    .transport button > span { display: flex; }
-    .transport button { width: 52px; min-height: 52px; padding: 0; background: transparent; }
-    .transport img { width: 52px; height: 52px; }
-    .ratings img { width: 32px; height: 32px; }
-    .volume-controls { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
-    .volume-controls button { min-width: 36px; padding: 6px; }
-    #mute { background: transparent; padding: 0; }
-    #mute img { display: block; width: 40px; height: 40px; }
-    #volumeValue { min-width: 42px; text-align: center; font-variant-numeric: tabular-nums; }
+    .player-controls { display: flex; justify-content: center; gap: 12px; margin-top: 12px; }
+    .media-button { position: relative; display: block; flex: none; width: 44px; height: 44px; min-height: 44px; padding: 0; border-radius: 50%; background: transparent; overflow: hidden; }
+    /* The source key artwork has a 360px disc centered at (256,252) on a 512px canvas.
+       Crop to that disc in CSS while preserving the original Stream Deck pixels. */
+    .media-button img { position: absolute; width: 142.222222%; height: 142.222222%; left: -21.111111%; top: -20%; }
+    .media-button > .play-state { position: absolute; inset: 0; }
+    .media-button[aria-pressed="true"] { background: transparent; box-shadow: 0 0 0 2px #ffb9ec; }
+    .media-button:not(:disabled):hover { filter: brightness(1.1); }
+    .volume-controls { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+    #volumeSlider { flex: 1; min-width: 0; width: 100%; height: 28px; margin: 0; padding: 0; border: 0; accent-color: #f72575; cursor: pointer; }
+    #volumeSlider:disabled { opacity: .4; cursor: default; }
+    #volumeValue { min-width: 38px; text-align: right; font-variant-numeric: tabular-nums; }
     .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-    .ratings { display: flex; gap: 8px; margin-top: 8px; }
-    .ratings button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; font-size: 12px; }
     details { border-top: 1px solid #303747; margin-top: 14px; }
     summary { display: list-item; cursor: pointer; }
     .connection-status { border-top: 1px solid #303747; margin-top: 14px; }
@@ -66,30 +65,29 @@
   <section aria-labelledby="nowPlayingLabel">
     <h2 id="nowPlayingLabel">Now playing</h2>
     <div class="track">
-      <img id="artwork" class="cover" alt="" hidden />
+      <img id="artwork" class="cover" alt="" referrerpolicy="no-referrer" hidden />
       <div id="coverFallback" class="cover" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13M9 9l11-2"/><ellipse cx="6" cy="18" rx="3" ry="2"/><ellipse cx="17" cy="16" rx="3" ry="2"/></svg></div>
       <div class="track-text"><p id="trackTitle">Waiting for YouTube Music</p><p id="trackArtist"></p></div>
     </div>
-    <div class="transport">
-      <button id="previous" aria-label="Previous track" title="Previous track" disabled><img src="icons/controls/previous.png" alt="" /></button>
-      <button id="playPause" aria-label="Play" title="Play" disabled><span id="playIcon"><img src="icons/controls/play.png" alt="" /></span><span id="pauseIcon" hidden><img src="icons/controls/pause.png" alt="" /></span></button>
-      <button id="next" aria-label="Next track" title="Next track" disabled><img src="icons/controls/next.png" alt="" /></button>
-    </div>
-    <div class="ratings">
-      <button id="like" class="secondary" aria-pressed="false" disabled><img id="likeIcon" src="icons/controls/like.png" alt="" /><span id="likeLabel">Like</span></button>
-      <button id="dislike" class="secondary" aria-pressed="false" disabled><img id="dislikeIcon" src="icons/controls/dislike.png" alt="" /><span id="dislikeLabel">Dislike</span></button>
+    <div class="player-controls">
+      <button id="previous" class="media-button" aria-label="Previous track" title="Previous track" disabled><img src="icons/controls/previous.png" alt="" /></button>
+      <button id="playPause" class="media-button" aria-label="Play" title="Play" disabled><span id="playIcon" class="play-state"><img src="icons/controls/play.png" alt="" /></span><span id="pauseIcon" class="play-state" hidden><img src="icons/controls/pause.png" alt="" /></span></button>
+      <button id="next" class="media-button" aria-label="Next track" title="Next track" disabled><img src="icons/controls/next.png" alt="" /></button>
+      <button id="like" class="media-button" aria-pressed="false" disabled><img id="likeIcon" src="icons/controls/like.png" alt="" /><span id="likeLabel" class="sr-only">Like</span></button>
+      <button id="dislike" class="media-button" aria-pressed="false" disabled><img id="dislikeIcon" src="icons/controls/dislike.png" alt="" /><span id="dislikeLabel" class="sr-only">Dislike</span></button>
     </div>
     <div class="volume-controls" role="group" aria-labelledby="volumeLabel">
       <span id="volumeLabel" class="sr-only">Volume</span>
-      <button id="mute" aria-label="Mute" title="Mute" aria-pressed="false" disabled><img id="muteIcon" src="icons/controls/volume.png" alt="" /></button>
-      <button id="volumeDown" class="secondary" aria-label="Decrease volume" title="Decrease volume" disabled>−</button>
+      <button id="mute" class="media-button" aria-label="Mute" title="Mute" aria-pressed="false" disabled><img id="muteIcon" src="icons/controls/volume.png" alt="" /></button>
+      <input id="volumeSlider" type="range" min="0" max="100" step="1" value="0" aria-labelledby="volumeLabel" disabled />
       <output id="volumeValue" aria-labelledby="volumeLabel">—</output>
-      <button id="volumeUp" class="secondary" aria-label="Increase volume" title="Increase volume" disabled>+</button>
     </div>
     <p id="controlFeedback" role="status" aria-live="polite"></p>
   </section>
   <details id="connectionSettings" open>
-    <summary id="settingsSummary">Connection settings</summary>
+    <summary id="settingsSummary">Stream Deck connection settings</summary>
+    <p id="companionHint" class="small-hint">Install the Stream Deck plugin to use Stream Deck controls.</p>
+    <p><a id="installPlugin" class="store-link" href="https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd?utm_source=chrome_extension&amp;utm_medium=referral&amp;utm_campaign=companion_setup" target="_blank" rel="noopener noreferrer">Install Stream Deck plugin</a></p>
     <label id="pinLabel" for="pin">Connection PIN</label>
     <p id="guide" class="small-hint">Generate a PIN in Stream Deck action settings and enter it here.</p>
     <input id="pin" maxlength="6" inputmode="numeric" autocomplete="off" placeholder="000000" aria-describedby="guide" />
@@ -101,11 +99,9 @@
     <label id="portLabel" for="port">Local server port</label>
     <p id="portHint" class="small-hint">Use the same port as Stream Deck. When connected, changing it here also updates the server.</p>
     <div class="port-row"><input id="port" type="number" min="1024" max="65535" inputmode="numeric" value="17864" aria-describedby="portHint"/><button id="savePort" class="secondary">Apply</button></div>
-    <p id="companionHint" class="small-hint">Both this extension and the Stream Deck plugin are required.</p>
-    <p><a id="installPlugin" class="store-link" href="https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd?utm_source=chrome_extension&amp;utm_medium=referral&amp;utm_campaign=companion_setup" target="_blank" rel="noopener noreferrer">Install Stream Deck plugin</a></p>
   </details>
   <section class="connection-status" aria-labelledby="connectionStatusLabel">
-    <h2 id="connectionStatusLabel">Connection status</h2>
+    <h2 id="connectionStatusLabel">Stream Deck connection status</h2>
     <div id="feedback" role="status" aria-live="polite"></div>
     <div id="status" role="status" aria-live="polite"></div>
     <p id="versions" class="small-hint"></p>

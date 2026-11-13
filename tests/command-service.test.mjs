@@ -2,11 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createCommandService } from '../streamdeck/src/application/command-service.cjs';
 
-function harness() {
+function harness({ selected = null } = {}) {
   let clock = 1000, id = 0;
   const timers = new Map(), launches = [];
   const session = { paired: true, generation: 1, blocked: false, pairingRequired: false };
-  const commands = createCommandService({ getSession: () => session, selectedEntry: () => null,
+  const commands = createCommandService({ getSession: () => session, selectedEntry: () => selected,
     now: () => clock, newId: () => String(++id), log() {},
     launch: async options => { launches.push(options); },
     setTimeout: (run, delay) => { const key = ++id; timers.set(key, { run, at: clock + delay }); return key; },
@@ -24,6 +24,21 @@ function harness() {
     }
   } };
 }
+
+test('strict popup input waits for the browser channel even before its first poll instead of using the legacy queue', async () => {
+  const h = harness({ selected: ['12', { title: 'Song', artist: 'Artist', volume: 50 }] });
+  let finished = false;
+  const input = h.commands.request('volume_set', 0, { playerKey: 'selected-track' }).then(ok => { finished = true; return ok; });
+  await Promise.resolve();
+  assert.equal(finished, false);
+  assert.deepEqual(h.commands.dispatch('12'), []);
+  const poll = h.channel(true), command = poll.replies[0].data.commands[0];
+  assert.equal(command.type, 'volume_set'); assert.equal(command.amount, 0);
+  assert.equal(command.playerKey, 'selected-track');
+  h.commands.acknowledge(command.id, true);
+  assert.equal(await input, true);
+  assert.equal(h.timers.size, 0);
+});
 
 test('browser commands remain ordered, delivered once and settle only on their own acknowledgment', async () => {
   const h = harness();

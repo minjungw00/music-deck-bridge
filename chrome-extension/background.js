@@ -2,19 +2,20 @@
 // Classic MV3 composition root. The modules expose factories without starting work on import.
 if (typeof importScripts === 'function') importScripts('protocol.js',
   'background/bridge-client.js', 'background/browser-channel.js',
-  'background/player-playback.js', 'background/page-controls.js', 'background/management-service.js',
+  'background/player-playback.js', 'background/page-controls.js', 'background/local-player.js', 'background/management-service.js',
   'background/player-sync-service.js', 'background/message-router.js');
 
 const bridgeClient = MusicDeckBridgeClient.create({ chrome, protocol: MusicDeckProtocol,
   fetch: (...args) => fetch(...args) });
 const contentScripts = chrome.runtime.getManifest().content_scripts[0].js;
 const browserChannel = MusicDeckBrowserChannel.create({ chrome, client: bridgeClient, contentScripts });
+const localPlayer = MusicDeckLocalPlayer.create({ chrome, contentScripts, pageControls: MusicDeckPageControls });
 const management = MusicDeckManagementService.create({ client: bridgeClient, browserChannel,
   translate: key => chrome.i18n?.getMessage?.(key) || '' });
 const players = MusicDeckPlayerSyncService.create({ chrome, client: bridgeClient,
   browserChannel, pageControls: MusicDeckPageControls });
 const router = MusicDeckMessageRouter.create({ chrome, client: bridgeClient,
-  pageControls: MusicDeckPageControls, management, players });
+  pageControls: MusicDeckPageControls, management, players, localPlayer });
 chrome.runtime.onMessage.addListener(router.onMessage);
 chrome.tabs?.onRemoved?.addListener(router.onRemoved);
 

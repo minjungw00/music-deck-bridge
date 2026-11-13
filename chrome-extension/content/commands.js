@@ -35,10 +35,11 @@
           button.click(); result = { ok: true }; break;
         }
         case 'mute':
+        case 'volume_set':
         case 'volume_delta': {
-          if (message.type === 'volume_delta' && !Number.isFinite(message.amount)) break;
+          if (message.type !== 'mute' && !Number.isFinite(message.amount)) break;
           if (!el) { result = { ok: false, retry: true }; break; }
-          if (message.type === 'volume_delta' && siteVolume() === null) { result = { ok: false, retry: true }; break; }
+          if (message.type !== 'mute' && siteVolume() === null) { result = { ok: false, retry: true }; break; }
           if (message.type === 'mute') {
             const button = document.querySelector('ytmusic-player-bar .volume, ytmusic-player-bar #expand-volume');
             if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true') {

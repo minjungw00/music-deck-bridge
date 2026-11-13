@@ -28,6 +28,7 @@ for (const locale of ['en', 'ko', 'fr']) {
       i18n: { getUILanguage: () => locale, getMessage: key => (catalog[key] || english[key])?.message || '' },
       runtime: { async sendMessage(message) {
         calls.push(message);
+        if (message.type === 'player-status') return { ok: true, active: false, mode: 'local' };
         if (message.type === 'get-port') return { ok: true, port: 17864 };
         if (message.type === 'unpair') return unpairFailed ? { ok: false, error: catalog.unpairFailed.message } : { ok: true };
         if (message.type === 'pair') return { ok: true };

@@ -17,21 +17,21 @@ Object.defineProperty(globalThis, 'chrome', { configurable: true, value: {
     if (message.type === 'unpair') { previewPaired = false; return { ok: true }; }
     if (message.type === 'pair') previewPaired = true;
     if (message.type === 'artwork') return { ok: true, image: previewFixture.cover };
-    if (message.type === 'control') {
+    if (['control', 'local-control'].includes(message.type)) {
       if (message.command === 'toggle') previewPlaying = !previewPlaying;
       if (message.command === 'mute') previewMuted = !previewMuted;
-      if (message.command === 'volume_delta') previewVolume = Math.max(0, Math.min(100, previewVolume + message.amount));
+      if (message.command === 'volume_set') previewVolume = message.amount;
       if (['like', 'dislike'].includes(message.command)) {
         const rating = message.command === 'like' ? 'LIKE' : 'DISLIKE';
         previewRating = previewRating === rating ? 'INDIFFERENT' : rating;
       }
-      return { ok: previewPaired };
+      return { ok: previewPaired || message.type === 'local-control' };
     }
-    return { ok: previewPaired, error: previewFixture.catalog.unknown.message,
+    return { ok: previewPaired || message.type === 'player-status', mode: message.type === 'player-status' ? 'local' : 'bridge', error: previewFixture.catalog.unknown.message,
       active: true, standalone: false, track: previewFixture.title, coverStatus: 'ready',
-      popupControls: true, player: { id: '1', key: 'preview-song', title: previewFixture.title,
+      popupControls: true, popupVolume: true, player: { id: '1', key: 'preview-song', title: previewFixture.title,
         artist: previewFixture.artist, playing: previewPlaying, rating: previewRating,
-        volume: previewVolume, muted: previewMuted, coverKey: 'preview-cover' },
+        volume: previewVolume, muted: previewMuted, coverKey: message.type === 'player-status' ? previewFixture.localCover || '' : 'preview-cover' },
       compatibility: { pluginVersion: previewFixture.version, extensionVersion: previewFixture.extensionVersion,
         negotiatedProtocolVersion: previewFixture.protocol } };
   } },

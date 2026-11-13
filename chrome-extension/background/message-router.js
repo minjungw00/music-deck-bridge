@@ -1,11 +1,11 @@
 'use strict';
 (function (root) {
-  function createMessageRouter({ chrome, client, pageControls, management, players }) {
+  function createMessageRouter({ chrome, client, pageControls, management, players, localPlayer }) {
     const { playerPlayback, controlPlayerVolume } = pageControls;
     const managementMethods = Object.freeze({ __proto__: null, pair: 'pair', check: 'check',
       'get-port': 'getPort', 'set-port': 'setPort', unpair: 'unpair', control: 'control', artwork: 'artwork' });
     function onMessage(msg, sender, respond) {
-      if (client.blocked() && ['player-playback', 'player-playback-result', 'player-volume'].includes(msg?.type)) {
+      if (client.blocked() && !localPlayer?.controlling(sender.tab?.id) && ['player-playback', 'player-playback-result', 'player-volume'].includes(msg?.type)) {
         respond({ ok: false, reason: 'protocol-incompatible' }); return false;
       }
       if (msg?.type === 'player-playback' && Number.isInteger(sender.tab?.id) && sender.frameId === 0 &&
@@ -27,8 +27,9 @@
       }
       if (msg?.type === 'player-volume' && Number.isInteger(sender.tab?.id) && sender.frameId === 0 &&
           sender.url?.startsWith('https://music.youtube.com/')) {
-        if (!['volume_delta', 'mute'].includes(msg.command) ||
-            (msg.command === 'volume_delta' && !Number.isFinite(msg.amount))) {
+        if (!['volume_delta', 'volume_set', 'mute'].includes(msg.command) ||
+            (msg.command !== 'mute' && !Number.isFinite(msg.amount)) ||
+            (msg.command === 'volume_set' && (!Number.isInteger(msg.amount) || msg.amount < 0 || msg.amount > 100))) {
           respond({ ok: false, error: 'Invalid volume command' });
           return false;
         }
@@ -36,12 +37,17 @@
           target: { tabId: sender.tab.id, frameIds: [0] },
           world: 'MAIN',
           func: controlPlayerVolume,
-          args: [msg.command, msg.command === 'volume_delta' ? msg.amount : 0],
+          args: [msg.command, msg.command === 'mute' ? 0 : msg.amount],
         }).then(results => respond({ ok: results[0]?.result === true }))
           .catch(() => respond({ ok: false }));
         return true;
       }
       const managementMethod = managementMethods[msg?.type];
+      if (localPlayer && !sender.tab && ['player-status', 'local-control'].includes(msg?.type)) {
+        const operation = msg.type === 'player-status' ? () => localPlayer.check() : () => localPlayer.control(msg);
+        Promise.resolve().then(operation).then(respond).catch(() => respond({ ok: false, reason: 'player-unavailable' }));
+        return true;
+      }
       if (managementMethod && !sender.tab) {
         Promise.resolve().then(() => management[managementMethod](msg)).then(respond).catch(error => respond(client.failure(error)));
         return true;

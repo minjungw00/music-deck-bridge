@@ -143,11 +143,11 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     flushBrowserRequest();
   }
   async function requestPlayerCommand(type, amount = 0, { playerKey } = {}) {
-    if (!['open', 'toggle', 'prev', 'next', 'mute', 'volume_delta', 'like', 'dislike'].includes(type)) return false;
+    if (!['open', 'toggle', 'prev', 'next', 'mute', 'volume_delta', 'volume_set', 'like', 'dislike'].includes(type)) return false;
     if (getSession().pairingRequired) { lastCommandError = 'pairing-required'; return false; }
     if (getSession().blocked) { lastCommandError = getSession().errorCode; return false; }
     // Keep existing controls available when paired with a legacy extension.
-    if (type !== 'open' && !browserCapable && selectedEntry()) return addCommand(type, amount);
+    if (type !== 'open' && !browserCapable && selectedEntry() && !playerKey) return addCommand(type, amount);
     if (type === 'open') {
       const existing = [...browserRequests.values()].find(request => request.type === 'open');
       if (existing) return existing.promise;

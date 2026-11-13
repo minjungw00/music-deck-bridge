@@ -67,7 +67,7 @@ function createHttpBridge({ session, players, commands, covers, getPorts, onDeck
     if (req.url === '/status') {
       const chosen = players.selected();
       return sendHttp(res, 200, { paired: true, compatibility: session.compatibility, active: !!chosen,
-        popupControls: true, player: chosen ? playerInfo(chosen) : null,
+        popupControls: true, popupVolume: true, player: chosen ? playerInfo(chosen) : null,
         track: chosen ? chosen[1].title : '', standalone: chosen ? chosen[1].standalone : false,
         extensionOnline: session.extensionOnline(),
         playerStale: !!chosen && Date.now() - chosen[1].lastMediaSyncAt > PLAYER_STALE_MS,
@@ -75,8 +75,9 @@ function createHttpBridge({ session, players, commands, covers, getPorts, onDeck
         coverStatus: covers.status(chosen?.[1].cover) }, origin);
     }
     if (req.url === '/control' || req.url === '/artwork') {
-      if (req.url === '/control' && (!['toggle', 'prev', 'next', 'like', 'dislike', 'mute', 'volume_delta'].includes(body.command) ||
-          (body.command === 'volume_delta' && (!Number.isInteger(body.amount) || body.amount === 0 || Math.abs(body.amount) > 100)))) {
+      if (req.url === '/control' && (!['toggle', 'prev', 'next', 'like', 'dislike', 'mute', 'volume_delta', 'volume_set'].includes(body.command) ||
+          (body.command === 'volume_delta' && (!Number.isInteger(body.amount) || body.amount === 0 || Math.abs(body.amount) > 100)) ||
+          (body.command === 'volume_set' && (!Number.isInteger(body.amount) || body.amount < 0 || body.amount > 100)))) {
         return sendHttp(res, 400, { error: 'Invalid popup command' }, origin);
       }
       const chosen = players.selected();
@@ -94,7 +95,7 @@ function createHttpBridge({ session, players, commands, covers, getPorts, onDeck
           (['like', 'dislike'].includes(body.command) && chosen[1].rating === null)) {
         return sendHttp(res, 200, { ok: false, reason: 'player-not-ready' }, origin);
       }
-      const ok = await commands.request(body.command, body.command === 'volume_delta' ? body.amount : 0, { playerKey: player.key });
+      const ok = await commands.request(body.command, ['volume_delta', 'volume_set'].includes(body.command) ? body.amount : 0, { playerKey: player.key });
       return sendHttp(res, 200, { ok: ok === true,
         ...(!ok ? { reason: ok === null ? 'command-superseded' : 'command-failed' } : {}) }, origin);
     }

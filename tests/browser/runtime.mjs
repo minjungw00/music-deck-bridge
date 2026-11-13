@@ -109,13 +109,16 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     (_req, res) => { setTimeout(() => { res.setHeader('Content-Type', 'text/html'); res.end(fixture(restoredStartup, ignoredStartupRequests)); }, 250); });
   await new Promise(resolve => site.listen(0, '127.0.0.1', resolve));
   const port = await freePort();
-  process = spawn(globalThis.process.execPath, [join(root, 'streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/bin/plugin.js')], {
+  async function startBridge() {
+    process = spawn(globalThis.process.execPath, [join(root, 'streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/bin/plugin.js')], {
     env: { ...globalThis.process.env, APPDATA: temp, MUSIC_DECK_BRIDGE_DEV_TEST: '1',
       MUSIC_DECK_BRIDGE_TEST_PORT: String(port), MUSIC_DECK_BRIDGE_TEST_PIN: '654321' },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   child = manageChild(process);
   await child.ready('Loopback bridge on');
+  }
+  await startBridge();
   const extension = join(root, 'chrome-extension');
   browser = await chromium.launchPersistentContext(join(temp, 'profile'), {
     channel: 'chromium', headless: true,
@@ -371,12 +374,11 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
       await until(() => music.evaluate(rating => document.querySelector('ytmusic-like-button-renderer').getAttribute('like-status') === rating, rating), 'popup site rating');
       await until(() => popupEvaluate(`document.getElementById("${button}").getAttribute("aria-pressed") === "true"`), 'observed popup rating');
     }
-    for (const [button, delta] of [['volumeDown', -5], ['volumeUp', 5]]) {
-      const before = await music.evaluate(() => Number(document.querySelector('#volume-slider').value));
-      await until(() => popupEvaluate(`!document.getElementById("${button}").disabled`), 'popup volume ready');
-      await popupEvaluate(`document.getElementById("${button}").click()`);
-      await until(() => music.evaluate(expected => Number(document.querySelector('#volume-slider').value) === expected, before + delta), 'popup site volume');
-      await until(() => popupEvaluate(`document.getElementById("volumeValue").textContent === "${before + delta}%"`), 'observed popup volume');
+    for (const amount of [0, 83]) {
+      await until(() => popupEvaluate('!document.getElementById("volumeSlider").disabled'), 'popup volume ready');
+      await popupEvaluate(`(() => { const slider=document.getElementById("volumeSlider"); slider.value=${amount}; slider.dispatchEvent(new Event("input",{bubbles:true})); slider.dispatchEvent(new Event("change",{bubbles:true})); })()`);
+      await until(() => music.evaluate(expected => Number(document.querySelector('#volume-slider').value) === expected, amount), 'popup site volume');
+      await until(() => popupEvaluate(`!volumeSending && !volumeEditing && document.getElementById("volumeValue").textContent === "${amount}%"`), 'observed popup volume');
     }
     for (const desired of [true, false]) {
       await until(() => popupEvaluate('!document.getElementById("mute").disabled'), 'popup mute ready');
@@ -384,7 +386,33 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
       await until(() => music.evaluate(desired => muted === desired, desired), 'popup site mute');
       await until(() => popupEvaluate(`document.getElementById("mute").getAttribute("aria-pressed") === "${desired}"`), 'observed popup mute');
     }
-    assert.equal(await popupEvaluate('[...document.querySelectorAll(".transport img,.ratings img,#mute img")].every(img => img.complete && img.naturalWidth === 144)'), true, 'shared Stream Deck PNG resources loaded');
+    assert.equal(await popupEvaluate('[...document.querySelectorAll(".media-button img")].every(img => img.complete && img.naturalWidth === 144)'), true, 'shared Stream Deck PNG resources loaded');
+    const beforeLocal = await worker.evaluate(() => acknowledgments.length);
+    await child.stop();
+    await worker.evaluate(() => chrome.storage.local.remove('bridgeToken'));
+    await until(() => popupEvaluate('currentPlayer?.mode === "local" && !document.getElementById("playPause").disabled'), 'standalone fallback after stopping plugin');
+    for (const desired of [false, true]) {
+      await popupEvaluate('document.getElementById("playPause").click()');
+      await until(() => music.evaluate(desired => playing === desired, desired), 'standalone playback');
+      await until(() => popupEvaluate('!document.getElementById("playPause").disabled'), 'standalone playback completion');
+    }
+    await popupEvaluate('(() => { const slider=document.getElementById("volumeSlider"); slider.value=37; slider.dispatchEvent(new Event("input",{bubbles:true})); slider.dispatchEvent(new Event("change",{bubbles:true})); })()');
+    await until(() => music.evaluate(() => Number(document.querySelector('#volume-slider').value) === 37), 'standalone volume');
+    await until(() => popupEvaluate('!volumeSending'), 'standalone volume completion');
+    await popupEvaluate('document.getElementById("mute").click()');
+    await until(() => music.evaluate(() => muted), 'standalone mute');
+    await popupEvaluate('document.getElementById("like").click()');
+    await until(() => music.evaluate(() => document.querySelector('ytmusic-like-button-renderer').getAttribute('like-status') === 'LIKE'), 'standalone rating');
+    assert.equal(await worker.evaluate(() => acknowledgments.length), beforeLocal, 'standalone inputs do not enter the stopped bridge channel');
+    assert.equal(await worker.evaluate(() => pairedToken()), '', 'standalone controls need no pairing token');
+    await worker.evaluate(token => chrome.storage.local.set({ bridgeToken: token }), token);
+    await startBridge();
+    await until(() => popupEvaluate('currentPlayer?.mode === "bridge"'), 'bridge route recovery');
+    const recoveredPlayer = await worker.evaluate(async token => (await post('/status', { token })).player, token);
+    assert.equal(recoveredPlayer.volume, 37);
+    assert.equal(recoveredPlayer.muted, true);
+    assert.equal(recoveredPlayer.playing, true);
+    assert.equal(recoveredPlayer.rating, 'LIKE');
   } catch (error) { t.diagnostic(`Last toolbar popup status: ${popupStatus}`); throw error; }
   finally {
     await popupSession.send('Target.closeTarget', { targetId: popup.targetId });
@@ -404,14 +432,17 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
       let blocked;
       try { await post('/status', { token }); } catch (error) { blocked = error.compatibility; }
       const executed = await performBrowserCommand({ id: 'incompatible', type: 'next' });
+      const selected = await localPlayer.check();
+      const localDuringMismatch = await localPlayer.control({ command: 'mute', playerId: selected.player.id, trackKey: selected.player.key });
       globalThis.fetch = original;
       await post('/status', { token });
-      return { current: current.compatibility, blocked, executed, token: await pairedToken(), recovered: bridgeClient.compatibility };
+      return { current: current.compatibility, blocked, executed, localDuringMismatch: localDuringMismatch.ok, token: await pairedToken(), recovered: bridgeClient.compatibility };
     } finally { globalThis.fetch = original; }
   }, token);
   assert.equal(compatibility.current.compatible, true);
   assert.equal(compatibility.blocked.updateRequired, 'extension');
   assert.equal(compatibility.executed, false);
+  assert.equal(compatibility.localDuringMismatch, true, 'bridge protocol blocking does not disable independently authorized local controls');
   assert.equal(compatibility.token, token);
   assert.equal(compatibility.recovered.compatible, true);
   assert.equal(await music.evaluate(() => document.body.dataset.next), nextBeforeMismatch, 'incompatible input had no page effect');
@@ -442,5 +473,5 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   } finally {
     await music.evaluate(() => { document.querySelector('ytmusic-player-bar .play-pause-button').click = globalThis.originalPlayClick; delete globalThis.originalPlayClick; });
   }
-  t.diagnostic(`Chromium ${browser.browser().version()}; startup/destination recovery, interrupted Previous, receiver recovery, live toolbar popup track updates, shared icons and popup play/pause, Previous/Next, like/dislike, volume and mute passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
+  t.diagnostic(`Chromium ${browser.browser().version()}; startup/destination recovery, interrupted Previous, receiver recovery, live toolbar popup controls, absolute volume slider, token-free control with plugin stopped, state synchronization after plugin restart and local control during bridge protocol blocking passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
 });

@@ -6,7 +6,7 @@ Control YouTube Music from Elgato Stream Deck using a Chrome extension.
 
 [한국어 설치 안내](docs/installation.ko.md) · [Installation](docs/installation.en.md) · [Troubleshooting](docs/troubleshooting.md)
 
-Music Deck Bridge contains two components that must be installed together: a Stream Deck plugin that runs a local bridge, and a Chrome extension that reads and controls the YouTube Music web player. It works with a normal Chrome tab or the YouTube Music app installed through Chrome (PWA).
+Stream Deck control uses two components installed together: a Stream Deck plugin that runs a local bridge, and a Chrome extension that reads and controls the YouTube Music web player. It works with a normal Chrome tab or the YouTube Music app installed through Chrome (PWA).
 
 ## Installation
 
@@ -21,7 +21,7 @@ Music Deck Bridge contains two components that must be installed together: a Str
 
 See the guides for [PIN pairing](docs/installation.en.md#pairing), [updates](docs/installation.en.md#updating), switching installation methods and removal. If using a Chrome ZIP, extract it to a permanent folder and load it unpacked in Developer mode.
 
-Public releases and development builds are tracked separately in [release readiness](docs/release-readiness.md). The current source is **1.1.3**; GitHub publication and store processing are recorded separately. Use build metadata to identify development revisions.
+Public releases and development builds are tracked separately in [release readiness](docs/release-readiness.md). The current source is **1.2.0-dev**; GitHub publication and store processing are recorded separately. Use build metadata to identify development revisions. The 1.2.0 development extension also offers popup playback controls without a plugin or additional server; Stream Deck hardware control still needs the paired plugin.
 
 ## Requirements
 

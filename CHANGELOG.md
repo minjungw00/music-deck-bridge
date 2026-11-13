@@ -3,10 +3,11 @@
 ## v1.2.0-dev — Unreleased
 
 - Retarget the unreleased 1.1.4 development work to 1.2.0 at maintainer request.
-- Add a popup player with cached album artwork, track/artist, observed play/pause and like/dislike state, Previous/Next, rating, mute/unmute and 5-point volume controls using the existing authenticated command channel. Bind requests to the displayed player/track; keep Pause available during pending navigation.
-- Reuse the exact Stream Deck PNG icons, including playback, rating and mute states.
-- Group connection settings in a collapsible section, align PIN/port guidance under matching headers and add a Connection status header.
-- Add companion-component store installation links to the Stream Deck property inspector and Chrome extension popup, with English and Korean guidance that both components are required.
+- Add a popup player with cached album artwork, track/artist, observed play/pause and like/dislike state, Previous/Next, rating, mute/unmute and an absolute 0–100 volume slider. Connected control uses the existing authenticated command channel. Bind requests to the displayed player/track; keep Pause available during pending navigation.
+- Reuse the exact Stream Deck PNG icons, including playback, rating and mute states; show only their circular area and give rating buttons the same layout as transport buttons.
+- Group connection settings in a collapsible section, align PIN/port guidance under matching headers and add explicit Stream Deck connection headers. Place the optional plugin guidance above PIN pairing.
+- Support standalone popup control through the same Chrome playback/volume engine without another server or token; keep the healthy paired bridge path and normal state synchronization after reconnection. Do not automatically resend failed commands through another path.
+- Add companion-component store installation links to the Stream Deck property inspector and Chrome extension popup, with English and Korean setup guidance for Stream Deck control.
 - Group the extension installation and PIN buttons under Connection in the Stream Deck inspector, with the generated PIN below its button.
 - Refresh the extension popup's track and connection status every second while visible. Keep action feedback separate, skip overlapping polls and pending management actions, and stop polling when the popup closes.
 - Tag the links with `utm_source=streamdeck_plugin` or `chrome_extension`, `utm_medium=referral` and `utm_campaign=companion_setup`. Chrome store attribution is supported; Elgato UTM reporting remains unverified.

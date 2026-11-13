@@ -39,7 +39,7 @@
           ? data.startupAttempts : null });
       console.warn('Music Deck Bridge playback diagnostic:', JSON.stringify(lastFailure));
     }
-    const PLAYER_COMMANDS = ['toggle', 'prev', 'next', 'mute', 'volume_delta', 'like', 'dislike'];
+    const PLAYER_COMMANDS = ['toggle', 'prev', 'next', 'mute', 'volume_delta', 'volume_set', 'like', 'dislike'];
     const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
     async function performBrowserCommand(command, stillPaired = async () => true, diagnostic = {}, onAccepted = () => {}) {
       const failed = reason => { diagnostic.reason = reason; return false; };

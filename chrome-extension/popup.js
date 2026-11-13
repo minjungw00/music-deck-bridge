@@ -3,7 +3,7 @@ const $ = id => document.getElementById(id);
 const asset = path => chrome.runtime.getURL?.(path) || path;
 const language = (chrome.i18n?.getUILanguage?.() || navigator.language || 'en').toLowerCase().startsWith('ko') ? 'ko' : 'en';
 const text = Object.fromEntries(
-  ["heading","subtitle","companionHint","installPlugin","guide","pin","connect","refresh","forget","portLabel","savePort","portHint","portInvalid","portSaved","portLocal","invalid","checking","fail","connected","unknown","player","app","tab","current","waiting","artwork","stale","paired","removed","nowPlayingLabel","playerWaiting","settingsSummary","connectionStatusLabel","previous","next","play","pause","likeLabel","dislikeLabel","controlFailed","controlChanged","controlUpdate","volumeLabel","mute","unmute","volumeDown","volumeUp"]
+  ["heading","subtitle","companionHint","installPlugin","guide","pin","connect","refresh","forget","portLabel","savePort","portHint","portInvalid","portSaved","portLocal","invalid","checking","fail","connected","unknown","player","app","tab","current","waiting","artwork","stale","paired","removed","nowPlayingLabel","playerWaiting","settingsSummary","connectionStatusLabel","previous","next","play","pause","likeLabel","dislikeLabel","controlFailed","controlChanged","controlUpdate","volumeLabel","mute","unmute"]
     .map(key => [key, chrome.i18n.getMessage(key)])
 );
 const coverMessages = new Map([
@@ -22,26 +22,38 @@ let statusRequests = 0;
 let closed = false;
 let currentPlayer = null;
 let controlsAvailable = false;
+let volumeSupported = false;
 let settingsInitialized = false;
 let settingsTouched = false;
 let artworkKey = '';
 let artworkRevision = 0;
 let latestControl = 0;
+let localStatus = null;
+let bridgePlayback = null;
+let localRequests = 0;
+let volumeEditing = false;
+let volumeRevision = 0;
+let volumeDeadline = Infinity;
+let queuedVolume = null;
+let volumeSending = false;
 const pendingControls = new Map();
-const controlButtons = { previous: 'prev', playPause: 'toggle', next: 'next', like: 'like', dislike: 'dislike', mute: 'mute', volumeDown: 'volume_delta', volumeUp: 'volume_delta' };
+const controlButtons = { previous: 'prev', playPause: 'toggle', next: 'next', like: 'like', dislike: 'dislike', mute: 'mute' };
+const playerIdentity = player => player ? JSON.stringify([player.id, player.key]) : '';
 function updateControls() {
   const enabled = controlsAvailable && currentPlayer && !pendingActions;
   const busy = [...pendingControls.values()];
   for (const [id, command] of Object.entries(controlButtons)) {
     $(id).disabled = !enabled || busy.includes(command) ||
-      (!['toggle', 'mute', 'volume_delta'].includes(command) && busy.length > 0) ||
+      (!['toggle', 'mute', 'volume_set'].includes(command) && busy.length > 0) ||
       (['like', 'dislike'].includes(command) && currentPlayer?.rating == null);
   }
-  if (currentPlayer?.volume <= 0) $('volumeDown').disabled = true;
-  if (currentPlayer?.volume >= 100) $('volumeUp').disabled = true;
+  $('volumeSlider').disabled = !enabled || !volumeSupported || !Number.isFinite(currentPlayer?.volume);
+  if ($('volumeSlider').disabled || Date.now() > volumeDeadline) {
+    volumeEditing = false; queuedVolume = null;
+  }
   const playing = currentPlayer?.playing === true;
   for (const [id, label] of [['previous', text.previous], ['next', text.next], ['playPause', playing ? text.pause : text.play],
-    ['mute', currentPlayer?.muted ? text.unmute : text.mute], ['volumeDown', text.volumeDown], ['volumeUp', text.volumeUp]]) {
+    ['mute', currentPlayer?.muted ? text.unmute : text.mute], ['like', text.likeLabel], ['dislike', text.dislikeLabel]]) {
     $(id).setAttribute('aria-label', label);
     $(id).setAttribute('title', label);
   }
@@ -54,7 +66,10 @@ function updateControls() {
   $('mute').setAttribute('aria-pressed', String(currentPlayer?.muted === true));
   $('muteIcon').src = asset(`icons/controls/${currentPlayer?.muted ? 'mute' : 'volume'}.png`);
   $('volumeLabel').textContent = text.volumeLabel;
-  $('volumeValue').textContent = Number.isFinite(currentPlayer?.volume) ? `${currentPlayer.volume}%` : '—';
+  if (!volumeEditing) {
+    $('volumeSlider').value = String(currentPlayer?.volume ?? 0);
+    $('volumeValue').textContent = Number.isFinite(currentPlayer?.volume) ? `${currentPlayer.volume}%` : '—';
+  }
 }
 function clearArtwork() {
   $('artwork').hidden = true;
@@ -63,6 +78,15 @@ function clearArtwork() {
 }
 async function loadArtwork(player, key, revision) {
   try {
+    if (player.mode === 'local') {
+      const url = new URL(player.coverKey);
+      if (url.protocol !== 'https:' || url.username || url.password || url.port ||
+          !/^(?:i\.ytimg\.com|img\.youtube\.com|yt3\.ggpht\.com|yt3\.googleusercontent\.com|lh\d+\.googleusercontent\.com)$/.test(url.hostname)) return;
+      $('artwork').src = url.href;
+      $('artwork').hidden = false;
+      $('coverFallback').hidden = true;
+      return;
+    }
     const result = await chrome.runtime.sendMessage({ type: 'artwork', playerId: player.id,
       trackKey: player.key, coverKey: player.coverKey });
     if (closed || key !== artworkKey || revision !== artworkRevision) return;
@@ -78,15 +102,21 @@ async function loadArtwork(player, key, revision) {
   } catch { /* Keep the placeholder; playback does not depend on artwork. */ }
 }
 function showPlayer(result) {
-  currentPlayer = result?.ok && result.active ? result.player || null : null;
+  const previousIdentity = playerIdentity(currentPlayer);
+  currentPlayer = result?.ok && result.active && result.player ? { ...result.player, mode: result.mode || 'bridge' } : null;
+  if (previousIdentity !== playerIdentity(currentPlayer)) {
+    volumeRevision++; volumeEditing = false; queuedVolume = null;
+  }
+  if (volumeEditing && !queuedVolume && !volumeSending && Number($('volumeSlider').value) === currentPlayer?.volume) volumeEditing = false;
   controlsAvailable = result?.popupControls === true && !result.playerStale &&
     result.compatibility?.compatible !== false;
+  volumeSupported = result?.popupVolume === true;
   // Older compatible plugins still supply a title, but do not advertise controls.
   const title = currentPlayer?.title || (result?.ok && result.active ? result.track : '') || text.playerWaiting;
   if ($('trackTitle').textContent !== title) $('trackTitle').textContent = title;
   $('trackArtist').textContent = currentPlayer?.artist || '';
   const key = currentPlayer && result.coverStatus === 'ready' && currentPlayer.coverKey ?
-    JSON.stringify([currentPlayer.id, currentPlayer.key, currentPlayer.coverKey]) : '';
+    JSON.stringify([currentPlayer.mode, currentPlayer.id, currentPlayer.key, currentPlayer.coverKey]) : '';
   if (key !== artworkKey) {
     artworkKey = key;
     const revision = ++artworkRevision;
@@ -94,6 +124,17 @@ function showPlayer(result) {
     if (key) void loadArtwork(currentPlayer, key, revision);
   }
   updateControls();
+}
+function applyPlayback() { showPlayer(bridgePlayback || localStatus); }
+async function refreshLocalPlayer() {
+  if (closed || localRequests || document.hidden) return;
+  localRequests++;
+  try {
+    const result = await chrome.runtime.sendMessage({ type: 'player-status' });
+    if (!closed) { localStatus = result; if (!bridgePlayback) applyPlayback(); }
+  } catch {
+    if (!closed) { localStatus = null; if (!bridgePlayback) applyPlayback(); }
+  } finally { localRequests--; }
 }
 $('artwork').addEventListener('error', clearArtwork);
 $('settingsSummary').addEventListener('click', () => { settingsTouched = true; });
@@ -138,9 +179,11 @@ async function refreshStatus(automatic = false) {
     const r = await chrome.runtime.sendMessage({ type:'check' });
     if (closed || request !== latestRequest) return;
     showVersions(r?.compatibility);
-    showPlayer(r);
+    bridgePlayback = r?.ok && r.active && r.popupControls === true && r.popupVolume === true && !r.playerStale ? r : null;
+    // Legacy connected plugins retain their display if no local snapshot exists.
+    if (!bridgePlayback && !localStatus?.active && r?.ok && r.active) showPlayer(r); else applyPlayback();
     if (!settingsInitialized) {
-      if (!settingsTouched) $('connectionSettings').open = !r?.ok;
+      if (!settingsTouched) $('connectionSettings').open = !r?.ok && !localStatus?.active;
       settingsInitialized = true;
     }
     if (!r?.ok) return display('status', r?.error || text.unknown);
@@ -148,10 +191,10 @@ async function refreshStatus(automatic = false) {
     const cover = coverMessages.get(r.coverStatus) || coverMessages.get('waiting');
     const data = `${text.player} · ${r.standalone ? text.app : text.tab}` +
       (r.coverStatus === 'ready' ? '' : `\n${text.artwork}: ${cover}`) +
-      (r.popupControls === true ? '' : `\n${text.controlUpdate}`);
+      (r.popupControls === true || localStatus?.active ? '' : `\n${text.controlUpdate}`);
     display('status', r.playerStale ? `${data}\n${text.stale}` : data, !r.playerStale);
   } catch (e) {
-    if (!closed && request === latestRequest) { showPlayer(null); display('status', e.message); }
+    if (!closed && request === latestRequest) { bridgePlayback = null; applyPlayback(); display('status', e.message); }
   }
   finally { statusRequests--; }
 }
@@ -162,7 +205,8 @@ onAction('forget', async request => {
     if (request !== latestRequest) return;
     if (!result?.ok) return info(result?.error || text.fail);
     showVersions(null);
-    showPlayer(null);
+    bridgePlayback = null;
+    applyPlayback();
     display('status', '');
     info(text.removed, true);
   } catch (error) { if (request === latestRequest) info(error.message); }
@@ -187,34 +231,64 @@ onAction('savePort', async request => {
     if (saved?.ok && revision === portRevision) $('port').value = String(saved.port);
   } catch {}
 })();
-for (const [id, command] of Object.entries(controlButtons)) {
-  $(id).addEventListener('click', async () => {
-    if ($(id).disabled || !currentPlayer || closed) return;
-    const player = currentPlayer;
+async function executeControl(command, player, extra = {}) {
     const request = ++latestControl;
     pendingControls.set(request, command);
     display('controlFeedback', '');
     updateControls();
     try {
-      const result = await chrome.runtime.sendMessage({ type: 'control', command,
-        playerId: player.id, trackKey: player.key,
-        ...(command === 'volume_delta' ? { amount: id === 'volumeDown' ? -5 : 5 } : {}) });
-      if (closed || request !== latestControl) return;
+      const result = await chrome.runtime.sendMessage({ type: player.mode === 'local' ? 'local-control' : 'control', command,
+        playerId: player.id, trackKey: player.key, ...extra });
+      if (closed || request !== latestControl) return result;
       if (!result?.ok) display('controlFeedback', result?.reason === 'player-changed' ? text.controlChanged : text.controlFailed);
+      return result;
     } catch {
       if (!closed && request === latestControl) display('controlFeedback', text.controlFailed);
     } finally {
       pendingControls.delete(request);
       updateControls();
-      if (!closed) void refreshStatus(true);
+      if (!closed) { void refreshStatus(true); void refreshLocalPlayer(); }
     }
+}
+for (const [id, command] of Object.entries(controlButtons)) {
+  $(id).addEventListener('click', async () => {
+    if ($(id).disabled || !currentPlayer || closed) return;
+    await executeControl(command, currentPlayer);
   });
+}
+$('volumeSlider').addEventListener('input', () => {
+  if ($('volumeSlider').disabled || closed) return;
+  volumeEditing = true; volumeRevision++; volumeDeadline = Infinity;
+  $('volumeValue').textContent = `${$('volumeSlider').value}%`;
+});
+$('volumeSlider').addEventListener('change', () => {
+  const amount = Number($('volumeSlider').value);
+  if ($('volumeSlider').disabled || !currentPlayer || closed || !Number.isInteger(amount) || amount < 0 || amount > 100) return;
+  volumeEditing = true;
+  queuedVolume = { player: currentPlayer, amount, revision: volumeRevision };
+  if (!volumeSending) void flushVolume();
+});
+async function flushVolume() {
+  volumeSending = true;
+  try {
+    while (queuedVolume && !closed) {
+      const intent = queuedVolume; queuedVolume = null;
+      if (playerIdentity(intent.player) !== playerIdentity(currentPlayer)) continue;
+      const result = await executeControl('volume_set', intent.player, { amount: intent.amount });
+      if (intent.revision === volumeRevision && !queuedVolume) {
+        if (!result?.ok) volumeEditing = false;
+        volumeDeadline = Date.now() + 3000;
+      }
+    }
+  } finally { volumeSending = false; updateControls(); }
 }
 clearArtwork();
 showPlayer(null);
 $('refresh').click();
-const statusTimer = setInterval(() => { void refreshStatus(true); }, 1000);
+void refreshLocalPlayer();
+const statusTimer = setInterval(() => { void refreshStatus(true); void refreshLocalPlayer(); }, 1000);
 window.addEventListener('pagehide', () => {
   closed = true;
+  queuedVolume = null;
   clearInterval(statusTimer);
 }, { once: true });
