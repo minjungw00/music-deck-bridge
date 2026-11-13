@@ -57,7 +57,9 @@ All twelve actions use the main icon's circular badge, gradient magenta and whit
 
 Each family has a 72px key and 144px @2x key. The 20px/40px action-list badges use white with transparent symbol cutouts so they remain monochrome on Stream Deck's dark UI. All action exports use 4× supersampling before downsampling. Key and state PNGs have opaque corners; monochrome action-list badges retain transparent corners. Popup controls use matching 144px copies and display only the circular disc, preserving their round appearance. The Chrome popup uses the same dark background, a deep-magenta primary button for white-text contrast and a magenta keyboard-focus outline. The property inspector retains the host's neutral SDPI style.
 
-### Playback and rating states
+### Playback, rating and volume states
+
+Volume Up / Down temporarily replace their white symbol with a centered reported number after successful input and a fresh player snapshot. Each key has independent **Show volume number on press** (default on) and **Show percent sign** (default off) settings. The magenta disc and dark surface remain the same generated pixels, using `imgs/actions/volume/level@2x.png` as the embedded SVG background. The number follows the observed volume for two seconds, then the original symbol returns. Repeated confirmed inputs renew that interval. Failed inputs and changes to the selected player do not predict a new volume.
 
 The Play / Pause key has separate artwork for its next operation: Play when paused, Pause while playing. It follows the selected player's confirmed state, including changes made in Chrome, and updates every visible instance of the key. A key press alone does not flip the image. With no selected player it shows Play. Play/Pause, Like, Dislike and Open keys have no default text titles. The action-list icon uses Play.
 
@@ -89,10 +91,11 @@ Run the normal [development checks](development.md#local-checks):
 
 | Check | Coverage |
 | --- | --- |
-| `tests/brand-assets.test.mjs` | Brand/store PNG dimensions, RGBA, transparent corners, palette, small play triangles and manifest references; 36 base action PNGs, square device-key surfaces, monochrome cutouts and playback/rating variants at both key sizes |
+| `tests/brand-assets.test.mjs` | Brand/store PNG dimensions, RGBA, transparent corners, palette, small play triangles and manifest references; 44 base action PNGs, square device-key surfaces, monochrome cutouts and playback/rating variants at both key sizes |
+| `tests/rendering/volume_key_qt.py` (optional PySide6-Essentials) | Numeric key SVG centering, 0–100 bounds with/without `%` and preservation of the shared badge at 72px/144px; accepts local `--font` files and saves sample renders with `--output-dir` |
 | Python packaging tests | Chrome ZIP and Stream Deck staging preserve the PNG bytes, including pause and selected-rating images |
 
-The Node checks use only the standard library. Current Track Dial shares the Play / Pause icon family. The generator produces 68 assets, including the store app icon, six additional state PNGs and ten matching popup control copies. Pillow is needed only for regeneration.
+The Node checks use only the standard library. Current Track Dial shares the Play / Pause icon family. The generator produces 69 assets, including the store app icon, six additional state PNGs, the numeric-volume badge background and ten matching popup control copies. Pillow is needed only for regeneration.
 
 ## License and attribution
 

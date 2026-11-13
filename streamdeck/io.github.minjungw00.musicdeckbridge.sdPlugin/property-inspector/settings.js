@@ -62,6 +62,8 @@ function localize() {
   $('volumeRow').setAttribute('label', t(volumeKey ? 'volumeKeyRow' : 'volumeRow'));
   $('volumeStep').setAttribute('aria-label', t(volumeKey ? 'volumeKeyRow' : 'volumeRow'));
   $('volumeHint').textContent = t(volumeKey ? 'volumeKeyHint' : 'volumeHint');
+  for (const id of ['volumeValueRow', 'volumePercentRow']) $(id).setAttribute('label', t(id));
+  for (const id of ['volumeShowValue', 'volumeShowPercent']) $(id).setAttribute('label', t(id));
   $('installExtension').textContent = t('installExtension');
   $('companionHint').textContent = t('companionHint');
   $('pinRow').setAttribute('label', t('pinRow'));
@@ -77,6 +79,16 @@ function updateVolumeLabel() {
   const value = validVolume($('volumeStep').value) ?? 4;
   $('stepLabel').textContent = `${Number.isFinite(value) ? Math.max(1, Math.min(5, value)) : 4}%`;
 }
+function updateVolumeFeedbackOptions(showValue = $('volumeShowValue').value) {
+  $('volumePercentRow').classList.toggle('hidden', showValue === false);
+}
+$('volumeShowValue').addEventListener('valuechange', () => {
+  editor.receive({ volumeShowValue: $('volumeShowValue').value !== false });
+  updateVolumeFeedbackOptions();
+});
+$('volumeShowPercent').addEventListener('valuechange', () => {
+  editor.receive({ volumeShowPercent: $('volumeShowPercent').value === true });
+});
 function updateArtworkOptions(mode = $('dialDisplay').value, showTitle = $('artworkShowTitle').value, showArtist = $('artworkShowArtist').value) {
   $('artworkOptions').classList.toggle('hidden', mode !== 'artwork');
   $('artworkTextOptions').classList.toggle('hidden', mode !== 'artwork' || showTitle !== true);
@@ -150,6 +162,7 @@ client.sendToPropertyInspector.subscribe(msg => {
 client.didReceiveSettings.subscribe(msg => {
   // Native range is manually synchronized; sdpi-select persists titleMode/dialDisplay.
   editor.receive(msg.payload?.settings);
+  updateVolumeFeedbackOptions(editor.settings.volumeShowValue !== false);
   updateArtworkOptions(editor.settings.dialDisplay || 'info', editor.settings.artworkShowTitle === true, editor.settings.artworkShowArtist === true);
   $('keyArtistPositionRow').classList.toggle('hidden', editor.settings.showArtist === false);
 });
@@ -179,6 +192,7 @@ void (async () => {
     const { info, actionInfo } = await client.getConnectionInfo();
     connectedToHost = true;
     editor.receive(actionInfo?.payload?.settings || {});
+    updateVolumeFeedbackOptions(editor.settings.volumeShowValue !== false);
     updateArtworkOptions(editor.settings.dialDisplay || 'info', editor.settings.artworkShowTitle === true, editor.settings.artworkShowArtist === true);
     $('keyArtistPositionRow').classList.toggle('hidden', editor.settings.showArtist === false);
     language = info?.application?.language === 'ko' ? 'ko' : 'en';
@@ -188,6 +202,7 @@ void (async () => {
     if (action.endsWith('.nowplaying')) $('trackSection').classList.remove('hidden');
     if (action.endsWith('.trackdial')) $('dialSection').classList.remove('hidden');
     if (volumeKey || action.endsWith('.volume')) $('volumeSection').classList.remove('hidden');
+    if (volumeKey) $('volumeFeedbackOptions').classList.remove('hidden');
     // Recover from races where the plugin answers before the inspector is ready.
     responseTimer = setTimeout(() => { if (!currentStatus) $('pairState').textContent = t('bridgeWait'); }, 3500);
     await requestConnection();

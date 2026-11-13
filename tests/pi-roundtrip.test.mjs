@@ -266,6 +266,32 @@ for (const protectedManifest of [false, true]) {
     const resumed = await reconciled;
     assert.equal(resumed.commands[0].preferredTabId, 1);
     await post('/browser-result', { token, id: resumed.commands[0].id, ok: true });
+    for (const [name, volume] of [['volumeup', 53], ['volumedown', 50], ['volumeup', 100], ['volumedown', 0]]) {
+      await waitFor(() => toggleImage(name) === `imgs/actions/${name}/key@2x.png`);
+      const percent = name === 'volumedown';
+      send('didReceiveSettings', name, { settings: { volumeStep: 3, volumeShowPercent: percent } });
+      if (volume === 0 || volume === 100) {
+        state.volume = volume;
+        await post('/sync', { token, clientId: 1, state });
+      }
+      const listening = post('/browser-listen', { token });
+      send('keyDown', name, {});
+      const { commands: [command] } = await listening;
+      assert.equal(command.type, 'volume_delta');
+      await post('/browser-result', { token, id: command.id, ok: true });
+      assert.equal(toggleImage(name), `imgs/actions/${name}/key@2x.png`, 'ACK alone must not predict a volume');
+      state.volume = volume;
+      await post('/sync', { token, clientId: 1, state });
+      await waitFor(() => toggleImage(name)?.startsWith('data:image/svg+xml;base64,'));
+      assert.match(Buffer.from(toggleImage(name).split(',')[1], 'base64').toString(), new RegExp(`>${volume}${percent ? '%' : ''}</text>`));
+      await waitFor(() => toggleImage(name) === `imgs/actions/${name}/key@2x.png`);
+    }
+    send('didReceiveSettings', 'volumeup', { settings: { volumeShowValue: false } });
+    await browserCommand('volumeup', 'volume_delta', 1);
+    state.volume = 4;
+    await post('/sync', { token, clientId: 1, state });
+    await new Promise(resolve => setTimeout(resolve, 180));
+    assert.equal(toggleImage('volumeup'), 'imgs/actions/volumeup/key@2x.png', 'disabled number feedback retains the icon');
     send('willDisappear', 'nowplaying', { controller: 'Keypad', settings: {}, coordinates: { column: 0, row: 0 }, state: 0 });
     const count = messages.length;
     state.title = 'Changed after disappearance';

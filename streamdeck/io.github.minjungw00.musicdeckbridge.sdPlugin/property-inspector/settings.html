@@ -115,6 +115,14 @@
       </div>
     </sdpi-item>
     <p class="hint"><span id="volumeHint">One dial tick changes the volume by</span> <strong id="stepLabel">4%</strong>.</p>
+    <div id="volumeFeedbackOptions" class="hidden">
+      <sdpi-item id="volumeValueRow" label="Volume feedback">
+        <sdpi-checkbox id="volumeShowValue" setting="volumeShowValue" default="true" label="Show volume number on press"></sdpi-checkbox>
+      </sdpi-item>
+      <sdpi-item id="volumePercentRow" label="Number format">
+        <sdpi-checkbox id="volumeShowPercent" setting="volumeShowPercent" default="false" label="Show percent sign"></sdpi-checkbox>
+      </sdpi-item>
+    </div>
   </section>
   <section class="connection">
     <sdpi-item id="pinRow" label="Connection">

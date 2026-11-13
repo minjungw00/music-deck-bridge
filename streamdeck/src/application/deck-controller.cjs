@@ -14,6 +14,29 @@ function createDeckController({ displayed, commands, session, ports, players, ou
     const raw = Number(item?.volumePreview?.value ?? item?.settings?.volumeStep);
     return Number.isInteger(raw) ? limit(raw, 1, 5) : 4;
   }
+  function changeVolume(context, amount) {
+    const item = displayed.get(context);
+    const selected = players?.selected();
+    const feedback = { playerId: selected ? String(selected[0]) : null, before: selected?.[1],
+      confirmed: false, expiresAt: Infinity };
+    if (item) {
+      item.volumeRequest = feedback;
+      if (item.settings?.volumeShowValue !== false) item.volumeFeedback = feedback;
+    }
+    void commands.request('volume_delta', amount).then(ok => {
+      if (!item || displayed.get(context) !== item || item.volumeRequest !== feedback) return;
+      delete item.volumeRequest;
+      if (ok === true) {
+        if (item.volumeFeedback === feedback) { feedback.confirmed = true; feedback.expiresAt = now() + 5000; }
+      }
+      else {
+        delete item.volumeFeedback;
+        delete item.volumeDisplay;
+        if (ok === false) output.send({ event: 'showAlert', context });
+      }
+      onChange();
+    });
+  }
   function handleDeckEvent(e) {
     if (!e || !e.event) return;
     if (e.event === 'willAppear') {
@@ -32,6 +55,10 @@ function createDeckController({ displayed, commands, session, ports, players, ou
           else item.volumePreview = null;
         }
         item.settings = incoming;
+        if (incoming.volumeShowValue === false) {
+          delete item.volumeFeedback;
+          delete item.volumeDisplay;
+        }
         onChange();
       }
       return;
@@ -75,7 +102,7 @@ function createDeckController({ displayed, commands, session, ports, players, ou
     }
     if (e.event === 'keyDown') {
       if (kind === 'volumeup' || kind === 'volumedown') {
-        controlPlayer(e.context, 'volume_delta', (kind === 'volumeup' ? 1 : -1) * volumeStep(e.context));
+        changeVolume(e.context, (kind === 'volumeup' ? 1 : -1) * volumeStep(e.context));
         return;
       }
       const type = ({ nowplaying: 'toggle', toggle: 'toggle', open: 'open', prev: 'prev',

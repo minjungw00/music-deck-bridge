@@ -14,6 +14,7 @@ const { actionName } = require('./domain/actions.cjs');
 const { launchChrome } = require('./launch-chrome.cjs');
 const { fitDialArtwork } = require('./dial-artwork.cjs');
 const { keyTextBackground } = require('./key-background.cjs');
+const { volumeKeyImage } = require('./volume-key-image.cjs');
 const version = require('../../package.json').version;
 const isTest = process.env.MUSIC_DECK_BRIDGE_DEV_TEST === '1';
 
@@ -29,7 +30,11 @@ function log(message) {
 }
 
 const storage = createFileStore({ testPort: isTest ? process.env.MUSIC_DECK_BRIDGE_TEST_PORT : undefined });
-const players = createPlayerRegistry({ onChange: drawSoon });
+const players = createPlayerRegistry({ onChange: drawSoon, onObserved: () => {
+  // A fresh 0/100 snapshot can confirm a bounded volume input without changing
+  // the registry's display signature. Wake only keys waiting for that snapshot.
+  if ([...displayed.values()].some(item => item.volumeFeedback?.confirmed)) drawSoon();
+} });
 const commands = createCommandService({ selectedEntry: players.selected, log,
   getSession: () => session.access, launch: isTest ? async () => {} : launchChrome });
 const covers = createCoverStore({ selectedSource: () => players.selected()?.[1].cover, onChange: drawSoon });
@@ -44,7 +49,7 @@ const ports = createPortService({ initialPort: storage.readPort(), savePort: sto
 const controller = createDeckController({ displayed, commands, session, ports, players,
   output: deck, onChange: drawSoon, version });
 const renderer = createRenderer({ displayed, covers, selectedEntry: players.selected, actionName,
-  online: () => deck.online, tr: key => translate(deck.locale, key), fitDialArtwork, keyTextBackground,
+  online: () => deck.online, tr: key => translate(deck.locale, key), fitDialArtwork, keyTextBackground, volumeKeyImage,
   output: {
     sendStream: deck.send,
     setTitle: (context, title) => deck.send({ event: 'setTitle', context, payload: { title } }),

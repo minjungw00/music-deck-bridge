@@ -14,7 +14,8 @@ function makeInspector(action='io.github.minjungw00.musicdeckbridge.nowplaying',
     'trackSection','dialSection','dialDisplayRow','dialDisplay','optDialInfo','optDialArtwork','dialDisplayHint',
     'artworkTextOptions','artworkArtistRow','artworkShowArtist','artworkBackgroundRow','artworkTitleBackground','artworkTitleModeRow','artworkTitleMode','optArtworkTruncate','optArtworkScroll',
     'artworkOptions','artworkFitRow','artworkFit','optArtworkHeight','optArtworkWidth','artworkFitHint','artworkTitleRow','artworkShowTitle',
-    'volumeSection','portRow','serverPort','applyPort','portStatus'];
+    'volumeSection','volumeFeedbackOptions','volumeValueRow','volumeShowValue','volumePercentRow','volumeShowPercent',
+    'portRow','serverPort','applyPort','portStatus'];
   const elems=Object.fromEntries(ids.map(id=>[id,{
     id, textContent:'',value:id==='volumeStep'?'4':'',listeners:{},attrs:{},dataset:{},
     setAttribute(k,v){this.attrs[k]=v},addEventListener(k,v){this.listeners[k]=v},
@@ -88,6 +89,31 @@ test('volume keys expose the per-press step in English and Korean', async () => 
       assert.equal(pi.elems.volumeHint.textContent, hint);
     }
   }
+});
+
+test('volume feedback settings use number-only defaults and appear only on volume keys', async () => {
+  for (const [language, label, percent] of [['ko', '동작 시 볼륨 숫자 표시', '퍼센트 표시'],
+    ['en', 'Show volume number on press', 'Show percent sign']]) {
+    for (const action of ['volumeup', 'volumedown']) {
+      const pi = makeInspector('io.github.minjungw00.musicdeckbridge.' + action, language); await pi.ready();
+      assert.deepEqual(pi.elems.volumeFeedbackOptions.classList.removed, ['hidden']);
+      assert.equal(pi.elems.volumeShowValue.attrs.label, label);
+      assert.equal(pi.elems.volumeShowPercent.attrs.label, percent);
+      assert.equal(pi.elems.volumePercentRow.classList.hidden, false);
+      pi.elems.volumeShowValue.value = false; pi.elems.volumeShowValue.listeners.valuechange();
+      assert.equal(pi.elems.volumePercentRow.classList.hidden, true);
+      pi.elems.volumeShowPercent.value = true; pi.elems.volumeShowPercent.listeners.valuechange();
+      pi.elems.volumeStep.listeners.change({ target: { value: '2' } });
+      assert.equal(pi.calls.at(-1).settings.volumeShowValue, false);
+      assert.equal(pi.calls.at(-1).settings.volumeShowPercent, true);
+      pi.subscribers.settings({ payload: { settings: { volumeShowValue: true } } });
+      assert.equal(pi.elems.volumePercentRow.classList.hidden, false);
+    }
+    const dial = makeInspector('io.github.minjungw00.musicdeckbridge.volume', language); await dial.ready();
+    assert.deepEqual(dial.elems.volumeFeedbackOptions.classList.removed, []);
+  }
+  assert.match(html, /setting="volumeShowValue" default="true"/);
+  assert.match(html, /setting="volumeShowPercent" default="false"/);
 });
 
 test('current-track dial exposes its localized persisted display selector only on that action', async () => {

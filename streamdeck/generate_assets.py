@@ -104,7 +104,9 @@ def render(kind, size, background, square_background=False):
         for x, y in (points[0], points[-1]):
             draw.ellipse(box((x - half, y - half, x + half, y + half)), fill=255)
 
-    if kind == "toggle":
+    if kind == "volume_level":
+        pass  # Shared badge background for the transient numeric volume image.
+    elif kind == "toggle":
         polygon([(208, 168), (208, 336), (334, 252)])
     elif kind == "pause":
         rectangle((202, 174, 236, 330))
@@ -175,6 +177,7 @@ def main():
         outputs[f"{plugin}/actions/toggle/pause{suffix}.png"] = ("pause", 72 * scale, True, True)
         for kind in ("like", "dislike"):
             outputs[f"{plugin}/actions/{kind}/selected{suffix}.png"] = (kind + "_selected", 72 * scale, True, True)
+    outputs[f"{plugin}/actions/volume/level@2x.png"] = ("volume_level", 144, True, True)
     # Popup buttons reuse the same 2x key artwork, including observed states.
     for name, kind in {"previous": "prev", "play": "toggle", "pause": "pause", "next": "next",
                        "like": "like", "like-selected": "like_selected", "dislike": "dislike",

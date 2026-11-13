@@ -40,7 +40,7 @@ Public releases and development builds are tracked separately in [release readin
 - Open YouTube Music from a dedicated key; other controls open a missing player and continue their requested action when ready.
 - Like/dislike the current song, with selected-state icons; press again to remove the rating.
 - Volume dial with 1–5 percentage points per tick; push or touch to mute.
-- Volume Up / Down keys with independently configurable 1–5 percentage points per press (default: 4).
+- Volume Up / Down keys with independently configurable 1–5 percentage points per press (default: 4); briefly show the reported volume after each successful input. Number feedback defaults on, with an optional percent sign in each key's settings.
 - Current Track Dial: turn for previous/next track (up to five per event), push or touch to play/pause, and choose song info or fitted album artwork with optional song/artist text.
 - English and Korean settings; truncated or scrolling track titles.
 - Six-digit PIN pairing, an authenticated loopback bridge, a configurable shared port and protocol compatibility checks with targeted update guidance.

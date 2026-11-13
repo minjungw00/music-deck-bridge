@@ -1,6 +1,7 @@
 'use strict';
 const { createOutputCache } = require('./output-cache.cjs');
 const { ellipsis, marquee, MARQUEE_STEP_MS } = require('./track-text.cjs');
+const { PLAYER_STALE_MS } = require('../domain/player-state.cjs');
 const STRINGS = {
   ko: { unavailable: '연결 안 됨', offline: '오프라인', pause: '일시정지', play: '재생', muted: '음소거', absent: 'YTM 없음', currentTrack: '현재 곡', open: 'YTM 실행', like: '좋아요', dislike: '싫어요' },
   en: { unavailable: 'Disconnected', offline: 'Offline', pause: 'Pause', play: 'Play', muted: 'Muted', absent: 'No YTM', currentTrack: 'Current Track', open: 'Open YTM', like: 'Like', dislike: 'Dislike' },
@@ -15,9 +16,11 @@ function needsMarquee(displayed, actionName) {
 
 // Output and artwork are ports: this module can run in Node, tests or a preview.
 function createRenderer({ displayed, covers, selectedEntry, actionName, online = () => true,
-  tr = key => translate('en', key), now = Date.now, fitDialArtwork, keyTextBackground,
+  tr = key => translate('en', key), now = Date.now, fitDialArtwork, keyTextBackground, volumeKeyImage,
+  setTimeout = globalThis.setTimeout, clearTimeout = globalThis.clearTimeout,
   output: { setImage, setTitle, setFeedback, sendStream } }) {
   let hasDrawing = false;
+  let volumeTimer = null;
   const cache = createOutputCache({ isCurrent: (context, item) => displayed.get(context) === item });
   const writeImage = (context, item, value) => cache.write(context, item, 'lastImage', value, next => setImage(context, next));
   const writeTitle = (context, item, value) => cache.write(context, item, 'lastTitle', value, next => setTitle(context, next));
@@ -113,9 +116,38 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     const image = keyTextBackground(cover, lines);
     writeImage(context, item, image);
   }
+  function renderVolumeKey(context, item, chosen, kind) {
+    if (item.settings?.volumeShowValue === false) {
+      delete item.volumeFeedback;
+      delete item.volumeDisplay;
+      writeImage(context, item, `imgs/actions/${kind}/key@2x.png`);
+      return Infinity;
+    }
+    const state = chosen?.[1], playerId = chosen ? String(chosen[0]) : null;
+    const currentTime = now();
+    const valid = state && Number.isInteger(state.volume) && state.volume >= 0 && state.volume <= 100 &&
+      currentTime - state.lastMediaSyncAt < PLAYER_STALE_MS;
+    let pending = item.volumeFeedback;
+    if (pending && (currentTime >= pending.expiresAt ||
+        (pending.playerId !== null && pending.playerId !== playerId))) {
+      delete item.volumeFeedback; pending = null;
+    }
+    // Both a successful command and a fresh player snapshot are needed. An ACK
+    // can arrive before or after /sync; neither predicts the resulting volume.
+    if (pending?.confirmed && valid && state !== pending.before) {
+      item.volumeDisplay = { playerId, until: currentTime + 2000 };
+      delete item.volumeFeedback; pending = null;
+    }
+    if (item.volumeDisplay && (!valid || item.volumeDisplay.playerId !== playerId || currentTime >= item.volumeDisplay.until))
+      delete item.volumeDisplay;
+    const image = item.volumeDisplay ? volumeKeyImage?.(state.volume, item.settings?.volumeShowPercent === true) : null;
+    writeImage(context, item, image || `imgs/actions/${kind}/key@2x.png`);
+    return Math.min(pending?.expiresAt ?? Infinity, item.volumeDisplay?.until ?? Infinity);
+  }
   function paint() {
     if (hasDrawing) return;
     hasDrawing = true;
+    let nextVolumeExpiry = Infinity;
     try {
       const chosen = selectedEntry();
       const state = chosen?.[1];
@@ -132,6 +164,8 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
         } else if (kind === 'mute') {
           const image = `imgs/actions/${state?.muted ? 'mute' : 'volume'}/key@2x.png`;
           writeImage(context, item, image);
+        } else if (kind === 'volumeup' || kind === 'volumedown') {
+          nextVolumeExpiry = Math.min(nextVolumeExpiry, renderVolumeKey(context, item, chosen, kind));
         } else if (kind === 'open') {
           writeTitle(context, item, '');
         } else if (kind === 'like' || kind === 'dislike') {
@@ -150,7 +184,14 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
       }
       if (state?.cover && !covers.image(state.cover))
         void covers.load(state.cover, state.coverFallback);
-    } finally { hasDrawing = false; }
+    } finally {
+      hasDrawing = false;
+      if (volumeTimer !== null) clearTimeout(volumeTimer);
+      volumeTimer = Number.isFinite(nextVolumeExpiry) ? setTimeout(() => {
+        volumeTimer = null; paint();
+      }, Math.max(1, nextVolumeExpiry - now())) : null;
+      volumeTimer?.unref?.();
+    }
   }
   return { paint, renderCurrentTrackDial, renderCurrentTrackKey, settled: cache.settled };
 }
