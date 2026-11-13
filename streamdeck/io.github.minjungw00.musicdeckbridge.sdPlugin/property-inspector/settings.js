@@ -61,7 +61,6 @@ function localize() {
   $('volumeRow').setAttribute('label', t('volumeRow'));
   $('volumeStep').setAttribute('aria-label', t('volumeRow'));
   $('volumeHint').textContent = t('volumeHint');
-  $('companionRow').setAttribute('label', t('companionRow'));
   $('installExtension').textContent = t('installExtension');
   $('companionHint').textContent = t('companionHint');
   $('pinRow').setAttribute('label', t('pinRow'));

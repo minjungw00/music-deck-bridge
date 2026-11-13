@@ -15,6 +15,7 @@
     .status { padding-left: 116px; margin: 7px 10px 10px 0; line-height: 1.45; font-size: 11px; color: #e6e6e6; overflow-wrap: anywhere; }
     #pinOutput { color: #fff; font: 600 15px ui-monospace, Consolas, monospace; letter-spacing: .12em; padding: 0 0 0 8px; }
     .inline { display: flex; align-items: center; gap: 8px; }
+    .connection-actions { flex-wrap: wrap; }
     #stepLabel { color: #fff; font-variant-numeric: tabular-nums; min-width: 24px; }
     .port-input { width: 88px; min-width: 72px; }
     .connection { border-top: 1px solid #515151; padding-top: 10px; margin-top: 8px; }
@@ -115,13 +116,13 @@
     <p class="hint"><span id="volumeHint">One dial tick changes the volume by</span> <strong id="stepLabel">4%</strong>.</p>
   </section>
   <section class="connection">
-    <sdpi-item id="companionRow" label="Companion">
-      <sdpi-button id="installExtension">Install Chrome extension</sdpi-button>
+    <sdpi-item id="pinRow" label="Connection">
+      <div class="inline connection-actions">
+        <div class="inline"><sdpi-button id="generatePin">Generate PIN</sdpi-button><output id="pinOutput" aria-live="polite"></output></div>
+        <sdpi-button id="installExtension">Install Chrome extension</sdpi-button>
+      </div>
     </sdpi-item>
     <p id="companionHint" class="hint">Both this plugin and the Chrome extension are required.</p>
-    <sdpi-item id="pinRow" label="Connection">
-      <div class="inline"><sdpi-button id="generatePin">Generate PIN</sdpi-button><output id="pinOutput" aria-live="polite"></output></div>
-    </sdpi-item>
     <p id="pairState" class="status" role="status" aria-live="polite">Checking connection…</p>
     <p id="versionInfo" class="hint"></p>
     <p id="commandStatus" class="hint" role="status" aria-live="polite"></p>
