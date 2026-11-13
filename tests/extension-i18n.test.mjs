@@ -15,6 +15,8 @@ for (const locale of ['en', 'ko', 'fr']) {
     function element(id) {
       if (!nodes.has(id)) nodes.set(id, {
         value: '', textContent: '', style: {}, handlers: {}, attrs: {},
+        get src() { return this.attrs.src; }, set src(value) { this.attrs.src = value; },
+        getAttribute(key) { return this.attrs[key] ?? null; },
         setAttribute(key, value) { this.attrs[key] = value; }, removeAttribute(key) { delete this.attrs[key]; },
         addEventListener(event, handler) { this.handlers[event] = handler; },
         click() { return this.handlers.click(); },

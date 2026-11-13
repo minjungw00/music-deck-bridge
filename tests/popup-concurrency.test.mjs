@@ -14,6 +14,8 @@ function harness({ local = { ok: true, active: false, mode: 'local' } } = {}) {
   let nextTimer = 0;
   function element(id) {
     if (!nodes.has(id)) nodes.set(id, { value: '', textContent: '', style: {}, handlers: {}, attrs: {}, hidden: false, disabled: false,
+      sourceWrites: 0, get src() { return this.attrs.src; }, set src(value) { this.attrs.src = value; this.sourceWrites++; },
+      getAttribute(key) { return this.attrs[key] ?? null; },
       setAttribute(key, value) { this.attrs[key] = value; }, removeAttribute(key) { delete this.attrs[key]; },
       addEventListener(type, run) { this.handlers[type] = run; },
       click() { return this.handlers.click(); }, input() { this.handlers.input({ target: this }); }, change() { return this.handlers.change({ target: this }); } });
@@ -196,6 +198,16 @@ async function showState(h, state = playerState()) {
   await h.tick(); h.take('check').resolve(state); await flush();
 }
 
+test('unchanged status polls preserve icon sources while actual rating/mute changes replace them once', async () => {
+  const h = harness(); await h.ready(); await showState(h);
+  const icons = ['likeIcon', 'dislikeIcon', 'muteIcon'];
+  const writes = icons.map(id => h.element(id).sourceWrites);
+  await showState(h); await showState(h);
+  assert.deepEqual(icons.map(id => h.element(id).sourceWrites), writes);
+  await showState(h, playerState({ rating: 'LIKE', muted: true }));
+  assert.deepEqual(icons.map(id => h.element(id).sourceWrites), [writes[0] + 1, writes[1], writes[2] + 1]);
+});
+
 test('player controls follow observed playback, rating, capability and connection state', async () => {
   const h = harness(); await h.ready();
   assert.equal(h.element('playPause').disabled, true);
@@ -230,11 +242,16 @@ for (const [id, command] of [['previous', 'prev'], ['playPause', 'toggle'], ['ne
     assert.equal(request.playerId, '12');
     assert.equal(request.trackKey, 'aaaaaaaaaaa');
     assert.equal(h.element(id).disabled, true);
+    for (const button of ['previous', 'playPause', 'next', 'like', 'dislike', 'mute']) {
+      assert.equal(h.element(button).attrs['aria-busy'], String(button === id));
+      assert.equal(h.element(button).attrs['data-unavailable'], 'false');
+    }
     await h.element(id).click();
     assert.equal(h.requests.length, 0, 'disabled controls must not duplicate the action');
     assert.equal(h.element('playPause').attrs['aria-label'], 'pause', 'no optimistic playback state');
     assert.equal(h.element('like').attrs['aria-pressed'], 'false', 'no optimistic rating');
     request.resolve({ ok: true }); await operation;
+    assert.equal(h.element(id).attrs['aria-busy'], 'false');
     h.take('check').resolve(playerState({ playing: false, rating: 'LIKE', muted: true, volume: 55 })); await flush();
     assert.equal(h.element('playPause').attrs['aria-label'], 'play');
     assert.equal(h.element('like').attrs['aria-pressed'], 'true');

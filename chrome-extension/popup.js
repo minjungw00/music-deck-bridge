@@ -39,13 +39,19 @@ let volumeSending = false;
 const pendingControls = new Map();
 const controlButtons = { previous: 'prev', playPause: 'toggle', next: 'next', like: 'like', dislike: 'dislike', mute: 'mute' };
 const playerIdentity = player => player ? JSON.stringify([player.id, player.key]) : '';
+function updateIcon(id, path) {
+  const source = asset(path);
+  if ($(id).getAttribute('src') !== source) $(id).src = source;
+}
 function updateControls() {
   const enabled = controlsAvailable && currentPlayer && !pendingActions;
   const busy = [...pendingControls.values()];
   for (const [id, command] of Object.entries(controlButtons)) {
-    $(id).disabled = !enabled || busy.includes(command) ||
-      (!['toggle', 'mute', 'volume_set'].includes(command) && busy.length > 0) ||
-      (['like', 'dislike'].includes(command) && currentPlayer?.rating == null);
+    const unavailable = !enabled || (['like', 'dislike'].includes(command) && currentPlayer?.rating == null);
+    $(id).disabled = unavailable || busy.includes(command) ||
+      (!['toggle', 'mute', 'volume_set'].includes(command) && busy.length > 0);
+    $(id).setAttribute('data-unavailable', String(Boolean(unavailable)));
+    $(id).setAttribute('aria-busy', String(busy.includes(command)));
   }
   $('volumeSlider').disabled = !enabled || !volumeSupported || !Number.isFinite(currentPlayer?.volume);
   if ($('volumeSlider').disabled || Date.now() > volumeDeadline) {
@@ -61,10 +67,10 @@ function updateControls() {
   $('pauseIcon').hidden = !playing;
   $('like').setAttribute('aria-pressed', String(currentPlayer?.rating === 'LIKE'));
   $('dislike').setAttribute('aria-pressed', String(currentPlayer?.rating === 'DISLIKE'));
-  $('likeIcon').src = asset(`icons/controls/like${currentPlayer?.rating === 'LIKE' ? '-selected' : ''}.png`);
-  $('dislikeIcon').src = asset(`icons/controls/dislike${currentPlayer?.rating === 'DISLIKE' ? '-selected' : ''}.png`);
+  updateIcon('likeIcon', `icons/controls/like${currentPlayer?.rating === 'LIKE' ? '-selected' : ''}.png`);
+  updateIcon('dislikeIcon', `icons/controls/dislike${currentPlayer?.rating === 'DISLIKE' ? '-selected' : ''}.png`);
   $('mute').setAttribute('aria-pressed', String(currentPlayer?.muted === true));
-  $('muteIcon').src = asset(`icons/controls/${currentPlayer?.muted ? 'mute' : 'volume'}.png`);
+  updateIcon('muteIcon', `icons/controls/${currentPlayer?.muted ? 'mute' : 'volume'}.png`);
   $('volumeLabel').textContent = text.volumeLabel;
   if (!volumeEditing) {
     $('volumeSlider').value = String(currentPlayer?.volume ?? 0);

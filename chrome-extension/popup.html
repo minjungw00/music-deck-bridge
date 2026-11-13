@@ -39,6 +39,7 @@
     svg { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
     .player-controls { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; }
     .media-button { position: relative; display: block; flex: none; width: 44px; height: 44px; min-height: 44px; padding: 0; border-radius: 50%; background: transparent; overflow: hidden; }
+    .media-button:disabled[data-unavailable="false"][aria-busy="false"] { opacity: 1; }
     /* The source key artwork has a 360px disc centered at (256,252) on a 512px canvas.
        Crop to that disc in CSS while preserving the original Stream Deck pixels. */
     .media-button img { position: absolute; width: 142.222222%; height: 142.222222%; left: -21.111111%; top: -20%; }
