@@ -32,7 +32,7 @@ The plugin uses ports and adapters with explicit factories. [plugin.cjs](../stre
 | [Domain](../streamdeck/src/domain/) | Player normalization/selection, action identities, credential comparison and value validation; no network or file access |
 | [Application](../streamdeck/src/application/) | Pairing sessions, player leases, ordered command delivery, port changes and key/dial input handling |
 | [Adapters](../streamdeck/src/adapters/) | Loopback HTTP, Stream Deck SDK, atomic file persistence and artwork fetching/cache |
-| [Presentation](../streamdeck/src/presentation/) | Key/dial rendering and grapheme-aware text formatting through injected output/artwork ports |
+| [Presentation](../streamdeck/src/presentation/) | Key/dial rendering, localized captions and grapheme-aware text formatting through injected output/artwork ports |
 
 ### Plugin services
 
@@ -42,6 +42,8 @@ A session coordinator cancels polls/inputs and resets player/artwork state throu
 
 Credential writes/deletion must succeed before the active pairing is replaced/revoked. A compatible pairing candidate's protocol information is calculated without changing the active session and committed only after its credentials are saved; failed storage preserves the existing compatibility/blocking state, diagnostics and pending inputs. Player selection and command deadlines accept an injected clock for deterministic tests.
 
+Each volume key owns a `volume-key-feedback.cjs` model. It joins the latest command result with a fresh selected-player snapshot, cancels disabled/stale feedback and returns the visible number and next expiry. The controller delivers inputs; the renderer schedules repainting and draws the returned frame. Localized device captions live in `presentation/messages.cjs` independently of drawing.
+
 ### Extension and inspector
 
 [background.js](../chrome-extension/background.js) is the classic MV3 worker entry point. Its [background modules](../chrome-extension/background/) separate the authenticated bridge client, browser-wide command channel, message router and fixed page-control functions. The client owns credential access and protocol state; the channel owns polling/retry and tab delivery. Management and player-sync services own pairing/port workflows and tab state/closure. The router validates message senders and arguments, then dispatches to those services.
@@ -49,6 +51,8 @@ Credential writes/deletion must succeed before the active pairing is replaced/re
 `MAIN`-world functions remain self-contained because Chrome serializes them for execution in the page.
 
 [player-playback.js](../chrome-extension/background/player-playback.js) owns the injected playback function. Its helpers separate player observation, bounded diagnostics, event subscription/cleanup, recovery state, ordered preparation/dispatch and independent outcome confirmation. They stay inside the serialized function; they do not require a second injection or page-global helper installation. [page-controls.js](../chrome-extension/background/page-controls.js) owns volume/mute and exposes the playback entry point to the existing router and state-sync service. The worker loads the playback module before this composition, and packaging explicitly includes both files.
+
+Artwork URL admission is shared by the content reader, standalone player, popup and plugin cache in `chrome-extension/artwork-policy.js`. It accepts only HTTPS Google/YouTube image hosts without credentials or a custom port. The plugin additionally bounds raster format, size and redirects. Popup fixtures and preview generation follow the HTML script order, and packaging checks cover every referenced script.
 
 The isolated-world content entry point composes metadata, command execution and runtime/lifecycle modules under `content/`. Both manifest loading and reinjection use the manifest’s complete ordered script list.
 
@@ -212,5 +216,3 @@ Artwork downloads validate the HTTPS host, each redirect, content type and a 2 M
 The plugin UUID is `io.github.minjungw00.musicdeckbridge`; action UUIDs append an action name, such as `.nowplaying` or `.volume`. The package folder is `io.github.minjungw00.musicdeckbridge.sdPlugin`. Authentication and port configuration are stored under `%APPDATA%\MusicDeckBridge`.
 
 See [release checks](development.md#release-checklist) for distribution requirements.
-
-Artwork URL admission is shared by the content reader, standalone player, popup and plugin cache in `chrome-extension/artwork-policy.js`. It accepts only HTTPS Google/YouTube image hosts without credentials or a custom port. The plugin additionally bounds raster format, size and redirects. Popup fixtures and preview generation follow the HTML script order, and packaging checks cover every referenced script.

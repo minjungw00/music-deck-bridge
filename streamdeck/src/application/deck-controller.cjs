@@ -3,7 +3,8 @@ const protocol = require('../../../chrome-extension/protocol.js');
 const { PLUGIN_ID, VOLUME_ACTION_NAMES, actionName } = require('../domain/actions.cjs');
 const { limit } = require('../domain/values.cjs');
 const { PLAYER_STALE_MS } = require('../domain/player-state.cjs');
-const { validFeedbackSeconds, volumeFeedbackDuration } = require('../domain/volume-feedback.cjs');
+const { validFeedbackSeconds } = require('../domain/volume-feedback.cjs');
+const { createVolumeKeyFeedback } = require('./volume-key-feedback.cjs');
 
 function createDeckController({ displayed, commands, session, ports, players, output, onChange,
   version, now = Date.now }) {
@@ -22,32 +23,13 @@ function createDeckController({ displayed, commands, session, ports, players, ou
     else if (now() - preview.at < 3500) incoming[setting] = preview.value;
     else item[previewName] = null;
   }
-  function clearDisabledFeedback(item) {
-    if (item.settings?.volumeShowValue === false || volumeFeedbackDuration(item.settings) === 0) {
-      delete item.volumeFeedback;
-      delete item.volumeDisplay;
-    }
-  }
   function changeVolume(context, amount) {
     const item = displayed.get(context);
-    const selected = players?.selected();
-    const feedback = { playerId: selected ? String(selected[0]) : null, before: selected?.[1],
-      confirmed: false, expiresAt: Infinity };
-    if (item) {
-      item.volumeRequest = feedback;
-      if (item.settings?.volumeShowValue !== false && volumeFeedbackDuration(item.settings) > 0) item.volumeFeedback = feedback;
-    }
+    const feedback = item && (item.volumeFeedback ||= createVolumeKeyFeedback());
+    const token = feedback?.begin(players?.selected(), item.settings);
     void commands.request('volume_delta', amount).then(ok => {
-      if (!item || displayed.get(context) !== item || item.volumeRequest !== feedback) return;
-      delete item.volumeRequest;
-      if (ok === true) {
-        if (item.volumeFeedback === feedback) { feedback.confirmed = true; feedback.expiresAt = now() + 5000; }
-      }
-      else {
-        delete item.volumeFeedback;
-        delete item.volumeDisplay;
-        if (ok === false) output.send({ event: 'showAlert', context });
-      }
+      if (!item || displayed.get(context) !== item || !feedback.complete(token, ok, now())) return;
+      if (ok === false) output.send({ event: 'showAlert', context });
       onChange();
     });
   }
@@ -67,7 +49,7 @@ function createDeckController({ displayed, commands, session, ports, players, ou
           retainPreview(item, incoming, 'durationPreview', 'volumeFeedbackSeconds', validFeedbackSeconds);
         }
         item.settings = incoming;
-        clearDisabledFeedback(item);
+        item.volumeFeedback?.configure(item.settings);
         onChange();
       }
       return;
@@ -95,7 +77,7 @@ function createDeckController({ displayed, commands, session, ports, players, ou
         if (item && ['volumeup', 'volumedown'].includes(actionName(item.action)) && value !== null) {
           item.durationPreview = { value, at: now() };
           item.settings.volumeFeedbackSeconds = value;
-          clearDisabledFeedback(item);
+          item.volumeFeedback?.configure(item.settings);
           onChange();
         }
         return;

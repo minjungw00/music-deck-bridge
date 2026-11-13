@@ -33,7 +33,7 @@ const storage = createFileStore({ testPort: isTest ? process.env.MUSIC_DECK_BRID
 const players = createPlayerRegistry({ onChange: drawSoon, onObserved: () => {
   // A fresh 0/100 snapshot can confirm a bounded volume input without changing
   // the registry's display signature. Wake only keys waiting for that snapshot.
-  if ([...displayed.values()].some(item => item.volumeFeedback?.confirmed)) drawSoon();
+  if ([...displayed.values()].some(item => item.volumeFeedback?.awaitingSnapshot())) drawSoon();
 } });
 const commands = createCommandService({ selectedEntry: players.selected, log,
   getSession: () => session.access, launch: isTest ? async () => {} : launchChrome });

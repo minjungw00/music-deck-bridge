@@ -2,6 +2,8 @@
 
 ## v1.2.0-dev — Unreleased
 
+- Encapsulate per-key volume feedback timing/confirmation and separate localized device captions from rendering, retaining existing command and display behavior.
+
 - Share artwork URL admission across metadata extraction, standalone/popup display and plugin downloads; apply the existing credential/port restrictions consistently at extraction. Verify popup dependencies from the actual HTML script graph.
 
 - Retarget the unreleased 1.1.4 development work to 1.2.0 at maintainer request.
