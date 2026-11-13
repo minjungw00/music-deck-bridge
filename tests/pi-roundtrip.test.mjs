@@ -105,7 +105,7 @@ for (const protectedManifest of [false, true]) {
     }
     await waitFor(() => messages.find(m => m.event === 'registerPlugin'));
     assert.equal(messages[0].uuid, id);
-    for (const name of ['nowplaying', 'toggle', 'prev', 'next', 'mute', 'volume', 'trackdial', 'open', 'like', 'dislike']) {
+    for (const name of ['nowplaying', 'toggle', 'prev', 'next', 'mute', 'volumeup', 'volumedown', 'volume', 'trackdial', 'open', 'like', 'dislike']) {
       send('willAppear', name, { controller: ['volume', 'trackdial'].includes(name) ? 'Encoder' : 'Keypad',
         settings: { volumeStep: 3 }, coordinates: { column: 0, row: 0 }, state: 0 });
     }
@@ -185,6 +185,8 @@ for (const protectedManifest of [false, true]) {
     }
     assert.equal(toggleImage(), pauseImage, 'key presses must wait for confirmed browser playback state');
     assert.equal(toggleImage('mute'), 'imgs/actions/volume/key@2x.png', 'Mute key presses must wait for confirmed browser mute state');
+    await command('keyDown', 'volumeup', {}, { type: 'volume_delta', amount: 3 });
+    await command('keyDown', 'volumedown', {}, { type: 'volume_delta', amount: -3 });
     // Reappearing keys and another instance of the same action follow the player.
     send('willDisappear', 'toggle');
     const reappearStart = messages.length;

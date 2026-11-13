@@ -12,7 +12,7 @@ const assets = [
   [plugin + 'imgs/plugin/category@2x.png', 56],
   ...[16, 48, 128].map(size => [`chrome-extension/icons/${size}.png`, size]),
 ];
-const actionFamilies = ['nowplaying', 'toggle', 'prev', 'next', 'mute', 'volume', 'open', 'like', 'dislike'];
+const actionFamilies = ['nowplaying', 'toggle', 'prev', 'next', 'mute', 'volumeup', 'volumedown', 'volume', 'open', 'like', 'dislike'];
 
 test('popup controls reuse the exact Stream Deck key artwork for every displayed state', async () => {
   const icons = { previous: 'prev/key', play: 'toggle/key', pause: 'toggle/pause', next: 'next/key',

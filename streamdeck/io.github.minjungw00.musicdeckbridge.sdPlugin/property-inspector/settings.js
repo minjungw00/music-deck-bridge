@@ -12,6 +12,7 @@ let connectedToHost = false;
 let lastPin = '';
 let lastPinExpiresAt = 0;
 let portIsDirty = false;
+let volumeKey = false;
 const { validVolume, createVolumeEditor } = MusicDeckVolumeEditor;
 const editor = createVolumeEditor({
   onValue(value) { $('volumeStep').value = String(value); updateVolumeLabel(); },
@@ -58,9 +59,9 @@ function localize() {
   $('artworkTitleModeRow').setAttribute('label', t('artworkTitleMode'));
   $('optArtworkTruncate').textContent = t('truncate');
   $('optArtworkScroll').textContent = t('scroll');
-  $('volumeRow').setAttribute('label', t('volumeRow'));
-  $('volumeStep').setAttribute('aria-label', t('volumeRow'));
-  $('volumeHint').textContent = t('volumeHint');
+  $('volumeRow').setAttribute('label', t(volumeKey ? 'volumeKeyRow' : 'volumeRow'));
+  $('volumeStep').setAttribute('aria-label', t(volumeKey ? 'volumeKeyRow' : 'volumeRow'));
+  $('volumeHint').textContent = t(volumeKey ? 'volumeKeyHint' : 'volumeHint');
   $('installExtension').textContent = t('installExtension');
   $('companionHint').textContent = t('companionHint');
   $('pinRow').setAttribute('label', t('pinRow'));
@@ -181,11 +182,12 @@ void (async () => {
     updateArtworkOptions(editor.settings.dialDisplay || 'info', editor.settings.artworkShowTitle === true, editor.settings.artworkShowArtist === true);
     $('keyArtistPositionRow').classList.toggle('hidden', editor.settings.showArtist === false);
     language = info?.application?.language === 'ko' ? 'ko' : 'en';
-    localize();
     const action = actionInfo?.action || '';
+    volumeKey = action.endsWith('.volumeup') || action.endsWith('.volumedown');
+    localize();
     if (action.endsWith('.nowplaying')) $('trackSection').classList.remove('hidden');
     if (action.endsWith('.trackdial')) $('dialSection').classList.remove('hidden');
-    if (action.endsWith('.volume')) $('volumeSection').classList.remove('hidden');
+    if (volumeKey || action.endsWith('.volume')) $('volumeSection').classList.remove('hidden');
     // Recover from races where the plugin answers before the inspector is ready.
     responseTimer = setTimeout(() => { if (!currentStatus) $('pairState').textContent = t('bridgeWait'); }, 3500);
     await requestConnection();

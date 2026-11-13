@@ -61,7 +61,7 @@ test('uses bundled official SDPI components in dark style and locale-aware label
 });
 
 test('each action can generate a PIN, with real connection-state messages', async()=>{
-  for (const name of ['nowplaying','toggle','prev','next','mute','volume','trackdial','open','like','dislike']) {
+  for (const name of ['nowplaying','toggle','prev','next','mute','volumeup','volumedown','volume','trackdial','open','like','dislike']) {
     const pi=makeInspector('io.github.minjungw00.musicdeckbridge.'+name); await pi.ready();
     pi.elems.generatePin.listeners.click();await pi.ready();
     assert.equal(pi.calls.at(-1).payload.type,'generate-pin');
@@ -75,6 +75,18 @@ test('each action can generate a PIN, with real connection-state messages', asyn
     assert.doesNotMatch(pi.elems.pairState.textContent,/PIN 등록됨/);
     pi.subscribers.connection({payload:{type:'connection',pin:'123456',expiresAt:Date.now()+600000,paired:false,extensionOnline:false}});
     assert.equal(pi.elems.pinOutput.textContent,'123456');
+  }
+});
+
+test('volume keys expose the per-press step in English and Korean', async () => {
+  for (const action of ['volumeup', 'volumedown']) {
+    for (const [language, label, hint] of [['ko', '누름당 볼륨', '키를 한 번 누를 때 변경량:'], ['en', 'Volume per press', 'Change per key press:']]) {
+      const pi = makeInspector('io.github.minjungw00.musicdeckbridge.' + action, language); await pi.ready();
+      assert.deepEqual(pi.elems.volumeSection.classList.removed, ['hidden']);
+      assert.equal(pi.elems.volumeRow.attrs.label, label);
+      assert.equal(pi.elems.volumeStep.attrs['aria-label'], label);
+      assert.equal(pi.elems.volumeHint.textContent, hint);
+    }
   }
 });
 
@@ -171,8 +183,9 @@ test('a failed browser command explains recovery and clears after a successful c
   assert.equal(pi.elems.commandStatus.textContent, '');
 });
 
-test('native range saves actual first input and supports manual settings persistence', async()=>{
-  const pi=makeInspector('io.github.minjungw00.musicdeckbridge.volume','en'); await pi.ready();
+for (const action of ['volume', 'volumeup', 'volumedown']) {
+test(`${action} range saves actual first input and supports manual settings persistence`, async()=>{
+  const pi=makeInspector('io.github.minjungw00.musicdeckbridge.'+action,'en'); await pi.ready();
   assert.equal(pi.elems.stepLabel.textContent,'3%');
   // Read the new event value while the saved settings still contain the previous value.
   // but event.target.value already has the NEW value. A native input must win.
@@ -191,9 +204,10 @@ test('native range saves actual first input and supports manual settings persist
   assert.equal(pi.elems.volumeStep.value,'2');
   assert.match(html,/<input[^>]+type="range"[^>]+min="1" max="5" step="1"/);
 });
+}
 
 test('all buttons and dials share the global port and can request a live port change', async()=>{
-  for (const action of ['nowplaying','toggle','prev','next','mute','volume','trackdial','open','like','dislike']) {
+  for (const action of ['nowplaying','toggle','prev','next','mute','volumeup','volumedown','volume','trackdial','open','like','dislike']) {
     const pi=makeInspector('io.github.minjungw00.musicdeckbridge.'+action,'ko'); await pi.ready();
     pi.subscribers.connection({payload:{type:'connection',paired:true,extensionOnline:true,playerActive:true,serverPort:17864,bridgeOnline:true}});
     assert.equal(pi.elems.serverPort.value,'17864');

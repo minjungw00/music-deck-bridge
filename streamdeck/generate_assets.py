@@ -127,12 +127,16 @@ def render(kind, size, background, square_background=False):
     elif kind in ("prev", "next"):
         polygon([(170, 178), (170, 326), (286, 252)])
         rectangle((310, 178, 340, 326))
-    elif kind in ("mute", "volume"):
+    elif kind in ("mute", "volume", "volumeup", "volumedown"):
         rectangle((142, 224, 194, 280))
         polygon([(180, 224), (244, 178), (244, 326), (180, 280)])
         if kind == "mute":
             line([(284, 220), (344, 284)], 20)
             line([(344, 220), (284, 284)], 20)
+        elif kind in ("volumeup", "volumedown"):
+            line([(282, 252), (354, 252)], 20)
+            if kind == "volumeup":
+                line([(318, 216), (318, 288)], 20)
         else:
             for bounds in [(232, 202, 312, 302), (208, 170, 360, 334)]:
                 draw.arc(box(bounds), -60, 60, fill=255, width=18 * scale)
@@ -163,7 +167,7 @@ def main():
     }
     for size in (16, 48, 128):
         outputs[f"chrome-extension/icons/{size}.png"] = ("brand", size, True)
-    for kind in ("nowplaying", "toggle", "prev", "next", "mute", "volume", "open", "like", "dislike"):
+    for kind in ("nowplaying", "toggle", "prev", "next", "mute", "volumeup", "volumedown", "volume", "open", "like", "dislike"):
         for name, size, background in [("icon", 20, False), ("key", 72, True)]:
             for suffix, scale in [("", 1), ("@2x", 2)]:
                 outputs[f"{plugin}/actions/{kind}/{name}{suffix}.png"] = (kind, size * scale, background, background)

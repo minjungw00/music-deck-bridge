@@ -87,6 +87,36 @@
       "Tooltip": "Toggle mute."
     },
     {
+      "Name": "Volume Up",
+      "UUID": "io.github.minjungw00.musicdeckbridge.volumeup",
+      "Icon": "imgs/actions/volumeup/icon",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/volumeup/key",
+          "ShowTitle": false
+        }
+      ],
+      "Tooltip": "Increase YouTube Music volume by the configured step."
+    },
+    {
+      "Name": "Volume Down",
+      "UUID": "io.github.minjungw00.musicdeckbridge.volumedown",
+      "Icon": "imgs/actions/volumedown/icon",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/volumedown/key",
+          "ShowTitle": false
+        }
+      ],
+      "Tooltip": "Decrease YouTube Music volume by the configured step."
+    },
+    {
       "Name": "Volume Dial",
       "UUID": "io.github.minjungw00.musicdeckbridge.volume",
       "Icon": "imgs/actions/volume/icon",

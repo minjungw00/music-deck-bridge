@@ -21,6 +21,14 @@
     "Name": "Mute",
     "Tooltip": "Toggle mute."
   },
+  "io.github.minjungw00.musicdeckbridge.volumeup": {
+    "Name": "Volume Up",
+    "Tooltip": "Increase YouTube Music volume by the configured step."
+  },
+  "io.github.minjungw00.musicdeckbridge.volumedown": {
+    "Name": "Volume Down",
+    "Tooltip": "Decrease YouTube Music volume by the configured step."
+  },
   "io.github.minjungw00.musicdeckbridge.volume": {
     "Name": "Volume Dial",
     "Tooltip": "Turn to adjust volume; push or touch to mute."

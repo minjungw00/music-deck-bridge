@@ -1,6 +1,6 @@
 'use strict';
 const protocol = require('../../../chrome-extension/protocol.js');
-const { PLUGIN_ID, actionName } = require('../domain/actions.cjs');
+const { PLUGIN_ID, VOLUME_ACTION_NAMES, actionName } = require('../domain/actions.cjs');
 const { limit } = require('../domain/values.cjs');
 const { PLAYER_STALE_MS } = require('../domain/player-state.cjs');
 
@@ -8,6 +8,11 @@ function createDeckController({ displayed, commands, session, ports, players, ou
   version, now = Date.now }) {
   function controlPlayer(context, type, amount = 0) {
     void commands.request(type, amount).then(ok => { if (ok === false) output.send({ event: 'showAlert', context }); });
+  }
+  function volumeStep(context) {
+    const item = displayed.get(context);
+    const raw = Number(item?.volumePreview?.value ?? item?.settings?.volumeStep);
+    return Number.isInteger(raw) ? limit(raw, 1, 5) : 4;
   }
   function handleDeckEvent(e) {
     if (!e || !e.event) return;
@@ -20,7 +25,7 @@ function createDeckController({ displayed, commands, session, ports, players, ou
       const item = displayed.get(e.context);
       if (item) {
         const incoming = e.payload?.settings || {};
-        if (item.volumePreview && actionName(item.action) === 'volume') {
+        if (item.volumePreview && VOLUME_ACTION_NAMES.includes(actionName(item.action))) {
           const saved = Number(incoming.volumeStep);
           if (saved === item.volumePreview.value) item.volumePreview = null;
           else if (now() - item.volumePreview.at < 3500) incoming.volumeStep = item.volumePreview.value;
@@ -38,11 +43,11 @@ function createDeckController({ displayed, commands, session, ports, players, ou
       const request = e.payload?.type;
       if (request === 'generate-pin') session.generatePin();
       if (request === 'volume-preview') {
-        // A slider's saved didReceiveSettings event can arrive AFTER the next dialRotate.
+        // Saved settings can arrive after the next key press or dial rotation.
         // Update the active action immediately, even while the inspector is being dragged.
         const item = displayed.get(e.context);
         const value = Number(e.payload?.value);
-        if (item && actionName(item.action) === 'volume' && Number.isInteger(value) && value >= 1 && value <= 5) {
+        if (item && VOLUME_ACTION_NAMES.includes(actionName(item.action)) && Number.isInteger(value) && value >= 1 && value <= 5) {
           item.volumePreview = { value, at: now() };
           item.settings.volumeStep = value;
         }
@@ -69,16 +74,17 @@ function createDeckController({ displayed, commands, session, ports, players, ou
       return;
     }
     if (e.event === 'keyDown') {
+      if (kind === 'volumeup' || kind === 'volumedown') {
+        controlPlayer(e.context, 'volume_delta', (kind === 'volumeup' ? 1 : -1) * volumeStep(e.context));
+        return;
+      }
       const type = ({ nowplaying: 'toggle', toggle: 'toggle', open: 'open', prev: 'prev',
         next: 'next', mute: 'mute', like: 'like', dislike: 'dislike' })[kind];
       if (type) controlPlayer(e.context, type);
     } else if (e.event === 'dialRotate') {
       const ticks = Number(e.payload?.ticks) || 0;
       if (kind === 'volume' && ticks !== 0) {
-        const dial = displayed.get(e.context);
-        const rawStep = Number(dial?.volumePreview?.value ?? dial?.settings?.volumeStep);
-        const step = Number.isInteger(rawStep) ? limit(rawStep, 1, 5) : 4;
-        controlPlayer(e.context, 'volume_delta', limit(ticks * step, -100, 100));
+        controlPlayer(e.context, 'volume_delta', limit(ticks * volumeStep(e.context), -100, 100));
       }
       if (kind === 'trackdial' && Number.isSafeInteger(ticks) && ticks !== 0) {
         const count = Math.min(Math.abs(ticks), 5);

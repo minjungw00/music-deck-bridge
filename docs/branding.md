@@ -41,7 +41,7 @@ The [Marketplace media renderer](../scripts/render-elgato-store.mjs) copies the 
 
 ## Action icons
 
-All ten actions use the main icon's circular badge, gradient magenta and white symbol on an edge-to-edge dark square key surface. Device key images do not bake in a corner radius; the representative brand and store icons retain their rounded design. Now Playing uses the main play-disc mark; the other actions use recognizable playback, speaker/mute, dial, launch and thumb symbols.
+All twelve actions use the main icon's circular badge, gradient magenta and white symbol on an edge-to-edge dark square key surface. Device key images do not bake in a corner radius; the representative brand and store icons retain their rounded design. Now Playing uses the main play-disc mark; the other actions use recognizable playback, speaker/mute, volume +/−, dial, launch and thumb symbols.
 
 | Action | Key preview |
 | --- | --- |
@@ -50,6 +50,8 @@ All ten actions use the main icon's circular badge, gradient magenta and white s
 | Previous | ![Previous](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/prev/key.png) |
 | Next | ![Next](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/next/key.png) |
 | Mute | ![Mute](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/mute/key.png) |
+| Volume Up | ![Volume Up](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/volumeup/key.png) |
+| Volume Down | ![Volume Down](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/volumedown/key.png) |
 | Volume Dial | ![Volume Dial](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/volume/key.png) |
 | Current Track Dial | ![Current Track Dial](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/toggle/key.png) |
 
@@ -90,7 +92,7 @@ Run the normal [development checks](development.md#local-checks):
 | `tests/brand-assets.test.mjs` | Brand/store PNG dimensions, RGBA, transparent corners, palette, small play triangles and manifest references; 36 base action PNGs, square device-key surfaces, monochrome cutouts and playback/rating variants at both key sizes |
 | Python packaging tests | Chrome ZIP and Stream Deck staging preserve the PNG bytes, including pause and selected-rating images |
 
-The Node checks use only the standard library. Current Track Dial shares the Play / Pause icon family. The generator produces 60 assets, including the store app icon, six additional state PNGs and ten matching popup control copies. Pillow is needed only for regeneration.
+The Node checks use only the standard library. Current Track Dial shares the Play / Pause icon family. The generator produces 68 assets, including the store app icon, six additional state PNGs and ten matching popup control copies. Pillow is needed only for regeneration.
 
 ## License and attribution
 

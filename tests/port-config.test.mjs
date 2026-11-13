@@ -61,7 +61,9 @@ test('global port changes live, keeps old listener temporarily, rejects occupied
   }
 });
 
-test('volume slider preview overrides stale didReceiveSettings before first physical dial turn',async t=>{
+for (const [name, input, payload, amount] of [['volume', 'dialRotate', { ticks: 1 }, 5],
+  ['volumeup', 'keyDown', {}, 5], ['volumedown', 'keyDown', {}, -5]]) {
+test(`${name} slider preview overrides stale didReceiveSettings before its next input`,async t=>{
   const bridge = await createBridgeFixture(t, { prefix: 'music-deck-dial-' });
   const port = bridge.port;
   try {
@@ -69,18 +71,19 @@ test('volume slider preview overrides stale didReceiveSettings before first phys
     const token=pair.body.token;
     const state={volume:50,title:'Volume',standalone:true};
     await post(port,'/sync',{token,clientId:101,state});
-    const action='io.github.minjungw00.musicdeckbridge.volume',context='volume-dial-1';
+    const action='io.github.minjungw00.musicdeckbridge.'+name,context=name+'-1';
     const event=ev=>post(port,'/__test/event',{token,event:ev});
     await event({event:'willAppear',action,context,payload:{settings:{volumeStep:2}}});
     await event({event:'sendToPlugin',action,context,payload:{type:'volume-preview',value:5}});
     await event({event:'didReceiveSettings',action,context,payload:{settings:{volumeStep:2}}});
-    await event({event:'dialRotate',action,context,payload:{ticks:1}});
+    await event({event:input,action,context,payload});
     const result=await post(port,'/sync',{token,clientId:101,state});
-    assert.deepEqual(result.body.commands,[{type:'volume_delta',amount:5}]);
+    assert.deepEqual(result.body.commands,[{type:'volume_delta',amount}]);
   } finally {
     await bridge.stop();
   }
 });
+}
 
 test('Chrome extension uses stored custom port and follows live port changes announced by local server',async()=>{
   const storage={bridgePort:23111,bridgeToken:'test-token'};

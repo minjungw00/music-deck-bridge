@@ -21,6 +21,14 @@
     "Name": "음소거",
     "Tooltip": "음소거 켜기/끄기"
   },
+  "io.github.minjungw00.musicdeckbridge.volumeup": {
+    "Name": "볼륨 상승",
+    "Tooltip": "설정한 단위만큼 YouTube Music 볼륨을 높입니다."
+  },
+  "io.github.minjungw00.musicdeckbridge.volumedown": {
+    "Name": "볼륨 하강",
+    "Tooltip": "설정한 단위만큼 YouTube Music 볼륨을 낮춥니다."
+  },
   "io.github.minjungw00.musicdeckbridge.volume": {
     "Name": "볼륨 다이얼",
     "Tooltip": "회전: 볼륨, 누르기·화면 터치: 음소거",
