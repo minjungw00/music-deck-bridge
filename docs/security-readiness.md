@@ -20,6 +20,8 @@ The October 29 documentation review does not recheck these administrative settin
 
 Later on October 29, the authorized 1.1.3 release preparation re-read the settings through the authenticated API. Private vulnerability reporting, secret scanning, push protection, vulnerability alerts and automated security fixes remained enabled; fixes were not paused. Workflow defaults remained read-only without pull-request approval permission. Non-provider secret patterns and validity checks were disabled. The open Dependabot and secret-scanning alert queries each returned an empty list. These are dated repository/API observations, not a replacement for dependency or runtime tests; no settings were changed.
 
+On November 14, the authorized 1.2.0 release preparation re-read the same repository endpoints. Private reporting, secret scanning, push protection, vulnerability alerts and automated fixes remained enabled; fixes were not paused. Workflow defaults remained read-only without pull-request approval permission. Non-provider secret patterns and validity checks remained disabled. Both open-alert queries returned zero entries. No settings were changed; dependency audit and runtime results are recorded separately.
+
 ## Rechecking settings
 
 Read-only rechecks (GitHub CLI, with authenticated repository access):

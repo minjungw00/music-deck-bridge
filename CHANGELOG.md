@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.2.0-dev — Unreleased
+## v1.2.0 — 2026-11-14
 
 - Separate popup volume editing/coalescing from connection and player wiring; retain captured command routes and discard queued edits on popup closure.
 - Encapsulate per-key volume feedback timing/confirmation and separate localized device captions from rendering, retaining existing command and display behavior.

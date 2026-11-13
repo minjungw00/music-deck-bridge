@@ -1,6 +1,6 @@
 # Release readiness
 
-Updated November 13, 2026 (Asia/Seoul) with the Chrome Web Store publication report, November 6 Elgato listing observation and November 7 `main` CI results. General installation starts with the [official stores](installation.en.md#method-1-official-stores). Public releases, development and store processing have separate evidence.
+Updated November 14, 2026 (Asia/Seoul) for the maintainer-authorized 1.2.0 GitHub release preparation. General installation starts with the [official stores](installation.en.md#method-1-official-stores). Public releases, development and store processing have separate evidence.
 
 ## Current versions and distribution
 
@@ -9,7 +9,7 @@ Updated November 13, 2026 (Asia/Seoul) with the Chrome Web Store publication rep
 | GitHub | **v1.1.3**, Chrome **1.1.3**, plugin **1.1.3.0**, protocol **1** | Published October 29 at 08:22 KST; latest non-draft/non-prerelease API result and anonymous download bytes verified · [Release record](verification/releases.md#v113) |
 | Elgato Marketplace | Public listing **1.1.3**, dated **November 2, 2026** on the page | November 6 observation confirmed the version and corrected installation copy. Last maintainer-reported submission was **1.1.2** / plugin **1.1.2.0** · [Store record](verification/stores.md) |
 | Chrome Web Store | **1.1.3** publication directly confirmed by the user on November 13. Official update date and current copy remain unverified. | Chrome-Stats reports last updated **October 30, 2026**; third-party date only. Last maintainer-reported submission was **1.1.2** · [Store record and scope limits](verification/stores.md#chrome-web-store-publication-evidence) |
-| Development checkout | **1.2.0-dev**, Chrome **1.2.0** (`version_name: 1.2.0-dev`), plugin **1.2.0.0**, protocol **1** | Explicitly selected target, retargeted from 1.1.4-dev. Popup controls use the healthy bridge or independent Chrome APIs, with circular icons and an absolute volume slider. Standalone mode needs no plugin/server/token. No 1.2.0 release or store publication has been performed |
+| Release source | **1.2.0**, Chrome **1.2.0** (development label removed), plugin **1.2.0.0**, protocol **1** | Promoted at explicit maintainer request on November 14. Exact-source Windows/Ubuntu CI, package comparison and GitHub publication are pending; no 1.2.0 store submission/publication is recorded |
 
 The [Elgato listing now recommends Add to Chrome and offers the GitHub Releases ZIP as an optional manual method](verification/stores.md#public-description-correction). The October 29 draft is historical reference copy.
 
@@ -19,6 +19,7 @@ The [runtime record](verification/runtime.md#current-evidence) is the source for
 
 | Area | Current evidence | Remaining limit |
 | --- | --- | --- |
+| November 14 review / refactor | Final local 288 Node tests, two Python packaging tests, static checks and three Chromium fixtures passed; [review scope and initial failed-run comparison](verification/runtime.md#november-14-code-review-and-refactor) | One initial unchanged startup-retry fixture failed; cause unresolved after isolated baseline/current passes and a passing full rerun. Real Music, hardware and Windows operation remain separate |
 | November 13 standalone / slider revision | 256 Node tests, two Python packaging tests, static checks and Chromium MV3 passed, including stopped-plugin/token-free controls and restored state synchronization; [runtime record](verification/runtime.md#november-13-standalone-player-and-volume-slider) | Local player model and labeled visual fixtures; actual Music, hardware and Windows behavior remain separate |
 | November 13 1.2.0-dev popup controls | 249 Node tests, two Python packaging tests, static checks and Chromium MV3 integration passed. The actual toolbar popup controlled playback/navigation/ratings/volume/mute through the authenticated bridge; [runtime record](verification/runtime.md#november-13-popup-controls) | Local player model; cached-image and visual fixtures. Actual signed-in Music, hardware and Windows operation remain separate |
 | November 13 1.1.4-dev popup update | 226 Node tests, two Python packaging tests, static checks and Chromium MV3 integration passed. The actual toolbar popup followed changing local-fixture track metadata without reopening; [runtime record](verification/runtime.md#november-13-popup-refresh) | Local fixture; actual YouTube Music, physical Stream Deck and Windows operation remain separate |
@@ -42,7 +43,7 @@ The [runtime record](verification/runtime.md#current-evidence) is the source for
 
 ## Remaining work
 
-The authorized 1.1.3 GitHub release is complete through the direct publication path in the [release checklist](development.md#release-checklist). Exact tagged-source CI, both OS package payloads, release inventories and anonymous public downloads passed verification. Release notes disclose outstanding manual coverage. The [runtime record](verification/runtime.md#current-evidence) preserves the scope of maintainer confirmation.
+The maintainer has authorized direct GitHub publication of 1.2.0 through the [release checklist](development.md#release-checklist). Complete exact-source Windows/Ubuntu CI, verify both OS package payloads and the final release inventory, and compare uploaded/downloaded bytes before publication. Release notes must retain outstanding manual coverage and the initial startup-retry fixture observation. The completed 1.1.3 release and its verification remain in the [release record](verification/releases.md#v113); the [runtime record](verification/runtime.md#current-evidence) preserves maintainer confirmation within its original scope.
 
 - Record the 1.1.3 Maker Console submission and review history, version identifier, uploaded-file identity and SHA-256, selected media and exact submitted description when available.
 - Record separately obtained Console-processed package identity and detailed DRM results. Completed store-operation validation does not need repeating solely for missing metadata.

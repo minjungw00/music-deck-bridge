@@ -21,7 +21,7 @@ Stream Deck control uses two components installed together: a Stream Deck plugin
 
 See the guides for [PIN pairing](docs/installation.en.md#pairing), [updates](docs/installation.en.md#updating), switching installation methods and removal. If using a Chrome ZIP, extract it to a permanent folder and load it unpacked in Developer mode.
 
-Public releases and development builds are tracked separately in [release readiness](docs/release-readiness.md). The current source is **1.2.0-dev**; GitHub publication and store processing are recorded separately. Use build metadata to identify development revisions. The 1.2.0 development extension also offers popup playback controls without a plugin or additional server; Stream Deck hardware control still needs the paired plugin.
+Public releases and development builds are tracked separately in [release readiness](docs/release-readiness.md). The current source is **1.2.0**; GitHub publication and store processing are recorded separately. Use build metadata to identify development revisions. The 1.2.0 extension also offers popup playback controls without a plugin or additional server; Stream Deck hardware control still needs the paired plugin.
 
 ## Requirements
 
@@ -31,7 +31,7 @@ Public releases and development builds are tracked separately in [release readin
 | Browser | Google Chrome 116+ |
 | Stream Deck software | 7.1+ (provides Node.js 24) |
 | Device | Key actions target Stream Deck key models; encoder actions require Stream Deck + |
-| UI languages (1.2.0-dev) | English / 한국어 / 简体中文 / 繁體中文 / 日本語 / Español / Français / Deutsch |
+| UI languages (1.2.0) | English / 한국어 / 简体中文 / 繁體中文 / 日本語 / Español / Français / Deutsch |
 
 UI translations cover the Stream Deck plugin and Chrome extension. Customer-support and legal-notice language coverage is not committed by this list. Installation guides and previously submitted store descriptions retain their existing scope.
 
