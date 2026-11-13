@@ -1,7 +1,8 @@
 # Changelog
 
-## Unreleased
+## v1.2.0 revision r1 — 2026-11-14
 
+- Retain application version 1.2.0 and publish the Chrome fix as a separately identified revision alongside the original release files.
 - Add Open YouTube Music to the empty Chrome popup. Open a missing tab or focus an existing tab/app without PIN pairing; coalesce repeated requests and report failures in all supported UI languages.
 
 ## v1.2.0 — 2026-11-14

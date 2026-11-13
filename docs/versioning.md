@@ -59,3 +59,11 @@ npm run version:release -- X.Y.Z
 The command accepts only the current target, removes `-dev` and the Chrome development label, and updates all version sources together. It does not create a tag, publish a release or upload to a store. Run the [release checklist](development.md#release-checklist), validate final packages and create the matching tag only when authorized. Existing public tags and package files remain immutable.
 
 The draft-release workflow checks the stable source version, matching tag and platform manifests. Artifact release/verification commands reject `-dev` versions. Development metadata is not accepted in the release-asset inventory. After a release, select the next development cycle explicitly; ordinary build commands never select or promote a release.
+
+## Post-publication revisions
+
+When the maintainer explicitly requests a fix in an already published version, preserve its original tag, archives and checksum inventory. Keep the application version fixed and identify the later source with a separate `vX.Y.Z-rN` revision tag. This tag identifies the source revision; it does not change the package's numeric version or create another release version.
+
+Run exact-source Windows/Ubuntu CI for the revision. Attach only newly named files to the existing release: `<component>-X.Y.Z-rN.zip`, `BUILD-INFO-rN.json` and `SHA256SUMS-rN.txt`. Record the revision source/tag, CI run and hashes. Reuse an unchanged component's original package bytes. The revision inventory covers the changed archive, revision metadata and any reused companion package; preserve the original inventory unchanged.
+
+The initial-release tag gate still requires `vX.Y.Z`; revision tags are checked separately against their source commit and base application version. Keep the original source archives tied to the original tag. Add a clearly marked revision notice and recommended download/source links to the release notes while retaining the original note text. Verify new uploads and anonymous public downloads, then update release/store-preparation records with the selected revision.

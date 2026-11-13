@@ -11,6 +11,8 @@ Updated November 14, 2026 (Asia/Seoul) after the maintainer-authorized 1.2.0 Git
 | Chrome Web Store | **1.1.3**, updated **October 30, 2026** on the official English/Korean pages directly read November 14. | Official version/date/copy now independently observed; earlier third-party and user reports retain their original scope. Last maintainer-reported submission was **1.1.2** · [Store record and scope limits](verification/stores.md#chrome-web-store-publication-evidence) |
 | Release source | **1.2.0**, Chrome **1.2.0** (development label removed), plugin **1.2.0.0**, protocol **1** | Tag `v1.2.0` resolves to `ff139a755b25`; exact-source Windows/Ubuntu CI and package/public-byte verification completed. No next development cycle selected; no 1.2.0 store submission/publication is recorded |
 
+The maintainer has requested the popup-opening fix in the existing 1.2.0 release. Revision **r1** is being prepared with source tag `v1.2.0-r1`, a separately named Chrome archive and revision metadata/checksums. Application versions and original release files remain fixed; exact-source CI and public attachment verification are pending.
+
 The [Elgato listing now recommends Add to Chrome and offers the GitHub Releases ZIP as an optional manual method](verification/stores.md#public-description-correction). The October 29 draft is historical reference copy.
 
 [1.2.0 store copy and UTM links](../store-assets/drafts/v1.2.0/README.md) are prepared for review. They have not been submitted or published; [November 14 observations](verification/stores.md#november-14-public-listing-review-and-120-drafts) distinguish the current listings from the proposals.
