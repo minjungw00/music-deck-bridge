@@ -91,6 +91,8 @@ function localize() {
   if (!currentStatus) $('pairState').textContent = t('checking');
   updateVolumeLabel();
   updateDurationLabel();
+  // SDPI caches option labels separately from the original option nodes.
+  for (const id of ['artistPosition', 'titleMode', 'dialDisplay', 'artworkFit', 'artworkArtistPosition', 'artworkTitleMode']) $(id).refresh?.();
 }
 function updateVolumeLabel() {
   const value = validVolume($('volumeStep').value) ?? 4;

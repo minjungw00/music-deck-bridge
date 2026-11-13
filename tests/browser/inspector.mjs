@@ -62,6 +62,20 @@ test('real SDPI components localize their first rendered labels without changing
           value: element.localName === 'sdpi-checkbox' ? element.value : undefined }));
       });
       assert.equal(labels.filter(label => label.kind === 'sdpi-checkbox').length, 8);
+      const selects = await page.evaluate(async () => {
+        const elements = [...document.querySelectorAll('sdpi-select')];
+        await Promise.all(elements.map(element => element.items.taskComplete));
+        await Promise.all(elements.map(element => element.updateComplete));
+        return elements.map(element => ({ id: element.id, value: element.value,
+          expected: [...element.querySelectorAll('option')].map(option => [option.value, option.textContent]),
+          actual: [...element.shadowRoot.querySelectorAll('option')].map(option => [option.value, option.textContent]),
+          selected: element.shadowRoot.querySelector('select').value, fallback: element.getAttribute('default') }));
+      });
+      for (const select of selects) {
+        assert.deepEqual(select.actual, select.expected, `${language}/${action}/${select.id}: rendered dropdown text`);
+        assert.equal(select.selected, settings[select.id] || select.fallback);
+        assert.equal(select.value, settings[select.id]);
+      }
       for (const label of labels) {
         if (language === 'ko') assert.match(label.expected, /[가-힣]/, label.id);
         assert.equal(label.actual, label.expected + (label.kind === 'sdpi-item' ? ':' : ''),
