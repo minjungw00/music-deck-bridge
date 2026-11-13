@@ -10,6 +10,7 @@
 - Reuse the exact Stream Deck PNG icons, including playback, rating and mute states; show only their circular area and give rating buttons the same layout as transport buttons.
 - Group connection settings in a collapsible section, align PIN/port guidance under matching headers and add explicit Stream Deck connection headers. Place the optional plugin guidance above PIN pairing.
 - Preserve popup bottom spacing when expanded connection settings exceed the popup height.
+- Give the popup root an explicit dark background and width, remove the redundant height constraint and use a narrow dark scrollbar. Remove the final paragraph's extra bottom margin to match the outer padding.
 - Show pending feedback only on the selected popup control and retain unchanged rating/mute icon sources during refreshes.
 - Support standalone popup control through the same Chrome playback/volume engine without another server or token; keep the healthy paired bridge path and normal state synchronization after reconnection. Do not automatically resend failed commands through another path.
 - Add companion-component store installation links to the Stream Deck property inspector and Chrome extension popup, with English and Korean setup guidance for Stream Deck control.
