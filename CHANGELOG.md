@@ -2,6 +2,8 @@
 
 ## v1.2.0-dev — Unreleased
 
+- Separate popup volume editing/coalescing from connection and player wiring; retain captured command routes and discard queued edits on popup closure.
+
 - Encapsulate per-key volume feedback timing/confirmation and separate localized device captions from rendering, retaining existing command and display behavior.
 
 - Share artwork URL admission across metadata extraction, standalone/popup display and plugin downloads; apply the existing credential/port restrictions consistently at extraction. Verify popup dependencies from the actual HTML script graph.

@@ -378,7 +378,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
       await until(() => popupEvaluate('!document.getElementById("volumeSlider").disabled'), 'popup volume ready');
       await popupEvaluate(`(() => { const slider=document.getElementById("volumeSlider"); slider.value=${amount}; slider.dispatchEvent(new Event("input",{bubbles:true})); slider.dispatchEvent(new Event("change",{bubbles:true})); })()`);
       await until(() => music.evaluate(expected => Number(document.querySelector('#volume-slider').value) === expected, amount), 'popup site volume');
-      await until(() => popupEvaluate(`!volumeSending && !volumeEditing && document.getElementById("volumeValue").textContent === "${amount}%"`), 'observed popup volume');
+      await until(() => popupEvaluate(`!volume.sending && !volume.editing && document.getElementById("volumeValue").textContent === "${amount}%"`), 'observed popup volume');
     }
     for (const desired of [true, false]) {
       await until(() => popupEvaluate('!document.getElementById("mute").disabled'), 'popup mute ready');
@@ -398,7 +398,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     }
     await popupEvaluate('(() => { const slider=document.getElementById("volumeSlider"); slider.value=37; slider.dispatchEvent(new Event("input",{bubbles:true})); slider.dispatchEvent(new Event("change",{bubbles:true})); })()');
     await until(() => music.evaluate(() => Number(document.querySelector('#volume-slider').value) === 37), 'standalone volume');
-    await until(() => popupEvaluate('!volumeSending'), 'standalone volume completion');
+    await until(() => popupEvaluate('!volume.sending'), 'standalone volume completion');
     await popupEvaluate('document.getElementById("mute").click()');
     await until(() => music.evaluate(() => muted), 'standalone mute');
     await popupEvaluate('document.getElementById("like").click()');

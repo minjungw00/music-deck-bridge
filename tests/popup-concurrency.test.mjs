@@ -353,3 +353,29 @@ test('standalone controls keep working without a bridge and switch routes only f
   assert.equal(h.element('playPause').disabled, false);
   assert.ok(!h.requests.some(request => request.type === 'local-control'), 'failed bridge input is never retried locally');
 });
+
+test('closing the popup drops a queued volume target without replaying the in-flight request', async () => {
+  const h = harness(); await h.ready(); await showState(h);
+  h.element('volumeSlider').value = '30'; h.element('volumeSlider').input(); h.element('volumeSlider').change();
+  const first = h.take('control');
+  h.element('volumeSlider').value = '70'; h.element('volumeSlider').input(); h.element('volumeSlider').change();
+  h.close();
+  first.resolve({ ok: true }); await flush();
+  assert.equal(h.requests.length, 0, 'closure stops both queued commands and refresh requests');
+  assert.equal(h.timers.size, 0);
+});
+
+test('a queued volume edit retains its captured route when the bridge recovers', async () => {
+  const h = harness({ local: { ...playerState(), mode: 'local' } }); await h.ready();
+  h.element('volumeSlider').value = '30'; h.element('volumeSlider').input(); h.element('volumeSlider').change();
+  const first = h.take('local-control');
+  h.element('volumeSlider').value = '70'; h.element('volumeSlider').input(); h.element('volumeSlider').change();
+  await showState(h);
+  first.resolve({ ok: true }); await flush();
+  const queued = h.take('local-control');
+  assert.equal(queued.amount, 70);
+  assert.ok(!h.requests.some(request => request.type === 'control'));
+  queued.resolve({ ok: false }); await flush();
+  assert.ok(!h.requests.some(request => request.type === 'control'), 'failure cannot replay through the recovered bridge');
+  h.close();
+});

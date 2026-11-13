@@ -31,14 +31,10 @@ let latestControl = 0;
 let localStatus = null;
 let bridgePlayback = null;
 let localRequests = 0;
-let volumeEditing = false;
-let volumeRevision = 0;
-let volumeDeadline = Infinity;
-let queuedVolume = null;
-let volumeSending = false;
 const pendingControls = new Map();
 const controlButtons = { previous: 'prev', playPause: 'toggle', next: 'next', like: 'like', dislike: 'dislike', mute: 'mute' };
-const playerIdentity = player => player ? JSON.stringify([player.id, player.key]) : '';
+const volume = MusicDeckPopupVolume.create({ slider: $('volumeSlider'), label: $('volumeValue'),
+  execute: executeControl, onChange: updateControls });
 function updateIcon(id, path) {
   const source = asset(path);
   if ($(id).getAttribute('src') !== source) $(id).src = source;
@@ -53,10 +49,7 @@ function updateControls() {
     $(id).setAttribute('data-unavailable', String(Boolean(unavailable)));
     $(id).setAttribute('aria-busy', String(busy.includes(command)));
   }
-  $('volumeSlider').disabled = !enabled || !volumeSupported || !Number.isFinite(currentPlayer?.volume);
-  if ($('volumeSlider').disabled || Date.now() > volumeDeadline) {
-    volumeEditing = false; queuedVolume = null;
-  }
+  volume.render(!enabled || !volumeSupported || !Number.isFinite(currentPlayer?.volume));
   const playing = currentPlayer?.playing === true;
   for (const [id, label] of [['previous', text.previous], ['next', text.next], ['playPause', playing ? text.pause : text.play],
     ['mute', currentPlayer?.muted ? text.unmute : text.mute], ['like', text.likeLabel], ['dislike', text.dislikeLabel]]) {
@@ -72,11 +65,8 @@ function updateControls() {
   $('mute').setAttribute('aria-pressed', String(currentPlayer?.muted === true));
   updateIcon('muteIcon', `icons/controls/${currentPlayer?.muted ? 'mute' : 'volume'}.png`);
   $('volumeLabel').textContent = text.volumeLabel;
-  if (!volumeEditing) {
-    $('volumeSlider').value = String(currentPlayer?.volume ?? 0);
-    $('volumeValue').textContent = Number.isFinite(currentPlayer?.volume) ? `${currentPlayer.volume}%` : '—';
-  }
 }
+
 function clearArtwork() {
   $('artwork').hidden = true;
   $('artwork').removeAttribute('src');
@@ -107,12 +97,8 @@ async function loadArtwork(player, key, revision) {
   } catch { /* Keep the placeholder; playback does not depend on artwork. */ }
 }
 function showPlayer(result) {
-  const previousIdentity = playerIdentity(currentPlayer);
   currentPlayer = result?.ok && result.active && result.player ? { ...result.player, mode: result.mode || 'bridge' } : null;
-  if (previousIdentity !== playerIdentity(currentPlayer)) {
-    volumeRevision++; volumeEditing = false; queuedVolume = null;
-  }
-  if (volumeEditing && !queuedVolume && !volumeSending && Number($('volumeSlider').value) === currentPlayer?.volume) volumeEditing = false;
+  volume.observe(currentPlayer);
   controlsAvailable = result?.popupControls === true && !result.playerStale &&
     result.compatibility?.compatible !== false;
   volumeSupported = result?.popupVolume === true;
@@ -261,32 +247,6 @@ for (const [id, command] of Object.entries(controlButtons)) {
     await executeControl(command, currentPlayer);
   });
 }
-$('volumeSlider').addEventListener('input', () => {
-  if ($('volumeSlider').disabled || closed) return;
-  volumeEditing = true; volumeRevision++; volumeDeadline = Infinity;
-  $('volumeValue').textContent = `${$('volumeSlider').value}%`;
-});
-$('volumeSlider').addEventListener('change', () => {
-  const amount = Number($('volumeSlider').value);
-  if ($('volumeSlider').disabled || !currentPlayer || closed || !Number.isInteger(amount) || amount < 0 || amount > 100) return;
-  volumeEditing = true;
-  queuedVolume = { player: currentPlayer, amount, revision: volumeRevision };
-  if (!volumeSending) void flushVolume();
-});
-async function flushVolume() {
-  volumeSending = true;
-  try {
-    while (queuedVolume && !closed) {
-      const intent = queuedVolume; queuedVolume = null;
-      if (playerIdentity(intent.player) !== playerIdentity(currentPlayer)) continue;
-      const result = await executeControl('volume_set', intent.player, { amount: intent.amount });
-      if (intent.revision === volumeRevision && !queuedVolume) {
-        if (!result?.ok) volumeEditing = false;
-        volumeDeadline = Date.now() + 3000;
-      }
-    }
-  } finally { volumeSending = false; updateControls(); }
-}
 clearArtwork();
 showPlayer(null);
 $('refresh').click();
@@ -294,6 +254,6 @@ void refreshLocalPlayer();
 const statusTimer = setInterval(() => { void refreshStatus(true); void refreshLocalPlayer(); }, 1000);
 window.addEventListener('pagehide', () => {
   closed = true;
-  queuedVolume = null;
+  volume.close();
   clearInterval(statusTimer);
 }, { once: true });

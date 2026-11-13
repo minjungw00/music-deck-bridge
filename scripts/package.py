@@ -25,7 +25,7 @@ def stage(component, output):
                "background/bridge-client.js", "background/browser-channel.js",
                "background/player-playback.js", "background/page-controls.js", "background/local-player.js", "background/message-router.js",
                "background/management-service.js", "background/player-sync-service.js",
-               "content/metadata.js", "content/commands.js", "content/runtime.js", "content.js", "popup.html", "popup.js",
+               "content/metadata.js", "content/commands.js", "content/runtime.js", "content.js", "popup.html", "popup.js", "popup/volume-controller.js",
                "icons/16.png", "icons/48.png", "icons/128.png",
                *[f"_locales/{locale}/messages.json" for locale in LOCALES]] if component == "chrome" else [
         "bin/plugin.js", "property-inspector/settings.html",
