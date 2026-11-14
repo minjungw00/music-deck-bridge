@@ -163,7 +163,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## ws 8.22.1 — MIT
+## ws 8.22.2 — MIT
 
 Bundled into the Stream Deck runtime by esbuild. Source: [ws](https://github.com/websockets/ws).
 
