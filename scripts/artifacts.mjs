@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { appendFile, lstat, readFile, readdir, writeFile } from 'node:fs/promises';
@@ -123,4 +124,19 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   assert.equal(typeof operation, 'function', 'Usage: node scripts/artifacts.mjs development|release|verify');
   await operation(join(root, 'dist'), version, process.env);
   console.log(`Artifact ${process.argv[2]} checks passed.`);
+}
+
+// Temporary CI-only verification of the approved combined dependency tree.
+if (process.env.GITHUB_ACTIONS === 'true' && process.platform === 'linux' && process.argv[2] === 'development') {
+  for (const args of [
+    ['scripts/render-preview.mjs', '--cover', 'streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/plugin/icon.png'],
+    ['scripts/render-chrome-store.mjs'],
+    ['scripts/render-chrome-store.mjs', '--for', 'elgato'],
+    ['scripts/render-elgato-store.mjs'],
+    ['scripts/render-elgato-store.mjs', '--for', 'chrome'],
+  ]) {
+    const result = spawnSync(process.execPath, args, { stdio: 'inherit' });
+    assert.equal(result.status, 0, 'Store renderer failed: ' + args.join(' '));
+  }
+  console.log('Combined dependency preview and all four Playwright store renderer modes passed.');
 }
