@@ -6,6 +6,7 @@ Evidence through November 27, 2026 (Asia/Seoul). [Release verification](releases
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
+| November 27 1.3.0-dev layout revision, `aa76314` | 309 Node tests, two Python packaging tests, static checks and three Chromium fixtures passed. The linked-fit control matched the dial's SDPI styles. Chromium verified three edge-aligned popup rows in eight locales. Node verified nine icon positions and shared gap settings. | Mock host and routed player. Physical key spacing, Windows device rendering and signed-in Chrome/PWA remain unverified. |
 | November 27 revised 1.3.0-dev, `bc74b4d` | 308 Node tests, two Python packaging tests, static checks and three Chromium fixtures passed. Qt verified shared width/height cropping with sparse groups. Alpha and pixel comparisons verified transparent corner assets and equal Repeat arrow weights. | Linux fixtures, mock Stream Deck host and routed YouTube Music. Physical controls, Windows restart and signed-in Chrome/PWA remain manual checks. |
 | November 27 local 1.3.0-dev, `c0e0e10` | 306 Node tests, two Python packaging tests, static checks, three Chromium 158 fixtures, and Qt 6.10.2 key/dial rendering comparisons passed. The bundled plugin restored a saved track without Chrome, joined diagonal keys and repainted the remaining key after removal. MV3 exercised sequential Repeat, web UI changes and disabled Repeat. | Linux, a mock Stream Deck host and a routed YouTube Music fixture. Physical display, Windows reboot, signed-in Chrome/PWA and store-processed DRM operation remain unverified. |
 | November 14 post-release popup opening fix (r1) | 296-test full Node run, two Python packaging cases and static checks passed; after the feedback revision all 33 popup cases and all three Chromium fixtures passed. The actual empty toolbar popup opened one Music tab without pairing and reused it on a subsequent request; eight native catalogs/label bounds passed | Disposable local browser profiles and routed fixture pages. Initially attached as r1, then included in the explicitly authorized corrected canonical 1.2.0 ZIP; actual Music/PWA and Windows behavior not independently observed |
@@ -35,6 +36,10 @@ The November 7 `main` run used `@elgato/streamdeck` 3.0.4, `@elgato/cli` 1.10.4 
 | Key/dial output | Settings, profile reappearance, rotation/press/touch, proportional artwork, artist placement, backdrops and scrolling; Qt 6.10.3 reference rendering |
 | Popup | Real toolbar controls, captured routes, slider coalescing/closure, native catalogs and button bounds in all eight UI languages; separately labeled sample previews |
 | Distribution | Real worker import graph, serialized MAIN entry point, package allowlists/notices, fixed development versions and source/checksum metadata |
+
+### November 27 1.3.0-dev measured gaps and popup layout
+
+An additional Qt 6.10.2 comparison used four 144-pixel tiles separated by a 36-pixel band on each axis. At 25% horizontal and vertical spacing, the four rendered tiles excluded the band and matched their source colors. The inspector fixture submitted independent horizontal and vertical percentages and kept the selected group's fit synchronized without echoing programmatic changes. The popup fixture verified the first and last control edges across all three rows.
 
 ### November 27 revised 1.3.0-dev artwork and queue controls
 

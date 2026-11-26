@@ -183,9 +183,9 @@ Album artwork uses its measured aspect ratio, centered within the 144 × 144 key
 
 ### Linked key artwork
 
-All plugin keys can select individual or linked artwork. The SDK adapter supplies a device ID and key coordinates for visible physical keys. Automatic groups use eight-way adjacency. Keys with the same group name join across gaps on the same device. Each group shares a proportional width or height fit. A fixed 144 × 144 viewport clips each key's part. Empty cells retain their positions and produce no output. Key removal, device disconnection and settings changes schedule another paint.
+All plugin keys can select individual or linked artwork. The SDK adapter supplies a device ID and key coordinates for visible physical keys. Automatic groups use eight-way adjacency. Keys with the same group name join across gaps on the same device. Each group shares a proportional width or height fit. A fixed 144 × 144 viewport clips each key's part. Empty cells retain their positions and produce no output. The SDK supplies row and column counts without physical spacing. Optional horizontal and vertical gap percentages increase the pitch between viewports. Key removal, device disconnection and settings changes schedule another paint. [Elgato device events](https://docs.elgato.com/streamdeck/sdk/references/websocket/plugin/#devicedidconnect)
 
-Artwork modes clear the native title and show the cover on its own by default. A transparent action icon can be overlaid in any corner. Key presses retain their original commands. Cover and geometry variants are cached so unchanged settings do not rebuild or resend the same image.
+Artwork modes clear the native title and show the cover on its own by default. A transparent action icon can be placed in any of nine positions. Key presses retain their original commands. Cover and geometry variants are cached so unchanged settings do not rebuild or resend the same image.
 
 ## Command delivery
 

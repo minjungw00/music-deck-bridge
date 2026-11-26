@@ -189,13 +189,14 @@ Both fit modes preserve the original proportions and crop content outside the sc
 
 These settings are available in **1.3.0-dev**. In **Icon + song name** mode on the Current Track Dial, select **Text display → Truncate** or **Scroll left**. The default is Truncate.
 
-1. In a key's action settings, choose **Key display → Album artwork** or **Linked album artwork**. The default is the cover alone. Enable **Show small icon** to add the action icon without its dark key background, then choose one of the four corners.
+1. In a key's action settings, choose **Key display → Album artwork** or **Linked album artwork**. The default is the cover alone. Enable **Show small icon** and choose a position in the 3×3 grid, including the center.
 2. For linked artwork, leave **Artwork group** empty to join neighboring linked keys, including diagonals. To join separated keys, give them the same group name on the same device and page. Select **Fit height** (default) or **Fit width** on any member to change the whole group. The source is centered and scaled on the selected axis with its proportions intact. The keys show their part of that image, preserving interior gaps, and any overflow is cropped. A single key or a key inside a multi-action uses the individual display.
-3. If your Stream Deck action has a custom title or image, reset it in Stream Deck to let the plugin control that layer again.
+3. To compensate for physical spacing, enter **Horizontal gap (%)** and **Vertical gap (%)**, then select **Apply**. Divide the space between adjacent keys by the visible key width or height on the same axis, multiply by 100, and round to the nearest whole percent. A 4 mm gap beside a 16 mm key is 25%. Each value defaults to 0. The same values apply to the whole group.
+4. If your Stream Deck action has a custom title or image, reset it in Stream Deck to let the plugin control that layer again.
 
 The plugin keeps one confirmed last-played track and its cached cover locally. It restores them when Chrome is closed, including after Stream Deck or Windows restarts. Each confirmed track replaces the previous local record. Unpairing clears the saved track.
 
-**Repeat** and **Shuffle** use the controls available in the selected YouTube Music player. Both are available as Stream Deck keys and in the Chrome popup, including standalone popup use. When Chrome is disconnected, the Stream Deck action settings place **Chrome connection** and **Local server port** first.
+**Repeat** and **Shuffle** use the controls available in the selected YouTube Music player. Both are available as Stream Deck keys and in the Chrome popup, including standalone popup use. The popup groups track navigation and playback in the first row, ratings and queue controls in the second, and volume in the third. When Chrome is disconnected, the Stream Deck action settings place **Chrome connection** and **Local server port** first.
 
 ## Updating
 

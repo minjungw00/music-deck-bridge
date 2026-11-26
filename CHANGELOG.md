@@ -4,7 +4,8 @@
 
 - Add Repeat and Shuffle to Stream Deck and the Chrome popup. The popup supports both paired and standalone control, and the buttons reflect the player's confirmed modes.
 - Add truncation and scrolling to the Current Track Dial's Icon + song name display. Reset scrolling when the track changes.
-- Add individual and linked album artwork for all plugin keys. Artwork is displayed on its own by default, with an optional transparent action icon in any corner. Linked layouts preserve diagonal positions and gaps and offer proportional width or height fitting for the group.
+- Add individual and linked album artwork for all plugin keys. Artwork is displayed on its own by default, with an optional transparent action icon in nine positions. Linked layouts preserve diagonal positions and empty cells, offer proportional width or height fitting, and can compensate for measured gaps between physical keys.
+- Arrange the Chrome popup in three edge-aligned rows for transport, ratings and queue controls, and volume.
 - Keep a single last-played track and its artwork locally for offline display after Chrome, Stream Deck or Windows restarts. Each confirmed track replaces the previous one.
 - Place Chrome connection and port settings first while Chrome is disconnected.
 
