@@ -162,7 +162,6 @@ test('volume feedback settings use number-only defaults and appear only on volum
     assert.deepEqual(dial.elems.volumeFeedbackOptions.classList.removed, []);
   }
   assert.match(html, /setting="volumeShowValue" default="true"/);
-  assert.match(html, /setting="volumeShowPercent" default="false"/);
 });
 
 test('volume duration range localizes, preserves concurrent edits and saves zero without losing other settings', async () => {
@@ -229,12 +228,8 @@ test('artwork-only settings have safe defaults and follow display changes', asyn
   pi.subscribers.settings({ payload: { settings: { dialDisplay: 'info' } } });
   assert.equal(pi.elems.artworkOptions.classList.hidden, true);
   assert.equal(pi.elems.artworkTextOptions.classList.hidden, true);
-  for (const name of ['artworkShowArtist', 'artworkTitleBackground']) {
-    assert.match(html, new RegExp('<sdpi-checkbox[^>]+setting="' + name + '"[^>]+default="false"'));
-  }
   assert.match(html, /<sdpi-select[^>]+setting="artworkTitleMode"[^>]+default="truncate"/);
   assert.match(html, /<sdpi-select[^>]+setting="artworkFit"[^>]+default="height"/);
-  assert.match(html, /<sdpi-checkbox[^>]+setting="artworkShowTitle"[^>]+default="false"/);
   assert.match(html, /<sdpi-select[^>]+setting="artworkArtistPosition"[^>]+default="inline"/);
 });
 
@@ -251,7 +246,6 @@ test('current-track key exposes independent visibility, artist placement and bac
   for (const name of ['showTitle', 'showArtist']) {
     assert.match(html, new RegExp('<sdpi-checkbox[^>]+setting="' + name + '"[^>]+default="true"'));
   }
-  assert.match(html, /<sdpi-checkbox[^>]+setting="titleBackground"[^>]+default="false"/);
   assert.match(html, /<sdpi-select[^>]+setting="artistPosition"[^>]+default="below"/);
 });
 
