@@ -8,6 +8,7 @@ import { WebSocketServer } from 'ws';
 const { supported, html } = createRequire(import.meta.url)('../../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/property-inspector/language.js');
 const inspector = new URL('../../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/property-inspector/settings.html', import.meta.url);
 const actionPrefix = 'io.github.minjungw00.musicdeckbridge.';
+const checkedByDefault = new Set(['showTitle', 'showArtist', 'volumeShowValue']);
 const saved = { showTitle: false, showArtist: true, titleBackground: false, artworkShowTitle: true,
   artworkShowArtist: true, artworkTitleBackground: false, volumeShowValue: true, volumeShowPercent: false,
   volumeStep: 3, volumeFeedbackSeconds: 1.5, dialDisplay: 'artwork', infoTitleMode: 'scroll',
@@ -60,10 +61,13 @@ test('real SDPI components localize their first rendered labels without changing
       const labels = await page.evaluate(async () => {
         const elements = [...document.querySelectorAll('sdpi-item[label], sdpi-checkbox[label]')];
         await Promise.all(elements.map(element => element.updateComplete));
-        return elements.map(element => ({ id: element.id, kind: element.localName,
-          expected: element.getAttribute('label'), actual: element.shadowRoot.querySelector(
-            element.localName === 'sdpi-checkbox' ? '.checkable-text' : '.label label')?.textContent.trim(),
-          value: element.localName === 'sdpi-checkbox' ? element.value : undefined }));
+        return elements.map(element => {
+          const checkbox = element.localName === 'sdpi-checkbox';
+          return { id: element.id, kind: element.localName, expected: element.getAttribute('label'),
+            actual: element.shadowRoot.querySelector(checkbox ? '.checkable-text' : '.label label')?.textContent.trim(),
+            value: checkbox ? element.value : undefined,
+            checked: checkbox ? element.shadowRoot.querySelector('input').checked : undefined };
+        });
       });
       assert.equal(labels.filter(label => label.kind === 'sdpi-checkbox').length, 9);
       const selects = await page.evaluate(async () => {
@@ -90,7 +94,10 @@ test('real SDPI components localize their first rendered labels without changing
         if (language === 'ko') assert.match(label.expected, /[가-힣]/, label.id);
         assert.equal(label.actual, label.expected + (label.kind === 'sdpi-item' ? ':' : ''),
           `${language}/${action}/${Object.keys(settings).length ? 'saved' : 'fresh'}/${label.id}`);
-        if (label.kind === 'sdpi-checkbox') assert.equal(label.value, settings[label.id], `${label.id}: localization preserves the setting value`);
+        if (label.kind === 'sdpi-checkbox') {
+          assert.equal(label.value, settings[label.id], `${label.id}: localization preserves the setting value`);
+          assert.equal(label.checked, settings[label.id] ?? checkedByDefault.has(label.id), `${label.id}: rendered checkbox state`);
+        }
       }
       const clipped = await page.evaluate(() => [...document.querySelectorAll('sdpi-item, sdpi-checkbox')].flatMap(element => {
         const text = element.shadowRoot.querySelector(element.localName === 'sdpi-checkbox' ? '.checkable-text' : '.label label');
