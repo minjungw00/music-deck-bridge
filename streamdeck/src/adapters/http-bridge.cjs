@@ -2,7 +2,7 @@
 const http = require('node:http');
 const protocol = require('../../../chrome-extension/protocol.js');
 const { validOrigin } = require('../domain/credentials.cjs');
-const { PLAYER_STALE_MS } = require('../domain/player-state.cjs');
+const { PLAYER_STALE_MS, trackKey } = require('../domain/player-state.cjs');
 const LOCALHOST = '127.0.0.1';
 
 function createHttpBridge({ session, players, commands, covers, getPorts, onDeckEvent, version, isTest = false }) {
@@ -151,7 +151,7 @@ function createHttpBridge({ session, players, commands, covers, getPorts, onDeck
     }); });
   }
   function playerInfo([id, state]) {
-    return { id: String(id), key: state.trackId || JSON.stringify([state.title, state.artist]),
+    return { id: String(id), key: trackKey(state),
       title: state.title, artist: state.artist, playing: state.playing, rating: state.rating, volume: state.volume, muted: state.muted,
       repeatMode: state.repeatMode, shuffleEnabled: state.shuffleEnabled, coverKey: state.cover };
   }

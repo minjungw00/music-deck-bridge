@@ -2,6 +2,7 @@
 const { clip, limit } = require('./values.cjs');
 const LIVE_MS = 90000;
 const PLAYER_STALE_MS = 35000;
+const trackKey = state => state.trackId || JSON.stringify([state.title, state.artist]);
 function normalizeState(data, timestamp = Date.now()) {
   const s = data && typeof data === 'object' ? data : {};
   return {
@@ -28,4 +29,4 @@ function selectPlayer(candidates, now = Date.now()) {
     Number(b[1].playing) - Number(a[1].playing) || b[1].lastSeen - a[1].lastSeen);
   return live[0];
 }
-module.exports = { normalizeState, selectPlayer, LIVE_MS, PLAYER_STALE_MS };
+module.exports = { normalizeState, selectPlayer, trackKey, LIVE_MS, PLAYER_STALE_MS };

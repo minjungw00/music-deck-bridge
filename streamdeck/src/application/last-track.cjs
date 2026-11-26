@@ -1,6 +1,7 @@
 'use strict';
 const { createHash } = require('node:crypto');
 const { rasterSize } = require('../domain/raster-artwork.cjs');
+const { trackKey } = require('../domain/player-state.cjs');
 const { clip } = require('../domain/values.cjs');
 
 function createLastTrack({ storage, onChange, onError = () => {} }) {
@@ -16,8 +17,7 @@ function createLastTrack({ storage, onChange, onError = () => {} }) {
     trackId: typeof persisted.trackId === 'string' && /^[\w-]{11}$/.test(persisted.trackId) ? persisted.trackId : '',
     image: rasterSize(persisted.image) ? persisted.image : '',
   } : null;
-  const identity = track => track.trackId || JSON.stringify([track.title, track.artist]);
-  let confirmedKey = snapshot ? identity(snapshot) : '';
+  let confirmedKey = snapshot ? trackKey(snapshot) : '';
   let coverSource = '';
   let savedSnapshot = snapshot;
   function save(record) {
@@ -35,7 +35,7 @@ function createLastTrack({ storage, onChange, onError = () => {} }) {
   return {
     observe(state, image = '') {
       if (!scope || !state?.title) return;
-      const key = identity(state);
+      const key = trackKey(state);
       const sameTrack = key === confirmedKey;
       if (!(state.playbackConfirmed ?? state.playing) && !sameTrack) return;
       const cached = sameTrack ? snapshot?.image || '' : '';

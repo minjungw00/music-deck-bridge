@@ -1,7 +1,7 @@
 'use strict';
 const crypto = require('node:crypto');
-const { PLAYER_STALE_MS } = require('../domain/player-state.cjs');
-const limit = (value, min, max) => Math.max(min, Math.min(max, value));
+const { PLAYER_STALE_MS, trackKey } = require('../domain/player-state.cjs');
+const { limit } = require('../domain/values.cjs');
 const COMMAND_ERRORS = new Set(['pairing-required', 'extension-unavailable', 'command-timeout',
   'authorization-lost', 'injection-unavailable', 'receiver-unavailable', 'delivery-uncertain',
   'player-rejected', 'player-not-ready', 'browser-api-failed', 'bridge-unavailable', 'command-failed',
@@ -39,7 +39,7 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     const rating = type === 'like' || type === 'dislike';
     if (rating && (!state.title || state.rating === null)) return false;
     queue.push({ clientId, type, amount, created: now(),
-      ...(rating ? { trackKey: state.trackId || JSON.stringify([state.title, state.artist]) } : {}) });
+      ...(rating ? { trackKey: trackKey(state) } : {}) });
     while (queue.length > 60) queue.shift();
     flushWaiters(clientId);
     return true;
@@ -168,7 +168,7 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     if (queueControl(type)) {
       const error = queueError(type, state);
       if (error) { lastCommandError = error; return false; }
-      playerKey = state.trackId || JSON.stringify([state.title, state.artist]);
+      playerKey = trackKey(state);
     }
     // Keep existing controls available when paired with a legacy extension.
     if (type !== 'open' && !browserCapable && entry && !playerKey) return addCommand(type, amount);
@@ -184,8 +184,7 @@ function createCommandService({ getSession, selectedEntry, launch, log,
       id: newId(), type, amount, promise, state: 'queued', order: ++latestRequest,
       expiresAt: now() + timeout, preferredTabId: entry ? Number(entry[0]) : null,
       playerKey,
-      trackKey: (type === 'like' || type === 'dislike') && state?.title ?
-        state.trackId || JSON.stringify([state.title, state.artist]) : null,
+      trackKey: (type === 'like' || type === 'dislike') && state?.title ? trackKey(state) : null,
       finish(ok, reason = 'command-failed') {
         if (!['queued', 'delivered'].includes(request.state)) return;
         request.state = reason === 'command-superseded' ? 'cancelled' : ok ? 'succeeded' :
