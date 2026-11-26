@@ -78,7 +78,7 @@ async function scenario(useMediaSession=false, { commands, manualVolume, compact
   }
   const browserResponses = [];
   for (const input of browserInputs) {
-    input.before?.({ audio, playBtn, nextBtn, ratingButtons });
+    input.before?.({ audio, playBtn, nextBtn, ratingButtons, location: sandbox.location });
     browserResponses.push(await new Promise(resolve => {
       const keep = eventHandlers.runtimeMessage(input.message, input.sender || { id: 'this-extension' }, resolve);
       if (keep !== true) resolve({ ignored: true });
@@ -161,6 +161,21 @@ test('browser inputs retry only before execution and deduplicate successful requ
   assert.equal(result.nextClicks, 1);
   assert.equal(result.browserResponses[0].retry, true);
   assert.ok(result.browserResponses.slice(1).every(response => response.ok));
+});
+
+test('the content script checks the live track before applying track-bound browser inputs', async () => {
+  const previous = 'aaaaaaaaaaa', current = 'bbbbbbbbbbb';
+  const result = await scenario(false, { commands: [], browserInputs: [
+    { before: ({ location }) => { location.href = `https://music.youtube.com/watch?v=${current}`; },
+      message: { type: 'bridge-command', id: 'late-toggle', command: { type: 'toggle', playerKey: previous } } },
+    { message: { type: 'bridge-command', id: 'late-next', command: { type: 'next', playerKey: previous } } },
+    { message: { type: 'bridge-command', id: 'valid-next', command: { type: 'next', playerKey: current } } },
+  ] });
+  assert.equal(result.browserResponses[0].reason, 'player-changed');
+  assert.equal(result.browserResponses[1].reason, 'player-changed');
+  assert.equal(result.browserResponses[2].ok, true);
+  assert.equal(result.playClicks, 0);
+  assert.equal(result.nextClicks, 1);
 });
 
 test('launch continuation starts paused playback and leaves restored playing media playing', async () => {

@@ -83,6 +83,7 @@
             expiresAt: deadline, dispatchOnly: true, command: {
               type: command.type === 'toggle' && opened ? 'play' : command.type,
               amount: command.amount, trackKey, allowCurrentTrack: !trackKey,
+              ...(command.playerKey ? { playerKey: command.playerKey } : {}),
             } }, { frameId: 0 });
           if (result?.pending) {
             // Receipt starts an ordered MAIN-world dispatch operation. Keep its

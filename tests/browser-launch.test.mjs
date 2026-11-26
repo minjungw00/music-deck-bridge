@@ -319,6 +319,14 @@ test('popup commands cannot fall back to another tab when their displayed player
   }
 });
 
+test('track-bound commands forward their identity to the receiving document', async () => {
+  const h = harness({ tabs: [{ id: 1, status: 'loading' }] });
+  const expected = 'aaaaaaaaaaa';
+  assert.equal(await h.api.performBrowserCommand({ type: 'shuffle', preferredTabId: 1, playerKey: expected }), true);
+  const message = h.calls.find(call => call[0] === 'message')[2];
+  assert.equal(message.command.playerKey, expected);
+});
+
 test('popup commands recheck the selected track before dispatch after receipt', async () => {
   const h = harness({ tabs: [{ id: 1, windowId: 10 }] });
   await new Promise(resolve => setImmediate(resolve));
