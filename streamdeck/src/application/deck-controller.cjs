@@ -6,6 +6,7 @@ const { PLAYER_STALE_MS } = require('../domain/player-state.cjs');
 const { validFeedbackSeconds } = require('../domain/volume-feedback.cjs');
 const { createVolumeKeyFeedback } = require('./volume-key-feedback.cjs');
 const { albumGroups, albumSettings, validAlbumGap, keyDisplay } = require('../presentation/album-groups.cjs');
+const CONNECTION_REQUESTS = new Set(['generate-pin', 'get-connection', 'set-linked-fit', 'set-linked-gap']);
 
 function createDeckController({ displayed, commands, session, ports, players, output, onChange,
   version, now = Date.now }) {
@@ -33,6 +34,39 @@ function createDeckController({ displayed, commands, session, ports, players, ou
       if (ok === false) output.send({ event: 'showAlert', context });
       onChange();
     });
+  }
+  function handleConnectionRequest(context, request) {
+    const item = displayed.get(context);
+    const group = keyDisplay(item?.settings) === 'linked' ?
+      albumGroups(displayed).find(members => members.some(key => key.context === context)) ||
+        [{ context, settings: item.settings }] : [];
+    const fit = request.type === 'set-linked-fit' && ['width', 'height'].includes(request.fit) ? request.fit : null;
+    const gap = request.type === 'set-linked-gap' && validAlbumGap(request.gap) ? request.gap : null;
+    if ((fit || gap) && group.length) {
+      for (const key of group) {
+        const currentGap = key.settings.linkedArtworkGap;
+        if (fit ? key.settings.linkedArtworkFit === fit :
+          currentGap?.horizontal === gap.horizontal && currentGap?.vertical === gap.vertical) continue;
+        const update = fit ? { linkedArtworkFit: fit } : {
+          linkedArtworkGap: { horizontal: gap.horizontal, vertical: gap.vertical },
+        };
+        const settings = { ...key.settings, ...update };
+        displayed.get(key.context).settings = key.settings = settings;
+        output.send({ event: 'setSettings', context: key.context, payload: { settings } });
+      }
+      onChange();
+    }
+    const linked = albumSettings(group);
+    const chosen = players.selected();
+    output.send({ event: 'sendToPropertyInspector', context,
+      payload: { type: 'connection', paired: session.paired,
+        extensionOnline: session.extensionOnline(), playerActive: Boolean(chosen),
+        playerStale: Boolean(chosen) && now() - chosen[1].lastMediaSyncAt > PLAYER_STALE_MS,
+        pin: session.pin, expiresAt: session.expiresAt,
+        serverPort: ports.port, bridgeOnline: ports.online, portError: ports.error, lastCommandError: commands.lastError,
+        repeatError: commands.repeatError, shuffleError: commands.shuffleError,
+        linkedArtworkFit: linked.fit, linkedArtworkGap: linked.gap,
+        pluginVersion: version, ...protocol.descriptor, compatibility: session.compatibility } });
   }
   function handleDeckEvent(e) {
     if (!e || !e.event) return;
@@ -105,39 +139,7 @@ function createDeckController({ displayed, commands, session, ports, players, ou
         });
         return;
       }
-      if (['generate-pin', 'get-connection', 'set-linked-fit', 'set-linked-gap'].includes(request)) {
-        const item = displayed.get(e.context);
-        const group = item && keyDisplay(item.settings) === 'linked' ?
-          albumGroups(displayed).find(members => members.some(key => key.context === e.context)) || [{ context: e.context, settings: item.settings }] : [];
-        const fit = request === 'set-linked-fit' && ['width', 'height'].includes(e.payload.fit) ? e.payload.fit : null;
-        const gap = request === 'set-linked-gap' && validAlbumGap(e.payload.gap) ? e.payload.gap : null;
-        if ((fit || gap) && group.length) {
-          for (const key of group) {
-            const currentGap = key.settings.linkedArtworkGap;
-            if (fit ? key.settings.linkedArtworkFit === fit :
-              currentGap?.horizontal === gap.horizontal && currentGap?.vertical === gap.vertical) continue;
-            const update = fit ? { linkedArtworkFit: fit } : {
-              linkedArtworkGap: { horizontal: gap.horizontal, vertical: gap.vertical },
-            };
-            const settings = { ...key.settings, ...update };
-            displayed.get(key.context).settings = key.settings = settings;
-            output.send({ event: 'setSettings', context: key.context, payload: { settings } });
-          }
-          onChange();
-        }
-        const linked = albumSettings(group);
-        const chosen = players.selected();
-        output.send({ event: 'sendToPropertyInspector', context: e.context,
-          payload: { type: 'connection', paired: session.paired,
-            extensionOnline: session.extensionOnline(),
-            playerActive: !!chosen,
-            playerStale: Boolean(chosen) && now() - chosen[1].lastMediaSyncAt > PLAYER_STALE_MS,
-            pin: session.pin, expiresAt: session.expiresAt,
-            serverPort: ports.port, bridgeOnline: ports.online, portError: ports.error, lastCommandError: commands.lastError,
-            repeatError: commands.repeatError, shuffleError: commands.shuffleError,
-            linkedArtworkFit: linked.fit, linkedArtworkGap: linked.gap,
-            pluginVersion: version, ...protocol.descriptor, compatibility: session.compatibility } });
-      }
+      if (CONNECTION_REQUESTS.has(request)) handleConnectionRequest(e.context, e.payload);
       return;
     }
     if (e.event === 'keyDown') {
