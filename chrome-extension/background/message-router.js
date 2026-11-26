@@ -4,29 +4,27 @@
     const { playerPlayback, controlPlayerVolume } = pageControls;
     const managementMethods = Object.freeze({ __proto__: null, pair: 'pair', check: 'check',
       'get-port': 'getPort', 'set-port': 'setPort', unpair: 'unpair', control: 'control', artwork: 'artwork' });
+    function runPlayback(tabId, args, respond) {
+      chrome.scripting.executeScript({ target: { tabId, frameIds: [0] }, world: 'MAIN', func: playerPlayback, args })
+        .then(results => respond(results[0]?.result || { ok: false }))
+        .catch(() => respond({ ok: false, reason: 'playback-unconfirmed' }));
+      return true;
+    }
     function onMessage(msg, sender, respond) {
-      if (client.blocked() && !localPlayer?.controlling(sender.tab?.id) && ['player-playback', 'player-playback-result', 'player-volume'].includes(msg?.type)) {
+      const tabId = sender.tab?.id;
+      const musicTab = sender.tab && sender.url?.startsWith('https://music.youtube.com/');
+      const mainFrame = musicTab && Number.isInteger(tabId) && sender.frameId === 0;
+      if (client.blocked() && !localPlayer?.controlling(tabId) && ['player-playback', 'player-playback-result', 'player-volume'].includes(msg?.type)) {
         respond({ ok: false, reason: 'protocol-incompatible' }); return false;
       }
-      if (msg?.type === 'player-playback' && Number.isInteger(sender.tab?.id) && sender.frameId === 0 &&
-          sender.url?.startsWith('https://music.youtube.com/')) {
+      if (msg?.type === 'player-playback' && mainFrame) {
         if (!['play', 'toggle', 'next', 'prev', 'repeat', 'shuffle'].includes(msg.command)) { respond({ ok: false }); return false; }
-        chrome.scripting.executeScript({ target: { tabId: sender.tab.id, frameIds: [0] }, world: 'MAIN',
-          func: playerPlayback, args: [msg.command, msg.expiresAt, msg.dispatchOnly === true] })
-          .then(results => respond(results[0]?.result || { ok: false }))
-          .catch(() => respond({ ok: false, reason: 'playback-unconfirmed' }));
-        return true;
+        return runPlayback(tabId, [msg.command, msg.expiresAt, msg.dispatchOnly === true], respond);
       }
-      if (msg?.type === 'player-playback-result' && Number.isInteger(sender.tab?.id) && sender.frameId === 0 &&
-          sender.url?.startsWith('https://music.youtube.com/') && Number.isSafeInteger(msg.pending) && msg.pending > 0) {
-        chrome.scripting.executeScript({ target: { tabId: sender.tab.id, frameIds: [0] }, world: 'MAIN',
-          func: playerPlayback, args: ['result', msg.pending] })
-          .then(results => respond(results[0]?.result || { ok: false }))
-          .catch(() => respond({ ok: false, reason: 'playback-unconfirmed' }));
-        return true;
+      if (msg?.type === 'player-playback-result' && mainFrame && Number.isSafeInteger(msg.pending) && msg.pending > 0) {
+        return runPlayback(tabId, ['result', msg.pending], respond);
       }
-      if (msg?.type === 'player-volume' && Number.isInteger(sender.tab?.id) && sender.frameId === 0 &&
-          sender.url?.startsWith('https://music.youtube.com/')) {
+      if (msg?.type === 'player-volume' && mainFrame) {
         if (!['volume_delta', 'volume_set', 'mute'].includes(msg.command) ||
             (msg.command !== 'mute' && !Number.isFinite(msg.amount)) ||
             (msg.command === 'volume_set' && (!Number.isInteger(msg.amount) || msg.amount < 0 || msg.amount > 100))) {
@@ -34,7 +32,7 @@
           return false;
         }
         chrome.scripting.executeScript({
-          target: { tabId: sender.tab.id, frameIds: [0] },
+          target: { tabId, frameIds: [0] },
           world: 'MAIN',
           func: controlPlayerVolume,
           args: [msg.command, msg.command === 'mute' ? 0 : msg.amount],
@@ -53,8 +51,7 @@
         Promise.resolve().then(() => management[managementMethod](msg)).then(respond).catch(error => respond(client.failure(error)));
         return true;
       }
-      if (['sync', 'listen'].includes(msg?.type) && sender.tab &&
-          sender.url?.startsWith('https://music.youtube.com/')) {
+      if (['sync', 'listen'].includes(msg?.type) && musicTab) {
         players.synchronize(msg.type, msg.state, sender).then(respond).catch(() => respond({ paired: false, commands: [] }));
         return true;
       }

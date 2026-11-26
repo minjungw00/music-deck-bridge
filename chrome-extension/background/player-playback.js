@@ -14,8 +14,7 @@
     }
     if (type === 'state') {
       const state = readPlayer();
-      const playbackConfirmed = state.playable && (Number.isFinite(state.state) ? state.state === 1 :
-        state.playing && state.media?.readyState >= 2);
+      const playbackConfirmed = state.playable && started(state);
       return { playing: state.playing, playbackConfirmed, muted: state.muted,
         repeatMode: readQueueControl('repeat')?.mode ?? null, shuffleEnabled: readQueueControl('shuffle')?.mode ?? null };
     }
@@ -51,9 +50,9 @@
         !button.closest?.('[disabled], [aria-disabled="true"]');
     }
     function readQueueControl(command) {
+      const repeat = command === 'repeat';
       const owners = document.querySelectorAll('ytmusic-player-bar, ytmusic-player-controls');
       for (const owner of owners) {
-        const repeat = command === 'repeat';
         if (repeat ? owner.isRepeatButtonDisabled === true :
           owner.isShuffleDisabled === true || owner.isShuffleButtonDisabled === true) continue;
         const mode = repeat ? owner.repeatMode : owner.shuffleOn;
