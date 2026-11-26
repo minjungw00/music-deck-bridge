@@ -70,6 +70,6 @@ npm run preview:render -- --cover /path/to/album-cover.jpg
 
 Open `dist/previews/prelude-bwv846/index.html` in a browser. This single HTML file embeds its cover, icons, styles and scripts and works offline. It includes language, playback, mute, volume, artwork-fit and text controls and can open the popup alone; `popup-en.html` and `popup-ko.html` are also exported separately. The generator never starts the bridge or reads pairing credentials. All generated files remain under ignored `dist/` and are excluded from product packages.
 
-The popup reuses the real HTML, JavaScript and catalogs with sample responses. Key/dial content uses the plugin's rendering functions. The device frame, native key text and built-in dial layout are browser approximations. Label these as previews; actual captures provide device evidence.
+The popup reuses the real HTML, JavaScript and catalogs with sample responses. Click Repeat to cycle through Off, Repeat all and Repeat one. Click Shuffle to switch between on and off. Key/dial content uses the plugin's rendering functions. The device frame, native key text and built-in dial layout are browser approximations. Label these as previews. Use actual captures for device evidence.
 
 Supply cover artwork appropriate to the intended use. A recording's license does not establish its cover's reuse terms.

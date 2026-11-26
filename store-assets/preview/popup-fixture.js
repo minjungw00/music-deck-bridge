@@ -3,8 +3,11 @@ let previewPaired = true;
 let previewPort = 17864;
 let previewPlaying = true;
 let previewRating = 'INDIFFERENT';
+let previewRepeatMode = 'NONE';
+let previewShuffleEnabled = false;
 let previewVolume = 50;
 let previewMuted = false;
+const nextPreviewRepeatMode = { NONE: 'ALL', ALL: 'ONE', ONE: 'NONE' };
 Object.defineProperty(globalThis, 'chrome', { configurable: true, value: {
   i18n: {
     getUILanguage: () => previewFixture.locale,
@@ -21,6 +24,8 @@ Object.defineProperty(globalThis, 'chrome', { configurable: true, value: {
       if (message.command === 'toggle') previewPlaying = !previewPlaying;
       if (message.command === 'mute') previewMuted = !previewMuted;
       if (message.command === 'volume_set') previewVolume = message.amount;
+      if (message.command === 'repeat') previewRepeatMode = nextPreviewRepeatMode[previewRepeatMode];
+      if (message.command === 'shuffle') previewShuffleEnabled = !previewShuffleEnabled;
       if (['like', 'dislike'].includes(message.command)) {
         const rating = message.command === 'like' ? 'LIKE' : 'DISLIKE';
         previewRating = previewRating === rating ? 'INDIFFERENT' : rating;
@@ -29,8 +34,10 @@ Object.defineProperty(globalThis, 'chrome', { configurable: true, value: {
     }
     return { ok: previewPaired || message.type === 'player-status', mode: message.type === 'player-status' ? 'local' : 'bridge', error: previewFixture.catalog.unknown.message,
       active: true, standalone: false, track: previewFixture.title, coverStatus: 'ready',
-      popupControls: true, popupVolume: true, player: { id: '1', key: 'preview-song', title: previewFixture.title,
+      popupControls: true, popupVolume: true, popupQueueControls: true,
+      player: { id: '1', key: 'preview-song', title: previewFixture.title,
         artist: previewFixture.artist, playing: previewPlaying, rating: previewRating,
+        repeatMode: previewRepeatMode, shuffleEnabled: previewShuffleEnabled,
         volume: previewVolume, muted: previewMuted, coverKey: message.type === 'player-status' ? previewFixture.localCover || '' : 'preview-cover' },
       compatibility: { pluginVersion: previewFixture.version, extensionVersion: previewFixture.extensionVersion,
         negotiatedProtocolVersion: previewFixture.protocol } };
