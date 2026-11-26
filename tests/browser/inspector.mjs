@@ -101,7 +101,21 @@ test('real SDPI components localize their first rendered labels without changing
       assert.deepEqual(clipped, [], `${language}/${action}: text outside inspector viewport`);
       assert.deepEqual(messages.slice(before).filter(message => message.event === 'setSettings'), [], 'localization must not save defaults or change settings');
       assert.deepEqual(errors, []);
+      if (language === 'ko' && action === 'nowplaying' && settings !== saved) {
+        const display = page.locator('#keyDisplay select');
+        const iconRow = page.locator('#keyArtworkIconRow');
+        for (const mode of ['artwork', 'linked']) {
+          await display.selectOption(mode);
+          await iconRow.waitFor({ state: 'visible' });
+          assert.equal(await page.locator('#keyArtworkShowIcon input').isChecked(), false, mode);
+          assert.equal(await page.locator('#keyArtworkIconPositionRow').isVisible(), false, mode);
+          await display.selectOption('default');
+          await iconRow.waitFor({ state: 'hidden' });
+        }
+      }
       if (language === 'ko' && action === 'nowplaying' && settings === saved) {
+        await page.locator('#keyArtworkIconPositionRow').waitFor({ state: 'visible' });
+        assert.equal(await page.locator('#keyArtworkShowIcon input').isChecked(), true);
         const since = messages.length;
         for (const peer of server.clients) peer.send(JSON.stringify({ event: 'sendToPropertyInspector',
           payload: { type: 'connection', paired: true, extensionOnline: true, playerActive: false,
