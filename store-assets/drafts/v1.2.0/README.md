@@ -1,6 +1,6 @@
-# 1.2.0 스토어 제출용 문안
+# 1.2.0 스토어 참고 문안
 
-검토용 초안입니다. 실제 제출본·게시 문구와 구분합니다. 공개 페이지 확인 결과는 [스토어 검증 기록](../../../docs/verification/stores.md#november-14-public-listing-review-and-120-drafts)에 있습니다. 기존 제출본과 공개 릴리즈 파일을 보존합니다.
+1.2.0 제출을 준비하며 작성한 참고 문안입니다. 양쪽 공식 스토어의 1.2.0 게시를 확인했습니다. 공개 페이지에서 확인한 항목과 확인 범위는 [스토어 검증 기록](../../../docs/verification/stores.md#november-27-publication-verification)에 있습니다. 실제 Console 제출 원문은 확인되지 않았습니다.
 
 ## 복사할 문안
 
@@ -25,7 +25,7 @@ Elgato 영어 본문은 기존 Overview와 How to Use를 합친 전체 교체용
 
 확장 팝업 단독 제어와 Stream Deck 연결을 구분했습니다. Windows 10/11·Chrome 116+를 지원 대상으로 유지하고, Stream Deck 제어에만 플러그인·기기·Stream Deck 7.1+를 요구합니다. 지원 UI 언어와 같은 8개 로케일에 대해 Chrome·Elgato 설명문 16개를 제공합니다. 기존 영어·한국어 기준 문안의 기능과 조건을 유지해 번역했습니다. UI 번역 목록이 고객 지원·법적 고지 언어를 확정하지는 않습니다.
 
-각 문안은 해당 구성요소의 1.2.0 게시에 맞춰 사용하세요. 동반 스토어 업데이트가 아직 공개되지 않은 경우의 수동 설치 경로는 [1.2.0 릴리즈](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.2.0)와 설치 안내에 있습니다. 이전 버전의 두 구성요소를 설치한 상태를 1.2.0 전체 기능의 근거로 삼지 않습니다.
+일반 설치는 [공식 스토어 설치 안내](../../../docs/installation.ko.md#method-1-official-stores)를 따르세요. 수동 설치 파일은 [GitHub 1.2.0 릴리스](https://github.com/minjungw00/music-deck-bridge/releases/tag/v1.2.0)에 있습니다.
 
 ## UTM 링크와 추가 링크 필드
 
@@ -62,15 +62,15 @@ Chrome 짧은 설명은 [manifest의 description](https://developer.chrome.com/d
 
 Elgato의 제품 UI 언어 선택 항목은 English, Korean, Chinese (Simplified), Chinese (Traditional), Japanese, Spanish, French, German에 맞춥니다. Chrome의 로케일 선택은 패키지의 `_locales` 이름과 맞춥니다. 이번 초안에는 그 8개 언어의 상세 설명이 모두 있습니다. 기존 공개 개인정보 분류는 인증 정보·사용자 활동·웹사이트 콘텐츠이며, 제출 폼은 1.2.0의 [개인정보 처리방침](../../../PRIVACY.md)에 맞춰 검토합니다. 새 문안은 확장 단독 제어와 외부 앨범 이미지 요청을 포함하며 모든 통신이 로컬이라고 안내하지 않습니다.
 
-## 사용할 패키지와 이미지
+## 패키지와 이미지 준비 기록
 
 | 구성요소 | 공개된 1.2.0 파일 | SHA-256 |
 | --- | --- | --- |
 | Chrome | [music-deck-bridge-chrome-1.2.0.zip](https://github.com/minjungw00/music-deck-bridge/releases/download/v1.2.0/music-deck-bridge-chrome-1.2.0.zip) | `f423aef0414da08480ceaef4145b4b1ef0866107eb8b375e285a8a3324341397` |
 | Elgato | [io.github.minjungw00.musicdeckbridge.streamDeckPlugin](https://github.com/minjungw00/music-deck-bridge/releases/download/v1.2.0/io.github.minjungw00.musicdeckbridge.streamDeckPlugin) | `e60149ca97452c8cb5a5690f468b2b51d75e4fa2dc8a93ad4883e676ddc5acb9` |
 
-Chrome 제출용 파일은 팝업의 YouTube Music 열기 수정이 포함된 **교체된 1.2.0 ZIP**입니다. 사용자의 명시적 요청으로 정식 스토어 게시 전에 기존 이름의 파일과 태그를 교체했으며, 임시 r1 첨부는 제거했습니다. [현재 체크섬과 교체 기록](../../../docs/verification/releases.md#current-corrected-publication)으로 제출 파일을 식별하세요.
+Chrome 제출 준비에는 팝업의 YouTube Music 열기 수정이 포함된 **교체된 1.2.0 ZIP**을 사용했습니다. 사용자의 명시적 요청으로 스토어 게시 전에 기존 이름의 파일과 태그를 교체했으며, 임시 r1 첨부를 제거했습니다. [GitHub 파일 체크섬과 교체 기록](../../../docs/verification/releases.md#current-corrected-publication)
 
-[릴리즈 검증](../../../docs/verification/releases.md#v120)은 GitHub 패키지의 근거입니다. 업로드·심사·스토어 게시·처리된 설치 파일의 실행 결과는 제출 후 별도로 기록합니다.
+위 체크섬은 GitHub 배포 파일의 값입니다. 실제 스토어 업로드 파일과 처리된 설치 파일은 확인되지 않았습니다. [스토어 검증 기록](../../../docs/verification/stores.md#november-27-publication-verification)
 
 기존 스토어용 팝업 이미지는 1.1.1 샘플 UI이며 플러그인 필수 안내를 포함합니다. 1.2.0 팝업과 단독 제어를 설명하는 이미지로 그대로 사용하기에는 맞지 않습니다. 새 버전의 실제 UI를 캡처하거나 샘플임을 명시한 새 미리보기를 마련하고, 기존 제출 이미지와 원본 UI 픽셀은 보존하세요. 이 작업의 변경 범위는 설명문·링크입니다. 제출 양식의 AI 사용 항목에는 실제 제작 방식을 기재하세요. 이 설명문 초안은 AI 지원으로 작성했습니다.

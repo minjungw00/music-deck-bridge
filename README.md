@@ -21,7 +21,7 @@ Stream Deck control uses two components installed together: a Stream Deck plugin
 
 See the guides for [PIN pairing](docs/installation.en.md#pairing), [updates](docs/installation.en.md#updating), switching installation methods and removal. If using a Chrome ZIP, extract it to a permanent folder and load it unpacked in Developer mode.
 
-Public releases and development builds are tracked separately in [release readiness](docs/release-readiness.md). The current source is **1.2.0**; GitHub publication and store processing are recorded separately. Use build metadata to identify development revisions. The 1.2.0 extension also offers popup playback controls without a plugin or additional server; Stream Deck hardware control still needs the paired plugin.
+**1.2.0** is available from both official stores and GitHub Releases. Elgato Marketplace displays it as **1.2**. See [release readiness](docs/release-readiness.md) for the distribution record and use build metadata to identify development revisions. The extension offers popup playback controls on its own. Stream Deck hardware control requires the paired plugin.
 
 ## Requirements
 

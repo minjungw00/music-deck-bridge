@@ -119,7 +119,7 @@ The files are written to `dist/` with the same names as release packages. Stream
 
 The extension prefers an installed Chrome YouTube Music app if both it and a regular tab are open.
 
-In 1.2.0 development builds, the popup controls YouTube Music with or without the Stream Deck plugin. Open a Music tab or installed Chrome app and start a track. The popup shows artwork, title/artist, Play/Pause, Previous/Next, Like/Dislike, Mute/Unmute and a 0–100 volume slider. All media buttons use the same circular portion of the existing Stream Deck artwork, including selected states. State refreshes every second; the slider keeps the dragged value and coalesces pending changes into the final absolute target.
+Starting with extension 1.2.0, the popup controls YouTube Music with or without the Stream Deck plugin. Open a Music tab or installed Chrome app and start a track. The popup shows artwork, title/artist, Play/Pause, Previous/Next, Like/Dislike, Mute/Unmute and a 0–100 volume slider. All media buttons use the same circular portion of the existing Stream Deck artwork, including selected states. State refreshes every second; the slider keeps the dragged value and coalesces pending changes into the final absolute target.
 
 Open **Stream Deck connection settings** for optional plugin installation, PIN pairing and port changes. **Stream Deck connection status** reports only that connection. A healthy paired plugin uses the existing ordered bridge path; otherwise the popup controls the selected Music player through Chrome APIs, without an additional server or pairing token. Failed commands are not automatically retried through another route. After reconnection, normal page-state synchronization supplies the plugin with the current state.
 

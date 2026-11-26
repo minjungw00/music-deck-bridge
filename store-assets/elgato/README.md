@@ -2,9 +2,7 @@
 
 Use this guide to select Marketplace upload files and regenerate exports. See the [shared submission workflow](../README.md#submission-workflow) for package/copy provenance and publication records.
 
-See the [store record](../../docs/verification/stores.md#public-description-correction) for the current public installation guidance. The [October 29 How to Use draft](how-to-use.en.md) is historical reference copy.
-
-Use the [1.2.0 English publishing copy, seven reference translations, separate release notes and UTM links](../drafts/v1.2.0/README.md) for this update. Replace the complete Overview/How to Use text together, rather than retaining the old component-required prefix. Refresh the 1.1.1 popup media below for 1.2.0.
+See the [store record](../../docs/verification/stores.md#november-27-publication-verification) for the published 1.2 listing. The [1.2.0 reference drafts](../drafts/v1.2.0/README.md) include the English description, seven reference translations, release notes and UTM links. The [October 29 How to Use draft](how-to-use.en.md) documents an earlier revision. Capture the current UI for future popup exports.
 
 ## Upload files
 
@@ -41,7 +39,7 @@ Retain the submitted version, package hash, Console product/version ID, processi
 
 - Use plugin UUID `io.github.minjungw00.musicdeckbridge` and confirm supported device models.
 - Capture Now Playing artwork, key controls, Stream Deck + dial feedback and settings/PIN flow in English and Korean.
-- Use the [prepared 1.2.0 English description](../drafts/v1.2.0/elgato-en.txt); retain the [submitted English description](../submitted/v1.1.1/elgato-en.md) as history; see [metadata and permission guidance](../listing.en.md) when preparing changes.
+- Consult the [1.2.0 English reference description](../drafts/v1.2.0/elgato-en.txt) and [metadata and permission guidance](../listing.en.md) when preparing changes. Preserve the [submitted v1.1.1 English description](../submitted/v1.1.1/elgato-en.md).
 - Check current Maker Console image specifications and SDK/DRM requirements before export.
 - Use the submitted version's magenta representative icons from `streamdeck/generate_assets.py`; see the [brand guide](../../docs/branding.md). Retain the project and bundled-library notices.
 

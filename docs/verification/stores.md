@@ -1,15 +1,25 @@
 # Store submissions
 
-Last updated: November 14, 2026 (Asia/Seoul). Direct public-page retrieval confirmed **1.1.3** in both stores. The October 24 maintainer report of both stores' publication and normal operation is historical and has a separate scope.
+Last updated November 27, 2026 (Asia/Seoul).
 
 ## Current listings
 
-| Store | Public status | Last maintainer-reported submission | Listing and ID |
+| Store | Public version | Displayed date | Listing and ID |
 | --- | --- | --- | --- |
-| Elgato Marketplace | **1.1.3**, dated **November 2, 2026** on the listing, independently re-read November 14 | Historical **1.1.2** / plugin **1.1.2.0** | [Music Deck Bridge](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd) · `044e81d9-9671-4277-bcb9-ce8b6d38c3fd` |
-| Chrome Web Store | **1.1.3**, updated **October 30, 2026** on the official English/Korean pages, independently read November 14. Earlier user publication confirmation remains historical evidence. | Historical **1.1.2** | [Music Deck Bridge](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca) · `ldipcjgadbppphalmibkofhigjffnlca` |
+| Elgato Marketplace | **1.2** in Details, **1.2.0** in What's new | **November 23, 2026** | [Music Deck Bridge](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd) · `044e81d9-9671-4277-bcb9-ce8b6d38c3fd` |
+| Chrome Web Store | **1.2.0** in English and Korean | Updated **November 14, 2026** | [Music Deck Bridge](https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca) · `ldipcjgadbppphalmibkofhigjffnlca` |
 
-The October 24 report confirms normal operation of the then-published store components without an itemized installation/migration or control inventory. The listings, store dashboards and runtime operation were not independently inspected for that report. See [runtime confirmation](runtime.md#official-store-components).
+## November 27 publication verification
+
+The maintainer reported that 1.2.0 publication was complete in both stores. At 01:57 KST, direct requests without signing in returned HTTP 200 for the [Chrome English listing](https://chromewebstore.google.com/detail/music-deck-bridge/ldipcjgadbppphalmibkofhigjffnlca?hl=en), [Chrome Korean listing](https://chromewebstore.google.com/detail/music-deck-bridge/ldipcjgadbppphalmibkofhigjffnlca?hl=ko) and [Elgato listing](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd). The Elgato version and date matched on a second request with a fresh query parameter. The table records the dates the stores display. The exact time each update became public is unknown.
+
+Both Chrome pages list eight languages and describe the standalone popup and optional Stream Deck pairing. Elgato's description recommends Add to Chrome for the companion extension, describes PIN pairing and mentions standalone popup use. Its release notes cover Volume Up / Down keys, the popup and eight UI locales. The observed descriptions have links to the companion store with the prepared UTM source, medium and campaign values. Analytics collection was outside the verification scope.
+
+The [local 1.2.0 drafts](../../store-assets/drafts/v1.2.0/README.md) are reference material. Exact Console fields, submission and review history, uploaded package hashes, selected media and processed installers were unavailable. Installation, YouTube Music playback, Stream Deck operation and DRM for the 1.2.0 store packages were outside the verification scope. [GitHub release verification](releases.md#v120) covers the separately distributed packages.
+
+## Earlier store releases
+
+The October 24 report confirms normal operation of the then-published 1.1.2 store components without an itemized installation/migration or control inventory. The listings, store dashboards and runtime operation were not independently inspected for that report. See [runtime confirmation](runtime.md#official-store-components).
 
 GitHub [v1.1.3](releases.md#v113) was published October 29. No store submission was performed as part of that GitHub release. The November 6 observation establishes Elgato public listing status by that date. Maker Console submission and review history, internal version identifiers and the meaning of the displayed date in that workflow remain unverified.
 
@@ -17,9 +27,9 @@ GitHub [v1.1.3](releases.md#v113) was published October 29. No store submission 
 
 The official [Chrome English](https://chromewebstore.google.com/detail/music-deck-bridge/ldipcjgadbppphalmibkofhigjffnlca?hl=en), [Chrome Korean](https://chromewebstore.google.com/detail/music-deck-bridge/ldipcjgadbppphalmibkofhigjffnlca?hl=ko) and [Elgato](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd) public pages each returned HTTP 200 in direct requests. The web search/open tool could not open Chrome, but the direct responses contained its public description and Details fields. Both Chrome locales showed 1.1.3, October 30, 2026 and two UI languages. This independently establishes the official displayed update date without replacing the earlier user report or third-party observation below. Elgato again showed 1.1.3, November 2, 2026 and English/Korean.
 
-The live descriptions still focus on paired Stream Deck use and English/Korean UI. Elgato repeats its assertion that neither component works independently; Chrome's opening requirement also makes paired setup appear mandatory. Both are valid context for the existing 1.1.3 listing, but need revision for 1.2.0 standalone popup controls and eight UI languages. The English/Korean Chrome pages show Markdown-style heading asterisks as literal text in the retrieved page. Companion links contain no UTM parameters. Elgato's current How to Use correctly recommends Add to Chrome and keeps the GitHub ZIP as an optional manual method. Its Related Download currently points to GitHub Releases.
+The 1.1.3 descriptions emphasized paired Stream Deck use and English/Korean UI. Elgato said neither component worked independently, and Chrome's opening requirement made paired setup appear mandatory. The English/Korean Chrome pages displayed literal Markdown heading asterisks. Their companion links had no UTM parameters. Elgato's How to Use recommended Add to Chrome and offered the GitHub ZIP for manual installation. Its Related Download pointed to GitHub Releases.
 
-[Prepared 1.2.0 copy](../../store-assets/drafts/v1.2.0/README.md) contains complete Chrome English/Korean descriptions, a complete Elgato English description and separate What's new text. It separates standalone and paired setup, includes volume keys/feedback and eight UI languages, uses plain headings and correctly describes external artwork requests. These are unsubmitted proposals, not snapshots of actual submissions. The three v1.1.1 submitted description snapshots remain unchanged, including their original spacing; no 1.2.0 store submission, approval or publication was performed by this task.
+The initial [1.2.0 drafts](../../store-assets/drafts/v1.2.0/README.md) covered English and Korean Chrome descriptions, the English Elgato description and separate What's new text. They described standalone and paired setup, volume keys and feedback, eight UI languages and external artwork requests. The November 14 work prepared drafts and preserved the three verbatim v1.1.1 submissions.
 
 The initial Elgato draft was 1,417 characters including LF newlines (1,430 with CRLF), within the [250–1,500-character English description guidelines](https://docs.elgato.com/guidelines/products/#description). That count covers the whole replacement and UTM link, not What's new. The Chrome drafts use the released package's existing short descriptions; the [manifest description](https://developer.chrome.com/docs/extensions/reference/manifest/description) and dashboard long description are separate fields. No released package, runtime URL, submitted media or tag was replaced. Existing local store popup exports depict 1.1.1 and plugin-required guidance, so they are identified as needing refreshed 1.2.0 visuals rather than silently relabeled.
 
@@ -27,9 +37,9 @@ The subsequent editorial revision simplifies the three product descriptions at t
 
 New store-to-store links use `utm_source=elgato_marketplace` or `chrome_web_store`, `utm_medium=referral` and `utm_campaign=companion_setup`, distinct from the shipped `streamdeck_plugin` / `chrome_extension` product sources. Both proposed URLs returned HTTP 200 and reached the expected product with all three parameters retained; Chrome redirected its short path to the canonical named path. This verifies routing, not analytics collection. [Chrome's official documentation](https://developer.chrome.com/docs/webstore/google-analytics#using-utm-parameters) describes these parameters for page-view/install attribution with Analytics opt-in. Publisher configuration and actual attribution were not inspected. No corresponding official Elgato UTM-reporting guarantee was established, so the draft does not promise it. Support, guide and privacy links remain canonical.
 
-GitHub [1.2.0](releases.md#v120) is published; that is separate from the stores' observed 1.1.3 state and these proposed listing revisions. The exact uploaded store archives, Console history and processed installers remain unverified.
+At the November 14 review, GitHub [1.2.0](releases.md#v120) was published and the stores displayed 1.1.3.
 
-The later maintainer-authorized [temporary 1.2.0 Chrome r1 attachment](releases.md#temporary-r1-chrome-revision-superseded) included the popup-opening fix while preserving the original GitHub tag/files and numeric version. At that stage the prepared submission index selected `music-deck-bridge-chrome-1.2.0-r1.zip` (SHA-256 `676fc6674be20b8c99f47fe920f377b3b5d5f914eb3993b9fc6fa376f6279864`) with the unchanged plugin. This is package preparation; no store upload/review/publication is recorded.
+The later maintainer-authorized [temporary 1.2.0 Chrome r1 attachment](releases.md#temporary-r1-chrome-revision-superseded) included the popup-opening fix while preserving the original GitHub tag/files and numeric version. At that stage the submission index selected `music-deck-bridge-chrome-1.2.0-r1.zip` (SHA-256 `676fc6674be20b8c99f47fe920f377b3b5d5f914eb3993b9fc6fa376f6279864`) with the unchanged plugin for package preparation.
 
 The maintainer subsequently authorized replacing the canonical GitHub 1.2.0 package/tag before store publication. The submission index now selects the corrected `music-deck-bridge-chrome-1.2.0.zip` (SHA-256 `f423aef0414da08480ceaef4145b4b1ef0866107eb8b375e285a8a3324341397`) with the unchanged plugin. The temporary r1 attachments were removed; initial/r1 source and hash history remains in [release verification](releases.md#current-corrected-publication). No store upload or publication was performed by this task.
 
@@ -54,7 +64,7 @@ All 16 UTF-8 files passed checks for exact locale coverage, shared URL destinati
 
 ## Chrome Web Store publication evidence
 
-On November 13, 2026, the user reported directly confirming the official Chrome Web Store publication of **1.1.3**. This report establishes user-confirmed publication; the listing could not be independently opened during this review.
+On November 13, 2026, the user reported directly confirming the official Chrome Web Store publication of **1.1.3**. The listing could not be independently opened that day. The [November 14 review](#november-14-public-listing-review-and-120-drafts) independently confirmed it.
 
 The November 10 Chrome-Stats observation supplied for this review reported **1.1.3** and **Last updated: 2026-10-30**. A November 13 retrieval of the [same record](https://chrome-stats.com/d/ldipcjgadbppphalmibkofhigjffnlca) returned those fields in a snapshot marked **Data ingested on: 2026-11-08**; the November 10 collection date was not independently verified. At that November 13 review, the October 30 update date was a third-party observation rather than a confirmed official update or publication date. Official listing copy, submission/review history, store-package SHA-256, identity with the GitHub release asset and installation/runtime results for an identified 1.1.3 store package were unverified.
 
@@ -87,7 +97,7 @@ The October 29 review could not open the Chrome Web Store listing. It did confir
 
 ## Package and media provenance
 
-[GitHub release verification](releases.md) retains source, CI and public package hashes for v1.2.0 and earlier releases. The Elgato listing does not identify the 1.1.3 upload file or its SHA-256, selected media, publication settings or a Console-processed installer. The relationship between the store package and the GitHub asset remains unverified. No installation or DRM execution of an identified 1.1.3 store package has been verified.
+[GitHub release verification](releases.md) retains source, CI and public package hashes for v1.2.0 and earlier releases. The November observations of 1.1.3 did not establish the Elgato upload hash, media provenance, publication settings, processed installer identity or runtime and DRM results for that package.
 
 [Prepared media](media.md), [maintainer-confirmed operation](runtime.md#official-store-components) and [Console-processed DRM evidence](marketplace-drm.md) have distinct scopes.
 

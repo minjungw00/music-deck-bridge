@@ -1,23 +1,19 @@
 # Release readiness
 
-Updated November 14, 2026 (Asia/Seoul) after the maintainer-authorized 1.2.0 GitHub publication, anonymous download verification and direct inspection of the current store listings. General installation starts with the [official stores](installation.en.md#method-1-official-stores). Public releases, development and store processing have separate evidence.
+Updated November 27, 2026 (Asia/Seoul) after the maintainer reported publication and both official listings were verified. General installation starts with the [official stores](installation.en.md#method-1-official-stores).
 
 ## Current versions and distribution
 
 | Channel | Version / state | Evidence |
 | --- | --- | --- |
 | GitHub | **v1.2.0**, Chrome **1.2.0**, plugin **1.2.0.0**, protocol **1** | Initially published November 14 at 00:42:50 KST; canonical files/tag corrected at 01:39 KST by explicit maintainer instruction. Three public files and the corrected source archive verified · [Release record](verification/releases.md#v120) |
-| Elgato Marketplace | Public listing **1.1.3**, dated **November 2, 2026** on the page | November 14 direct observation confirmed the version and current installation copy. Last maintainer-reported submission was **1.1.2** / plugin **1.1.2.0** · [Store record](verification/stores.md) |
-| Chrome Web Store | **1.1.3**, updated **October 30, 2026** on the official English/Korean pages directly read November 14. | Official version/date/copy now independently observed; earlier third-party and user reports retain their original scope. Last maintainer-reported submission was **1.1.2** · [Store record and scope limits](verification/stores.md#chrome-web-store-publication-evidence) |
-| Release source | **1.2.0**, Chrome **1.2.0** (development label removed), plugin **1.2.0.0**, protocol **1** | Corrected tag `v1.2.0` resolves to `86e66c2d36b9`; original source `ff139a755b25` is retained at `archive/v1.2.0-initial`. Exact-source Windows/Ubuntu CI and public package/source comparisons completed. No next development cycle selected; no 1.2.0 store submission/publication is recorded |
+| Elgato Marketplace | **1.2** in Details, **1.2.0** in What's new, dated **November 23, 2026** | Directly verified November 27 · [Store record](verification/stores.md#november-27-publication-verification) |
+| Chrome Web Store | **1.2.0**, updated **November 14, 2026** | English and Korean listings directly verified November 27 · [Store record](verification/stores.md#november-27-publication-verification) |
+| Release source | **1.2.0**, Chrome **1.2.0**, plugin **1.2.0.0**, protocol **1** | Corrected tag `v1.2.0` resolves to `86e66c2d36b9`. Original source `ff139a755b25` is retained at `archive/v1.2.0-initial`. Exact-source Windows/Ubuntu CI and public package/source comparisons completed. No next development version has been selected. |
 
 Use the corrected [Chrome 1.2.0 ZIP](https://github.com/minjungw00/music-deck-bridge/releases/download/v1.2.0/music-deck-bridge-chrome-1.2.0.zip) with the original plugin installer. [Current hashes and replacement history](verification/releases.md#current-corrected-publication) distinguish the corrected files from the archived initial package and removed temporary r1 attachments.
 
-The [Elgato listing now recommends Add to Chrome and offers the GitHub Releases ZIP as an optional manual method](verification/stores.md#public-description-correction). The October 29 draft is historical reference copy.
-
-[1.2.0 store copy and UTM links](../store-assets/drafts/v1.2.0/README.md) are prepared for review. They have not been submitted or published; [November 14 observations](verification/stores.md#november-14-public-listing-review-and-120-drafts) distinguish the current listings from the proposals.
-
-The maintainer explicitly authorized canonical replacement before store publication. That replacement and cleanup are complete; original source/files and temporary r1 evidence are archived separately. No next development version was selected.
+The public listings describe standalone Chrome popup controls and link to the companion store. The [1.2.0 listing drafts](../store-assets/drafts/v1.2.0/README.md) remain reference material. The exact Console submissions, store package identity, installation and runtime operation for 1.2.0 remain unverified.
 
 ## Development validation
 
@@ -55,7 +51,7 @@ The [runtime record](verification/runtime.md#current-evidence) is the source for
 
 The authorized 1.2.0 GitHub release is complete through the direct publication path in the [release checklist](development.md#release-checklist). Exact tagged-source CI, both OS package payloads, draft downloads, release inventories and anonymous public bytes passed verification. Release notes disclose outstanding manual coverage and local startup-retry fixture/clock observations. Earlier releases remain in the [release record](verification/releases.md); the [runtime record](verification/runtime.md#current-evidence) preserves maintainer confirmation within its original scope.
 
-- Record the 1.1.3 Maker Console submission and review history, version identifier, uploaded-file identity and SHA-256, selected media and exact submitted description when available.
+- Record the 1.2.0 Console submission and review details, uploaded-file checksums, selected media and exact submitted copy when available.
 - Record separately obtained Console-processed package identity and detailed DRM results. Completed store-operation validation does not need repeating solely for missing metadata.
 - For future wire changes, test the implemented version ranges and explicit component identity/status behavior.
 - Extend evidence to independent/clean Windows environments and idle/port-conflict scenarios outside the existing maintainer-confirmed scope.
