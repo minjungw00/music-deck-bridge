@@ -141,7 +141,7 @@ Every in-flight sync for a closing tab settles before its close notification, in
 
 Legacy commands target the selected client, expire after five seconds and are delivered once through long polling or a sync response. Startup/update/alarm handlers reinject the guarded content script into open player tabs.
 
-The optional last-track store keeps one confirmed title, artist, track ID and matching admitted raster under the local pairing. It writes through a temporary file and replaces the saved record. If the cover finishes downloading after the player closes, the store accepts it only for the source still associated with the saved track. The snapshot feeds the renderer when live track metadata is absent. Command selection and popup state use the live registry.
+The last-track store keeps one confirmed title, artist, track ID and matching admitted raster under the local pairing. It writes through a temporary file and replaces the saved record. If the cover finishes downloading after the player closes, the store accepts it only for the source still associated with the saved track. The snapshot feeds the renderer when live track metadata is absent. Command selection and popup state use the live registry.
 
 ## Display behavior
 
@@ -151,7 +151,7 @@ The Play / Pause key displays a Pause image while the selected player is playing
 
 The Volume Dial touch-strip icon likewise uses the confirmed mute state, switching between the existing volume and mute artwork and restoring volume artwork when the player disappears. It uses the reported player state rather than optimistically toggling on key presses.
 
-The Repeat key reads the player's own mode from the page's main world and reports unavailable controls separately from Repeat off. The paired worker advertises support, preserves delivery order and acknowledges a click only when the mode changes. [Repeat capability](protocol.md#optional-repeat-key)
+Repeat and Shuffle read the player's state in the page's main world. The worker advertises support and preserves delivery order. Confirmation requires an observed mode change or, for shuffle variants without a persistent toggle, an observed queue reorder. [Repeat and Shuffle capabilities](protocol.md#optional-repeat-and-shuffle-controls)
 
 Without an eligible player the Play / Pause key displays Play. Play/Pause, Like, Dislike and Open keys hide default titles and clear previously pushed runtime text. Image updates are cached per visible key and reset when the key reappears; all instances follow the same selected player. The action retains its existing single manifest state and toggle command behavior.
 
@@ -183,9 +183,9 @@ Album artwork uses its measured aspect ratio, centered within the 144 × 144 key
 
 ### Linked key artwork
 
-All plugin keys can select individual or linked artwork. The SDK adapter supplies a device ID and key coordinates for visible physical keys. Automatic groups use eight-way adjacency. Keys with the same group name join across gaps on the same device. Each group shares the proportional fit of its bounding rectangle; a fixed 144 × 144 viewport clips each key's part. Empty cells retain their positions and produce no output. Key removal, device disconnection and settings changes schedule another paint.
+All plugin keys can select individual or linked artwork. The SDK adapter supplies a device ID and key coordinates for visible physical keys. Automatic groups use eight-way adjacency. Keys with the same group name join across gaps on the same device. Each group shares a proportional width or height fit. A fixed 144 × 144 viewport clips each key's part. Empty cells retain their positions and produce no output. Key removal, device disconnection and settings changes schedule another paint.
 
-Artwork-only mode clears the native title and covers the key with just its image or a blank frame while artwork is absent. Key presses retain their original commands. Cover and geometry variants are cached so title scrolling and unchanged settings do not rebuild or resend the same image.
+Artwork modes clear the native title and show the cover on its own by default. A transparent action icon can be overlaid in any corner. Key presses retain their original commands. Cover and geometry variants are cached so unchanged settings do not rebuild or resend the same image.
 
 ## Command delivery
 

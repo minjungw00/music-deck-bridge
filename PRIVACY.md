@@ -8,8 +8,8 @@ Music Deck Bridge connects the YouTube Music web player in Chrome to a Stream De
 
 | Data | Purpose | Storage and retention |
 | --- | --- | --- |
-| Song title, artist, video ID, artwork URLs, playback, repeat, mute, volume and like/dislike state | Display the current track and control the player | Plugin memory and, for popup fields, the open extension popup. Live data is replaced as state changes and cleared on plugin exit or popup close. |
-| One last-played title, artist, video ID and cached artwork, with a local hash that binds the record to the current pairing | Restore the display after Chrome, Stream Deck or Windows restarts | Saved to `last-track.json` on this computer when **Keep after restart** is enabled. Each confirmed track replaces the preceding record. The saved track is cleared when the setting is turned off or pairing is reset. |
+| Song title, artist, video ID, artwork URLs, playback, repeat, shuffle, mute, volume and like/dislike state | Display the current track and control the player | Plugin memory and the open extension popup. Live data is replaced as state changes and cleared on plugin exit or popup close. |
+| One last-played title, artist, video ID and cached artwork, with a local hash that binds the record to the current pairing | Restore the display after Chrome, Stream Deck or Windows restarts | Saved automatically to `last-track.json` on this computer. Each confirmed track replaces the single preceding record. Unpairing or pairing again clears the saved record. |
 | Chrome tab ID and installed-app status | Select a player, preferring the installed Chrome app | Plugin memory; not a persistent browsing record |
 | Six-digit pairing PIN | Authorize a new extension connection | Plugin memory; expires after ten minutes or successful pairing |
 | Random pairing token and extension origin/ID | Authenticate local requests | Plugin `auth.json`; extension token in `chrome.storage.local`; retained until replaced or deleted |
@@ -21,13 +21,13 @@ Music Deck Bridge connects the YouTube Music web player in Chrome to a Stream De
 | Browser launch/playback request and acknowledgment | Open or focus YouTube Music, including when no player tab exists | Plugin memory; ordered inputs expire after 45 seconds or clear on completion/pairing reset; repeated Open requests coalesce |
 | Development playback diagnostics, when included | Distinguish dispatched controls, player readiness, site/media errors and user-activation conditions | Latest bounded failures in the bridge and standalone control engines in extension-worker memory and a Chrome console warning; memory record clears on worker restart and survives later successful commands |
 
-On Windows, pairing credentials (`auth.json`, containing the token and extension origin), bridge port configuration (`config.json`) and optional last-track data (`last-track.json`) are stored under `%APPDATA%\MusicDeckBridge\`. The installed plugin program and resources are stored separately under `%APPDATA%\Elgato\StreamDeck\Plugins\io.github.minjungw00.musicdeckbridge.sdPlugin\`.
+On Windows, pairing credentials (`auth.json`, containing the token and extension origin), bridge port configuration (`config.json`) and last-track data (`last-track.json`) are stored under `%APPDATA%\MusicDeckBridge\`. The installed plugin program and resources are stored separately under `%APPDATA%\Elgato\StreamDeck\Plugins\io.github.minjungw00.musicdeckbridge.sdPlugin\`.
 
 Chrome manages the extension's local storage inside the active browser profile; the extension does not use Chrome sync storage. Stream Deck separately stores action settings in its profiles, including the key artwork and group name, dial step size and display mode, song/artist visibility, text background and scrolling mode.
 
 ## Network activity
 
-The extension reads playback, mute and repeat states through a fixed function in the top-level page context. Media-element state can supply playback and mute when the site value is unavailable. Playback control also observes the current track/queue position and media readiness in page memory to confirm requested actions and constrain recovery. Track identifiers used for this comparison are not included in failure diagnostics. The extension reports closed tab IDs and the current music-tab IDs to remove stale players, without retaining a browsing history.
+The extension reads playback, mute, repeat and shuffle states through a fixed function in the top-level page context. Media-element state can supply playback and mute when the site value is unavailable. Playback control also observes the current track, queue and media readiness in page memory to confirm requested actions and constrain recovery. Queue contents used for confirmation remain in the page. Track identifiers used for comparison are excluded from failure diagnostics. The extension reports closed tab IDs and the current music-tab IDs to remove stale players.
 
 The extension sends player state and authenticated commands to `http://127.0.0.1:<port>` (default `17864`). The bridge listens on the IPv4 loopback interface and accepts Chrome extension origins, with token and paired-origin checks after pairing.
 
@@ -37,7 +37,7 @@ When the Stream Deck connection is healthy, the popup reads the selected player 
 
 Standalone artwork is displayed from the same approved YouTube/Google HTTPS image hosts listed below, with the popup referrer suppressed. These are browser image requests governed by Chrome and provider cookie policies; they can expose the requested artwork URL and IP address to the provider. Connected mode retains the plugin cache path. No new Chrome host permissions are requested.
 
-Stream Deck controls may open `https://music.youtube.com/` in Chrome. Functional inputs wait for the opened player and then operate its controls. Repeat requires an already available player. Like/dislike inputs from a closed player act on the restored current song; changes are saved by YouTube Music to the signed-in account under its policies. Removing Music Deck Bridge or unpairing does not undo saved song ratings. The extension uses existing site permissions to locate YouTube Music tabs; it does not request access to other sites.
+Stream Deck controls may open `https://music.youtube.com/` in Chrome. Functional inputs wait for the opened player and then operate its controls. Repeat and Shuffle require an already available player. Like/dislike inputs from a closed player act on the restored current song. YouTube Music saves rating changes to the signed-in account under its policies. The extension uses existing site permissions to locate YouTube Music tabs.
 
 The plugin fetches album artwork over HTTPS from `i.ytimg.com`, `img.youtube.com`, `yt3.ggpht.com`, `yt3.googleusercontent.com` and numbered `lh*.googleusercontent.com` hosts. Redirect destinations must also pass this allowlist. These requests expose your IP address, the requested artwork URL, standard request metadata and a YouTube Music Referer to the image provider. Google account cookies are not supplied by the plugin. Artwork URLs may identify the track being played. **Not all network activity is local.**
 
@@ -48,14 +48,14 @@ The development playback record contains fixed action/source/phase names, bounde
 ## Permissions
 
 - `storage`: save the pairing token and port locally.
-- `scripting`: restore content scripts after updates/startup, read playback state, and operate and confirm playback/navigation/volume/mute/repeat controls in the page's JavaScript environment. Pairing tokens remain in the extension service worker.
+- `scripting`: restore content scripts after updates/startup, read player state and operate playback, navigation, volume, mute, repeat and shuffle in the page's JavaScript environment. Pairing tokens remain in the extension service worker.
 - `alarms`: periodically restore player scripts and the browser command connection.
 - `https://music.youtube.com/*`: read player metadata/rating state, locate its tabs and operate playback/rating controls on that site.
 - `http://127.0.0.1/*`: connect to the configurable local bridge port.
 
 ## Delete or reset data
 
-Select **Unpair** in the popup to revoke the server token, delete the plugin's `auth.json` and remove the extension's token. Existing command polls are rejected, and player state, the saved last track and queued commands are cleared. The port is retained. To clear the saved track while paired, turn off **Keep after restart** in the Stream Deck action settings.
+Select **Unpair** in the popup to revoke the server token, delete the plugin's `auth.json` and remove the extension's token. Existing command polls are rejected, and player state, the saved last track and queued commands are cleared. The port is retained.
 
 If the bridge cannot be reached or revocation fails, the popup reports failure and retains the token so you can start Stream Deck, match the port and retry. A token already rejected by the server can be removed locally. A new successful pairing replaces the previous token and extension origin and rejects the previous session's pending requests.
 
