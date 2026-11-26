@@ -131,7 +131,7 @@ def render(kind, size, background, square_background=False, transparent_surface=
         line([(309, 181), (335, 207), (309, 233)], 16)
         line([(309, 273), (335, 299), (309, 325)], 16)
         if kind == "shuffle_on":
-            draw.ellipse(box((244, 334, 268, 358)), fill=255)
+            draw.ellipse(box((174, 240, 198, 264)), fill=255)
         elif kind == "shuffle_unavailable":
             draw.line([box((174, 169)), box((338, 335))], fill=0, width=34 * scale)
             line([(174, 169), (338, 335)], 14)

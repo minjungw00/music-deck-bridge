@@ -65,6 +65,23 @@ async function png(path) {
   return { width, height, pixel, at: (x, y) => pixel(Math.floor(x * width), Math.floor(y * height)) };
 }
 
+test('active Shuffle adds a dot between the left arrow stems', async () => {
+  for (const [folder, prefix, suffix] of [
+    [`${plugin}imgs/actions/shuffle`, '', ''],
+    [`${plugin}imgs/actions/shuffle`, '', '@2x'],
+    [`${plugin}imgs/actions/shuffle`, '', '-overlay'],
+    ['chrome-extension/icons/controls', 'shuffle-', ''],
+  ]) {
+    const active = await png(`${folder}/${prefix}on${suffix}.png`);
+    const inactive = await png(`${folder}/${prefix}off${suffix}.png`);
+    const left = [186 / 512, 252 / 512];
+    const bottom = [256 / 512, 346 / 512];
+    assert.deepEqual(active.at(...left), [255, 255, 255, 255], `${folder}/${prefix}on${suffix}: left dot`);
+    assert.notDeepEqual(inactive.at(...left), active.at(...left));
+    assert.deepEqual(active.at(...bottom), inactive.at(...bottom), 'bottom has no state marker');
+  }
+});
+
 test('popup transport icons have centered white glyphs on a transparent surface', async () => {
   for (const name of ['previous', 'play', 'pause', 'next']) {
     const image = await png(`chrome-extension/icons/controls/${name}.png`);
