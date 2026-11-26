@@ -80,7 +80,7 @@ def render_brand(size, background, square_background=False):
     return image.resize((size, size), Image.Resampling.LANCZOS)
 
 
-def render(kind, size, background, square_background=False, transparent_surface=False):
+def render(kind, size, background, square_background=False, transparent_surface=False, glyph_only=False):
     from PIL import Image, ImageDraw
 
     if kind in ("brand", "nowplaying"):
@@ -171,7 +171,14 @@ def render(kind, size, background, square_background=False, transparent_surface=
     if kind == "prev":
         # Mirror only the symbol, retaining the shared upper-left lighting.
         glyph = glyph.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
-    image.paste(WHITE if background else (0, 0, 0, 0), (0, 0), glyph)
+    if glyph_only:
+        symbol = glyph.crop(glyph.getbbox())
+        centered = Image.new("L", glyph.size)
+        centered.paste(symbol, ((glyph.width - symbol.width) // 2, (glyph.height - symbol.height) // 2))
+        image = Image.new("RGBA", glyph.size, WHITE)
+        image.putalpha(centered)
+    else:
+        image.paste(WHITE if background else (0, 0, 0, 0), (0, 0), glyph)
     return image.resize((size, size), Image.Resampling.LANCZOS)
 
 
@@ -217,15 +224,18 @@ def main():
             outputs[f"chrome-extension/icons/controls/{action}-{state}.png"] = (f"{action}_{state}", 144, True, True)
     for (action, state), kind in overlays.items():
         outputs[f"{plugin}/actions/{action}/{state}-overlay.png"] = (kind, 72, True, False, True)
-    # Popup buttons reuse the same 2x key artwork, including observed states.
-    for name, kind in {"previous": "prev", "play": "toggle", "pause": "pause", "next": "next",
-                       "like": "like", "like-selected": "like_selected", "dislike": "dislike",
+    # Round popup buttons still use 2x key artwork. Transport buttons use the
+    # same symbols on a transparent canvas so CSS can draw their wider surface.
+    for name, kind in {"like": "like", "like-selected": "like_selected", "dislike": "dislike",
                        "dislike-selected": "dislike_selected", "mute": "mute", "volume": "volume"}.items():
         outputs[f"chrome-extension/icons/controls/{name}.png"] = (kind, 144, True, True)
+    transport = {f"chrome-extension/icons/controls/{name}.png": kind for name, kind in
+                 {"previous": "prev", "play": "toggle", "pause": "pause", "next": "next"}.items()}
+    outputs.update({name: (kind, 144, False) for name, kind in transport.items()})
     for name, spec in outputs.items():
         target = args.output_root / name
         target.parent.mkdir(parents=True, exist_ok=True)
-        render(*spec).save(target)
+        render(*spec, glyph_only=name in transport).save(target)
         print(target)
 
 

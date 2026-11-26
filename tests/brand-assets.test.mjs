@@ -14,9 +14,8 @@ const assets = [
 ];
 const actionFamilies = ['nowplaying', 'toggle', 'prev', 'next', 'mute', 'volumeup', 'volumedown', 'volume', 'open', 'like', 'dislike'];
 
-test('popup controls reuse the exact Stream Deck key artwork for every displayed state', async () => {
-  const icons = { previous: 'prev/key', play: 'toggle/key', pause: 'toggle/pause', next: 'next/key',
-    like: 'like/key', 'like-selected': 'like/selected', dislike: 'dislike/key',
+test('circular popup controls reuse their Stream Deck key artwork', async () => {
+  const icons = { like: 'like/key', 'like-selected': 'like/selected', dislike: 'dislike/key',
     'dislike-selected': 'dislike/selected', mute: 'mute/key', volume: 'volume/key' };
   for (const [name, source] of Object.entries(icons)) {
     assert.deepEqual(await readFile(new URL(`chrome-extension/icons/controls/${name}.png`, root)),
@@ -65,6 +64,28 @@ async function png(path) {
   const pixel = (x, y) => [...pixels.subarray((y * width + x) * 4, (y * width + x) * 4 + 4)];
   return { width, height, pixel, at: (x, y) => pixel(Math.floor(x * width), Math.floor(y * height)) };
 }
+
+test('popup transport icons have centered white glyphs on a transparent surface', async () => {
+  for (const name of ['previous', 'play', 'pause', 'next']) {
+    const image = await png(`chrome-extension/icons/controls/${name}.png`);
+    assert.equal(image.width, 144);
+    assert.equal(image.height, 144);
+    const visible = [];
+    for (let y = 0; y < image.height; y++) {
+      for (let x = 0; x < image.width; x++) {
+        const pixel = image.pixel(x, y);
+        if (pixel[3] < 128) continue;
+        assert.deepEqual(pixel.slice(0, 3), [255, 255, 255], name);
+        visible.push([x, y]);
+      }
+    }
+    assert.ok(visible.length > 400, `${name}: glyph has visible pixels`);
+    for (const axis of [0, 1]) {
+      const coords = visible.map(point => point[axis]);
+      assert.ok(Math.abs(Math.min(...coords) + Math.max(...coords) - 143) <= 2, `${name}: centered axis ${axis}`);
+    }
+  }
+});
 
 function squareKeySurface(image, path) {
   for (const [x, y] of [[0, 0], [image.width - 1, 0], [0, image.height - 1], [image.width - 1, image.height - 1]]) {

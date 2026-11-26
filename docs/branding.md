@@ -55,7 +55,7 @@ All twelve actions use the main icon's circular badge, gradient magenta and whit
 | Volume Dial | ![Volume Dial](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/volume/key.png) |
 | Current Track Dial | ![Current Track Dial](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/toggle/key.png) |
 
-Each family has a 72px key and 144px @2x key. The 20px/40px action-list badges use white with transparent symbol cutouts so they remain monochrome on Stream Deck's dark UI. All action exports use 4× supersampling before downsampling. Key and state PNGs have opaque corners; monochrome action-list badges retain transparent corners. Popup controls use matching 144px copies and display only the circular disc, preserving their round appearance. The Chrome popup uses the same dark background, a deep-magenta primary button for white-text contrast and a magenta keyboard-focus outline. The property inspector retains the host's neutral SDPI style.
+Each family has a 72px key and 144px @2x key. The 20px/40px action-list badges use white with transparent symbol cutouts so they remain monochrome on Stream Deck's dark UI. All action exports use 4× supersampling before downsampling. Stream Deck key PNGs have opaque corners. Monochrome action-list badges retain transparent corners. The Chrome popup's transport row uses centered white glyphs in rounded magenta rectangles. Rating, queue and mute buttons retain the circular disc. The popup uses a dark background and a magenta keyboard-focus outline. The property inspector uses the host's neutral SDPI style.
 
 ### Playback, rating and volume states
 
@@ -95,7 +95,7 @@ Run the normal [development checks](development.md#local-checks):
 | `tests/rendering/volume_key_qt.py` (optional PySide6-Essentials) | Numeric key SVG centering, 0–100 bounds with/without `%` and preservation of the shared badge at 72px/144px; accepts local `--font` files and saves sample renders with `--output-dir` |
 | Python packaging tests | Chrome ZIP and Stream Deck staging preserve the PNG bytes, including pause and selected-rating images |
 
-The Node checks use only the standard library. Current Track Dial shares the Play / Pause icon family. The generator produces 69 assets, including the store app icon, six additional state PNGs, the numeric-volume badge background and ten matching popup control copies. Pillow is needed only for regeneration.
+The Node checks use only the standard library. Current Track Dial shares the Play / Pause icon family. The generator produces store and key assets, the numeric-volume badge background, and the popup's round badges and transparent transport glyphs. Pillow is needed only for regeneration.
 
 ## License and attribution
 

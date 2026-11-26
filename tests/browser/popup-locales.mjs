@@ -62,7 +62,9 @@ test('native extension catalogs and toolbar popup render all eight UI languages 
           const controls=[...document.querySelector(selector).children].filter(control=>!control.classList.contains('sr-only'));
           const bounds=controls.map(control=>control.getBoundingClientRect());
           return {ids:controls.map(control=>control.id),left:bounds[0].left,right:bounds.at(-1).right,
-            gaps:bounds.slice(1).map((rect,index)=>rect.left-bounds[index].right)};
+            gaps:bounds.slice(1).map((rect,index)=>rect.left-bounds[index].right),
+            sizes:bounds.map(rect=>[rect.width,rect.height]),
+            radii:controls.map(control=>parseFloat(getComputedStyle(control).borderTopLeftRadius))};
         }),
         clipped:[...document.querySelectorAll('button:not(.media-button)')].filter(button=>button.scrollWidth>button.clientWidth).map(button=>button.id),
         overflow:document.documentElement.scrollWidth>innerWidth}))()`);
@@ -80,6 +82,12 @@ test('native extension catalogs and toolbar popup render all eight UI languages 
       const [ratingsGap, middleGap, queueGap] = ui.rows[1].gaps;
       assert.ok(Math.abs(ratingsGap - queueGap) < 0.5, `${language}: equal spacing within pairs`);
       assert.ok(middleGap > Math.max(ratingsGap, queueGap), `${language}: wider spacing between pairs`);
+      const transport = ui.rows[0];
+      for (const [index, [width, height]] of transport.sizes.entries()) {
+        assert.ok(width > height && Math.abs(width - transport.sizes[0][0]) < 0.5, `${language}: equal rectangular buttons`);
+        assert.ok(transport.radii[index] > 0 && transport.radii[index] < height / 2, `${language}: rounded corners`);
+      }
+      assert.ok(transport.gaps.every(gap => Math.abs(gap - ratingsGap) < 0.5), `${language}: compact transport spacing`);
       assert.deepEqual(ui.clipped, [], `${language}: clipped button labels`);
       assert.equal(ui.overflow, false, `${language}: horizontal overflow`);
       if (language === 'en') {

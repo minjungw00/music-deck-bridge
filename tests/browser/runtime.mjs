@@ -447,7 +447,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
       await until(() => popupEvaluate(`document.getElementById("mute").getAttribute("aria-pressed") === "${desired}"`), 'observed popup mute');
     }
     await popupQueueControls('bridge', 'ALL', true);
-    assert.equal(await popupEvaluate('[...document.querySelectorAll(".media-button img")].every(img => img.complete && img.naturalWidth === 144)'), true, 'shared Stream Deck PNG resources loaded');
+    assert.equal(await popupEvaluate('[...document.querySelectorAll(".media-button img")].every(img => img.complete && img.naturalWidth === 144)'), true, 'popup control icons loaded');
     const beforeLocal = await worker.evaluate(() => acknowledgments.length);
     await child.stop();
     await worker.evaluate(() => chrome.storage.local.remove('bridgeToken'));
