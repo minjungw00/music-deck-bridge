@@ -50,7 +50,11 @@
        Crop to that disc in CSS while preserving the original Stream Deck pixels. */
     .media-button img { position: absolute; width: 142.222222%; height: 142.222222%; left: -21.111111%; top: -20%; }
     .media-button > .play-state { position: absolute; inset: 0; }
-    .player-controls .media-button { flex: 1; min-width: 0; border-radius: 10px; background: #d000a4; }
+    /* Match the three color stops in the generated circular key artwork. */
+    .player-controls .media-button {
+      flex: 1; min-width: 0; border-radius: 10px;
+      background: linear-gradient(180deg, #ff38d1, #ff007d 44.44%, #d000a4);
+    }
     .player-controls .media-button img { width: 56px; height: 56px; left: 50%; top: 50%; transform: translate(-50%, -50%); }
     .media-button[aria-pressed="true"] { background: transparent; box-shadow: 0 0 0 2px #ffb9ec; }
     .media-button:not(:disabled):hover { filter: brightness(1.1); }

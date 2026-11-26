@@ -64,7 +64,8 @@ test('native extension catalogs and toolbar popup render all eight UI languages 
           return {ids:controls.map(control=>control.id),left:bounds[0].left,right:bounds.at(-1).right,
             gaps:bounds.slice(1).map((rect,index)=>rect.left-bounds[index].right),
             sizes:bounds.map(rect=>[rect.width,rect.height]),
-            radii:controls.map(control=>parseFloat(getComputedStyle(control).borderTopLeftRadius))};
+            radii:controls.map(control=>parseFloat(getComputedStyle(control).borderTopLeftRadius)),
+            backgrounds:controls.map(control=>getComputedStyle(control).backgroundImage)};
         }),
         clipped:[...document.querySelectorAll('button:not(.media-button)')].filter(button=>button.scrollWidth>button.clientWidth).map(button=>button.id),
         overflow:document.documentElement.scrollWidth>innerWidth}))()`);
@@ -86,6 +87,8 @@ test('native extension catalogs and toolbar popup render all eight UI languages 
       for (const [index, [width, height]] of transport.sizes.entries()) {
         assert.ok(width > height && Math.abs(width - transport.sizes[0][0]) < 0.5, `${language}: equal rectangular buttons`);
         assert.ok(transport.radii[index] > 0 && transport.radii[index] < height / 2, `${language}: rounded corners`);
+        assert.match(transport.backgrounds[index], /linear-gradient\(.*rgb\(255, 56, 209\).*rgb\(255, 0, 125\).*rgb\(208, 0, 164\)/,
+          `${language}: transport background uses the circular icons' gradient colors`);
       }
       assert.ok(transport.gaps.every(gap => Math.abs(gap - ratingsGap) < 0.5), `${language}: compact transport spacing`);
       assert.deepEqual(ui.clipped, [], `${language}: clipped button labels`);

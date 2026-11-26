@@ -55,7 +55,7 @@ All twelve actions use the main icon's circular badge, gradient magenta and whit
 | Volume Dial | ![Volume Dial](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/volume/key.png) |
 | Current Track Dial | ![Current Track Dial](../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/actions/toggle/key.png) |
 
-Each family has a 72px key and 144px @2x key. The 20px/40px action-list badges use white with transparent symbol cutouts so they remain monochrome on Stream Deck's dark UI. All action exports use 4× supersampling before downsampling. Stream Deck key PNGs have opaque corners. Monochrome action-list badges retain transparent corners. The Chrome popup's transport row uses centered white glyphs in rounded magenta rectangles. Rating, queue and mute buttons retain the circular disc. The popup uses a dark background and a magenta keyboard-focus outline. The property inspector uses the host's neutral SDPI style.
+Each family has a 72px key and 144px @2x key. The 20px/40px action-list badges use white with transparent symbol cutouts so they remain monochrome on Stream Deck's dark UI. All action exports use 4× supersampling before downsampling. Stream Deck key PNGs have opaque corners. Monochrome action-list badges retain transparent corners. The Chrome popup's transport row uses centered white glyphs in rounded rectangles with the circular artwork's magenta gradient. Rating, queue and mute buttons retain the circular disc. The popup uses a dark background and a magenta keyboard-focus outline. The property inspector uses the host's neutral SDPI style.
 
 ### Playback, rating and volume states
 
