@@ -13,6 +13,8 @@ let lastPin = '';
 let lastPinExpiresAt = 0;
 let portIsDirty = false;
 let volumeKey = false;
+let currentTrackKey = false;
+let repeatKey = false;
 const { validVolume, validDuration, createVolumeEditor } = MusicDeckVolumeEditor;
 const editor = createVolumeEditor({
   onValue(value) { $('volumeStep').value = String(value); updateVolumeLabel(); },
@@ -39,6 +41,18 @@ function setLabel(id, value) {
 function localize() {
   document.documentElement.lang = MusicDeckLanguage.html(language);
   document.title = `Music Deck Bridge – ${t('settingsTitle')}`;
+  setLabel('keyDisplayRow', t('keyDisplay'));
+  $('optKeyDefault').textContent = t('keyDisplayDefault');
+  $('optKeyArtwork').textContent = t('dialArtwork');
+  $('optKeyLinked').textContent = t('keyDisplayLinked');
+  setLabel('keyArtworkOnlyRow', t('dialArtwork'));
+  setLabel('keyArtworkOnly', t('keyArtworkOnly'));
+  setLabel('albumGroupRow', t('albumGroup'));
+  $('albumGroup').setAttribute('placeholder', t('albumGroupAuto'));
+  $('albumGroupHint').textContent = t('albumGroupHint');
+  setLabel('keepLastTrackRow', t('keepLastTrack'));
+  $('keepLastTrackLabel').textContent = t('keepLastTrackLabel');
+  $('keepLastTrackHint').textContent = t('keepLastTrackHint');
   setLabel('titleModeRow', t('titleRow'));
   $('optTruncate').textContent = t('truncate');
   $('optScroll').textContent = t('scroll');
@@ -58,6 +72,9 @@ function localize() {
   $('optDialInfo').textContent = t('dialInfo');
   $('optDialArtwork').textContent = t('dialArtwork');
   $('dialDisplayHint').textContent = t('dialDisplayHint');
+  setLabel('infoTitleModeRow', t('titleRow'));
+  $('optInfoTruncate').textContent = t('truncate');
+  $('optInfoScroll').textContent = t('scroll');
   setLabel('artworkFitRow', t('artworkFit'));
   $('optArtworkWidth').textContent = t('artworkWidth');
   $('optArtworkHeight').textContent = t('artworkHeight');
@@ -93,7 +110,8 @@ function localize() {
   updateVolumeLabel();
   updateDurationLabel();
   // SDPI caches option labels separately from the original option nodes.
-  for (const id of ['artistPosition', 'titleMode', 'dialDisplay', 'artworkFit', 'artworkArtistPosition', 'artworkTitleMode']) $(id).refresh?.();
+  for (const id of ['keyDisplay', 'artistPosition', 'titleMode', 'dialDisplay', 'infoTitleMode', 'artworkFit',
+    'artworkArtistPosition', 'artworkTitleMode']) $(id).refresh?.();
 }
 function updateVolumeLabel() {
   const value = validVolume($('volumeStep').value) ?? 4;
@@ -116,22 +134,41 @@ $('volumeShowPercent').addEventListener('valuechange', () => {
   editor.receive({ volumeShowPercent: $('volumeShowPercent').value === true });
 });
 function updateArtworkOptions(mode = $('dialDisplay').value, showTitle = $('artworkShowTitle').value, showArtist = $('artworkShowArtist').value) {
+  $('infoTitleModeRow').classList.toggle('hidden', mode === 'artwork');
   $('artworkOptions').classList.toggle('hidden', mode !== 'artwork');
   $('artworkTextOptions').classList.toggle('hidden', mode !== 'artwork' || showTitle !== true);
   $('artworkArtistPositionRow').classList.toggle('hidden', mode !== 'artwork' || showTitle !== true || showArtist !== true);
 }
+function updateKeyArtworkOptions(mode = $('keyDisplay').value, only = $('keyArtworkOnly').value) {
+  const artwork = mode === 'artwork' || mode === 'linked';
+  $('keyArtworkOnlyRow').classList.toggle('hidden', !artwork);
+  $('albumGroupOptions').classList.toggle('hidden', mode !== 'linked');
+  $('trackSection').classList.toggle('hidden', !currentTrackKey || (artwork && only === true));
+}
+$('keyDisplay').addEventListener('valuechange', () => updateKeyArtworkOptions());
+$('keyArtworkOnly').addEventListener('valuechange', () => updateKeyArtworkOptions());
 $('dialDisplay').addEventListener('valuechange', () => updateArtworkOptions());
 $('artworkShowTitle').addEventListener('valuechange', () => updateArtworkOptions());
 $('artworkShowArtist').addEventListener('valuechange', () => updateArtworkOptions());
 $('showArtist').addEventListener('valuechange', () => $('keyArtistPositionRow').classList.toggle('hidden', $('showArtist').value === false));
 function showConnection(payload) {
   currentStatus = payload;
-  const error = payload.lastCommandError;
+  if (typeof payload.keepLastTrack === 'boolean') {
+    $('keepLastTrack').disabled = false;
+    $('keepLastTrack').checked = payload.keepLastTrack;
+  }
+  if (payload.lastTrackSaveFailed) {
+    $('keepLastTrackStatus').textContent = t('keepLastTrackFailed');
+    $('keepLastTrackStatus').classList.remove('hidden');
+  }
+  const error = repeatKey && payload.repeatError ? null : payload.lastCommandError;
   const hint = error === 'autoplay-blocked' ? 'commandAutoplay' :
     ['pairing-required', 'authorization-lost'].includes(error) ? 'commandPairing' :
     ['extension-unavailable', 'browser-api-failed', 'bridge-unavailable'].includes(error) ? 'commandExtension' :
     ['delivery-uncertain', 'playback-unconfirmed'].includes(error) ? 'commandDelivery' : 'commandPlayer';
-  $('commandStatus').textContent = error ? `${t('commandFailed')} ${t(hint)} (${error})` : '';
+  const repeatHint = payload.repeatError === 'repeat-update-required' ? 'repeatUpdate' : 'repeatUnavailable';
+  $('commandStatus').textContent = repeatKey && payload.repeatError ? t(repeatHint) :
+    error ? `${t('commandFailed')} ${t(hint)} (${error})` : '';
   const compatibility = payload.compatibility;
   $('versionInfo').textContent = `${t('pluginLabel')} ${payload.pluginVersion || '—'} · ${t('extensionLabel')} ${compatibility?.extensionVersion || '—'} · ${t('protocolLabel')} ${compatibility?.negotiatedProtocolVersion || '—'}${compatibility?.legacy ? ` (${t('legacyProtocol')})` : ''}`;
   if (payload.pin && /^\d{6}$/.test(payload.pin)) {
@@ -166,9 +203,9 @@ function showConnection(payload) {
   }
   if (responseTimer) { clearTimeout(responseTimer); responseTimer = null; }
 }
-async function requestConnection(type='get-connection') {
+async function requestConnection(type='get-connection', fields = {}) {
   if (!connectedToHost) return;
-  try { await client.send('sendToPlugin', { type }); }
+  try { await client.send('sendToPlugin', { type, ...fields }); }
   catch { $('pairState').textContent = t('offline'); }
 }
 client.sendToPropertyInspector.subscribe(msg => {
@@ -190,6 +227,7 @@ client.didReceiveSettings.subscribe(msg => {
   editor.receive(msg.payload?.settings);
   updateVolumeFeedbackOptions(editor.settings.volumeShowValue !== false);
   updateArtworkOptions(editor.settings.dialDisplay || 'info', editor.settings.artworkShowTitle === true, editor.settings.artworkShowArtist === true);
+  updateKeyArtworkOptions(editor.settings.keyDisplay, editor.settings.keyArtworkOnly === true);
   $('keyArtistPositionRow').classList.toggle('hidden', editor.settings.showArtist === false);
 });
 $('installExtension').addEventListener('click', async () => {
@@ -198,6 +236,10 @@ $('installExtension').addEventListener('click', async () => {
   catch { $('companionHint').textContent = t('storeOpenFailed'); }
 });
 $('generatePin').addEventListener('click', () => { lastPin = ''; void requestConnection('generate-pin'); });
+$('keepLastTrack').addEventListener('change', event => {
+  $('keepLastTrackStatus').classList.add('hidden');
+  void requestConnection('set-last-track', { enabled: event.target.checked });
+});
 // Read event.target.value from the native input while persistence is pending.
 $('volumeStep').addEventListener('input', event => editor.input(event.target.value));
 $('volumeStep').addEventListener('change', event => editor.change(event.target.value));
@@ -226,8 +268,11 @@ void (async () => {
     language = MusicDeckLanguage.resolve(info?.application?.language);
     const action = actionInfo?.action || '';
     volumeKey = action.endsWith('.volumeup') || action.endsWith('.volumedown');
+    currentTrackKey = action.endsWith('.nowplaying');
+    repeatKey = action.endsWith('.repeat');
     localize();
-    if (action.endsWith('.nowplaying')) $('trackSection').classList.remove('hidden');
+    if (action && !action.endsWith('.volume') && !action.endsWith('.trackdial')) $('keyArtworkSection').classList.remove('hidden');
+    updateKeyArtworkOptions(editor.settings.keyDisplay, editor.settings.keyArtworkOnly === true);
     if (action.endsWith('.trackdial')) $('dialSection').classList.remove('hidden');
     if (volumeKey || action.endsWith('.volume')) $('volumeSection').classList.remove('hidden');
     if (volumeKey) $('volumeFeedbackOptions').classList.remove('hidden');

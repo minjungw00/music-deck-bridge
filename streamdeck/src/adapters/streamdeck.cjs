@@ -34,8 +34,10 @@ function createDeckAdapter({ onEvent, onConnected, log, isTest = false }) {
     class BridgeAction extends sdk.SingletonAction {
       constructor(name) { super(); this.manifestId = `${PLUGIN_ID}.${name}`; }
       forward(ev) {
-        onEvent({ event: ev.type, context: ev.action.id,
-          action: ev.action.manifestId, payload: ev.payload });
+        const action = ev.action;
+        const coordinates = ev.type === 'willAppear' && action.isKey() ? action.coordinates : undefined;
+        onEvent({ event: ev.type, context: action.id, action: action.manifestId, payload: ev.payload,
+          ...(coordinates ? { position: { device: action.device.id, ...coordinates } } : {}) });
       }
       onWillAppear(ev) { this.forward(ev); }
       onWillDisappear(ev) { this.forward(ev); }
@@ -49,6 +51,8 @@ function createDeckAdapter({ onEvent, onConnected, log, isTest = false }) {
     for (const name of ACTION_NAMES) {
       streamDeck.actions.registerAction(new BridgeAction(name));
     }
+    streamDeck.devices.onDeviceDidDisconnect(({ device }) =>
+      onEvent({ event: 'deviceDidDisconnect', device: device.id }));
     void streamDeck.connect().then(() => {
       sdOnline = true;
       onConnected();

@@ -11,10 +11,10 @@ function harness({ selected = null } = {}) {
     launch: async options => { launches.push(options); },
     setTimeout: (run, delay) => { const key = ++id; timers.set(key, { run, at: clock + delay }); return key; },
     clearTimeout: key => timers.delete(key) });
-  function channel(concurrent = false) {
+  function channel(concurrent = false, repeat = false) {
     const replies = [];
     let close;
-    commands.listenBrowser({ reply: (data, status = 200) => replies.push({ data, status }), onClose: fn => { close = fn; } }, { concurrent });
+    commands.listenBrowser({ reply: (data, status = 200) => replies.push({ data, status }), onClose: fn => { close = fn; } }, { concurrent, repeat });
     return { replies, close };
   }
   return { commands, session, launches, timers, channel, async advance(ms) {
@@ -24,6 +24,41 @@ function harness({ selected = null } = {}) {
     }
   } };
 }
+
+test('repeat requires an eligible player and an advertised capability on the paired channel', async () => {
+  const track = { title: 'Song', trackId: 'aaaaaaaaaaa', repeatMode: 'NONE', lastMediaSyncAt: 1000 };
+  const h = harness({ selected: ['12', track] });
+  const legacy = h.channel(true);
+  assert.equal(await h.commands.request('repeat'), false);
+  assert.equal(h.commands.repeatError, 'repeat-update-required');
+  assert.deepEqual(legacy.replies, []);
+  const play = h.commands.request('toggle');
+  h.commands.acknowledge(legacy.replies[0].data.commands[0].id, true);
+  assert.equal(await play, true);
+
+  const current = h.channel(true, true);
+  const repeat = h.commands.request('repeat');
+  const [command] = current.replies[0].data.commands;
+  assert.deepEqual([command.type, command.preferredTabId, command.playerKey], ['repeat', 12, track.trackId]);
+  h.commands.acknowledge(command.id, true);
+  assert.equal(await repeat, true);
+  track.repeatMode = null;
+  assert.equal(await h.commands.request('repeat'), false);
+  assert.equal(h.commands.repeatError, 'repeat-unavailable');
+});
+
+test('a queued Repeat does not launch Chrome or fall through to an older extension', async () => {
+  const h = harness({ selected: ['12', { title: 'Song', artist: 'Artist', repeatMode: 'ONE', lastMediaSyncAt: 1000 }] });
+  h.channel(true, true).close();
+  const waiting = h.commands.request('repeat');
+  await h.advance(2000);
+  assert.deepEqual(h.launches, []);
+  const older = h.channel(true);
+  assert.equal(await waiting, false);
+  assert.equal(h.commands.lastError, 'repeat-update-required');
+  assert.deepEqual(older.replies, []);
+  older.close();
+});
 
 test('strict popup input waits for the browser channel even before its first poll instead of using the legacy queue', async () => {
   const h = harness({ selected: ['12', { title: 'Song', artist: 'Artist', volume: 50 }] });

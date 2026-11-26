@@ -91,7 +91,8 @@
       // Re-query the player bar when a cached document resumes.
       const bar = document.querySelector('ytmusic-player-bar');
       if (bar) observer?.observe(bar, { childList: true, subtree: true, attributes: true,
-        attributeFilter: ['src', 'title', 'aria-label', 'style', 'aria-valuenow', 'aria-pressed', 'like-status'] });
+        attributeFilter: ['src', 'title', 'aria-label', 'style', 'aria-valuenow', 'aria-pressed', 'like-status',
+          'aria-disabled', 'disabled', 'hidden', 'icon'] });
       clock = setInterval(synchronize, 800); // status fallback; browsers throttle idle tabs
       void synchronize();
       void listen();

@@ -62,5 +62,9 @@
   "io.github.minjungw00.musicdeckbridge.dislike": {
     "Name": "Dislike",
     "Tooltip": "Dislike the current song; press again to remove the dislike."
+  },
+  "io.github.minjungw00.musicdeckbridge.repeat": {
+    "Name": "Repeat",
+    "Tooltip": "Cycle the repeat modes available in YouTube Music."
   }
 }

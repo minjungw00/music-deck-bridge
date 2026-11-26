@@ -41,6 +41,24 @@
   </style>
 </head>
 <body>
+  <section id="keyArtworkSection" class="hidden">
+    <sdpi-item id="keyDisplayRow" label="Key display">
+      <sdpi-select id="keyDisplay" setting="keyDisplay" default="default">
+        <option id="optKeyDefault" value="default">Default</option>
+        <option id="optKeyArtwork" value="artwork">Album artwork</option>
+        <option id="optKeyLinked" value="linked">Linked album artwork</option>
+      </sdpi-select>
+    </sdpi-item>
+    <sdpi-item id="keyArtworkOnlyRow" class="hidden" label="Album artwork">
+      <sdpi-checkbox id="keyArtworkOnly" setting="keyArtworkOnly" default="false" label="Artwork only"></sdpi-checkbox>
+    </sdpi-item>
+    <div id="albumGroupOptions" class="hidden">
+      <sdpi-item id="albumGroupRow" label="Artwork group">
+        <sdpi-textfield id="albumGroup" setting="albumGroup" maxlength="32" placeholder="Automatic"></sdpi-textfield>
+      </sdpi-item>
+      <p id="albumGroupHint" class="hint">Leave empty to group adjacent keys. Enter the same name on keys to link them across gaps.</p>
+    </div>
+  </section>
   <section id="trackSection" class="hidden">
     <sdpi-item id="keyTitleRow" label="Song name">
       <sdpi-checkbox id="showTitle" setting="showTitle" default="true" label="Show song name"></sdpi-checkbox>
@@ -73,6 +91,12 @@
       </sdpi-select>
     </sdpi-item>
     <p class="hint" id="dialDisplayHint">Push or touch to play/pause; turn for previous/next track. Without artwork, the playback icon is shown.</p>
+    <sdpi-item id="infoTitleModeRow" label="Text display">
+      <sdpi-select id="infoTitleMode" setting="infoTitleMode" default="truncate">
+        <option id="optInfoTruncate" value="truncate">Truncate</option>
+        <option id="optInfoScroll" value="scroll">Scroll left</option>
+      </sdpi-select>
+    </sdpi-item>
     <div id="artworkOptions" class="hidden">
       <sdpi-item id="artworkFitRow" label="Artwork fit">
         <sdpi-select id="artworkFit" setting="artworkFit" default="height">
@@ -136,6 +160,11 @@
     </div>
   </section>
   <section class="connection">
+    <sdpi-item id="keepLastTrackRow" label="Last played track">
+      <label><input id="keepLastTrack" type="checkbox" disabled aria-describedby="keepLastTrackHint"> <span id="keepLastTrackLabel">Keep after restart</span></label>
+    </sdpi-item>
+    <p id="keepLastTrackHint" class="hint">Save one track and its artwork on this PC. This setting applies to all keys and dials.</p>
+    <p id="keepLastTrackStatus" class="hint hidden" role="status"></p>
     <sdpi-item id="pinRow" label="Connection">
       <div class="inline connection-actions">
         <div><sdpi-button id="generatePin">Generate PIN</sdpi-button><output id="pinOutput" aria-live="polite"></output></div>

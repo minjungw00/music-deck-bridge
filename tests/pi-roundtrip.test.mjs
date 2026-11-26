@@ -3,11 +3,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { WebSocket, WebSocketServer } from 'ws';
 import { once } from 'node:events';
-import { mkdtempSync, rmSync, cpSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
+import { createFileStore } from '../streamdeck/src/adapters/file-store.cjs';
+import { createLastTrack } from '../streamdeck/src/application/last-track.cjs';
 
 const plugin = join(dirname(fileURLToPath(import.meta.url)), '..',
   'streamdeck', 'io.github.minjungw00.musicdeckbridge.sdPlugin', 'bin', 'plugin.js');
@@ -27,6 +29,13 @@ for (const protectedManifest of [false, true]) {
     const installed = join(tmp, 'io.github.minjungw00.musicdeckbridge.sdPlugin');
     mkdirSync(installed);
     cpSync(join(dirname(plugin), '..'), installed, { recursive: true });
+    const origin = 'chrome-extension://' + 'a'.repeat(32);
+    const storage = createFileStore({ appData: tmp });
+    storage.saveAuth({ origin, token: 'a'.repeat(64) });
+    const lastTrack = createLastTrack({ storage, onChange() {} });
+    const artwork = 'data:image/png;base64,' + readFileSync(join(installed, 'imgs/plugin/icon.png')).toString('base64');
+    lastTrack.setEnabled(true);
+    lastTrack.observe({ title: 'Saved song', artist: 'Saved artist', trackId: 'aaaaaaaaaaa', playing: true }, artwork);
     // Exercise the SDK's opaque-manifest path; actual Maker Console DRM still needs a device test.
     if (protectedManifest) writeFileSync(join(installed, 'manifest.json'), 'opaque manifest fixture');
     const bridgePort = await freePort();
@@ -95,7 +104,6 @@ for (const protectedManifest of [false, true]) {
       peer.send(JSON.stringify({ event, context, device: 'device', action: `${id}.${name}`, payload }),
         error => { if (error) recordError(error); });
     }
-    const origin = 'chrome-extension://' + 'a'.repeat(32);
     async function post(route, body, timeout = 2000) {
       const response = await fetch(`http://127.0.0.1:${bridgePort}` + route, { method: 'POST',
         headers: { Origin: origin, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
@@ -112,12 +120,25 @@ for (const protectedManifest of [false, true]) {
     const toggleImage = (context = 'toggle') => messages.findLast(m => m.event === 'setImage' && m.context === context)?.payload.image;
     const playImage = 'imgs/actions/toggle/key@2x.png';
     const pauseImage = 'imgs/actions/toggle/pause@2x.png';
-    // Before any player state is available, show Play with the offline title.
+    // Recover the saved track before receiving any browser state. Live playback stays off.
     await waitFor(() => toggleImage() === playImage);
     await waitFor(() => toggleImage('mute') === 'imgs/actions/volume/key@2x.png');
     const dialFeedback = () => messages.findLast(m => m.event === 'setFeedback' && m.context === 'trackdial')?.payload;
     const dialLayout = () => messages.findLast(m => m.event === 'setFeedbackLayout' && m.context === 'trackdial')?.payload.layout;
     await waitFor(() => dialLayout() === '$A1' && dialFeedback()?.icon === playImage);
+    assert.equal(dialFeedback().value, 'Saved song');
+    const linked = { keyDisplay: 'linked', keyArtworkOnly: true };
+    send('willAppear', 'prev', { controller: 'Keypad', settings: linked, coordinates: { column: 1, row: 0 } }, 'art-top');
+    send('willAppear', 'next', { controller: 'Keypad', settings: linked, coordinates: { column: 2, row: 1 } }, 'art-bottom');
+    const svg = context => {
+      const image = toggleImage(context);
+      return image?.startsWith('data:image/svg+xml;') ? Buffer.from(image.split(',')[1], 'base64').toString() : '';
+    };
+    await waitFor(() => svg('art-top').includes('x="0" y="0" width="288"') &&
+      svg('art-bottom').includes('x="-144" y="-144" width="288"'));
+    send('willDisappear', 'next', { controller: 'Keypad', coordinates: { column: 2, row: 1 } }, 'art-bottom');
+    await waitFor(() => toggleImage('art-top') === artwork);
+    send('willDisappear', 'prev', { controller: 'Keypad', coordinates: { column: 1, row: 0 } }, 'art-top');
     for (const name of ['toggle', 'like', 'dislike', 'open']) {
       await waitFor(() => messages.some(m => m.event === 'setTitle' && m.context === name && m.payload.title === ''));
     }
@@ -128,6 +149,7 @@ for (const protectedManifest of [false, true]) {
     assert.equal(reply.payload.pin, '654321');
     assert.ok(reply.payload.expiresAt > Date.now());
     const { token } = await post('/pair', { pin: reply.payload.pin });
+    assert.deepEqual(storage.readLastTrack(), { enabled: true });
     const state = { title: 'SDK song', artist: 'Artist', playing: true, volume: 50, rating: 'INDIFFERENT' };
     await post('/sync', { token, clientId: 1, state });
     await waitFor(() => toggleImage() === pauseImage);

@@ -10,7 +10,7 @@
       }
       if (msg?.type === 'player-playback' && Number.isInteger(sender.tab?.id) && sender.frameId === 0 &&
           sender.url?.startsWith('https://music.youtube.com/')) {
-        if (!['play', 'toggle', 'next', 'prev'].includes(msg.command)) { respond({ ok: false }); return false; }
+        if (!['play', 'toggle', 'next', 'prev', 'repeat'].includes(msg.command)) { respond({ ok: false }); return false; }
         chrome.scripting.executeScript({ target: { tabId: sender.tab.id, frameIds: [0] }, world: 'MAIN',
           func: playerPlayback, args: [msg.command, msg.expiresAt, msg.dispatchOnly === true] })
           .then(results => respond(results[0]?.result || { ok: false }))

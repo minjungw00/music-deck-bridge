@@ -24,6 +24,26 @@ function harness(output = {}) {
   }, async paint(id, item, state) { context.render(id, item, state); await item.feedbackQueue; } };
 }
 
+test('icon-and-name mode can scroll and restarts for a different track with the same title', async () => {
+  const h = harness(), item = h.add('dial', 'info');
+  const title = 'abcdefghijklmnopqrst';
+  const state = { title, trackId: 'aaaaaaaaaaa', playing: true };
+  await h.paint('dial', item, state);
+  const value = () => h.calls.filter(call => call.event === 'feedback').at(-1).feedback.value;
+  assert.equal(value(), 'abcdefghijklm…');
+  assert.equal(needsMarquee(h.displayed, () => 'trackdial'), false);
+  item.settings.infoTitleMode = 'scroll';
+  await h.paint('dial', item, state);
+  assert.equal(value(), 'abcdefghijklmn');
+  assert.equal(needsMarquee(h.displayed, () => 'trackdial'), true);
+  h.context.Date.now = () => 1000 + 4 * 380;
+  await h.paint('dial', item, state);
+  assert.equal(value(), 'bcdefghijklmno');
+  await h.paint('dial', item, { ...state, trackId: 'bbbbbbbbbbb' });
+  assert.equal(value(), 'abcdefghijklmn');
+  assert.equal(h.calls.filter(call => call.event === 'layout').length, 1);
+});
+
 test('artwork mode updates cached covers, avoids duplicate transmissions and clears the old song image', async () => {
   const h = harness(), item = h.add('dial', 'artwork');
   const state = { cover: 'first-cover', playing: true };

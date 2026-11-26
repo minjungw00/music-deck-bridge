@@ -62,5 +62,9 @@
   "io.github.minjungw00.musicdeckbridge.dislike": {
     "Name": "Je n’aime pas",
     "Tooltip": "Ajoute Je n’aime pas au titre actuel ; appuyez à nouveau pour le retirer."
+  },
+  "io.github.minjungw00.musicdeckbridge.repeat": {
+    "Name": "Répéter",
+    "Tooltip": "Fait défiler les modes de répétition disponibles dans YouTube Music."
   }
 }

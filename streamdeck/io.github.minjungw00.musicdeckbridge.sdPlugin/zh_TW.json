@@ -62,5 +62,9 @@
   "io.github.minjungw00.musicdeckbridge.dislike": {
     "Name": "不喜歡",
     "Tooltip": "不喜歡目前的歌曲；再次按下可取消。"
+  },
+  "io.github.minjungw00.musicdeckbridge.repeat": {
+    "Name": "重複播放",
+    "Tooltip": "依序切換 YouTube Music 中可用的重複播放模式。"
   }
 }

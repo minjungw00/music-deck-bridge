@@ -2,8 +2,8 @@
 const MARQUEE_STEP_MS = 380;
 const MARQUEE_WIDTH = 11;
 function ellipsis(str, n = 11) {
-  const chars = [...String(str || '')];
-  return chars.length > n ? chars.slice(0, n - 1).join('') + '…' : chars.join('');
+  const characters = glyphs(str);
+  return characters.length > n ? characters.slice(0, n - 1).join('') + '…' : characters.join('');
 }
 // Grapheme-aware scrolling prevents cutting Hangul combining characters and emoji.
 const segmenter = new Intl.Segmenter('ko', { granularity: 'grapheme' });

@@ -19,6 +19,7 @@ const fixture = (restored = false, ignoredStartupRequests = 0) => `<!doctype htm
  <button class="previous-button" disabled onclick="control('prev')">Previous</button>
  <button class="next-button" disabled onclick="control('next')">Next</button>
  <button class="volume" onclick="muted=!muted;record('mute')">Mute</button>
+ <yt-icon-button class="repeat" onclick="repeat()" style="display:inline-block">Repeat</yt-icon-button>
  <div id="volume-slider" style="width:100px;height:20px" aria-valuenow="50"></div>
  <ytmusic-like-button-renderer like-status="INDIFFERENT">
   <div id="button-shape-like"><button onclick="rate('LIKE')">Like</button></div>
@@ -31,6 +32,16 @@ let destinationUnstarted=false, unstartedDestination=false, ignoredDestinationPl
 const restored=${restored};
 const ignoredStartupRequests=${ignoredStartupRequests};
 const playerListeners=new Map();
+const playerBar=document.querySelector('ytmusic-player-bar');
+const repeatModes=['NONE','ALL','ONE'];
+playerBar.repeatMode='NONE';
+playerBar.isRepeatButtonDisabled=false;
+function repeat(){
+ if(playerBar.isRepeatButtonDisabled)return;
+ playerBar.repeatMode=repeatModes[(repeatModes.indexOf(playerBar.repeatMode)+1)%repeatModes.length];
+ document.querySelector('.repeat').setAttribute('aria-label',playerBar.repeatMode);
+ document.body.dataset.repeatModes=(document.body.dataset.repeatModes||'')+' '+playerBar.repeatMode;
+}
 const tracks=['aaaaaaaaaaa','bbbbbbbbbbb','ccccccccccc','ddddddddddd','eeeeeeeeeee'];
 function record(key){ document.body.dataset[key]=String(Number(document.body.dataset[key]||0)+1); }
 function rate(value){
@@ -139,7 +150,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
       if (url.endsWith('/listen')) legacyPollsStarted++;
       if (url.endsWith('/sync')) {
         const { clientId, state } = JSON.parse(options.body);
-        playerSnapshots.push({ clientId, playing: state.playing, muted: state.muted });
+        playerSnapshots.push({ clientId, playing: state.playing, muted: state.muted, repeatMode: state.repeatMode });
       }
       if (url.endsWith('/browser-result')) {
         const { ok, reason } = JSON.parse(options.body);
@@ -182,6 +193,21 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     }
     assert.equal(browser.pages().filter(page => page.url().startsWith(musicURL)).length, 1);
   }
+  const repeatPage = browser.pages().find(page => page.url().startsWith(musicURL));
+  const repeatedBefore = await worker.evaluate(() => acknowledgments.length);
+  await until(() => worker.evaluate(() => playerSnapshots.at(-1)?.repeatMode === 'NONE'), 'repeat mode sync');
+  await postEvent('repeat');
+  await postEvent('repeat');
+  await until(() => worker.evaluate(before => acknowledgments.length >= before + 2, repeatedBefore), 'two Repeat ACKs');
+  assert.equal(await repeatPage.evaluate(() => document.body.dataset.repeatModes), ' ALL ONE');
+  assert.ok(await worker.evaluate(before => acknowledgments.slice(before, before + 2).every(result => result.ok), repeatedBefore));
+  await until(() => worker.evaluate(() => playerSnapshots.at(-1)?.repeatMode === 'ONE'), 'observed repeat sync');
+  await repeatPage.locator('.repeat').click();
+  await until(() => worker.evaluate(() => playerSnapshots.at(-1)?.repeatMode === 'NONE'), 'web repeat state sync');
+  await repeatPage.evaluate(() => { playerBar.isRepeatButtonDisabled = true; });
+  await until(() => worker.evaluate(() => playerSnapshots.at(-1)?.repeatMode === null), 'disabled repeat state sync');
+  await repeatPage.evaluate(() => { playerBar.isRepeatButtonDisabled = false; });
+
   // A second launch reuses the existing music tab; a normal input keeps working.
   for (const type of ['open', 'next']) {
     const before = await worker.evaluate(() => acknowledgments.length);

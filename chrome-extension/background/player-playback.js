@@ -14,8 +14,11 @@
     }
     if (type === 'state') {
       const state = readPlayer();
-      return { playing: state.playing, muted: state.muted };
+      const playbackConfirmed = state.playable && (Number.isFinite(state.state) ? state.state === 1 :
+        state.playing && state.media?.readyState >= 2);
+      return { playing: state.playing, playbackConfirmed, muted: state.muted, repeatMode: readRepeat()?.mode ?? null };
     }
+    if (type === 'repeat') return await cycleRepeat();
     if (!['play', 'toggle', 'next', 'prev'].includes(type)) return { ok: false };
 
     const sequence = ++control.sequence;
@@ -45,6 +48,31 @@
     function usable(button) {
       return button && !button.disabled && button.getAttribute('aria-disabled') !== 'true' &&
         !button.closest?.('[disabled], [aria-disabled="true"]');
+    }
+    function readRepeat() {
+      const owners = document.querySelectorAll('ytmusic-player-bar, ytmusic-player-controls');
+      for (const owner of owners) {
+        if (owner.isRepeatButtonDisabled === true) continue;
+        const mode = owner.repeatMode;
+        if (!['NONE', 'ALL', 'ONE'].includes(mode)) continue;
+        const buttons = [...owner.querySelectorAll('yt-icon-button.repeat')].filter(candidate =>
+          usable(candidate) && !candidate.hidden);
+        const button = buttons.find(candidate => candidate.getClientRects().length > 0) || buttons[0];
+        if (button) return { owner, button, mode };
+      }
+      return null;
+    }
+    async function cycleRepeat() {
+      const deadline = Math.min(Number(expiresAt) || Infinity, Date.now() + 1200);
+      const before = readRepeat();
+      if (!before || Date.now() >= deadline) return { ok: false, reason: 'repeat-unavailable' };
+      before.button.click();
+      while (Date.now() < deadline) {
+        const after = readRepeat();
+        if (after?.owner === before.owner && after.mode !== before.mode) return { ok: true };
+        await wait();
+      }
+      return { ok: false, reason: 'playback-unconfirmed' };
     }
     function playButton() { return document.querySelector('ytmusic-player-bar .play-pause-button'); }
     function canStart(state) {

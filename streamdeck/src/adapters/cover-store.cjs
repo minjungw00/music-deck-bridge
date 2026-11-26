@@ -38,7 +38,7 @@ async function fetchCover(source, fetch = globalThis.fetch) {
   throw new Error('이미지 리디렉션이 너무 많음');
 }
 
-function createCoverStore({ selectedSource, onChange, fetch = globalThis.fetch, now = Date.now }) {
+function createCoverStore({ selectedSource, onChange, onLoaded = () => {}, fetch = globalThis.fetch, now = Date.now }) {
   const coverCache = new Map(), coverFailures = new Map(), coverDownloads = new Map();
   let cachedCoverUrl = '', cachedCoverData = '';
   function loadCover(src, fallback = '') {
@@ -47,6 +47,7 @@ function createCoverStore({ selectedSource, onChange, fetch = globalThis.fetch, 
     if (coverCache.has(src)) {
       cachedCoverUrl = src;
       cachedCoverData = coverCache.get(src);
+      onLoaded(src, cachedCoverData);
       onChange();
       return;
     }
@@ -70,6 +71,7 @@ function createCoverStore({ selectedSource, onChange, fetch = globalThis.fetch, 
           cachedCoverData = uri;
           onChange();
         }
+        onLoaded(src, uri);
       } catch (e) {
         coverFailures.set(src, { time: now(), reason: String(e.message || '다운로드 실패').slice(0, 120) });
         if (coverFailures.size > 25) coverFailures.delete(coverFailures.keys().next().value);

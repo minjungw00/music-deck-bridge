@@ -7,20 +7,11 @@ import vm from 'node:vm';
 const dir = join(dirname(fileURLToPath(import.meta.url)), '..', 'streamdeck', 'io.github.minjungw00.musicdeckbridge.sdPlugin');
 const html = readFileSync(join(dir,'property-inspector','settings.html'),'utf8');
 function makeInspector(action='io.github.minjungw00.musicdeckbridge.nowplaying', language='ko') {
-  const ids=['keyTitleRow','showTitle','keyArtistRow','showArtist','keyArtistPositionRow','artistPosition','optKeyArtistBelow','optKeyArtistInline','keyBackgroundRow','titleBackground',
-    'artworkArtistPositionRow','artworkArtistPosition','optArtworkArtistBelow','optArtworkArtistInline','titleModeRow','titleMode','optTruncate','optScroll','titleHint','volumeRow','volumeHint',
-    'installExtension','companionHint',
-    'versionInfo','pinRow','generatePin','pairHint','pairState','commandStatus','volumeStep','stepLabel','pinOutput',
-    'trackSection','dialSection','dialDisplayRow','dialDisplay','optDialInfo','optDialArtwork','dialDisplayHint',
-    'artworkTextOptions','artworkArtistRow','artworkShowArtist','artworkBackgroundRow','artworkTitleBackground','artworkTitleModeRow','artworkTitleMode','optArtworkTruncate','optArtworkScroll',
-    'artworkOptions','artworkFitRow','artworkFit','optArtworkHeight','optArtworkWidth','artworkFitHint','artworkTitleRow','artworkShowTitle',
-    'volumeSection','volumeFeedbackOptions','volumeValueRow','volumeShowValue','volumePercentRow','volumeShowPercent',
-    'volumeDurationOptions','feedbackDurationRow','volumeFeedbackSeconds','feedbackDurationLabel','feedbackDurationMin','feedbackDurationMax','feedbackDurationHint',
-    'portRow','serverPort','applyPort','portStatus'];
+  const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(([, id]) => id);
   const elems=Object.fromEntries(ids.map(id=>[id,{
     id, textContent:'',value:id==='volumeStep'?'4':'',listeners:{},attrs:{},dataset:{},
     setAttribute(k,v){this.attrs[k]=v},addEventListener(k,v){this.listeners[k]=v},
-    classList:{removed:[],hidden:true,remove(k){this.removed.push(k)},toggle(k,value){this.hidden=value;return value;}},
+    classList:{removed:[],hidden:true,add(){this.hidden=true},remove(k){this.removed.push(k);this.hidden=false},toggle(k,value){this.hidden=value;return value;}},
   }]));
   const calls=[];const subscribers={};const client={
     sendToPropertyInspector:{subscribe:fn=>subscribers.connection=fn},
@@ -53,7 +44,7 @@ test('uses bundled official SDPI components in dark style and locale-aware label
   assert.equal(pi.elems.volumeRow.attrs.label,'회전당 볼륨');
   assert.equal(pi.elems.portRow.attrs.label,'로컬 서버 포트');
   assert.equal(pi.elems.optScroll.textContent,'왼쪽으로 스크롤');
-  assert.equal(pi.elems.trackSection.classList.removed[0],'hidden');
+  assert.equal(pi.elems.trackSection.classList.hidden,false);
   assert.equal(pi.calls[0].payload.type,'get-connection');
   const en=makeInspector('io.github.minjungw00.musicdeckbridge.volume','it');await en.ready();
   assert.equal(en.sandbox.document.documentElement.lang,'en');
@@ -63,7 +54,7 @@ test('uses bundled official SDPI components in dark style and locale-aware label
 });
 
 test('each action can generate a PIN, with real connection-state messages', async()=>{
-  for (const name of ['nowplaying','toggle','prev','next','mute','volumeup','volumedown','volume','trackdial','open','like','dislike']) {
+  for (const name of ['nowplaying','toggle','prev','next','mute','volumeup','volumedown','volume','trackdial','open','like','dislike','repeat']) {
     const pi=makeInspector('io.github.minjungw00.musicdeckbridge.'+name); await pi.ready();
     pi.elems.generatePin.listeners.click();await pi.ready();
     assert.equal(pi.calls.at(-1).payload.type,'generate-pin');
@@ -78,6 +69,32 @@ test('each action can generate a PIN, with real connection-state messages', asyn
     pi.subscribers.connection({payload:{type:'connection',pin:'123456',expiresAt:Date.now()+600000,paired:false,extensionOnline:false}});
     assert.equal(pi.elems.pinOutput.textContent,'123456');
   }
+});
+
+test('artwork settings and global last-track storage are exposed on their corresponding controls', async () => {
+  const key = makeInspector('io.github.minjungw00.musicdeckbridge.nowplaying');
+  await key.ready();
+  assert.equal(key.elems.keyArtworkSection.classList.hidden, false);
+  assert.equal(key.elems.albumGroupOptions.classList.hidden, true);
+  key.subscribers.settings({ payload: { settings: { keyDisplay: 'linked', keyArtworkOnly: true } } });
+  assert.equal(key.elems.albumGroupOptions.classList.hidden, false);
+  assert.equal(key.elems.keyArtworkOnlyRow.classList.hidden, false);
+  assert.equal(key.elems.trackSection.classList.hidden, true);
+  key.subscribers.connection({ payload: { type: 'connection', keepLastTrack: false } });
+  assert.equal(key.elems.keepLastTrack.disabled, false);
+  key.elems.keepLastTrack.listeners.change({ target: { checked: true } });
+  assert.equal(key.calls.at(-1).payload.type, 'set-last-track');
+  assert.equal(key.calls.at(-1).payload.enabled, true);
+  key.subscribers.connection({ payload: { type: 'connection', keepLastTrack: false, lastTrackSaveFailed: true } });
+  assert.equal(key.elems.keepLastTrack.checked, false);
+  assert.match(key.elems.keepLastTrackStatus.textContent, /저장하지 못했습니다/);
+
+  const dial = makeInspector('io.github.minjungw00.musicdeckbridge.trackdial');
+  await dial.ready();
+  assert.equal(dial.elems.keyArtworkSection.classList.hidden, true);
+  assert.equal(dial.elems.infoTitleModeRow.classList.hidden, false);
+  dial.subscribers.settings({ payload: { settings: { dialDisplay: 'artwork' } } });
+  assert.equal(dial.elems.infoTitleModeRow.classList.hidden, true);
 });
 
 test('volume keys expose the per-press step in English and Korean', async () => {

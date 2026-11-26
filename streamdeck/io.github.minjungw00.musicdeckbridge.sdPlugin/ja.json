@@ -62,5 +62,9 @@
   "io.github.minjungw00.musicdeckbridge.dislike": {
     "Name": "低評価",
     "Tooltip": "現在の曲を低評価にします。もう一度押すと解除します。"
+  },
+  "io.github.minjungw00.musicdeckbridge.repeat": {
+    "Name": "リピート",
+    "Tooltip": "YouTube Music で使用できるリピートモードを順番に切り替えます。"
   }
 }

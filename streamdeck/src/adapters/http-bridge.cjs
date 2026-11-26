@@ -110,7 +110,7 @@ function createHttpBridge({ session, players, commands, covers, getPorts, onDeck
         }
         players.reconcile(body.clientIds);
       }
-      return commands.listenBrowser(httpChannel(res, origin), { concurrent: body.concurrent === true });
+      return commands.listenBrowser(httpChannel(res, origin), { concurrent: body.concurrent === true, repeat: body.repeat === true });
     }
     if (req.url === '/player-closed') {
       const clientId = String(body.clientId ?? '');

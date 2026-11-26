@@ -9,6 +9,7 @@ const { createSessionCoordinator } = require('./application/session-coordinator.
 const { createPlayerRegistry } = require('./application/player-registry.cjs');
 const { createPortService } = require('./application/port-service.cjs');
 const { createDeckController } = require('./application/deck-controller.cjs');
+const { createLastTrack } = require('./application/last-track.cjs');
 const { createRenderer, needsMarquee, translate, MARQUEE_STEP_MS } = require('./presentation/renderer.cjs');
 const { actionName } = require('./domain/actions.cjs');
 const { launchChrome } = require('./launch-chrome.cjs');
@@ -30,15 +31,24 @@ function log(message) {
 }
 
 const storage = createFileStore({ testPort: isTest ? process.env.MUSIC_DECK_BRIDGE_TEST_PORT : undefined });
+const lastTrack = createLastTrack({ storage, onChange: drawSoon,
+  onError: () => log('Unable to update the saved last track.') });
+function observeTrack() {
+  if (!lastTrack.enabled) return;
+  const state = players.selected()?.[1];
+  if (state?.title) lastTrack.observe(state, covers.image(state.cover));
+}
 const players = createPlayerRegistry({ onChange: drawSoon, onObserved: () => {
   // A fresh 0/100 snapshot can confirm a bounded volume input without changing
   // the registry's display signature. Wake only keys waiting for that snapshot.
   if ([...displayed.values()].some(item => item.volumeFeedback?.awaitingSnapshot())) drawSoon();
+  observeTrack();
 } });
 const commands = createCommandService({ selectedEntry: players.selected, log,
   getSession: () => session.access, launch: isTest ? async () => {} : launchChrome });
-const covers = createCoverStore({ selectedSource: () => players.selected()?.[1].cover, onChange: drawSoon });
-const session = createSessionCoordinator({ storage, commands, players, covers, version, onChange: drawSoon,
+const covers = createCoverStore({ selectedSource: () => players.selected()?.[1].cover,
+  onChange: drawSoon, onLoaded: lastTrack.observeArtwork });
+const session = createSessionCoordinator({ storage, commands, players, covers, lastTrack, version, onChange: drawSoon,
   testPin: isTest ? process.env.MUSIC_DECK_BRIDGE_TEST_PIN : undefined });
 const deck = createDeckAdapter({ onEvent: event => controller.handle(event),
   onConnected: drawSoon, log, isTest });
@@ -46,9 +56,11 @@ const transport = createHttpBridge({ session, players, commands, covers, version
   getPorts: () => ports, onDeckEvent: event => controller.handle(event) });
 const ports = createPortService({ initialPort: storage.readPort(), savePort: storage.savePort,
   bindPort: transport.bind, notifyPortChange: commands.notifyPortChange, log });
-const controller = createDeckController({ displayed, commands, session, ports, players,
+const controller = createDeckController({ displayed, commands, session, ports, players, lastTrack, observeTrack,
   output: deck, onChange: drawSoon, version });
-const renderer = createRenderer({ displayed, covers, selectedEntry: players.selected, actionName,
+const renderer = createRenderer({ displayed, covers, actionName,
+  selectedEntry: () => lastTrack.snapshot && !session.extensionOnline() ? null : players.selected(),
+  lastTrack: () => lastTrack.snapshot, repeatAvailable: () => !commands.repeatError,
   online: () => deck.online, tr: key => translate(deck.locale, key), fitDialArtwork, keyTextBackground, volumeKeyImage,
   output: {
     sendStream: deck.send,

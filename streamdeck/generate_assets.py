@@ -111,6 +111,20 @@ def render(kind, size, background, square_background=False):
     elif kind == "pause":
         rectangle((202, 174, 236, 330))
         rectangle((276, 174, 310, 330))
+    elif kind.startswith("repeat_"):
+        stroke = 24 if kind == "repeat_all" else 16
+        line([(174, 245), (174, 204), (331, 204)], stroke)
+        line([(307, 178), (334, 204), (307, 230)], stroke)
+        line([(336, 259), (336, 300), (179, 300)], stroke)
+        line([(203, 274), (176, 300), (203, 326)], stroke)
+        if kind == "repeat_all":
+            draw.ellipse(box((243, 240, 267, 264)), fill=255)
+        elif kind == "repeat_one":
+            line([(246, 245), (258, 234), (258, 269)], 11)
+        elif kind == "repeat_unavailable":
+            # A cut across the glyph distinguishes an unavailable control from off.
+            draw.line([box((174, 168)), box((338, 336))], fill=0, width=34 * scale)
+            line([(174, 168), (338, 336)], 14)
     elif kind == "open":
         line([(290, 184), (174, 184), (174, 330), (330, 330), (330, 280)], 18)
         line([(242, 270), (340, 172)], 24)
@@ -175,6 +189,9 @@ def main():
                 outputs[f"{plugin}/actions/{kind}/{name}{suffix}.png"] = (kind, size * scale, background, background)
     for suffix, scale in [("", 1), ("@2x", 2)]:
         outputs[f"{plugin}/actions/toggle/pause{suffix}.png"] = ("pause", 72 * scale, True, True)
+        outputs[f"{plugin}/actions/repeat/icon{suffix}.png"] = ("repeat_none", 20 * scale, False)
+        for state in ("none", "all", "one", "unavailable"):
+            outputs[f"{plugin}/actions/repeat/{state}{suffix}.png"] = ("repeat_" + state, 72 * scale, True, True)
         for kind in ("like", "dislike"):
             outputs[f"{plugin}/actions/{kind}/selected{suffix}.png"] = (kind + "_selected", 72 * scale, True, True)
     outputs[f"{plugin}/actions/volume/level@2x.png"] = ("volume_level", 144, True, True)

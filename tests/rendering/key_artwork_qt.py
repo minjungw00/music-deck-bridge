@@ -67,3 +67,34 @@ console.log(JSON.stringify([0, 1, 2].map(lines => keyTextBackground(cover, lines
                     assert max(abs(i - j) for i, j in zip(a.getRgb(), b.getRgb())) <= 8, (width, height, fmt, lines, x, y, a.getRgb(), b.getRgb())
             count += 1
 print(f'Qt {qVersion()}: {count} key artwork/backdrop outputs preserve aspect ratio')
+
+# Render only the diagonal corners of a 2×2 canvas and the far-right tile of a
+# horizontal canvas. The absent cells still participate in crop geometry.
+source = QImage(288, 288, QImage.Format.Format_RGB32)
+painter = QPainter(source)
+colors = ['red', 'green', 'blue', 'white']
+for index, color in enumerate(colors):
+    painter.fillRect(QRectF((index % 2) * 144, (index // 2) * 144, 144, 144), QColor(color))
+painter.end()
+buffer = QBuffer()
+buffer.open(QIODevice.OpenModeFlag.WriteOnly)
+assert source.save(buffer, 'PNG')
+cover = 'data:image/png;base64,' + base64.b64encode(bytes(buffer.data())).decode()
+result = subprocess.run(['node', '-e', """
+const { keyTextBackground } = require(process.argv[1]);
+const cover = require('node:fs').readFileSync(0, 'utf8');
+const tiles = [{ row: 0, column: 0, width: 2, height: 2 },
+  { row: 1, column: 1, width: 2, height: 2 }, { row: 0, column: 2, width: 3, height: 1 }];
+console.log(JSON.stringify(tiles.map(tile => keyTextBackground(cover, 0, tile))));
+""", helper], cwd=ROOT, input=cover, text=True, capture_output=True, check=True)
+for uri, expected in zip(json.loads(result.stdout), [('red', 'red'), ('white', 'white'), ('green', 'white')], strict=True):
+    image = QImage(144, 144, QImage.Format.Format_ARGB32)
+    image.fill(QColor('black'))
+    painter = QPainter(image)
+    renderer = QSvgRenderer(QByteArray(base64.b64decode(uri.split(',')[1])))
+    assert renderer.isValid()
+    renderer.render(painter, QRectF(0, 0, 144, 144))
+    painter.end()
+    assert image.pixelColor(72, 36) == QColor(expected[0])
+    assert image.pixelColor(72, 108) == QColor(expected[1])
+print(f'Qt {qVersion()}: three sparse diagonal and rectangular linked crops match their canvas coordinates')

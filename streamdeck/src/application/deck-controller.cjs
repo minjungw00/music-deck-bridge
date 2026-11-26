@@ -6,7 +6,7 @@ const { PLAYER_STALE_MS } = require('../domain/player-state.cjs');
 const { validFeedbackSeconds } = require('../domain/volume-feedback.cjs');
 const { createVolumeKeyFeedback } = require('./volume-key-feedback.cjs');
 
-function createDeckController({ displayed, commands, session, ports, players, output, onChange,
+function createDeckController({ displayed, commands, session, ports, players, lastTrack, observeTrack, output, onChange,
   version, now = Date.now }) {
   function controlPlayer(context, type, amount = 0) {
     void commands.request(type, amount).then(ok => { if (ok === false) output.send({ event: 'showAlert', context }); });
@@ -36,10 +36,25 @@ function createDeckController({ displayed, commands, session, ports, players, ou
   function handleDeckEvent(e) {
     if (!e || !e.event) return;
     if (e.event === 'willAppear') {
-      displayed.set(e.context, { action: e.action, lastImage: '', lastTitle: null, settings: e.payload?.settings || {} });
+      const { device, row, column } = e.position || {};
+      const validCoordinate = value => Number.isInteger(value) && value >= 0 && value < 64;
+      const position = typeof device === 'string' && device && validCoordinate(row) && validCoordinate(column) ?
+        { device, row, column } : null;
+      displayed.set(e.context, { action: e.action, position, lastImage: '', lastTitle: null, settings: e.payload?.settings || {} });
       onChange(); return;
     }
-    if (e.event === 'willDisappear') { displayed.delete(e.context); return; }
+    if (e.event === 'willDisappear') {
+      if (displayed.delete(e.context)) onChange();
+      return;
+    }
+    if (e.event === 'deviceDidDisconnect') {
+      let removed = false;
+      for (const [context, item] of displayed) {
+        if (item.position?.device === e.device) removed = displayed.delete(context) || removed;
+      }
+      if (removed) onChange();
+      return;
+    }
     if (e.event === 'didReceiveSettings') {
       const item = displayed.get(e.context);
       if (item) {
@@ -89,7 +104,10 @@ function createDeckController({ displayed, commands, session, ports, players, ou
         });
         return;
       }
-      if (request === 'generate-pin' || request === 'get-connection') {
+      if (request === 'generate-pin' || request === 'get-connection' || request === 'set-last-track') {
+        const saveFailed = request === 'set-last-track' && typeof e.payload.enabled === 'boolean' &&
+          lastTrack?.setEnabled(e.payload.enabled) === false;
+        if (request === 'set-last-track' && !saveFailed) observeTrack?.();
         const chosen = players.selected();
         output.send({ event: 'sendToPropertyInspector', context: e.context,
           payload: { type: 'connection', paired: session.paired,
@@ -98,6 +116,8 @@ function createDeckController({ displayed, commands, session, ports, players, ou
             playerStale: Boolean(chosen) && now() - chosen[1].lastMediaSyncAt > PLAYER_STALE_MS,
             pin: session.pin, expiresAt: session.expiresAt,
             serverPort: ports.port, bridgeOnline: ports.online, portError: ports.error, lastCommandError: commands.lastError,
+            repeatError: commands.repeatError, keepLastTrack: lastTrack?.enabled === true,
+            ...(request === 'set-last-track' ? { lastTrackSaveFailed: saveFailed } : {}),
             pluginVersion: version, ...protocol.descriptor, compatibility: session.compatibility } });
       }
       return;
@@ -108,7 +128,7 @@ function createDeckController({ displayed, commands, session, ports, players, ou
         return;
       }
       const type = ({ nowplaying: 'toggle', toggle: 'toggle', open: 'open', prev: 'prev',
-        next: 'next', mute: 'mute', like: 'like', dislike: 'dislike' })[kind];
+        next: 'next', mute: 'mute', like: 'like', dislike: 'dislike', repeat: 'repeat' })[kind];
       if (type) controlPlayer(e.context, type);
     } else if (e.event === 'dialRotate') {
       const ticks = Number(e.payload?.ticks) || 0;

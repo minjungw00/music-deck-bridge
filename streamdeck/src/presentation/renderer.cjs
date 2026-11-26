@@ -2,15 +2,24 @@
 const { createOutputCache } = require('./output-cache.cjs');
 const { ellipsis, marquee, MARQUEE_STEP_MS } = require('./track-text.cjs');
 const { translate } = require('./messages.cjs');
+const { albumTiles, keyDisplay } = require('./album-groups.cjs');
+const { KEY_ACTION_NAMES } = require('../domain/actions.cjs');
+const keyActions = new Set(KEY_ACTION_NAMES);
+const EMPTY_KEY_IMAGE = 'data:image/svg+xml;base64,' +
+  btoa('<svg xmlns="http://www.w3.org/2000/svg" width="144" height="144"><rect width="144" height="144" fill="black"/></svg>');
+const imageOnly = settings => keyDisplay(settings) !== 'default' && settings?.keyArtworkOnly === true;
+
 function needsMarquee(displayed, actionName) {
   return [...displayed.values()].some(item =>
-    (actionName(item.action) === 'nowplaying' && item.settings?.titleMode === 'scroll') ||
-    (actionName(item.action) === 'trackdial' && item.settings?.dialDisplay === 'artwork' &&
-      item.settings?.artworkShowTitle === true && item.settings?.artworkTitleMode === 'scroll'));
+    (actionName(item.action) === 'nowplaying' && !imageOnly(item.settings) && item.settings?.titleMode === 'scroll') ||
+    (actionName(item.action) === 'trackdial' && (item.settings?.dialDisplay === 'artwork' ?
+      item.settings?.artworkShowTitle === true && item.settings?.artworkTitleMode === 'scroll' :
+      item.settings?.infoTitleMode === 'scroll')));
 }
 
 // Output and artwork are ports: this module can run in Node, tests or a preview.
 function createRenderer({ displayed, covers, selectedEntry, actionName, online = () => true,
+  lastTrack = () => null, repeatAvailable = () => true,
   tr = key => translate('en', key), now = Date.now, fitDialArtwork, keyTextBackground, volumeKeyImage,
   setTimeout = globalThis.setTimeout, clearTimeout = globalThis.clearTimeout,
   output: { setImage, setTitle, setFeedback, sendStream } }) {
@@ -19,6 +28,28 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
   const cache = createOutputCache({ isCurrent: (context, item) => displayed.get(context) === item });
   const writeImage = (context, item, value) => cache.write(context, item, 'lastImage', value, next => setImage(context, next));
   const writeTitle = (context, item, value) => cache.write(context, item, 'lastTitle', value, next => setTitle(context, next));
+  const coverFor = track => track?.image || covers.image(track?.cover) || null;
+
+  function keyArtwork(item, cover, lines, tile, badge) {
+    const signature = JSON.stringify([lines, tile, badge]);
+    if (item.keyCover !== cover || item.keyArtworkSignature !== signature) {
+      item.keyCover = cover;
+      item.keyArtworkSignature = signature;
+      item.keyArtwork = keyTextBackground(cover, lines, tile, badge);
+    }
+    return item.keyArtwork;
+  }
+
+  function keyIcon(kind, state) {
+    if (kind === 'toggle' || kind === 'nowplaying') return `imgs/actions/toggle/${state?.playing ? 'pause' : 'key'}@2x.png`;
+    if (kind === 'mute') return `imgs/actions/${state?.muted ? 'mute' : 'volume'}/key@2x.png`;
+    if (kind === 'repeat') {
+      const mode = repeatAvailable() ? state?.repeatMode?.toLowerCase() : null;
+      return `imgs/actions/repeat/${mode || 'unavailable'}@2x.png`;
+    }
+    const selected = (kind === 'like' || kind === 'dislike') && state?.rating === kind.toUpperCase();
+    return `imgs/actions/${kind}/${selected ? 'selected' : 'key'}@2x.png`;
+  }
 
   function queueDialFeedback(context, item, frame) {
     // Keep one in-flight frame and one replaceable pending frame per dial.
@@ -44,9 +75,9 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     });
   }
 
-  function renderCurrentTrackDial(context, item, state) {
+  function renderCurrentTrackDial(context, item, state, playback = state) {
     if (!online()) return;
-    const icon = `imgs/actions/toggle/${state?.playing ? 'pause' : 'key'}@2x.png`;
+    const icon = keyIcon('toggle', playback);
     writeImage(context, item, icon);
     const artwork = item.settings?.dialDisplay === 'artwork';
     const fit = item.settings?.artworkFit === 'width' ? 'width' : 'height';
@@ -54,19 +85,22 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     const scroll = item.settings?.artworkTitleMode === 'scroll';
     const background = item.settings?.artworkTitleBackground === true ? 'black' : 'transparent';
     const layout = artwork ? 'layouts/current-track-artwork.json' : '$A1';
-    const cover = artwork ? covers.image(state?.cover) : '';
+    const cover = artwork ? coverFor(state) : '';
     const fitted = cover ? fitDialArtwork(cover, fit) : '';
     const image = fitted || icon;
     const text = showName && state?.title ? state.title +
       (item.settings?.artworkShowArtist === true && state.artist && item.settings?.artworkArtistPosition !== 'below' ? ` — ${state.artist}` : '') : '';
     const below = showName && item.settings?.artworkShowArtist === true && item.settings?.artworkArtistPosition === 'below' && Boolean(state?.artist);
-    const trackSignature = JSON.stringify([state?.title, state?.artist, item.settings?.artworkShowArtist, item.settings?.artworkArtistPosition, showName, scroll]);
+    const infoScroll = !artwork && item.settings?.infoTitleMode === 'scroll';
+    const trackSignature = JSON.stringify([state?.trackId, state?.title, state?.artist, artwork, infoScroll,
+      item.settings?.artworkShowArtist, item.settings?.artworkArtistPosition, showName, scroll]);
     if (item.artworkTrackSignature !== trackSignature) {
       item.artworkTrackSignature = trackSignature; item.artworkMarqueeStart = now();
     }
     const title = artwork ? scroll ? marquee(text, item.artworkMarqueeStart, now(), 14, true) : text : tr('currentTrack');
     const artist = below ? scroll ? marquee(state.artist, item.artworkMarqueeStart + 600, now(), 14, true) : state.artist : '';
-    const value = artwork ? '' : state ? ellipsis(state.title, 14) : tr('unavailable');
+    const value = artwork ? '' : state ? (infoScroll ?
+      marquee(state.title, item.artworkMarqueeStart, now(), 14) : ellipsis(state.title, 14)) : tr('unavailable');
     const signature = JSON.stringify([layout, title, artist, below, value, fit, showName, scroll, background]);
     if (item.dialSignature === signature && item.dialImage === image) return;
     item.dialSignature = signature; item.dialImage = image;
@@ -93,11 +127,12 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
       item.sentDialSignature = signature;
     } });
   }
-  function renderCurrentTrackKey(context, item, state) {
+  function renderCurrentTrackKey(context, item, state, tile, playback = state) {
     const settings = item.settings || {};
-    const showTitle = settings.showTitle !== false, showArtist = settings.showArtist !== false;
+    const only = imageOnly(settings);
+    const showTitle = !only && settings.showTitle !== false, showArtist = !only && settings.showArtist !== false;
     const below = settings.artistPosition !== 'inline';
-    const sig = JSON.stringify([state?.title, state?.artist, showTitle, showArtist, below, settings.titleMode]);
+    const sig = JSON.stringify([state?.trackId, state?.title, state?.artist, showTitle, showArtist, below, settings.titleMode]);
     if (item.trackSignature !== sig) { item.trackSignature = sig; item.marqueeStart = now(); }
     const rawTitle = showTitle ? state ? state.title || 'YouTube Music' : 'YouTube Music' : '';
     const rawArtist = showArtist ? state ? state.artist || '' : tr('unavailable') : '';
@@ -106,15 +141,35 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     const text = below ? [format(rawTitle, 12), format(rawArtist, 11, 600)].filter(Boolean).join('\n') :
       format([rawTitle, rawArtist].filter(Boolean).join(' — '), 12);
     writeTitle(context, item, text);
-    const cover = covers.image(state?.cover) || null;
+    const cover = coverFor(state);
     const lines = settings.titleBackground === true && text ? below && rawTitle && rawArtist ? 2 : 1 : 0;
-    const image = keyTextBackground(cover, lines);
+    const badge = cover && !only && keyDisplay(settings) !== 'default' ? keyIcon('nowplaying', playback) : '';
+    const image = keyArtwork(item, cover, lines, tile, badge) || (only ? EMPTY_KEY_IMAGE : null);
     writeImage(context, item, image);
   }
-  function renderVolumeKey(context, item, chosen, kind) {
-    const frame = item.volumeFeedback?.frame(chosen, item.settings, now());
-    const image = frame?.volume != null ? volumeKeyImage?.(frame.volume, item.settings?.volumeShowPercent === true) : null;
-    writeImage(context, item, image || `imgs/actions/${kind}/key@2x.png`);
+  function renderActionKey(context, item, kind, chosen, track, tile) {
+    const icon = keyIcon(kind, chosen?.[1]);
+    const artwork = keyDisplay(item.settings) !== 'default';
+    const only = imageOnly(item.settings);
+    const frame = only ? null : item.volumeFeedback?.frame(chosen, item.settings, now());
+    const value = frame?.volume != null ? volumeKeyImage?.(frame.volume, item.settings?.volumeShowPercent === true) : null;
+    const nativeImage = kind === 'prev' || kind === 'next' || kind === 'open';
+    const hideTitle = kind === 'toggle' || kind === 'like' || kind === 'dislike' || kind === 'open' || kind === 'repeat';
+    if (artwork) {
+      const cover = coverFor(track);
+      const composed = keyArtwork(item, cover, 0, tile, only ? '' : icon);
+      writeImage(context, item, value || composed || (only ? EMPTY_KEY_IMAGE : icon));
+    } else {
+      if (!nativeImage || item.albumMode) writeImage(context, item, value || (nativeImage ? null : icon));
+      if (item.albumMode) {
+        item.keyCover = null;
+        item.keyArtworkSignature = null;
+        item.keyArtwork = null;
+      }
+    }
+    if (hideTitle || artwork) writeTitle(context, item, '');
+    else if (item.albumMode) writeTitle(context, item, undefined);
+    item.albumMode = artwork;
     return frame?.expiresAt ?? Infinity;
   }
 
@@ -125,35 +180,21 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     try {
       const chosen = selectedEntry();
       const state = chosen?.[1];
+      const track = state?.title || state?.cover ? state : lastTrack() || state;
+      const tiles = albumTiles(displayed);
       for (const [context, item] of displayed) {
         const kind = actionName(item.action);
         if (kind === 'nowplaying') {
-          renderCurrentTrackKey(context, item, state);
-        } else if (kind === 'toggle') {
-          // Reflect the selected player's confirmed state, including changes made
-          // in Chrome. A key press alone must not optimistically flip the icon.
-          const image = `imgs/actions/toggle/${state?.playing ? 'pause' : 'key'}@2x.png`;
-          writeImage(context, item, image);
-          writeTitle(context, item, '');
-        } else if (kind === 'mute') {
-          const image = `imgs/actions/${state?.muted ? 'mute' : 'volume'}/key@2x.png`;
-          writeImage(context, item, image);
-        } else if (kind === 'volumeup' || kind === 'volumedown') {
-          nextVolumeExpiry = Math.min(nextVolumeExpiry, renderVolumeKey(context, item, chosen, kind));
-        } else if (kind === 'open') {
-          writeTitle(context, item, '');
-        } else if (kind === 'like' || kind === 'dislike') {
-          const selected = state?.rating === kind.toUpperCase();
-          const image = `imgs/actions/${kind}/${selected ? 'selected' : 'key'}@2x.png`;
-          writeImage(context, item, image);
-          writeTitle(context, item, '');
+          renderCurrentTrackKey(context, item, track, tiles.get(context), state);
+        } else if (keyActions.has(kind)) {
+          nextVolumeExpiry = Math.min(nextVolumeExpiry, renderActionKey(context, item, kind, chosen, track, tiles.get(context)));
         } else if (kind === 'volume') {
           const vol = state ? `${state.muted ? tr('muted') + ' ' : ''}${state.volume}%` : tr('absent');
           const icon = `imgs/actions/${state?.muted ? 'mute' : 'volume'}/key@2x.png`;
           setFeedback(context, { title: 'YouTube Music', icon, value: vol,
             indicator: { value: state?.volume ?? 0, range: { min: 0, max: 100 } } });
         } else if (kind === 'trackdial') {
-          renderCurrentTrackDial(context, item, state);
+          renderCurrentTrackDial(context, item, track, state);
         }
       }
       if (state?.cover && !covers.image(state.cover))

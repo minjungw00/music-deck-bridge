@@ -15,9 +15,9 @@ test('manifest exposes the supported actions and shares the property inspector',
   assert.equal(m.PropertyInspectorPath,'property-inspector/settings.html');
   assert.equal(m.Version,versionInfo(version).pluginVersion);
   assert.deepEqual(m.Actions.map(a=>a.UUID.slice(m.UUID.length+1)),
-    ['nowplaying','toggle','prev','next','mute','volumeup','volumedown','volume','trackdial','open','like','dislike']);
+    ['nowplaying','toggle','prev','next','mute','volumeup','volumedown','volume','trackdial','open','like','dislike','repeat']);
   assert.ok(m.Actions.every(a=>!a.PropertyInspectorPath));
-  for (const name of ['toggle', 'like', 'dislike', 'open', 'volumeup', 'volumedown']) {
+  for (const name of ['toggle', 'like', 'dislike', 'open', 'volumeup', 'volumedown', 'repeat']) {
     assert.ok(m.Actions.find(action=>action.UUID.endsWith('.'+name)).States.every(state=>state.ShowTitle===false));
   }
 });

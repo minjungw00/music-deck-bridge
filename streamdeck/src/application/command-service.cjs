@@ -1,10 +1,12 @@
 'use strict';
 const crypto = require('node:crypto');
+const { PLAYER_STALE_MS } = require('../domain/player-state.cjs');
 const limit = (value, min, max) => Math.max(min, Math.min(max, value));
 const COMMAND_ERRORS = new Set(['pairing-required', 'extension-unavailable', 'command-timeout',
   'authorization-lost', 'injection-unavailable', 'receiver-unavailable', 'delivery-uncertain',
   'player-rejected', 'player-not-ready', 'browser-api-failed', 'bridge-unavailable', 'command-failed',
-  'autoplay-blocked', 'player-error', 'playback-unconfirmed', 'command-superseded', 'protocol-incompatible', 'invalid-protocol', 'player-changed']);
+  'autoplay-blocked', 'player-error', 'playback-unconfirmed', 'command-superseded', 'protocol-incompatible',
+  'invalid-protocol', 'player-changed', 'repeat-update-required', 'repeat-unavailable']);
 
 // A channel port supplies reply(data, status) and onClose(callback); no HTTP objects enter this service.
 function createCommandService({ getSession, selectedEntry, launch, log,
@@ -18,8 +20,10 @@ function createCommandService({ getSession, selectedEntry, launch, log,
   let nativeTabPending = false;
   let nativeLaunchTimer = null;
   let browserCapable = false;
+  let browserRepeat = false;
   let lastCommandError = '';
   let latestRequest = 0;
+  const hasLaunchableRequest = () => [...browserRequests.values()].some(request => request.type !== 'repeat');
   function addCommand(type, ticks = 0) {
     if (getSession().blocked) return false;
     const entry = selectedEntry();
@@ -88,11 +92,12 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     });
   }
   function scheduleNativeLaunch() {
-    if (getSession().blocked || getSession().pairingRequired || !browserRequests.size || nativeLaunchStarted || nativeLaunchTimer ||
+    if (getSession().blocked || getSession().pairingRequired || !hasLaunchableRequest() || nativeLaunchStarted || nativeLaunchTimer ||
         [...browserRequests.values()].some(request => request.state === 'delivered')) return;
     nativeLaunchTimer = setTimeout(async () => {
       nativeLaunchTimer = null;
-      if (getSession().blocked || getSession().pairingRequired || !browserRequests.size || [...browserRequests.values()].some(request => request.state === 'delivered')) return;
+      if (getSession().blocked || getSession().pairingRequired || !hasLaunchableRequest() ||
+          [...browserRequests.values()].some(request => request.state === 'delivered')) return;
       nativeLaunchStarted = true;
       nativeTabPending = true;
       const session = getSession();
@@ -112,6 +117,7 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     const pending = [...browserRequests.values()];
     const request = browserWaiter?.concurrent ? pending.find(item => item.state === 'queued') : pending[0];
     if (!browserWaiter || !request || request.state === 'delivered') return;
+    if (request.type === 'repeat' && !browserRepeat) return request.finish(false, 'repeat-update-required');
     if (browserWaiter.concurrent && pending.filter(item => item.state === 'delivered').length >= 8) return;
     request.state = 'delivered';
     clearTimeout(nativeLaunchTimer); nativeLaunchTimer = null;
@@ -121,9 +127,10 @@ function createCommandService({ getSession, selectedEntry, launch, log,
       ...(request.playerKey ? { playerKey: request.playerKey } : {}) }] });
     nativeTabPending = false;
   }
-  function listenForBrowser(channel, { concurrent = false } = {}) {
+  function listenForBrowser(channel, { concurrent = false, repeat = false } = {}) {
     // One paired extension profile owns the browser-wide channel, even with no tabs.
     browserCapable = true;
+    browserRepeat = repeat;
     browserWaiter?.reply({ commands: [] });
     const waiter = {
       concurrent,
@@ -142,24 +149,34 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     });
     flushBrowserRequest();
   }
+  function repeatError(state) {
+    if (browserCapable && !browserRepeat) return 'repeat-update-required';
+    return browserRepeat && state?.repeatMode && now() - state.lastMediaSyncAt < PLAYER_STALE_MS ? '' : 'repeat-unavailable';
+  }
   async function requestPlayerCommand(type, amount = 0, { playerKey } = {}) {
-    if (!['open', 'toggle', 'prev', 'next', 'mute', 'volume_delta', 'volume_set', 'like', 'dislike'].includes(type)) return false;
+    if (!['open', 'toggle', 'prev', 'next', 'mute', 'volume_delta', 'volume_set', 'like', 'dislike', 'repeat'].includes(type)) return false;
     if (getSession().pairingRequired) { lastCommandError = 'pairing-required'; return false; }
     if (getSession().blocked) { lastCommandError = getSession().errorCode; return false; }
+    const entry = selectedEntry();
+    const state = entry?.[1];
+    if (type === 'repeat') {
+      const error = repeatError(state);
+      if (error) { lastCommandError = error; return false; }
+      playerKey = state.trackId || JSON.stringify([state.title, state.artist]);
+    }
     // Keep existing controls available when paired with a legacy extension.
-    if (type !== 'open' && !browserCapable && selectedEntry() && !playerKey) return addCommand(type, amount);
+    if (type !== 'open' && !browserCapable && entry && !playerKey) return addCommand(type, amount);
     if (type === 'open') {
       const existing = [...browserRequests.values()].find(request => request.type === 'open');
       if (existing) return existing.promise;
     }
     if (browserRequests.size >= 60) return false;
-    const entry = selectedEntry();
-    const state = entry?.[1];
     let resolve;
     const promise = new Promise(done => { resolve = done; });
+    const timeout = type === 'repeat' ? 4000 : 45000;
     const request = {
       id: newId(), type, amount, promise, state: 'queued', order: ++latestRequest,
-      expiresAt: now() + 45000, preferredTabId: entry ? Number(entry[0]) : null,
+      expiresAt: now() + timeout, preferredTabId: entry ? Number(entry[0]) : null,
       playerKey,
       trackKey: (type === 'like' || type === 'dislike') && state?.title ?
         state.trackId || JSON.stringify([state.title, state.artist]) : null,
@@ -183,7 +200,7 @@ function createCommandService({ getSession, selectedEntry, launch, log,
       },
     };
     request.timer = setTimeout(() => request.finish(false,
-      request.state === 'delivered' ? 'command-timeout' : 'extension-unavailable'), 45000);
+      request.state === 'delivered' ? 'command-timeout' : 'extension-unavailable'), timeout);
     browserRequests.set(request.id, request);
     flushBrowserRequest();
     scheduleNativeLaunch();
@@ -199,6 +216,7 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     nativeLaunchStarted = false;
     nativeTabPending = false;
     browserCapable = false;
+    browserRepeat = false;
     for (const waiters of [...listenWaiters.values()]) {
       for (const waiter of [...waiters]) waiter.reply(message, status);
     }
@@ -208,6 +226,7 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     request: requestPlayerCommand, addLegacy: addCommand, dispatch,
     listen: listenForCommands, listenBrowser: listenForBrowser,
     get lastError() { return lastCommandError; },
+    get repeatError() { return repeatError(selectedEntry()?.[1]); },
     clearProtocolError() {
       if (['protocol-incompatible', 'invalid-protocol'].includes(lastCommandError)) lastCommandError = '';
     },

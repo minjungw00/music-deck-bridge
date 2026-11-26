@@ -13,7 +13,8 @@ function createPlayerRegistry({ onChange, onObserved = () => {}, now = Date.now 
       for (const [id, s] of candidates) if (now() - s.lastSeen > LIVE_MS * 2) candidates.delete(id);
       const chosen = selected();
       const signature = JSON.stringify(chosen ? [chosen[0], chosen[1].title, chosen[1].artist,
-        chosen[1].cover, chosen[1].coverFallback, chosen[1].playing, chosen[1].volume, chosen[1].muted, chosen[1].rating] : []);
+        chosen[1].trackId, chosen[1].cover, chosen[1].coverFallback, chosen[1].playing,
+        chosen[1].volume, chosen[1].muted, chosen[1].rating, chosen[1].repeatMode] : []);
       if (signature !== selectedSignature) { selectedSignature = signature; onChange(); }
       onObserved();
       return chosen && chosen[0] === clientId;

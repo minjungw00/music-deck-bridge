@@ -12,6 +12,7 @@
         case 'toggle':
         case 'next':
         case 'prev':
+        case 'repeat':
           result = await chrome.runtime.sendMessage({ type: 'player-playback', command: message.type,
             expiresAt: message.expiresAt, dispatchOnly: message.dispatchOnly === true });
           result = result || { ok: false, reason: 'playback-unconfirmed' };

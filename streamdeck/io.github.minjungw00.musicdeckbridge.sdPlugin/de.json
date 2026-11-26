@@ -62,5 +62,9 @@
   "io.github.minjungw00.musicdeckbridge.dislike": {
     "Name": "Gefällt mir nicht",
     "Tooltip": "Markiert den aktuellen Titel mit Gefällt mir nicht; erneut drücken zum Entfernen."
+  },
+  "io.github.minjungw00.musicdeckbridge.repeat": {
+    "Name": "Wiederholen",
+    "Tooltip": "Wechselt zwischen den verfügbaren Wiederholungsmodi in YouTube Music."
   }
 }

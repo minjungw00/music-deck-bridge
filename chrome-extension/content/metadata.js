@@ -124,6 +124,7 @@
         title, artist, ...getCoverWithFallback(), rating: ratingState(),
         trackId: new URL(location.href).searchParams.get('v') || '',
         playing: el ? !el.paused && !el.ended : false,
+        playbackConfirmed: Boolean(el && el.readyState >= 2 && !el.paused && !el.ended),
         muted: el ? !!el.muted : false,
         volume: siteVolume() ?? (el ? Math.round(el.volume * 100) : 0),
         standalone: window.matchMedia('(display-mode: standalone)').matches ||

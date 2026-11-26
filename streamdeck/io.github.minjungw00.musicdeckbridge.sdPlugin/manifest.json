@@ -218,6 +218,21 @@
         }
       ],
       "Tooltip": "Dislike the current song; press again to remove the dislike."
+    },
+    {
+      "Name": "Repeat",
+      "UUID": "io.github.minjungw00.musicdeckbridge.repeat",
+      "Icon": "imgs/actions/repeat/icon",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/repeat/unavailable",
+          "ShowTitle": false
+        }
+      ],
+      "Tooltip": "Cycle the repeat modes available in YouTube Music."
     }
   ],
   "Author": "minjungw00",

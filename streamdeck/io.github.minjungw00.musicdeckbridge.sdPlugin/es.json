@@ -62,5 +62,9 @@
   "io.github.minjungw00.musicdeckbridge.dislike": {
     "Name": "No me gusta",
     "Tooltip": "Marca la canción actual con No me gusta; pulsa de nuevo para quitarlo."
+  },
+  "io.github.minjungw00.musicdeckbridge.repeat": {
+    "Name": "Repetir",
+    "Tooltip": "Alterna los modos de repetición disponibles en YouTube Music."
   }
 }

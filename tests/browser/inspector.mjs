@@ -10,7 +10,8 @@ const inspector = new URL('../../streamdeck/io.github.minjungw00.musicdeckbridge
 const actionPrefix = 'io.github.minjungw00.musicdeckbridge.';
 const saved = { showTitle: false, showArtist: true, titleBackground: false, artworkShowTitle: true,
   artworkShowArtist: true, artworkTitleBackground: false, volumeShowValue: true, volumeShowPercent: false,
-  volumeStep: 3, volumeFeedbackSeconds: 1.5, dialDisplay: 'artwork' };
+  volumeStep: 3, volumeFeedbackSeconds: 1.5, dialDisplay: 'artwork', infoTitleMode: 'scroll',
+  keyDisplay: 'linked', keyArtworkOnly: true, albumGroup: 'A' };
 
 test('real SDPI components localize their first rendered labels without changing fresh or saved settings', { timeout: 30000 }, async t => {
   const server = new WebSocketServer({ host: '127.0.0.1', port: 0 });
@@ -63,7 +64,7 @@ test('real SDPI components localize their first rendered labels without changing
             element.localName === 'sdpi-checkbox' ? '.checkable-text' : '.label label')?.textContent.trim(),
           value: element.localName === 'sdpi-checkbox' ? element.value : undefined }));
       });
-      assert.equal(labels.filter(label => label.kind === 'sdpi-checkbox').length, 8);
+      assert.equal(labels.filter(label => label.kind === 'sdpi-checkbox').length, 9);
       const selects = await page.evaluate(async () => {
         const elements = [...document.querySelectorAll('sdpi-select')];
         await Promise.all(elements.map(element => element.items.taskComplete));
@@ -78,6 +79,7 @@ test('real SDPI components localize their first rendered labels without changing
         assert.equal(select.selected, settings[select.id] || select.fallback);
         assert.equal(select.value, settings[select.id]);
       }
+      assert.equal(await page.locator('#albumGroup').evaluate(element => element.value), settings.albumGroup);
       for (const label of labels) {
         if (language === 'ko') assert.match(label.expected, /[가-힣]/, label.id);
         assert.equal(label.actual, label.expected + (label.kind === 'sdpi-item' ? ':' : ''),

@@ -62,5 +62,9 @@
   "io.github.minjungw00.musicdeckbridge.dislike": {
     "Name": "싫어요",
     "Tooltip": "현재 곡에 싫어요를 표시합니다. 다시 누르면 취소합니다."
+  },
+  "io.github.minjungw00.musicdeckbridge.repeat": {
+    "Name": "반복",
+    "Tooltip": "YouTube Music에서 사용 가능한 반복 모드를 순서대로 전환합니다."
   }
 }
