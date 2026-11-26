@@ -11,6 +11,27 @@ ROOT = Path(__file__).resolve().parents[1]
 PLUGIN = "io.github.minjungw00.musicdeckbridge.sdPlugin"
 LOCALES = ("en", "ko", "zh_CN", "zh_TW", "ja", "es", "fr", "de")
 LEGAL = ("LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md", "PRIVACY.md")
+CHROME_FILES = (
+    "background.js", "protocol.js", "artwork-policy.js",
+    "background/bridge-client.js", "background/browser-channel.js",
+    "background/player-playback.js", "background/page-controls.js", "background/local-player.js",
+    "background/message-router.js", "background/management-service.js", "background/player-sync-service.js",
+    "content/metadata.js", "content/commands.js", "content/runtime.js", "content.js",
+    "popup.html", "popup.js", "popup/volume-controller.js",
+    "icons/16.png", "icons/48.png", "icons/128.png",
+    *(f"_locales/{locale}/messages.json" for locale in LOCALES),
+    *(f"icons/controls/{name}.png" for name in (
+        "previous", "play", "pause", "next", "like", "like-selected",
+        "dislike", "dislike-selected", "mute", "volume", "repeat-none", "repeat-all", "repeat-one",
+        "repeat-unavailable", "shuffle-off", "shuffle-on", "shuffle-unavailable",
+    )),
+)
+STREAMDECK_FILES = (
+    "bin/plugin.js", "property-inspector/settings.html", "property-inspector/settings.js",
+    "property-inspector/sdpi-components.js", "property-inspector/language.js", "property-inspector/locales.js",
+    "property-inspector/volume-editor.js", "layouts/current-track-artwork.json",
+    *(f"{locale}.json" for locale in LOCALES),
+)
 
 
 def stage(component, output):
@@ -19,29 +40,9 @@ def stage(component, output):
         shutil.rmtree(output)
     output.mkdir(parents=True)
     # Explicit allowlists keep personal files, keys and runtime data out of artifacts.
-    files = ["manifest.json"]
-    folders = [] if component == "chrome" else ["imgs"]
-    files += (["background.js", "protocol.js", "artwork-policy.js",
-               "background/bridge-client.js", "background/browser-channel.js",
-               "background/player-playback.js", "background/page-controls.js", "background/local-player.js", "background/message-router.js",
-               "background/management-service.js", "background/player-sync-service.js",
-               "content/metadata.js", "content/commands.js", "content/runtime.js", "content.js", "popup.html", "popup.js", "popup/volume-controller.js",
-               "icons/16.png", "icons/48.png", "icons/128.png",
-               *[f"_locales/{locale}/messages.json" for locale in LOCALES]] if component == "chrome" else [
-        "bin/plugin.js", "property-inspector/settings.html",
-        "property-inspector/settings.js", "property-inspector/sdpi-components.js",
-        "property-inspector/language.js", "property-inspector/locales.js", "property-inspector/volume-editor.js",
-        *[f"{locale}.json" for locale in LOCALES],
-        "layouts/current-track-artwork.json",
-    ])
-    if component == "chrome":
-        files += [f"icons/controls/{name}.png" for name in (
-            "previous", "play", "pause", "next", "like", "like-selected",
-            "dislike", "dislike-selected", "mute", "volume", "repeat-none", "repeat-all", "repeat-one",
-            "repeat-unavailable", "shuffle-off", "shuffle-on", "shuffle-unavailable",
-        )]
-    for folder in folders:
-        files.extend(str(p.relative_to(source)) for p in sorted((source / folder).rglob("*.png")))
+    files = ["manifest.json", *(CHROME_FILES if component == "chrome" else STREAMDECK_FILES)]
+    if component == "streamdeck":
+        files.extend(str(p.relative_to(source)) for p in sorted((source / "imgs").rglob("*.png")))
     for name in files:
         src = source / name
         if src.is_symlink():
