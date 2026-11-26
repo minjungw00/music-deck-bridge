@@ -9,11 +9,13 @@ Updated November 27, 2026 (Asia/Seoul) after the maintainer reported publication
 | GitHub | **v1.2.0**, Chrome **1.2.0**, plugin **1.2.0.0**, protocol **1** | Initially published November 14 at 00:42:50 KST; canonical files/tag corrected at 01:39 KST by explicit maintainer instruction. Three public files and the corrected source archive verified · [Release record](verification/releases.md#v120) |
 | Elgato Marketplace | **1.2** in Details, **1.2.0** in What's new, dated **November 23, 2026** | Directly verified November 27 · [Store record](verification/stores.md#november-27-publication-verification) |
 | Chrome Web Store | **1.2.0**, updated **November 14, 2026** | English and Korean listings directly verified November 27 · [Store record](verification/stores.md#november-27-publication-verification) |
-| Release source | **1.2.0**, Chrome **1.2.0**, plugin **1.2.0.0**, protocol **1** | Corrected tag `v1.2.0` resolves to `86e66c2d36b9`. Original source `ff139a755b25` is retained at `archive/v1.2.0-initial`. Exact-source Windows/Ubuntu CI and public package/source comparisons completed. No next development version has been selected. |
+| Release source | **1.2.0**, Chrome **1.2.0**, plugin **1.2.0.0**, protocol **1** | Corrected tag `v1.2.0` resolves to `86e66c2d36b9`. Original source `ff139a755b25` is retained at `archive/v1.2.0-initial`. Exact-source Windows/Ubuntu CI and public package/source comparisons completed. |
 
 Use the corrected [Chrome 1.2.0 ZIP](https://github.com/minjungw00/music-deck-bridge/releases/download/v1.2.0/music-deck-bridge-chrome-1.2.0.zip) with the original plugin installer. [Current hashes and replacement history](verification/releases.md#current-corrected-publication) distinguish the corrected files from the archived initial package and removed temporary r1 attachments.
 
 The public listings describe standalone Chrome popup controls and link to the companion store. The [1.2.0 listing drafts](../store-assets/drafts/v1.2.0/README.md) remain reference material. The exact Console submissions, store package identity, installation and runtime operation for 1.2.0 remain unverified.
+
+The selected development version is **1.3.0-dev**, with Chrome **1.3.0** and Stream Deck **1.3.0.0**. Its [changes](../CHANGELOG.md#unreleased--130) cover Repeat, the Current Track Dial, key artwork and last-track restoration.
 
 ## Development validation
 
@@ -21,6 +23,7 @@ The [runtime record](verification/runtime.md#current-evidence) is the source for
 
 | Area | Current evidence | Remaining limit |
 | --- | --- | --- |
+| November 27 1.3.0-dev | 306 Node tests, two Python packaging tests, static checks, three Chromium fixtures and Qt key/dial renders passed. [Runtime record](verification/runtime.md#november-27-130-dev-repeat-linked-artwork-and-retention) | Windows hardware, reboot and signed-in YouTube Music/PWA remain manual release checks. |
 | November 14 corrected 1.2.0 | [CI 43464167437](https://github.com/minjungw00/music-deck-bridge/actions/runs/43464167437): both OSes passed 297 Node tests, two Python tests, checks/audit/official packaging; Ubuntu passed three browser fixtures. All three public files and the 274-file source archive matched the corrected source | Explicit pre-store replacement; historical package hashes remain separate. No new real-site/hardware/store operation |
 | November 14 temporary 1.2.0 r1 (superseded) | [CI 43462436276](https://github.com/minjungw00/music-deck-bridge/actions/runs/43462436276): both OSes passed 297 Node tests, two Python tests, checks/audit/official packaging; Ubuntu passed three browser fixtures. All six public assets verified | Fixture operation; no new store/real-site/hardware/processed-package validation |
 | November 14 stable 1.2.0 | [Exact-source CI 43454249656](https://github.com/minjungw00/music-deck-bridge/actions/runs/43454249656): both OSes passed 288 Node tests, two Python tests, static/audit/official packaging; Ubuntu passed three browser fixtures | Local full Node run passed 286/288; separate clock monitor/targeted comparisons and scope limits are retained in [runtime evidence](verification/runtime.md#november-14-stable-release-checks) |

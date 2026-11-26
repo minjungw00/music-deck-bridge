@@ -1,11 +1,12 @@
 # Runtime verification
 
-Evidence through November 14, 2026 (Asia/Seoul). [Release verification](releases.md) holds published source, CI and package hashes. This record separates local models, maintainer reports and independently observed operation.
+Evidence through November 27, 2026 (Asia/Seoul). [Release verification](releases.md) holds published source, CI and package hashes. This record separates local models, maintainer reports and independently observed operation.
 
 ## Current evidence
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
+| November 27 local 1.3.0-dev, `c0e0e10` | 306 Node tests, two Python packaging tests, static checks, three Chromium 158 fixtures, and Qt 6.10.2 key/dial rendering comparisons passed. The bundled plugin restored a saved track without Chrome, joined diagonal keys and repainted the remaining key after removal. MV3 exercised sequential Repeat, web UI changes and disabled Repeat. | Linux, a mock Stream Deck host and a routed YouTube Music fixture. Physical display, Windows reboot, signed-in Chrome/PWA and store-processed DRM operation remain unverified. |
 | November 14 post-release popup opening fix (r1) | 296-test full Node run, two Python packaging cases and static checks passed; after the feedback revision all 33 popup cases and all three Chromium fixtures passed. The actual empty toolbar popup opened one Music tab without pairing and reused it on a subsequent request; eight native catalogs/label bounds passed | Disposable local browser profiles and routed fixture pages. Initially attached as r1, then included in the explicitly authorized corrected canonical 1.2.0 ZIP; actual Music/PWA and Windows behavior not independently observed |
 | November 14 released 1.2.0, `ff139a755b25` | [CI 43454249656](https://github.com/minjungw00/music-deck-bridge/actions/runs/43454249656): Windows and Ubuntu each passed 288 Node tests, two Python tests, checks, audit with zero reported vulnerabilities and official packaging; Ubuntu passed all three Chromium fixtures. Public package bytes verified | Local stable-source full Node run passed 286/288; five targeted comparisons passed and a separate monitor measured wall-clock jumps. Failure cause not proven. No new actual-site, hardware/native-startup or processed DRM observation |
 | November 14 code review / refactor | Final full run: 288 Node tests, two Python packaging tests, static checks and three Chromium fixtures passed; generated English/Korean sample previews loaded their extracted modules and accepted volume input | An initial Node run failed one unchanged startup-retry case; baseline/current isolated comparisons and the full rerun passed. Cause unresolved. Local models; no new real-site, hardware or Windows observation |
@@ -33,6 +34,10 @@ The November 7 `main` run used `@elgato/streamdeck` 3.0.4, `@elgato/cli` 1.10.4 
 | Key/dial output | Settings, profile reappearance, rotation/press/touch, proportional artwork, artist placement, backdrops and scrolling; Qt 6.10.3 reference rendering |
 | Popup | Real toolbar controls, captured routes, slider coalescing/closure, native catalogs and button bounds in all eight UI languages; separately labeled sample previews |
 | Distribution | Real worker import graph, serialized MAIN entry point, package allowlists/notices, fixed development versions and source/checksum metadata |
+
+### November 27 1.3.0-dev Repeat, linked artwork and retention
+
+The full suite verified additive Repeat capability gating, mixed-version playback compatibility, dial scrolling across track IDs, group geometry and title/volume suppression in artwork-only mode. The SDK fixture booted the bundled plugin with a saved aligned title and cover on both plain and simulated opaque manifest paths. New pairing cleared the preceding saved track. Qt compared 27 standalone key variants, three sparse linked crops and 24 dial artwork outputs. The Chromium fixtures used real extension and inspector code with local inputs, including eight locale catalogs. An earlier local run also reproduced the intermittent startup-autoplay assertion previously documented below. The final full run passed that case.
 
 ### November 14 post-release popup opening fix
 

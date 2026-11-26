@@ -23,6 +23,8 @@ See the guides for [PIN pairing](docs/installation.en.md#pairing), [updates](doc
 
 **1.2.0** is available from both official stores and GitHub Releases. Elgato Marketplace displays it as **1.2**. See [release readiness](docs/release-readiness.md) for the distribution record and use build metadata to identify development revisions. The extension offers popup playback controls on its own. Stream Deck hardware control requires the paired plugin.
 
+**1.3.0-dev** adds the Repeat key, title scrolling in the dial's Icon + song name mode, individual and linked key artwork, and optional last-track display after a restart. [Development changes](CHANGELOG.md#unreleased--130) · [Key display and last-track settings](docs/installation.en.md#key-artwork-and-last-track)
+
 ## Requirements
 
 | Component | Supported target |

@@ -185,6 +185,18 @@ Choose **Touch strip display → Icon + song name** (default) or **Album artwork
 
 Both fit modes preserve the original proportions and crop content outside the screen. Enable **Show song name** to use the text options, and **Show artist name** to select artist placement. Unavailable/loading artwork falls back to the playback icon.
 
+### Key artwork and last track
+
+These settings are available in **1.3.0-dev**. In **Icon + song name** mode on the Current Track Dial, select **Text display → Truncate** or **Scroll left**. The default is Truncate.
+
+1. In a key's action settings, choose **Key display → Album artwork** or **Linked album artwork**. Turn on **Artwork only** for a key to show the cover alone and suppress title, action-icon and volume-number overlays. A key without available artwork is blank in this mode.
+2. For linked artwork, leave **Artwork group** empty to join neighboring linked keys, including diagonals. To join separated keys, give them the same group name on the same device and page. Each key shows its section of one proportionally fitted image, with any interior gaps left in place. The image fills the group's rectangle and may crop at its outer edges. A single key or a key inside a multi-action uses the individual display.
+3. If your Stream Deck action has a custom title or image, reset it in Stream Deck to let the plugin control that layer again.
+
+Turn on **Last played track → Keep after restart** in any Music Deck Bridge action. The setting applies to all keys and dials. The plugin restores the last confirmed track and cached cover when Chrome is closed, including after Stream Deck or Windows restarts. A newer live player takes precedence when available. Turning the setting off or unpairing clears the saved track.
+
+The **Repeat** key uses the modes available in the selected YouTube Music player. Its icon follows confirmed changes made in Chrome. Use a matching extension build and open a player with an enabled repeat control.
+
 ## Updating
 
 Back up Stream Deck profiles before changing installations. Keep `%APPDATA%\MusicDeckBridge`: authentication (`auth.json`) and the shared port (`config.json`) are stored separately from the plugin. Ordinary updates should retain them and Stream Deck profiles. A changed extension ID requires new PIN pairing.

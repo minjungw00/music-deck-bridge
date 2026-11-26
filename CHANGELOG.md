@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — 1.3.0
+
+- Add a Repeat key that cycles the YouTube Music player's available modes and shows the observed state. Older extensions retain the existing controls.
+- Add truncation and scrolling to the Current Track Dial's Icon + song name display. Reset scrolling when the track changes.
+- Add individual and linked album artwork for all plugin keys, with an artwork-only option. Linked layouts preserve diagonal positions and gaps; named groups can join separated keys on the same device page.
+- Offer optional local retention of one last-played track and its artwork for offline display after Chrome, Stream Deck or Windows restarts.
+
 ## v1.2.0 — 2026-11-14
 
 - Add Open YouTube Music to the empty Chrome popup. Open a missing tab or focus an existing tab/app without PIN pairing; coalesce repeated requests and report failures in all supported UI languages.

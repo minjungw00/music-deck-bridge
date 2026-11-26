@@ -50,6 +50,10 @@ Standalone popup messages (`player-status`, `local-control`) remain inside the e
 
 `/browser-listen` accepts optional `concurrent: true` to allow up to eight delivered requests awaiting separate final acknowledgments. The default remains serial, and older plugins can ignore the flag. Request IDs, final `/browser-result` semantics and authentication are unchanged; a local extension/page receipt is not a successful final result. See [dispatch and confirmation](architecture.md#command-dispatch-and-confirmation) for ordering, cancellation and mixed-component behavior.
 
+### Optional Repeat key
+
+The 1.3.0 development extension advertises `repeat: true` on `/browser-listen` and reports `repeatMode` in player metadata. The available values are `NONE`, `ALL`, `ONE` and `null` for an unavailable or unrecognized control. The plugin sends the browser-channel `repeat` command when the paired extension advertises support and the selected player has a fresh mode. The command is bound to that player and confirmed by an observed mode change. This capability is additive under protocol 1.
+
 ## Authentication and failure behavior
 
 For `/pair`, the PIN is verified before compatibility. Incompatible pairing returns HTTP 409 without consuming the PIN or saving a new token. Authenticated routes verify origin/token before negotiation; an unrelated request cannot overwrite the active pair's compatibility state. Explicit `/unpair` remains available even for incompatible components.

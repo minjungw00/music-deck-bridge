@@ -141,6 +141,8 @@ Every in-flight sync for a closing tab settles before its close notification, in
 
 Legacy commands target the selected client, expire after five seconds and are delivered once through long polling or a sync response. Startup/update/alarm handlers reinject the guarded content script into open player tabs.
 
+The optional last-track store keeps one confirmed title, artist, track ID and matching admitted raster under the local pairing. It writes through a temporary file and replaces the saved record. If the cover finishes downloading after the player closes, the store accepts it only for the source still associated with the saved track. The snapshot feeds the renderer when live track metadata is absent. Command selection and popup state use the live registry.
+
 ## Display behavior
 
 ### Key feedback
@@ -149,11 +151,13 @@ The Play / Pause key displays a Pause image while the selected player is playing
 
 The Volume Dial touch-strip icon likewise uses the confirmed mute state, switching between the existing volume and mute artwork and restoring volume artwork when the player disappears. It uses the reported player state rather than optimistically toggling on key presses.
 
+The Repeat key reads the player's own mode from the page's main world and reports unavailable controls separately from Repeat off. The paired worker advertises support, preserves delivery order and acknowledges a click only when the mode changes. [Repeat capability](protocol.md#optional-repeat-key)
+
 Without an eligible player the Play / Pause key displays Play. Play/Pause, Like, Dislike and Open keys hide default titles and clear previously pushed runtime text. Image updates are cached per visible key and reset when the key reappears; all instances follow the same selected player. The action retains its existing single manifest state and toggle command behavior.
 
 ### Current Track Dial
 
-The Current Track Dial retains the `.trackdial` action UUID. Rotation preserves previous/next inputs; push and touch both toggle playback. Its default `$A1` layout shows the confirmed Play/Pause icon and song name. The per-action `dialDisplay` setting selects `info` or `artwork`.
+The Current Track Dial retains the `.trackdial` action UUID. Rotation preserves previous/next inputs; push and touch both toggle playback. Its default `$A1` layout shows the confirmed Play/Pause icon and song name. The per-action `dialDisplay` setting selects `info` or `artwork`. In `info` mode, `infoTitleMode` selects `truncate` (default) or `scroll`.
 
 Artwork uses a 200 × 100 pixmap containing a raster-backed SVG: `artworkFit: height` (default) scales the original height to 100 px, while `width` scales the width to 200 px. The bundled `image-size` header reader supplies PNG/JPEG/WebP dimensions; the SVG explicitly sets the centered image geometry with the original aspect ratio and a fixed viewport for cropping. Text overlay settings are stored per action:
 
@@ -165,7 +169,7 @@ Artwork uses a 200 × 100 pixmap containing a raster-backed SVG: `artworkFit: he
 | `artworkTitleBackground` | Black text backdrop; default `false` |
 | `artworkTitleMode` | Native ellipsis (`truncate`, default) or grapheme-aware left scrolling (`scroll`) |
 
-Scrolling uses the Now Playing key's 380 ms cadence and initial pause. Dial scroll frames carry the full cyclic string, clipped by the native 200 px field, rather than a fixed glyph window. Text/track changes reset the scroll position; scroll frames update only text.
+Scrolling uses the Now Playing key's 380 ms cadence and initial pause. Icon + song name scrolls up to 14 graphemes per frame; artwork mode sends the full cyclic string to its clipped 200 px field. Text and track identity changes reset the scroll position.
 
 A separate centered 100 × 100 playback icon handles missing/pending artwork. Layout changes precede content updates through a per-instance queue. Cached images are resent only when the source, fit or layout changes; title changes update text independently. Volume Dial push and touch both toggle mute.
 
@@ -176,6 +180,12 @@ The Now Playing key keeps its native bottom-aligned title layer and existing `ti
 When enabled, a cached 144 × 144 SVG composites a black lower band behind the native text, using the cached album cover or bundled key image. One- and two-line variants are cached independently; hiding all text removes the band, and scroll frames update only the title. No browser permissions or extra metadata are needed.
 
 Album artwork uses its measured aspect ratio, centered within the 144 × 144 key with black margins where needed. The same fitted geometry is used with and without the text backdrop; non-square artwork is not stretched into a square. The native key title remains a separate layer.
+
+### Linked key artwork
+
+All plugin keys can select individual or linked artwork. The SDK adapter supplies a device ID and key coordinates for visible physical keys. Automatic groups use eight-way adjacency. Keys with the same group name join across gaps on the same device. Each group shares the proportional fit of its bounding rectangle; a fixed 144 × 144 viewport clips each key's part. Empty cells retain their positions and produce no output. Key removal, device disconnection and settings changes schedule another paint.
+
+Artwork-only mode clears the native title and covers the key with just its image or a blank frame while artwork is absent. Key presses retain their original commands. Cover and geometry variants are cached so title scrolling and unchanged settings do not rebuild or resend the same image.
 
 ## Command delivery
 
