@@ -21,7 +21,7 @@
     .port-input { width: 88px; min-width: 72px; }
     .connection { border-top: 1px solid #515151; padding-top: 10px; margin-top: 8px; }
     .connection-first { border-top: 0; border-bottom: 1px solid #515151; padding: 0 0 8px; margin: 0 0 8px; }
-    .gap-input { width: 72px; }
+    .gap-input { flex: none; width: 72px; }
     sdpi-item { color: #e6e6e6; overflow-wrap: anywhere; }
     sdpi-button { white-space: nowrap; }
     /* Native range, matching the direct event.target.value approach used by Elgato's Discord plugin. */
@@ -79,7 +79,9 @@
         </sdpi-select>
       </sdpi-item>
       <sdpi-item id="linkedGapHorizontalRow" label="Horizontal gap (%)">
-        <sdpi-textfield id="linkedGapHorizontal" class="gap-input" placeholder="0" maxlength="3"></sdpi-textfield>
+        <div class="inline">
+          <sdpi-textfield id="linkedGapHorizontal" class="gap-input" placeholder="0" maxlength="3"></sdpi-textfield>
+        </div>
       </sdpi-item>
       <sdpi-item id="linkedGapVerticalRow" label="Vertical gap (%)">
         <div class="inline">

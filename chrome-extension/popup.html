@@ -42,6 +42,8 @@
     #trackArtist { margin: 3px 0 0; color: #abb3c5; overflow-wrap: anywhere; }
     svg { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
     .player-controls, .queue-controls, .volume-controls { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; }
+    .queue-controls { display: grid; grid-template-columns: repeat(2, max-content) 1fr repeat(2, max-content); }
+    .queue-controls #repeat { grid-column: 4; }
     .media-button { position: relative; display: block; flex: none; width: 44px; height: 44px; min-height: 44px; padding: 0; border-radius: 50%; background: transparent; overflow: hidden; }
     .media-button:disabled[data-unavailable="false"][aria-busy="false"] { opacity: 1; }
     /* The source key artwork has a 360px disc centered at (256,252) on a 512px canvas.

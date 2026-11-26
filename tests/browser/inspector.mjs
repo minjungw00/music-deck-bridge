@@ -119,6 +119,12 @@ test('real SDPI components localize their first rendered labels without changing
         assert.equal(messages.slice(since).some(message => message.payload?.type === 'set-linked-fit'), false, 'group status must not send a change');
         assert.equal(await page.locator('#keyArtworkIconPosition').evaluate(element =>
           element.shadowRoot.querySelectorAll('option').length), 9);
+        const gapFields = await page.evaluate(() => ['linkedGapHorizontal', 'linkedGapVertical'].map(id => {
+          const field = document.getElementById(id).shadowRoot.querySelector('input').getBoundingClientRect();
+          return { left: field.left, width: field.width, height: field.height };
+        }));
+        assert.ok(gapFields[0].width > 0);
+        assert.deepEqual(gapFields[0], gapFields[1], 'gap inputs have the same size and left edge');
         await fit.selectOption('height');
         for (let attempt = 0; attempt < 25 && !messages.slice(since).some(message => message.payload?.type === 'set-linked-fit'); attempt++) {
           await new Promise(resolve => setTimeout(resolve, 20));

@@ -60,8 +60,9 @@ test('native extension catalogs and toolbar popup render all eight UI languages 
         controls:Object.fromEntries(['previous','next','playPause','mute','repeat','shuffle'].map(id=>[id,document.getElementById(id).getAttribute('aria-label')])),
         rows:['.player-controls','.queue-controls','.volume-controls'].map(selector=>{
           const controls=[...document.querySelector(selector).children].filter(control=>!control.classList.contains('sr-only'));
-          return {ids:controls.map(control=>control.id),left:controls[0].getBoundingClientRect().left,
-            right:controls.at(-1).getBoundingClientRect().right};
+          const bounds=controls.map(control=>control.getBoundingClientRect());
+          return {ids:controls.map(control=>control.id),left:bounds[0].left,right:bounds.at(-1).right,
+            gaps:bounds.slice(1).map((rect,index)=>rect.left-bounds[index].right)};
         }),
         clipped:[...document.querySelectorAll('button:not(.media-button)')].filter(button=>button.scrollWidth>button.clientWidth).map(button=>button.id),
         overflow:document.documentElement.scrollWidth>innerWidth}))()`);
@@ -76,6 +77,9 @@ test('native extension catalogs and toolbar popup render all eight UI languages 
         assert.ok(Math.abs(row.left - ui.rows[0].left) < 0.5, `${language}: left edges line up`);
         assert.ok(Math.abs(row.right - ui.rows[0].right) < 0.5, `${language}: right edges line up`);
       }
+      const [ratingsGap, middleGap, queueGap] = ui.rows[1].gaps;
+      assert.ok(Math.abs(ratingsGap - queueGap) < 0.5, `${language}: equal spacing within pairs`);
+      assert.ok(middleGap > Math.max(ratingsGap, queueGap), `${language}: wider spacing between pairs`);
       assert.deepEqual(ui.clipped, [], `${language}: clipped button labels`);
       assert.equal(ui.overflow, false, `${language}: horizontal overflow`);
       if (language === 'en') {
