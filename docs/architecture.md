@@ -107,6 +107,8 @@ An extension can opt into `/browser-listen` with `concurrent: true`. The plugin 
 
 Within a tab, the content runtime deduplicates request IDs and obtains a document-local operation receipt from the fixed `MAIN` function. A separate result read observes actual completion; receipt alone is never reported as success. The worker resumes polling after receipt, allowing later controls to reach the same document while verification is pending. Lost receivers are retried only before receipt; lost results after receipt are ambiguous and never replay navigation.
 
+When a command targets a specific track, the content script checks the track identity again when it receives the command. This covers a track change that the bridge has yet to receive through synchronization.
+
 The document serializes preparation/clicks, then verifies outcomes independently. A later Play/Pause can interrupt undispatched navigation initialization. Once a newer playback control is dispatched, older verification stops and cannot issue a late Play request. Previous/Next playback recovery does not depend on receiving a seek event, but navigation success still requires observed track/index/restart evidence. The wire protocol remains 1; use both updated components for concurrent delivery.
 
 A usable Play control can precede loaded media or a track ID in a cued player. This startup path requires a ready API in CUED state (`5`) and no known empty/unreadable queue. API readiness, UNSTARTED (`-1`) or an enabled button alone do not authorize it. Play/Toggle may start a cued player directly; Previous/Next first start it through the site's Play control, then wait for actual readiness before navigating. Loaded-track/media readiness continues to permit ordinary controls, including Play in UNSTARTED. Disabled controls and explicit unplayable responses still block startup. Initialization expiry reports `player-not-ready`; a dispatched control whose outcome is not observed reports `playback-unconfirmed`.
@@ -141,7 +143,7 @@ Every in-flight sync for a closing tab settles before its close notification, in
 
 Legacy commands target the selected client, expire after five seconds and are delivered once through long polling or a sync response. Startup/update/alarm handlers reinject the guarded content script into open player tabs.
 
-The last-track store keeps one confirmed title, artist, track ID and matching admitted raster under the local pairing. It writes through a temporary file and replaces the saved record. If the cover finishes downloading after the player closes, the store accepts it only for the source still associated with the saved track. The snapshot feeds the renderer when live track metadata is absent. Command selection and popup state use the live registry.
+The last-track store keeps one confirmed title, artist, track ID and matching admitted raster under the local pairing. It writes through a temporary file and replaces the saved record. If the cover finishes downloading after the player closes, the store accepts it only for the source still associated with the saved track. The snapshot feeds the renderer when live track metadata is absent. When the same track reappears, the renderer can keep its saved cover until the live cover is available. Command selection and popup state use the live registry.
 
 ## Display behavior
 
