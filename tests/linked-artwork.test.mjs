@@ -103,6 +103,26 @@ test('artwork-only leaves controls active, removes feedback and repaints remaini
   assert.equal(images.get('track'), raster);
 });
 
+test('returning to the saved track retains its cover while the live cover loads', async () => {
+  const displayed = new Map([['a', { ...key(0, 0), action: PLUGIN_ID + '.prev' }],
+    ['b', { ...key(0, 1), action: PLUGIN_ID + '.nowplaying' }]]);
+  const saved = { title: 'Saved song', artist: 'Artist', trackId: 'aaaaaaaaaaa', image: raster };
+  const state = { title: saved.title, artist: saved.artist, trackId: saved.trackId, cover: 'loading' };
+  const images = new Map(), downloads = [];
+  const renderer = createRenderer({ displayed, actionName, selectedEntry: () => ['8', state], lastTrack: () => saved,
+    covers: { image: () => '', load: source => downloads.push(source) }, keyTextBackground,
+    output: { setImage: (context, value) => images.set(context, value), setTitle() {} } });
+  renderer.paint();
+  await renderer.settled();
+  assert.deepEqual(downloads, ['loading']);
+  for (const image of images.values()) assert.ok(decode(image).includes(raster));
+
+  state.trackId = 'bbbbbbbbbbb';
+  renderer.paint();
+  await renderer.settled();
+  for (const image of images.values()) assert.ok(!decode(image).includes(raster));
+});
+
 test('shared artwork settings persist from any member and the optional icon supports all nine positions', () => {
   const displayed = new Map([
     ['top', { ...key(0, 0), action: PLUGIN_ID + '.prev' }],

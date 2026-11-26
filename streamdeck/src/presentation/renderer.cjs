@@ -4,6 +4,7 @@ const { ellipsis, marquee, MARQUEE_STEP_MS } = require('./track-text.cjs');
 const { translate } = require('./messages.cjs');
 const { albumTiles, keyDisplay } = require('./album-groups.cjs');
 const { KEY_ACTION_NAMES } = require('../domain/actions.cjs');
+const { trackKey } = require('../domain/player-state.cjs');
 const keyActions = new Set(KEY_ACTION_NAMES);
 const EMPTY_KEY_IMAGE = 'data:image/svg+xml;base64,' +
   btoa('<svg xmlns="http://www.w3.org/2000/svg" width="144" height="144"><rect width="144" height="144" fill="black"/></svg>');
@@ -28,6 +29,15 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
   const writeImage = (context, item, value) => cache.write(context, item, 'lastImage', value, next => setImage(context, next));
   const writeTitle = (context, item, value) => cache.write(context, item, 'lastTitle', value, next => setTitle(context, next));
   const coverFor = track => track?.image || covers.image(track?.cover) || null;
+
+  function displayTrack(state) {
+    const saved = lastTrack();
+    if (!state?.title && !state?.cover) return saved || state;
+    if (saved?.image && state.title && trackKey(state) === trackKey(saved)) {
+      return { ...state, image: coverFor(state) || saved.image };
+    }
+    return state;
+  }
 
   function keyArtwork(item, cover, lines, tile, badge) {
     const position = item.settings?.keyArtworkIconPosition;
@@ -186,7 +196,7 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     try {
       const chosen = selectedEntry();
       const state = chosen?.[1];
-      const track = state?.title || state?.cover ? state : lastTrack() || state;
+      const track = displayTrack(state);
       const tiles = albumTiles(displayed);
       for (const [context, item] of displayed) {
         const kind = actionName(item.action);
