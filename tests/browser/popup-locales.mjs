@@ -58,12 +58,24 @@ test('native extension catalogs and toolbar popup render all eight UI languages 
       const ui = await evaluate(`(() => ({lang:document.documentElement.lang,
         labels:Object.fromEntries(['connect','refresh','forget','portLabel','settingsSummary','openPlayer'].map(id=>[id,document.getElementById(id).textContent])),
         controls:Object.fromEntries(['previous','next','playPause','mute','repeat','shuffle'].map(id=>[id,document.getElementById(id).getAttribute('aria-label')])),
+        rows:['.player-controls','.queue-controls','.volume-controls'].map(selector=>{
+          const controls=[...document.querySelector(selector).children].filter(control=>!control.classList.contains('sr-only'));
+          return {ids:controls.map(control=>control.id),left:controls[0].getBoundingClientRect().left,
+            right:controls.at(-1).getBoundingClientRect().right};
+        }),
         clipped:[...document.querySelectorAll('button:not(.media-button)')].filter(button=>button.scrollWidth>button.clientWidth).map(button=>button.id),
         overflow:document.documentElement.scrollWidth>innerWidth}))()`);
       assert.equal(ui.lang, language);
       for (const [key, value] of Object.entries(ui.labels)) assert.equal(value, catalog[key], `${language}/${key}`);
       const controlLabels = { playPause: 'play', repeat: 'repeatLabel', shuffle: 'shuffleLabel' };
       for (const [key, value] of Object.entries(ui.controls)) assert.equal(value, catalog[controlLabels[key] || key]);
+      assert.deepEqual(ui.rows.map(row => row.ids), [
+        ['previous', 'playPause', 'next'], ['like', 'dislike', 'repeat', 'shuffle'], ['mute', 'volumeSlider', 'volumeValue'],
+      ]);
+      for (const row of ui.rows) {
+        assert.ok(Math.abs(row.left - ui.rows[0].left) < 0.5, `${language}: left edges line up`);
+        assert.ok(Math.abs(row.right - ui.rows[0].right) < 0.5, `${language}: right edges line up`);
+      }
       assert.deepEqual(ui.clipped, [], `${language}: clipped button labels`);
       assert.equal(ui.overflow, false, `${language}: horizontal overflow`);
       if (language === 'en') {

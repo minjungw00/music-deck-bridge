@@ -31,7 +31,7 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
 
   function keyArtwork(item, cover, lines, tile, badge) {
     const position = item.settings?.keyArtworkIconPosition;
-    const corner = ['top-right', 'bottom-left', 'bottom-right'].includes(position) ? position : 'top-left';
+    const corner = typeof position === 'string' ? position : 'top-left';
     const signature = JSON.stringify([lines, tile, badge, corner]);
     if (item.keyCover !== cover || item.keyArtworkSignature !== signature) {
       item.keyCover = cover;

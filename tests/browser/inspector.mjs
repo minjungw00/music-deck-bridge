@@ -77,6 +77,11 @@ test('real SDPI components localize their first rendered labels without changing
       });
       for (const select of selects) {
         assert.deepEqual(select.actual, select.expected, `${language}/${action}/${select.id}: rendered dropdown text`);
+        if (select.id === 'linkedArtworkFit') {
+          assert.equal(select.selected, 'height');
+          assert.equal(select.value, 'height');
+          continue;
+        }
         assert.equal(select.selected, settings[select.id] || select.fallback);
         assert.equal(select.value, settings[select.id]);
       }
@@ -97,10 +102,36 @@ test('real SDPI components localize their first rendered labels without changing
       assert.deepEqual(messages.slice(before).filter(message => message.event === 'setSettings'), [], 'localization must not save defaults or change settings');
       assert.deepEqual(errors, []);
       if (language === 'ko' && action === 'nowplaying' && settings === saved) {
+        const since = messages.length;
         for (const peer of server.clients) peer.send(JSON.stringify({ event: 'sendToPropertyInspector',
-          payload: { type: 'connection', paired: true, extensionOnline: true, playerActive: false, linkedArtworkFit: 'width' } }));
+          payload: { type: 'connection', paired: true, extensionOnline: true, playerActive: false,
+            linkedArtworkFit: 'width', linkedArtworkGap: { horizontal: 20, vertical: 30 } } }));
         await page.waitForFunction(() => document.body.firstElementChild.id === 'keyArtworkSection');
-        assert.equal(await page.locator('#linkedArtworkFit').inputValue(), 'width');
+        const fit = page.locator('#linkedArtworkFit select');
+        await page.waitForFunction(() => document.querySelector('#linkedArtworkFit').shadowRoot.querySelector('select').value === 'width');
+        assert.equal(await fit.inputValue(), 'width');
+        const styles = await page.evaluate(() => ['linkedArtworkFit', 'artworkFit'].map(id => {
+          const select = document.getElementById(id).shadowRoot.querySelector('select');
+          const css = getComputedStyle(select);
+          return [css.fontFamily, css.fontSize, css.backgroundColor, css.color, css.border, css.borderRadius];
+        }));
+        assert.deepEqual(styles[0], styles[1], 'linked fit uses the same SDPI styling as dial artwork fit');
+        assert.equal(messages.slice(since).some(message => message.payload?.type === 'set-linked-fit'), false, 'group status must not send a change');
+        assert.equal(await page.locator('#keyArtworkIconPosition').evaluate(element =>
+          element.shadowRoot.querySelectorAll('option').length), 9);
+        await fit.selectOption('height');
+        for (let attempt = 0; attempt < 25 && !messages.slice(since).some(message => message.payload?.type === 'set-linked-fit'); attempt++) {
+          await new Promise(resolve => setTimeout(resolve, 20));
+        }
+        assert.equal(messages.slice(since).find(message => message.payload?.type === 'set-linked-fit')?.payload.fit, 'height');
+        await page.locator('#linkedGapHorizontal input').fill('25');
+        await page.locator('#linkedGapVertical input').fill('50');
+        await page.locator('#applyLinkedGap').click();
+        for (let attempt = 0; attempt < 25 && !messages.slice(since).some(message => message.payload?.type === 'set-linked-gap'); attempt++) {
+          await new Promise(resolve => setTimeout(resolve, 20));
+        }
+        assert.deepEqual(messages.slice(since).find(message => message.payload?.type === 'set-linked-gap')?.payload.gap,
+          { horizontal: 25, vertical: 50 });
       }
       await page.close();
     }

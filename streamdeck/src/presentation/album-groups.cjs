@@ -48,9 +48,16 @@ function albumGroups(displayed) {
   return groups;
 }
 
-function albumFit(group) {
+function validAlbumGap(gap) {
+  const valid = value => Number.isInteger(value) && value >= 0 && value <= 100;
+  return valid(gap?.horizontal) && valid(gap?.vertical);
+}
+
+function albumSettings(group) {
   const ordered = [...group].sort((a, b) => a.row - b.row || a.column - b.column);
-  return ordered.find(key => ['width', 'height'].includes(key.settings?.linkedArtworkFit))?.settings.linkedArtworkFit || 'height';
+  const fit = ordered.find(key => ['width', 'height'].includes(key.settings?.linkedArtworkFit))?.settings.linkedArtworkFit;
+  const gap = ordered.find(key => validAlbumGap(key.settings?.linkedArtworkGap))?.settings.linkedArtworkGap;
+  return { fit: fit || 'height', gap: gap || { horizontal: 0, vertical: 0 } };
 }
 
 function albumTiles(displayed) {
@@ -61,12 +68,12 @@ function albumTiles(displayed) {
     const columns = group.map(key => key.column);
     const top = Math.min(...rows), left = Math.min(...columns);
     const height = Math.max(...rows) - top + 1, width = Math.max(...columns) - left + 1;
-    const fit = albumFit(group);
+    const { fit, gap } = albumSettings(group);
     for (const key of group) {
-      tiles.set(key.context, { row: key.row - top, column: key.column - left, height, width, fit });
+      tiles.set(key.context, { row: key.row - top, column: key.column - left, height, width, fit, gap });
     }
   }
   return tiles;
 }
 
-module.exports = { albumGroups, albumTiles, albumFit, keyDisplay };
+module.exports = { albumGroups, albumTiles, albumSettings, validAlbumGap, keyDisplay };

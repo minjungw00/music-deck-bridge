@@ -86,7 +86,16 @@
     "iconBottomLeft": "Bottom left",
     "iconBottomRight": "Bottom right",
     "shuffleUpdate": "Update the Chrome extension to use Shuffle.",
-    "shuffleUnavailable": "Shuffle is unavailable for the current player."
+    "shuffleUnavailable": "Shuffle is unavailable for the current player.",
+    "iconTopCenter": "Top center",
+    "iconMiddleLeft": "Middle left",
+    "iconCenter": "Center",
+    "iconMiddleRight": "Middle right",
+    "iconBottomCenter": "Bottom center",
+    "linkedGapHorizontal": "Horizontal gap (%)",
+    "linkedGapVertical": "Vertical gap (%)",
+    "linkedGapHint": "Divide the gap by the key's width or height, then multiply by 100. Enter 0 to leave that gap out.",
+    "linkedGapInvalid": "Enter a whole percent from 0 to 100 for each gap."
   },
   "ko": {
     "titleRow": "텍스트 표시",
@@ -173,7 +182,16 @@
     "iconBottomLeft": "왼쪽 아래",
     "iconBottomRight": "오른쪽 아래",
     "shuffleUpdate": "셔플 키를 사용하려면 Chrome 확장 프로그램을 업데이트하세요.",
-    "shuffleUnavailable": "현재 플레이어에서 셔플을 사용할 수 없습니다."
+    "shuffleUnavailable": "현재 플레이어에서 셔플을 사용할 수 없습니다.",
+    "iconTopCenter": "위 중앙",
+    "iconMiddleLeft": "왼쪽 중앙",
+    "iconCenter": "정중앙",
+    "iconMiddleRight": "오른쪽 중앙",
+    "iconBottomCenter": "아래 중앙",
+    "linkedGapHorizontal": "가로 간격 (%)",
+    "linkedGapVertical": "세로 간격 (%)",
+    "linkedGapHint": "키 사이 간격을 키의 너비 또는 높이로 나눈 뒤 100을 곱해 입력하세요. 0은 여백을 적용하지 않습니다.",
+    "linkedGapInvalid": "가로·세로 간격에 0~100 사이의 정수를 입력하세요."
   },
   "zh_CN": {
     "titleRow": "文字显示",
@@ -260,7 +278,16 @@
     "iconBottomLeft": "左下角",
     "iconBottomRight": "右下角",
     "shuffleUpdate": "请更新 Chrome 扩展程序以使用随机播放。",
-    "shuffleUnavailable": "当前播放器无法使用随机播放。"
+    "shuffleUnavailable": "当前播放器无法使用随机播放。",
+    "iconTopCenter": "顶部居中",
+    "iconMiddleLeft": "左侧居中",
+    "iconCenter": "正中央",
+    "iconMiddleRight": "右侧居中",
+    "iconBottomCenter": "底部居中",
+    "linkedGapHorizontal": "水平间距 (%)",
+    "linkedGapVertical": "垂直间距 (%)",
+    "linkedGapHint": "将间距除以按键宽度或高度，再乘以 100。输入 0 可忽略对应的间距。",
+    "linkedGapInvalid": "每个间距请输入 0 到 100 之间的整数。"
   },
   "zh_TW": {
     "titleRow": "文字顯示",
@@ -347,7 +374,16 @@
     "iconBottomLeft": "左下角",
     "iconBottomRight": "右下角",
     "shuffleUpdate": "請更新 Chrome 擴充功能以使用隨機播放。",
-    "shuffleUnavailable": "目前的播放器無法使用隨機播放。"
+    "shuffleUnavailable": "目前的播放器無法使用隨機播放。",
+    "iconTopCenter": "頂部置中",
+    "iconMiddleLeft": "左側置中",
+    "iconCenter": "正中央",
+    "iconMiddleRight": "右側置中",
+    "iconBottomCenter": "底部置中",
+    "linkedGapHorizontal": "水平間距 (%)",
+    "linkedGapVertical": "垂直間距 (%)",
+    "linkedGapHint": "將間距除以按鍵寬度或高度，再乘以 100。輸入 0 可忽略對應的間距。",
+    "linkedGapInvalid": "每個間距請輸入 0 到 100 之間的整數。"
   },
   "ja": {
     "titleRow": "テキスト表示",
@@ -434,7 +470,16 @@
     "iconBottomLeft": "左下",
     "iconBottomRight": "右下",
     "shuffleUpdate": "シャッフルを使うには Chrome 拡張機能を更新してください。",
-    "shuffleUnavailable": "現在のプレーヤーではシャッフルを使用できません。"
+    "shuffleUnavailable": "現在のプレーヤーではシャッフルを使用できません。",
+    "iconTopCenter": "上中央",
+    "iconMiddleLeft": "左中央",
+    "iconCenter": "中央",
+    "iconMiddleRight": "右中央",
+    "iconBottomCenter": "下中央",
+    "linkedGapHorizontal": "横の間隔 (%)",
+    "linkedGapVertical": "縦の間隔 (%)",
+    "linkedGapHint": "間隔をキーの幅または高さで割り、100 を掛けた値を入力します。0 の場合は間隔を反映しません。",
+    "linkedGapInvalid": "それぞれの間隔に 0～100 の整数を入力してください。"
   },
   "es": {
     "titleRow": "Visualización de texto",
@@ -521,7 +566,16 @@
     "iconBottomLeft": "Abajo a la izquierda",
     "iconBottomRight": "Abajo a la derecha",
     "shuffleUpdate": "Actualiza la extensión de Chrome para usar Aleatorio.",
-    "shuffleUnavailable": "El reproductor actual no admite la reproducción aleatoria."
+    "shuffleUnavailable": "El reproductor actual no admite la reproducción aleatoria.",
+    "iconTopCenter": "Arriba en el centro",
+    "iconMiddleLeft": "En el centro a la izquierda",
+    "iconCenter": "Centro",
+    "iconMiddleRight": "En el centro a la derecha",
+    "iconBottomCenter": "Abajo en el centro",
+    "linkedGapHorizontal": "Separación horizontal (%)",
+    "linkedGapVertical": "Separación vertical (%)",
+    "linkedGapHint": "Divide la separación por el ancho o alto de la tecla y multiplica por 100. Usa 0 para omitir esa separación.",
+    "linkedGapInvalid": "Introduce un porcentaje entero entre 0 y 100 para cada separación."
   },
   "fr": {
     "titleRow": "Affichage du texte",
@@ -608,7 +662,16 @@
     "iconBottomLeft": "En bas à gauche",
     "iconBottomRight": "En bas à droite",
     "shuffleUpdate": "Mettez à jour l’extension Chrome pour utiliser la lecture aléatoire.",
-    "shuffleUnavailable": "La lecture aléatoire est indisponible dans le lecteur actuel."
+    "shuffleUnavailable": "La lecture aléatoire est indisponible dans le lecteur actuel.",
+    "iconTopCenter": "En haut au centre",
+    "iconMiddleLeft": "Au milieu à gauche",
+    "iconCenter": "Au centre",
+    "iconMiddleRight": "Au milieu à droite",
+    "iconBottomCenter": "En bas au centre",
+    "linkedGapHorizontal": "Écart horizontal (%)",
+    "linkedGapVertical": "Écart vertical (%)",
+    "linkedGapHint": "Divisez l’écart par la largeur ou la hauteur de la touche, puis multipliez par 100. Saisissez 0 pour ignorer cet écart.",
+    "linkedGapInvalid": "Saisissez un pourcentage entier de 0 à 100 pour chaque écart."
   },
   "de": {
     "titleRow": "Textanzeige",
@@ -695,7 +758,16 @@
     "iconBottomLeft": "Unten links",
     "iconBottomRight": "Unten rechts",
     "shuffleUpdate": "Aktualisiere die Chrome-Erweiterung für die Zufallswiedergabe.",
-    "shuffleUnavailable": "Die Zufallswiedergabe ist im aktuellen Player nicht verfügbar."
+    "shuffleUnavailable": "Die Zufallswiedergabe ist im aktuellen Player nicht verfügbar.",
+    "iconTopCenter": "Oben mittig",
+    "iconMiddleLeft": "Mittig links",
+    "iconCenter": "Mitte",
+    "iconMiddleRight": "Mittig rechts",
+    "iconBottomCenter": "Unten mittig",
+    "linkedGapHorizontal": "Horizontaler Abstand (%)",
+    "linkedGapVertical": "Vertikaler Abstand (%)",
+    "linkedGapHint": "Teile den Abstand durch die Tastenbreite oder -höhe und multipliziere mit 100. Bei 0 bleibt der Abstand unberücksichtigt.",
+    "linkedGapInvalid": "Gib für jeden Abstand eine ganze Zahl von 0 bis 100 ein."
   }
 };
 })(globalThis);

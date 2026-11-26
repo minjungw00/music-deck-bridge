@@ -3,6 +3,15 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { rasterSize } = require('./domain/raster-artwork.cjs');
 const KEY_SIZE = 144;
+const ICON_SIZE = 42;
+const ICON_INSET = 4;
+const ICON_CENTER = (KEY_SIZE - ICON_SIZE) / 2;
+const ICON_FAR_EDGE = KEY_SIZE - ICON_SIZE - ICON_INSET;
+const iconPositions = new Map([
+  ['top-left', [ICON_INSET, ICON_INSET]], ['top-center', [ICON_CENTER, ICON_INSET]], ['top-right', [ICON_FAR_EDGE, ICON_INSET]],
+  ['middle-left', [ICON_INSET, ICON_CENTER]], ['center', [ICON_CENTER, ICON_CENTER]], ['middle-right', [ICON_FAR_EDGE, ICON_CENTER]],
+  ['bottom-left', [ICON_INSET, ICON_FAR_EDGE]], ['bottom-center', [ICON_CENTER, ICON_FAR_EDGE]], ['bottom-right', [ICON_FAR_EDGE, ICON_FAR_EDGE]],
+]);
 const MAX_VARIANT_LENGTH = 24 * 1024 * 1024;
 const ASSET_DIR = path.join(__dirname, '..');
 const SOURCE_ASSET_DIR = path.join(ASSET_DIR, 'io.github.minjungw00.musicdeckbridge.sdPlugin');
@@ -31,16 +40,19 @@ function keyTextBackground(image, lines, tile, badge = '', corner = 'top-left') 
   if (image && !dimensions) return null;
   const { width, height } = dimensions || { width: 144, height: 144 };
   if (!lines && !tile && !badge && width === height) return image;
-  const variant = JSON.stringify([lines, tile?.row, tile?.column, tile?.width, tile?.height, tile?.fit, badge, corner]);
+  const variant = JSON.stringify([lines, tile, badge, corner]);
   if (variants.has(variant)) return variants.get(variant);
-  const canvasWidth = KEY_SIZE * (tile?.width ?? 1);
-  const canvasHeight = KEY_SIZE * (tile?.height ?? 1);
+  const gapX = KEY_SIZE * ((tile?.gap?.horizontal ?? 0) / 100);
+  const gapY = KEY_SIZE * ((tile?.gap?.vertical ?? 0) / 100);
+  const pitchX = KEY_SIZE + gapX, pitchY = KEY_SIZE + gapY;
+  const canvasWidth = KEY_SIZE + pitchX * ((tile?.width ?? 1) - 1);
+  const canvasHeight = KEY_SIZE + pitchY * ((tile?.height ?? 1) - 1);
   // Fit the shared image on one axis and clip any overflow on the other axis.
   const scale = tile ? (tile.fit === 'width' ? canvasWidth / width : canvasHeight / height) :
     Math.min(canvasWidth / width, canvasHeight / height);
   const w = width * scale, h = height * scale;
-  const x = (canvasWidth - w) / 2 - KEY_SIZE * (tile?.column ?? 0);
-  const y = (canvasHeight - h) / 2 - KEY_SIZE * (tile?.row ?? 0);
+  const x = (canvasWidth - w) / 2 - pitchX * (tile?.column ?? 0);
+  const y = (canvasHeight - h) / 2 - pitchY * (tile?.row ?? 0);
   // Native key titles use the existing bottom-aligned Stream Deck text layer.
   // Qt SVG ignores embedded-image aspect-ratio attributes. Fit the source with
   // explicit geometry, including when no optional title backdrop is requested.
@@ -48,8 +60,8 @@ function keyTextBackground(image, lines, tile, badge = '', corner = 'top-left') 
   const margin = tile || width !== height || !image ? '<rect width="144" height="144" fill="black"/>' : '';
   const backdrop = lines ? `<rect x="0" y="${144 - band}" width="144" height="${band}" fill="black"/>` : '';
   const art = image ? `<image x="${x}" y="${y}" width="${w}" height="${h}" xlink:href="${image}"/>` : '';
-  const badgeX = corner.endsWith('right') ? 98 : 4, badgeY = corner.startsWith('bottom') ? 98 : 4;
-  const badgeImage = badge ? `<image x="${badgeX}" y="${badgeY}" width="42" height="42" xlink:href="${assetImage(badge)}"/>` : '';
+  const [badgeX, badgeY] = iconPositions.get(corner) || iconPositions.get('top-left');
+  const badgeImage = badge ? `<image x="${badgeX}" y="${badgeY}" width="${ICON_SIZE}" height="${ICON_SIZE}" xlink:href="${assetImage(badge)}"/>` : '';
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="144" height="144" viewBox="0 0 144 144">${margin}${art}${backdrop}${badgeImage}</svg>`;
   const result = svgImage(svg);
   while (variantLength + result.length > MAX_VARIANT_LENGTH && variants.size) {

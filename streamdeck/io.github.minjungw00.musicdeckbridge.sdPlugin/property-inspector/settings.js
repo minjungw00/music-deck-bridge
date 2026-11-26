@@ -15,6 +15,8 @@ let portIsDirty = false;
 let volumeKey = false;
 let currentTrackKey = false;
 let queueKey = '';
+let receivingLinkedSettings = false;
+let linkedGapDirty = false;
 const connectionSection = $('connectionSection');
 const connectionEnd = connectionSection.nextElementSibling;
 const { validVolume, validDuration, createVolumeEditor } = MusicDeckVolumeEditor;
@@ -50,7 +52,8 @@ function localize() {
   setLabel('keyArtworkIconRow', t('dialArtwork'));
   setLabel('keyArtworkShowIcon', t('keyArtworkShowIcon'));
   setLabel('keyArtworkIconPositionRow', t('keyArtworkIconPosition'));
-  for (const corner of ['TopLeft', 'TopRight', 'BottomLeft', 'BottomRight']) $('optIcon' + corner).textContent = t('icon' + corner);
+  for (const position of ['TopLeft', 'TopCenter', 'TopRight', 'MiddleLeft', 'Center', 'MiddleRight', 'BottomLeft',
+    'BottomCenter', 'BottomRight']) $('optIcon' + position).textContent = t('icon' + position);
   setLabel('albumGroupRow', t('albumGroup'));
   $('albumGroup').setAttribute('placeholder', t('albumGroupAuto'));
   $('albumGroupHint').textContent = t('albumGroupHint');
@@ -58,6 +61,10 @@ function localize() {
   $('linkedArtworkFit').setAttribute('aria-label', t('artworkFit'));
   $('optLinkedFitHeight').textContent = t('artworkHeight');
   $('optLinkedFitWidth').textContent = t('artworkWidth');
+  setLabel('linkedGapHorizontalRow', t('linkedGapHorizontal'));
+  setLabel('linkedGapVerticalRow', t('linkedGapVertical'));
+  $('linkedGapHint').textContent = t('linkedGapHint');
+  $('applyLinkedGap').textContent = t('applyPort');
   setLabel('titleModeRow', t('titleRow'));
   $('optTruncate').textContent = t('truncate');
   $('optScroll').textContent = t('scroll');
@@ -115,7 +122,7 @@ function localize() {
   updateVolumeLabel();
   updateDurationLabel();
   // SDPI caches option labels separately from the original option nodes.
-  for (const id of ['keyDisplay', 'keyArtworkIconPosition', 'artistPosition', 'titleMode', 'dialDisplay', 'infoTitleMode', 'artworkFit',
+  for (const id of ['keyDisplay', 'keyArtworkIconPosition', 'linkedArtworkFit', 'artistPosition', 'titleMode', 'dialDisplay', 'infoTitleMode', 'artworkFit',
     'artworkArtistPosition', 'artworkTitleMode']) $(id).refresh?.();
 }
 function updateVolumeLabel() {
@@ -171,7 +178,13 @@ function showConnection(payload) {
   currentStatus = payload;
   const connected = payload.paired && payload.extensionOnline && payload.bridgeOnline !== false && payload.compatibility?.compatible !== false;
   prioritizeConnection(connected);
+  receivingLinkedSettings = true;
   $('linkedArtworkFit').value = payload.linkedArtworkFit === 'width' ? 'width' : 'height';
+  if (!linkedGapDirty) {
+    $('linkedGapHorizontal').value = String(payload.linkedArtworkGap?.horizontal ?? 0);
+    $('linkedGapVertical').value = String(payload.linkedArtworkGap?.vertical ?? 0);
+  }
+  receivingLinkedSettings = false;
   const queueError = queueKey && payload[queueKey + 'Error'];
   const error = queueError ? null : payload.lastCommandError;
   const hint = error === 'autoplay-blocked' ? 'commandAutoplay' :
@@ -248,8 +261,26 @@ $('installExtension').addEventListener('click', async () => {
   catch { $('companionHint').textContent = t('storeOpenFailed'); }
 });
 $('generatePin').addEventListener('click', () => { lastPin = ''; void requestConnection('generate-pin'); });
-$('linkedArtworkFit').addEventListener('change', event => {
-  void requestConnection('set-linked-fit', { fit: event.target.value });
+$('linkedArtworkFit').addEventListener('valuechange', () => {
+  if (!receivingLinkedSettings) void requestConnection('set-linked-fit', { fit: $('linkedArtworkFit').value });
+});
+for (const id of ['linkedGapHorizontal', 'linkedGapVertical']) {
+  $(id).addEventListener('valuechange', () => {
+    if (receivingLinkedSettings) return;
+    linkedGapDirty = true;
+    $('linkedGapError').classList.add('hidden');
+  });
+}
+$('applyLinkedGap').addEventListener('click', () => {
+  const horizontal = Number($('linkedGapHorizontal').value || 0);
+  const vertical = Number($('linkedGapVertical').value || 0);
+  if ([horizontal, vertical].some(gap => !Number.isInteger(gap) || gap < 0 || gap > 100)) {
+    $('linkedGapError').textContent = t('linkedGapInvalid');
+    $('linkedGapError').classList.remove('hidden');
+    return;
+  }
+  linkedGapDirty = false;
+  void requestConnection('set-linked-gap', { gap: { horizontal, vertical } });
 });
 // Read event.target.value from the native input while persistence is pending.
 $('volumeStep').addEventListener('input', event => editor.input(event.target.value));

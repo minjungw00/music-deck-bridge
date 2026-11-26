@@ -10,6 +10,7 @@ import { actionName, PLUGIN_ID } from '../streamdeck/src/domain/actions.cjs';
 const raster = 'data:image/png;base64,' + readFileSync(new URL(
   '../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/plugin/icon.png', import.meta.url)).toString('base64');
 const decode = value => Buffer.from(value.split(',')[1], 'base64').toString();
+const noGap = { horizontal: 0, vertical: 0 };
 const key = (row, column, { device = 'deck', name = '', mode = 'linked' } = {}) => ({
   position: { device, row, column }, settings: { keyDisplay: mode, albumGroup: name },
 });
@@ -22,11 +23,11 @@ test('auto groups include diagonals and staggered shapes while named groups pres
     ['d', key(3, 0, { name: 'wide' })], ['e', key(3, 3, { name: 'wide' })],
   ]);
   assert.deepEqual([...albumTiles(keys)], [
-    ['d', { row: 0, column: 0, height: 1, width: 4, fit: 'height' }],
-    ['e', { row: 0, column: 3, height: 1, width: 4, fit: 'height' }],
-    ['a', { row: 0, column: 0, height: 2, width: 3, fit: 'height' }],
-    ['b', { row: 1, column: 1, height: 2, width: 3, fit: 'height' }],
-    ['c', { row: 1, column: 2, height: 2, width: 3, fit: 'height' }],
+    ['d', { row: 0, column: 0, height: 1, width: 4, fit: 'height', gap: noGap }],
+    ['e', { row: 0, column: 3, height: 1, width: 4, fit: 'height', gap: noGap }],
+    ['a', { row: 0, column: 0, height: 2, width: 3, fit: 'height', gap: noGap }],
+    ['b', { row: 1, column: 1, height: 2, width: 3, fit: 'height', gap: noGap }],
+    ['c', { row: 1, column: 2, height: 2, width: 3, fit: 'height', gap: noGap }],
   ]);
   keys.set('new page at b', key(1, 1, { mode: 'default' }));
   assert.equal(albumTiles(keys).has('a'), false, 'a fresh context at the same position supersedes the old key');
@@ -43,12 +44,22 @@ test('each crop uses the full canvas geometry, including empty cells and rectang
   const ringTiles = albumTiles(ring);
   assert.equal(ringTiles.size, 8);
   assert.equal(ringTiles.has('4'), false);
-  assert.deepEqual(ringTiles.get('8'), { row: 2, column: 2, width: 3, height: 3, fit: 'height' });
+  assert.deepEqual(ringTiles.get('8'), { row: 2, column: 2, width: 3, height: 3, fit: 'height', gap: noGap });
   const wide = { row: 0, column: 2, width: 3, height: 1 };
   assert.match(decode(keyTextBackground(raster, 0, { ...wide, fit: 'width' })),
     /x="-288" y="-144" width="432" height="432"/);
   assert.match(decode(keyTextBackground(raster, 0, { ...wide, fit: 'height' })),
     /x="-144" y="0" width="144" height="144"/);
+});
+
+test('measured horizontal and vertical gaps extend the shared canvas and change each crop offset', () => {
+  const gap = { horizontal: 25, vertical: 50 };
+  assert.match(decode(keyTextBackground(raster, 0, { row: 0, column: 1, width: 2, height: 1, fit: 'width', gap })),
+    /x="-180" y="-90" width="324" height="324"/);
+  assert.match(decode(keyTextBackground(raster, 0, { row: 1, column: 0, width: 1, height: 2, fit: 'height', gap })),
+    /x="-108" y="-216" width="360" height="360"/);
+  assert.match(decode(keyTextBackground(raster, 0, { row: 1, column: 2, width: 3, height: 2, fit: 'width', gap })),
+    /x="-360" y="-288" width="504" height="504"/);
 });
 
 test('artwork-only leaves controls active, removes feedback and repaints remaining keys when one disappears', async () => {
@@ -92,7 +103,7 @@ test('artwork-only leaves controls active, removes feedback and repaints remaini
   assert.equal(images.get('track'), raster);
 });
 
-test('linked fit set from any member persists to the group while the optional icon chooses any corner', () => {
+test('shared artwork settings persist from any member and the optional icon supports all nine positions', () => {
   const displayed = new Map([
     ['top', { ...key(0, 0), action: PLUGIN_ID + '.prev' }],
     ['bottom', { ...key(1, 2, { name: 'joined' }), action: PLUGIN_ID + '.next' }],
@@ -105,13 +116,26 @@ test('linked fit set from any member persists to the group while the optional ic
     payload: { type: 'set-linked-fit', fit: 'width' } });
   assert.deepEqual(calls.filter(call => call.event === 'setSettings').map(call => call.context), ['top', 'bottom']);
   assert.ok([...albumTiles(displayed).values()].every(tile => tile.fit === 'width'));
+  calls.length = 0;
+  controller.handle({ event: 'sendToPlugin', action: PLUGIN_ID + '.next', context: 'bottom',
+    payload: { type: 'set-linked-gap', gap: { horizontal: 25, vertical: 50 } } });
+  assert.deepEqual(calls.filter(call => call.event === 'setSettings').map(call => call.context), ['top', 'bottom']);
+  assert.ok([...albumTiles(displayed).values()].every(tile => tile.fit === 'width' && tile.gap.horizontal === 25 && tile.gap.vertical === 50));
+  calls.length = 0;
+  controller.handle({ event: 'sendToPlugin', action: PLUGIN_ID + '.next', context: 'bottom',
+    payload: { type: 'set-linked-gap', gap: { horizontal: 101, vertical: 50 } } });
+  assert.equal(calls.some(call => call.event === 'setSettings'), false);
   let shown;
   const renderer = createRenderer({ actionName, displayed, selectedEntry: () => ['1', { image: raster }],
     covers: { image: () => '' }, keyTextBackground,
     output: { setImage: (id, value) => { if (id === 'bottom') shown = decode(value); }, setTitle() {} } });
   const settings = displayed.get('bottom').settings;
   settings.keyArtworkShowIcon = true;
-  for (const [corner, x, y] of [['top-left', 4, 4], ['top-right', 98, 4], ['bottom-left', 4, 98], ['bottom-right', 98, 98]]) {
+  for (const [corner, x, y] of [
+    ['top-left', 4, 4], ['top-center', 51, 4], ['top-right', 98, 4],
+    ['middle-left', 4, 51], ['center', 51, 51], ['middle-right', 98, 51],
+    ['bottom-left', 4, 98], ['bottom-center', 51, 98], ['bottom-right', 98, 98],
+  ]) {
     settings.keyArtworkIconPosition = corner;
     renderer.paint();
     assert.ok(shown.includes(`x="${x}" y="${y}" width="42" height="42"`));

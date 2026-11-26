@@ -21,7 +21,7 @@
     .port-input { width: 88px; min-width: 72px; }
     .connection { border-top: 1px solid #515151; padding-top: 10px; margin-top: 8px; }
     .connection-first { border-top: 0; border-bottom: 1px solid #515151; padding: 0 0 8px; margin: 0 0 8px; }
-    #linkedArtworkFit { font: inherit; }
+    .gap-input { width: 72px; }
     sdpi-item { color: #e6e6e6; overflow-wrap: anywhere; }
     sdpi-button { white-space: nowrap; }
     /* Native range, matching the direct event.target.value approach used by Elgato's Discord plugin. */
@@ -57,8 +57,13 @@
     <sdpi-item id="keyArtworkIconPositionRow" class="hidden" label="Icon position">
       <sdpi-select id="keyArtworkIconPosition" setting="keyArtworkIconPosition" default="top-left">
         <option id="optIconTopLeft" value="top-left">Top left</option>
+        <option id="optIconTopCenter" value="top-center">Top center</option>
         <option id="optIconTopRight" value="top-right">Top right</option>
+        <option id="optIconMiddleLeft" value="middle-left">Middle left</option>
+        <option id="optIconCenter" value="center">Center</option>
+        <option id="optIconMiddleRight" value="middle-right">Middle right</option>
         <option id="optIconBottomLeft" value="bottom-left">Bottom left</option>
+        <option id="optIconBottomCenter" value="bottom-center">Bottom center</option>
         <option id="optIconBottomRight" value="bottom-right">Bottom right</option>
       </sdpi-select>
     </sdpi-item>
@@ -68,11 +73,22 @@
       </sdpi-item>
       <p id="albumGroupHint" class="hint">Leave empty to group adjacent keys. Enter the same name on keys to link them across gaps.</p>
       <sdpi-item id="linkedArtworkFitRow" label="Artwork fit">
-        <select id="linkedArtworkFit" aria-label="Artwork fit">
+        <sdpi-select id="linkedArtworkFit" default="height">
           <option id="optLinkedFitHeight" value="height">Fit height</option>
           <option id="optLinkedFitWidth" value="width">Fit width</option>
-        </select>
+        </sdpi-select>
       </sdpi-item>
+      <sdpi-item id="linkedGapHorizontalRow" label="Horizontal gap (%)">
+        <sdpi-textfield id="linkedGapHorizontal" class="gap-input" placeholder="0" maxlength="3"></sdpi-textfield>
+      </sdpi-item>
+      <sdpi-item id="linkedGapVerticalRow" label="Vertical gap (%)">
+        <div class="inline">
+          <sdpi-textfield id="linkedGapVertical" class="gap-input" placeholder="0" maxlength="3"></sdpi-textfield>
+          <sdpi-button id="applyLinkedGap">Apply</sdpi-button>
+        </div>
+      </sdpi-item>
+      <p id="linkedGapHint" class="hint">Enter the gap as a percentage of a key's width or height. Use 0 to leave gaps out.</p>
+      <p id="linkedGapError" class="hint hidden" role="status"></p>
     </div>
   </section>
   <section id="trackSection" class="hidden">
