@@ -34,7 +34,6 @@ const storage = createFileStore({ testPort: isTest ? process.env.MUSIC_DECK_BRID
 const lastTrack = createLastTrack({ storage, onChange: drawSoon,
   onError: () => log('Unable to update the saved last track.') });
 function observeTrack() {
-  if (!lastTrack.enabled) return;
   const state = players.selected()?.[1];
   if (state?.title) lastTrack.observe(state, covers.image(state.cover));
 }
@@ -56,11 +55,12 @@ const transport = createHttpBridge({ session, players, commands, covers, version
   getPorts: () => ports, onDeckEvent: event => controller.handle(event) });
 const ports = createPortService({ initialPort: storage.readPort(), savePort: storage.savePort,
   bindPort: transport.bind, notifyPortChange: commands.notifyPortChange, log });
-const controller = createDeckController({ displayed, commands, session, ports, players, lastTrack, observeTrack,
+const controller = createDeckController({ displayed, commands, session, ports, players,
   output: deck, onChange: drawSoon, version });
 const renderer = createRenderer({ displayed, covers, actionName,
   selectedEntry: () => lastTrack.snapshot && !session.extensionOnline() ? null : players.selected(),
   lastTrack: () => lastTrack.snapshot, repeatAvailable: () => !commands.repeatError,
+  shuffleAvailable: () => !commands.shuffleError,
   online: () => deck.online, tr: key => translate(deck.locale, key), fitDialArtwork, keyTextBackground, volumeKeyImage,
   output: {
     sendStream: deck.send,

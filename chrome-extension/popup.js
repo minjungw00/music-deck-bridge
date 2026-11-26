@@ -3,7 +3,8 @@ const $ = id => document.getElementById(id);
 const asset = path => chrome.runtime.getURL?.(path) || path;
 const language = chrome.i18n.getMessage('uiLanguageCode') || 'en';
 const text = Object.fromEntries(
-  ["heading","subtitle","companionHint","installPlugin","guide","pin","connect","refresh","forget","portLabel","savePort","portHint","portInvalid","portSaved","portLocal","invalid","checking","fail","connected","unknown","player","app","tab","current","waiting","artwork","stale","paired","removed","nowPlayingLabel","playerWaiting","settingsSummary","connectionStatusLabel","previous","next","play","pause","likeLabel","dislikeLabel","controlFailed","controlChanged","controlUpdate","volumeLabel","mute","unmute","openPlayer","openPlayerFailed"]
+  ["heading","subtitle","companionHint","installPlugin","guide","pin","connect","refresh","forget","portLabel","savePort","portHint","portInvalid","portSaved","portLocal","invalid","checking","fail","connected","unknown","player","app","tab","current","waiting","artwork","stale","paired","removed","nowPlayingLabel","playerWaiting","settingsSummary","connectionStatusLabel","previous","next","play","pause","likeLabel","dislikeLabel","controlFailed","controlChanged","controlUpdate","volumeLabel","mute","unmute","openPlayer","openPlayerFailed",
+    "repeatLabel","repeatOff","repeatAll","repeatOne","shuffleLabel","shuffleOff","shuffleOn"]
     .map(key => [key, chrome.i18n.getMessage(key)])
 );
 const coverMessages = new Map([
@@ -24,6 +25,7 @@ let currentPlayer = null;
 let openingPlayer = false;
 let controlsAvailable = false;
 let volumeSupported = false;
+let queueSupported = false;
 let settingsInitialized = false;
 let settingsTouched = false;
 let artworkKey = '';
@@ -33,7 +35,17 @@ let localStatus = null;
 let bridgePlayback = null;
 let localRequests = 0;
 const pendingControls = new Map();
-const controlButtons = { previous: 'prev', playPause: 'toggle', next: 'next', like: 'like', dislike: 'dislike', mute: 'mute' };
+const controlButtons = { previous: 'prev', playPause: 'toggle', next: 'next', like: 'like', dislike: 'dislike',
+  repeat: 'repeat', shuffle: 'shuffle', mute: 'mute' };
+const queueControl = command => command === 'repeat' || command === 'shuffle';
+function playerFor(command) {
+  if (!queueControl(command) || currentPlayer?.mode === 'local' || queueSupported) return currentPlayer;
+  const local = localStatus?.player;
+  if (local && currentPlayer && local.id === currentPlayer.id && local.key === currentPlayer.key) {
+    return { ...local, mode: 'local' };
+  }
+  return null;
+}
 const volume = MusicDeckPopupVolume.create({ slider: $('volumeSlider'), label: $('volumeValue'),
   execute: executeControl, onChange: updateControls });
 function updateIcon(id, path) {
@@ -47,7 +59,9 @@ function updateControls() {
   const enabled = controlsAvailable && currentPlayer && !pendingActions;
   const busy = [...pendingControls.values()];
   for (const [id, command] of Object.entries(controlButtons)) {
-    const unavailable = !enabled || (['like', 'dislike'].includes(command) && currentPlayer?.rating == null);
+    const player = playerFor(command);
+    const unavailable = !enabled || !player || (['like', 'dislike'].includes(command) && player.rating == null) ||
+      (command === 'repeat' && player.repeatMode == null) || (command === 'shuffle' && player.shuffleEnabled == null);
     $(id).disabled = unavailable || busy.includes(command) ||
       (!['toggle', 'mute', 'volume_set'].includes(command) && busy.length > 0);
     $(id).setAttribute('data-unavailable', String(Boolean(unavailable)));
@@ -55,8 +69,13 @@ function updateControls() {
   }
   volume.render(!enabled || !volumeSupported || !Number.isFinite(currentPlayer?.volume));
   const playing = currentPlayer?.playing === true;
+  const repeat = playerFor('repeat')?.repeatMode;
+  const shuffle = playerFor('shuffle')?.shuffleEnabled;
+  const repeatLabel = ({ NONE: text.repeatOff, ALL: text.repeatAll, ONE: text.repeatOne })[repeat] || text.repeatLabel;
+  const shuffleLabel = shuffle == null ? text.shuffleLabel : shuffle ? text.shuffleOn : text.shuffleOff;
   for (const [id, label] of [['previous', text.previous], ['next', text.next], ['playPause', playing ? text.pause : text.play],
-    ['mute', currentPlayer?.muted ? text.unmute : text.mute], ['like', text.likeLabel], ['dislike', text.dislikeLabel]]) {
+    ['mute', currentPlayer?.muted ? text.unmute : text.mute], ['like', text.likeLabel], ['dislike', text.dislikeLabel],
+    ['repeat', repeatLabel], ['shuffle', shuffleLabel]]) {
     $(id).setAttribute('aria-label', label);
     $(id).setAttribute('title', label);
   }
@@ -67,6 +86,10 @@ function updateControls() {
   updateIcon('likeIcon', `icons/controls/like${currentPlayer?.rating === 'LIKE' ? '-selected' : ''}.png`);
   updateIcon('dislikeIcon', `icons/controls/dislike${currentPlayer?.rating === 'DISLIKE' ? '-selected' : ''}.png`);
   $('mute').setAttribute('aria-pressed', String(currentPlayer?.muted === true));
+  $('repeat').setAttribute('aria-pressed', String(repeat === 'ALL' || repeat === 'ONE'));
+  $('shuffle').setAttribute('aria-pressed', String(shuffle === true));
+  updateIcon('repeatIcon', `icons/controls/repeat-${repeat?.toLowerCase() || 'unavailable'}.png`);
+  updateIcon('shuffleIcon', `icons/controls/shuffle-${shuffle == null ? 'unavailable' : shuffle ? 'on' : 'off'}.png`);
   updateIcon('muteIcon', `icons/controls/${currentPlayer?.muted ? 'mute' : 'volume'}.png`);
   $('volumeLabel').textContent = text.volumeLabel;
 }
@@ -106,6 +129,7 @@ function showPlayer(result) {
   controlsAvailable = result?.popupControls === true && !result.playerStale &&
     result.compatibility?.compatible !== false;
   volumeSupported = result?.popupVolume === true;
+  queueSupported = result?.popupQueueControls === true;
   // Older compatible plugins still supply a title, but do not advertise controls.
   const title = currentPlayer?.title || (result?.ok && result.active ? result.track : '') || text.playerWaiting;
   if ($('trackTitle').textContent !== title) $('trackTitle').textContent = title;
@@ -126,9 +150,9 @@ async function refreshLocalPlayer() {
   localRequests++;
   try {
     const result = await chrome.runtime.sendMessage({ type: 'player-status' });
-    if (!closed) { localStatus = result; if (!bridgePlayback) applyPlayback(); }
+    if (!closed) { localStatus = result; if (!bridgePlayback) applyPlayback(); else updateControls(); }
   } catch {
-    if (!closed) { localStatus = null; if (!bridgePlayback) applyPlayback(); }
+    if (!closed) { localStatus = null; if (!bridgePlayback) applyPlayback(); else updateControls(); }
   } finally { localRequests--; }
 }
 $('artwork').addEventListener('error', clearArtwork);
@@ -247,8 +271,9 @@ async function executeControl(command, player, extra = {}) {
 }
 for (const [id, command] of Object.entries(controlButtons)) {
   $(id).addEventListener('click', async () => {
-    if ($(id).disabled || !currentPlayer || closed) return;
-    await executeControl(command, currentPlayer);
+    const player = playerFor(command);
+    if ($(id).disabled || !player || closed) return;
+    await executeControl(command, player);
   });
 }
 $('openPlayer').addEventListener('click', async () => {

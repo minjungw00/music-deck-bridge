@@ -15,6 +15,7 @@ function normalizeState(data, timestamp = Date.now()) {
     standalone: s.standalone === true,
     rating: ['LIKE', 'DISLIKE', 'INDIFFERENT'].includes(s.rating) ? s.rating : null,
     repeatMode: ['NONE', 'ALL', 'ONE'].includes(s.repeatMode) ? s.repeatMode : null,
+    shuffleEnabled: typeof s.shuffleEnabled === 'boolean' ? s.shuffleEnabled : null,
     trackId: typeof s.trackId === 'string' && /^[\w-]{11}$/.test(s.trackId) ? s.trackId : '',
     lastSeen: timestamp, lastMediaSyncAt: timestamp,
   };

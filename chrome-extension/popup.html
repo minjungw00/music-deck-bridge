@@ -42,6 +42,7 @@
     #trackArtist { margin: 3px 0 0; color: #abb3c5; overflow-wrap: anywhere; }
     svg { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
     .player-controls { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; }
+    .queue-controls { display: flex; gap: 12px; margin-top: 12px; }
     .media-button { position: relative; display: block; flex: none; width: 44px; height: 44px; min-height: 44px; padding: 0; border-radius: 50%; background: transparent; overflow: hidden; }
     .media-button:disabled[data-unavailable="false"][aria-busy="false"] { opacity: 1; }
     /* The source key artwork has a 360px disc centered at (256,252) on a 512px canvas.
@@ -82,6 +83,10 @@
       <button id="next" class="media-button" aria-label="Next track" title="Next track" disabled><img src="icons/controls/next.png" alt="" /></button>
       <button id="like" class="media-button" aria-pressed="false" disabled><img id="likeIcon" src="icons/controls/like.png" alt="" /><span id="likeLabel" class="sr-only">Like</span></button>
       <button id="dislike" class="media-button" aria-pressed="false" disabled><img id="dislikeIcon" src="icons/controls/dislike.png" alt="" /><span id="dislikeLabel" class="sr-only">Dislike</span></button>
+    </div>
+    <div class="queue-controls">
+      <button id="repeat" class="media-button" aria-label="Repeat" aria-pressed="false" disabled><img id="repeatIcon" src="icons/controls/repeat-unavailable.png" alt="" /></button>
+      <button id="shuffle" class="media-button" aria-label="Shuffle" aria-pressed="false" disabled><img id="shuffleIcon" src="icons/controls/shuffle-unavailable.png" alt="" /></button>
     </div>
     <div class="volume-controls" role="group" aria-labelledby="volumeLabel">
       <span id="volumeLabel" class="sr-only">Volume</span>

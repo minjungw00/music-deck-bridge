@@ -11,7 +11,7 @@ const actionPrefix = 'io.github.minjungw00.musicdeckbridge.';
 const saved = { showTitle: false, showArtist: true, titleBackground: false, artworkShowTitle: true,
   artworkShowArtist: true, artworkTitleBackground: false, volumeShowValue: true, volumeShowPercent: false,
   volumeStep: 3, volumeFeedbackSeconds: 1.5, dialDisplay: 'artwork', infoTitleMode: 'scroll',
-  keyDisplay: 'linked', keyArtworkOnly: true, albumGroup: 'A' };
+  keyDisplay: 'linked', keyArtworkShowIcon: true, keyArtworkIconPosition: 'bottom-right', albumGroup: 'A' };
 
 test('real SDPI components localize their first rendered labels without changing fresh or saved settings', { timeout: 30000 }, async t => {
   const server = new WebSocketServer({ host: '127.0.0.1', port: 0 });
@@ -56,6 +56,7 @@ test('real SDPI components localize their first rendered labels without changing
       }, { port: server.address().port, language, action: current.action, settings });
       await page.waitForFunction(language => document.documentElement.lang === language &&
         document.getElementById('pairState').textContent !== 'Checking connection…', html(language));
+      assert.equal(await page.evaluate(() => document.body.firstElementChild.id), 'connectionSection');
       const labels = await page.evaluate(async () => {
         const elements = [...document.querySelectorAll('sdpi-item[label], sdpi-checkbox[label]')];
         await Promise.all(elements.map(element => element.updateComplete));
@@ -95,6 +96,12 @@ test('real SDPI components localize their first rendered labels without changing
       assert.deepEqual(clipped, [], `${language}/${action}: text outside inspector viewport`);
       assert.deepEqual(messages.slice(before).filter(message => message.event === 'setSettings'), [], 'localization must not save defaults or change settings');
       assert.deepEqual(errors, []);
+      if (language === 'ko' && action === 'nowplaying' && settings === saved) {
+        for (const peer of server.clients) peer.send(JSON.stringify({ event: 'sendToPropertyInspector',
+          payload: { type: 'connection', paired: true, extensionOnline: true, playerActive: false, linkedArtworkFit: 'width' } }));
+        await page.waitForFunction(() => document.body.firstElementChild.id === 'keyArtworkSection');
+        assert.equal(await page.locator('#linkedArtworkFit').inputValue(), 'width');
+      }
       await page.close();
     }
   }

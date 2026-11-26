@@ -233,6 +233,21 @@
         }
       ],
       "Tooltip": "Cycle the repeat modes available in YouTube Music."
+    },
+    {
+      "Name": "Shuffle",
+      "UUID": "io.github.minjungw00.musicdeckbridge.shuffle",
+      "Icon": "imgs/actions/shuffle/icon",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/shuffle/unavailable",
+          "ShowTitle": false
+        }
+      ],
+      "Tooltip": "Shuffle the current YouTube Music queue."
     }
   ],
   "Author": "minjungw00",

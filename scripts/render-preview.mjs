@@ -50,7 +50,8 @@ for (const locale of ['en', 'ko']) {
   const settings = { locale, catalog, title: data.title, artist: data.artist, cover, version: pkg.version,
     extensionVersion: manifest.version_name || manifest.version, protocol: data.protocol };
   let popupTemplate = template.replace('src="icons/128.png"', `src="${icon}"`);
-  for (const name of ['previous', 'play', 'pause', 'next', 'like', 'like-selected', 'dislike', 'dislike-selected', 'mute', 'volume']) {
+  for (const name of ['previous', 'play', 'pause', 'next', 'like', 'like-selected', 'dislike', 'dislike-selected', 'mute', 'volume',
+    'repeat-none', 'repeat-all', 'repeat-one', 'repeat-unavailable', 'shuffle-off', 'shuffle-on', 'shuffle-unavailable']) {
     const path = `icons/controls/${name}.png`;
     settings.controlIcons ||= {};
     settings.controlIcons[path] = 'data:image/png;base64,' + (await readFile(join(root, 'chrome-extension', path))).toString('base64');

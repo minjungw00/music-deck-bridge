@@ -196,5 +196,26 @@
   },
   "openPlayerFailed": {
     "message": "YouTube Music을 열지 못했습니다. 다시 시도하세요."
+  },
+  "repeatLabel": {
+    "message": "반복"
+  },
+  "repeatOff": {
+    "message": "반복 끄기"
+  },
+  "repeatAll": {
+    "message": "모두 반복"
+  },
+  "repeatOne": {
+    "message": "한 곡 반복"
+  },
+  "shuffleLabel": {
+    "message": "셔플"
+  },
+  "shuffleOff": {
+    "message": "셔플 꺼짐"
+  },
+  "shuffleOn": {
+    "message": "셔플 켜짐"
   }
 }

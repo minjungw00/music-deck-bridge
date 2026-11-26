@@ -84,7 +84,7 @@
     };
     const controlToken = serialize(() => pairedToken());
     async function control({ command, playerId, trackKey, amount }) {
-      if (!['toggle', 'prev', 'next', 'like', 'dislike', 'mute', 'volume_delta', 'volume_set'].includes(command) ||
+      if (!['toggle', 'prev', 'next', 'like', 'dislike', 'mute', 'volume_delta', 'volume_set', 'repeat', 'shuffle'].includes(command) ||
           (command === 'volume_delta' && (!Number.isInteger(amount) || amount === 0 || Math.abs(amount) > 100)) ||
           (command === 'volume_set' && (!Number.isInteger(amount) || amount < 0 || amount > 100))) {
         throw new Error(translate('controlFailed') || 'Could not control the player.');

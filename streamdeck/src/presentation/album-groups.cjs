@@ -5,9 +5,9 @@ function keyDisplay(settings) {
   return settings?.keyDisplay === 'linked' || settings?.keyDisplay === 'artwork' ? settings.keyDisplay : 'default';
 }
 
-function albumTiles(displayed) {
+function albumGroups(displayed) {
   const devices = new Map();
-  const tiles = new Map();
+  const groups = [];
   for (const [context, item] of displayed) {
     const position = item.position;
     if (!position) continue;
@@ -15,17 +15,6 @@ function albumTiles(displayed) {
     if (!devices.has(device)) devices.set(device, new Map());
     // A fresh action can appear before the old context disappears during navigation.
     devices.get(device).set(cell(row, column), { context, row, column, settings: item.settings });
-  }
-
-  function place(group) {
-    if (group.length < 2) return;
-    const rows = group.map(key => key.row);
-    const columns = group.map(key => key.column);
-    const top = Math.min(...rows), left = Math.min(...columns);
-    const height = Math.max(...rows) - top + 1, width = Math.max(...columns) - left + 1;
-    for (const key of group) {
-      tiles.set(key.context, { row: key.row - top, column: key.column - left, height, width });
-    }
   }
 
   for (const keys of devices.values()) {
@@ -39,7 +28,7 @@ function albumTiles(displayed) {
         named.get(name).push(key);
       }
     }
-    for (const group of named.values()) place(group);
+    for (const group of named.values()) groups.push(group);
     for (const [coordinate, first] of automatic) {
       automatic.delete(coordinate);
       const group = [first];
@@ -53,10 +42,31 @@ function albumTiles(displayed) {
           }
         }
       }
-      place(group);
+      groups.push(group);
+    }
+  }
+  return groups;
+}
+
+function albumFit(group) {
+  const ordered = [...group].sort((a, b) => a.row - b.row || a.column - b.column);
+  return ordered.find(key => ['width', 'height'].includes(key.settings?.linkedArtworkFit))?.settings.linkedArtworkFit || 'height';
+}
+
+function albumTiles(displayed) {
+  const tiles = new Map();
+  for (const group of albumGroups(displayed)) {
+    if (group.length < 2) continue;
+    const rows = group.map(key => key.row);
+    const columns = group.map(key => key.column);
+    const top = Math.min(...rows), left = Math.min(...columns);
+    const height = Math.max(...rows) - top + 1, width = Math.max(...columns) - left + 1;
+    const fit = albumFit(group);
+    for (const key of group) {
+      tiles.set(key.context, { row: key.row - top, column: key.column - left, height, width, fit });
     }
   }
   return tiles;
 }
 
-module.exports = { albumTiles, keyDisplay };
+module.exports = { albumGroups, albumTiles, albumFit, keyDisplay };

@@ -196,5 +196,26 @@
   },
   "openPlayerFailed": {
     "message": "無法開啟 YouTube Music，請再試一次。"
+  },
+  "repeatLabel": {
+    "message": "重複播放"
+  },
+  "repeatOff": {
+    "message": "重複播放已關閉"
+  },
+  "repeatAll": {
+    "message": "全部重複"
+  },
+  "repeatOne": {
+    "message": "單曲重複"
+  },
+  "shuffleLabel": {
+    "message": "隨機播放"
+  },
+  "shuffleOff": {
+    "message": "隨機播放已關閉"
+  },
+  "shuffleOn": {
+    "message": "隨機播放已開啟"
   }
 }

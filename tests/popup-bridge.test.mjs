@@ -13,7 +13,9 @@ test('popup endpoints authenticate and bind controls/artwork to the selected pla
   await bridge.post('/sync', { token, clientId: 11, state: { ...state, standalone: true } });
   const { body: status } = await bridge.post('/status', { token });
   assert.equal(status.popupControls, true);
-  assert.deepEqual(status.player, { id: '11', key: 'aaaaaaaaaaa', title: 'Popup song', artist: 'Artist', playing: true, rating: 'INDIFFERENT', volume: 55, muted: false, coverKey: '' });
+  assert.equal(status.popupQueueControls, true);
+  assert.deepEqual(status.player, { id: '11', key: 'aaaaaaaaaaa', title: 'Popup song', artist: 'Artist', playing: true,
+    rating: 'INDIFFERENT', volume: 55, muted: false, repeatMode: null, shuffleEnabled: null, coverKey: '' });
   const command = { token, command: 'like', playerId: '11', trackKey: 'aaaaaaaaaaa' };
   assert.equal((await bridge.post('/control', { ...command, command: 'arbitrary' })).status, 400);
   for (const amount of [undefined, 0, 101, -101, 0.5, '5']) {
@@ -35,9 +37,9 @@ test('popup endpoints authenticate and bind controls/artwork to the selected pla
 test('popup commands use the existing browser channel and wait for the execution acknowledgement', async t => {
   const bridge = await createBridgeFixture(t);
   const { body: { token } } = await bridge.post('/pair', { pin: '654321' });
-  await bridge.post('/sync', { token, clientId: 12, state });
-  for (const command of ['toggle', 'prev', 'next', 'like', 'dislike', 'mute', 'volume_delta', 'volume_set']) {
-    const listening = bridge.post('/browser-listen', { token, clientIds: [12], concurrent: true });
+  await bridge.post('/sync', { token, clientId: 12, state: { ...state, repeatMode: 'NONE', shuffleEnabled: false } });
+  for (const command of ['toggle', 'prev', 'next', 'like', 'dislike', 'mute', 'volume_delta', 'volume_set', 'repeat', 'shuffle']) {
+    const listening = bridge.post('/browser-listen', { token, clientIds: [12], concurrent: true, repeat: true, shuffle: true });
     let finished = false;
     const control = bridge.post('/control', { token, command, playerId: '12', trackKey: 'aaaaaaaaaaa', ...(command === 'volume_delta' ? { amount: -5 } : command === 'volume_set' ? { amount: 0 } : {}) })
       .then(result => { finished = true; return result; });

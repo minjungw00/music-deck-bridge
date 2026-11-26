@@ -22,9 +22,7 @@ function fixture(t) {
 test('locally restores exactly one confirmed track with its matching raster after a new plugin instance', t => {
   const { open, storage } = fixture(t);
   const live = open();
-  live.observe(song('First', 'a'), image);
-  assert.equal(storage.readLastTrack(), null, 'retention is opt-in');
-  assert.equal(live.setEnabled(true), true);
+  assert.equal(storage.readLastTrack(), null);
   live.observe({ ...song('Never played', 'b'), playing: false }, image);
   assert.equal(live.snapshot, null);
   live.observe({ ...song('Buffering', 'b'), playbackConfirmed: false }, image);
@@ -36,17 +34,14 @@ test('locally restores exactly one confirmed track with its matching raster afte
   assert.equal(live.snapshot.image, '', 'late art cannot override a newer track');
   live.observeArtwork('b', image);
   const restored = open();
-  assert.equal(restored.enabled, true);
   assert.deepEqual(restored.snapshot, { title: 'Second', artist: 'Artist', trackId: 'bbbbbbbbbbb', image });
-  assert.equal(restored.setEnabled(false), true);
-  assert.equal(storage.readLastTrack(), null);
-  assert.equal(open().snapshot, null);
+  assert.deepEqual(Object.keys(storage.readLastTrack()).sort(), ['scope', 'track']);
+  assert.deepEqual(restored.snapshot, storage.readLastTrack().track, 'the newest track is the only saved record');
 });
 
 test('unpairing clears the stored song, and a mismatched pairing or malformed file cannot restore it', t => {
   const { storage, pair, open, savedFile } = fixture(t);
   const live = open();
-  live.setEnabled(true);
   live.observe(song('Private track', 'a'), image);
   pair('b');
   assert.equal(open().snapshot, null, 'a new pairing cannot restore an older pairing’s song');
@@ -54,7 +49,7 @@ test('unpairing clears the stored song, and a mismatched pairing or malformed fi
   live.observe(song('New pairing', 'b'), image);
   storage.removeAuth();
   live.resetPair();
-  assert.deepEqual(storage.readLastTrack(), { enabled: true });
+  assert.equal(storage.readLastTrack(), null);
   assert.equal(open().snapshot, null);
   writeFileSync(savedFile, '{');
   assert.equal(open().snapshot, null);

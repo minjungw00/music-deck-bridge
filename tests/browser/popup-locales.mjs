@@ -19,7 +19,7 @@ test('native extension catalogs and toolbar popup render all eight UI languages 
         args: [`--disable-extensions-except=${extension}`, `--load-extension=${extension}`, `--lang=${language}`] });
       const worker = browser.serviceWorkers()[0] || await browser.waitForEvent('serviceworker');
       const catalog = await worker.evaluate(() => Object.fromEntries(['uiLanguageCode','connect','refresh','forget','portLabel',
-        'settingsSummary','previous','next','play','mute','openPlayer'].map(key => [key, chrome.i18n.getMessage(key)])));
+        'settingsSummary','previous','next','play','mute','openPlayer','repeatLabel','shuffleLabel'].map(key => [key, chrome.i18n.getMessage(key)])));
       assert.equal(catalog.uiLanguageCode, language);
       const rootSession = await browser.browser().newBrowserCDPSession();
       await worker.evaluate(() => chrome.action.openPopup());
@@ -57,12 +57,13 @@ test('native extension catalogs and toolbar popup render all eight UI languages 
       assert.ok(ready, language);
       const ui = await evaluate(`(() => ({lang:document.documentElement.lang,
         labels:Object.fromEntries(['connect','refresh','forget','portLabel','settingsSummary','openPlayer'].map(id=>[id,document.getElementById(id).textContent])),
-        controls:Object.fromEntries(['previous','next','playPause','mute'].map(id=>[id,document.getElementById(id).getAttribute('aria-label')])),
+        controls:Object.fromEntries(['previous','next','playPause','mute','repeat','shuffle'].map(id=>[id,document.getElementById(id).getAttribute('aria-label')])),
         clipped:[...document.querySelectorAll('button:not(.media-button)')].filter(button=>button.scrollWidth>button.clientWidth).map(button=>button.id),
         overflow:document.documentElement.scrollWidth>innerWidth}))()`);
       assert.equal(ui.lang, language);
       for (const [key, value] of Object.entries(ui.labels)) assert.equal(value, catalog[key], `${language}/${key}`);
-      for (const [key, value] of Object.entries(ui.controls)) assert.equal(value, catalog[key === 'playPause' ? 'play' : key]);
+      const controlLabels = { playPause: 'play', repeat: 'repeatLabel', shuffle: 'shuffleLabel' };
+      for (const [key, value] of Object.entries(ui.controls)) assert.equal(value, catalog[controlLabels[key] || key]);
       assert.deepEqual(ui.clipped, [], `${language}: clipped button labels`);
       assert.equal(ui.overflow, false, `${language}: horizontal overflow`);
       if (language === 'en') {

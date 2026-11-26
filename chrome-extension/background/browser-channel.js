@@ -39,7 +39,7 @@
           ? data.startupAttempts : null });
       console.warn('Music Deck Bridge playback diagnostic:', JSON.stringify(lastFailure));
     }
-    const PLAYER_COMMANDS = ['toggle', 'prev', 'next', 'mute', 'volume_delta', 'volume_set', 'like', 'dislike', 'repeat'];
+    const PLAYER_COMMANDS = ['toggle', 'prev', 'next', 'mute', 'volume_delta', 'volume_set', 'like', 'dislike', 'repeat', 'shuffle'];
     const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
     async function performBrowserCommand(command, stillPaired = async () => true, diagnostic = {}, onAccepted = () => {}) {
       const failed = reason => { diagnostic.reason = reason; return false; };
@@ -135,7 +135,8 @@
           let result;
           try {
             const tabs = await chrome.tabs.query({ url: MUSIC_URL + '*' });
-            result = await post('/browser-listen', { token, clientIds: tabs.map(tab => tab.id), concurrent: true, repeat: true }, 15500);
+            result = await post('/browser-listen', { token, clientIds: tabs.map(tab => tab.id),
+              concurrent: true, repeat: true, shuffle: true }, 15500);
           }
           catch (error) {
             if (error.httpStatus === 404) browserChannelAvailable = false;

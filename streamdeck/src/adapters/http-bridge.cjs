@@ -67,7 +67,7 @@ function createHttpBridge({ session, players, commands, covers, getPorts, onDeck
     if (req.url === '/status') {
       const chosen = players.selected();
       return sendHttp(res, 200, { paired: true, compatibility: session.compatibility, active: !!chosen,
-        popupControls: true, popupVolume: true, player: chosen ? playerInfo(chosen) : null,
+        popupControls: true, popupVolume: true, popupQueueControls: true, player: chosen ? playerInfo(chosen) : null,
         track: chosen ? chosen[1].title : '', standalone: chosen ? chosen[1].standalone : false,
         extensionOnline: session.extensionOnline(),
         playerStale: !!chosen && Date.now() - chosen[1].lastMediaSyncAt > PLAYER_STALE_MS,
@@ -75,7 +75,7 @@ function createHttpBridge({ session, players, commands, covers, getPorts, onDeck
         coverStatus: covers.status(chosen?.[1].cover) }, origin);
     }
     if (req.url === '/control' || req.url === '/artwork') {
-      if (req.url === '/control' && (!['toggle', 'prev', 'next', 'like', 'dislike', 'mute', 'volume_delta', 'volume_set'].includes(body.command) ||
+      if (req.url === '/control' && (!['toggle', 'prev', 'next', 'like', 'dislike', 'mute', 'volume_delta', 'volume_set', 'repeat', 'shuffle'].includes(body.command) ||
           (body.command === 'volume_delta' && (!Number.isInteger(body.amount) || body.amount === 0 || Math.abs(body.amount) > 100)) ||
           (body.command === 'volume_set' && (!Number.isInteger(body.amount) || body.amount < 0 || body.amount > 100)))) {
         return sendHttp(res, 400, { error: 'Invalid popup command' }, origin);
@@ -110,7 +110,8 @@ function createHttpBridge({ session, players, commands, covers, getPorts, onDeck
         }
         players.reconcile(body.clientIds);
       }
-      return commands.listenBrowser(httpChannel(res, origin), { concurrent: body.concurrent === true, repeat: body.repeat === true });
+      return commands.listenBrowser(httpChannel(res, origin), { concurrent: body.concurrent === true,
+        repeat: body.repeat === true, shuffle: body.shuffle === true });
     }
     if (req.url === '/player-closed') {
       const clientId = String(body.clientId ?? '');
@@ -152,7 +153,7 @@ function createHttpBridge({ session, players, commands, covers, getPorts, onDeck
   function playerInfo([id, state]) {
     return { id: String(id), key: state.trackId || JSON.stringify([state.title, state.artist]),
       title: state.title, artist: state.artist, playing: state.playing, rating: state.rating, volume: state.volume, muted: state.muted,
-      coverKey: state.cover };
+      repeatMode: state.repeatMode, shuffleEnabled: state.shuffleEnabled, coverKey: state.cover };
   }
   function bindPort(port) {
     return new Promise((resolve, reject) => {

@@ -37,7 +37,8 @@ def stage(component, output):
     if component == "chrome":
         files += [f"icons/controls/{name}.png" for name in (
             "previous", "play", "pause", "next", "like", "like-selected",
-            "dislike", "dislike-selected", "mute", "volume",
+            "dislike", "dislike-selected", "mute", "volume", "repeat-none", "repeat-all", "repeat-one",
+            "repeat-unavailable", "shuffle-off", "shuffle-on", "shuffle-unavailable",
         )]
     for folder in folders:
         files.extend(str(p.relative_to(source)) for p in sorted((source / folder).rglob("*.png")))

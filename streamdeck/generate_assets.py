@@ -9,7 +9,7 @@ DARK = "#151923"
 WHITE = "#FFFFFF"
 
 
-def brand_canvas(size, background, square_background=False):
+def brand_canvas(size, background, square_background=False, transparent_surface=False):
     from PIL import Image, ImageDraw
 
     # Supersample curved edges even for the 512px export.
@@ -19,7 +19,7 @@ def brand_canvas(size, background, square_background=False):
     image = Image.new("RGBA", canvas, (0, 0, 0, 0))
     mask = Image.new("L", image.size)
     draw_mask = ImageDraw.Draw(mask)
-    if background:
+    if background and not transparent_surface:
         if square_background:
             # Device key artwork fills its canvas; do not bake a guessed keycap radius.
             draw_mask.rectangle((0, 0, *canvas), fill=255)
@@ -80,12 +80,12 @@ def render_brand(size, background, square_background=False):
     return image.resize((size, size), Image.Resampling.LANCZOS)
 
 
-def render(kind, size, background, square_background=False):
+def render(kind, size, background, square_background=False, transparent_surface=False):
     from PIL import Image, ImageDraw
 
     if kind in ("brand", "nowplaying"):
         return render_brand(size, background, square_background)
-    image, scale = brand_canvas(size, background, square_background)
+    image, scale = brand_canvas(size, background, square_background, transparent_surface)
     box = lambda values: tuple(value * scale for value in values)
     # Use one circular badge and the same palette/surface as the main icon.
     # A mask makes action-list glyphs transparent cutouts in the white badge.
@@ -112,7 +112,7 @@ def render(kind, size, background, square_background=False):
         rectangle((202, 174, 236, 330))
         rectangle((276, 174, 310, 330))
     elif kind.startswith("repeat_"):
-        stroke = 24 if kind == "repeat_all" else 16
+        stroke = 16
         line([(174, 245), (174, 204), (331, 204)], stroke)
         line([(307, 178), (334, 204), (307, 230)], stroke)
         line([(336, 259), (336, 300), (179, 300)], stroke)
@@ -125,6 +125,16 @@ def render(kind, size, background, square_background=False):
             # A cut across the glyph distinguishes an unavailable control from off.
             draw.line([box((174, 168)), box((338, 336))], fill=0, width=34 * scale)
             line([(174, 168), (338, 336)], 14)
+    elif kind.startswith("shuffle_"):
+        line([(174, 207), (217, 207), (291, 299), (334, 299)], 16)
+        line([(174, 299), (217, 299), (291, 207), (334, 207)], 16)
+        line([(309, 181), (335, 207), (309, 233)], 16)
+        line([(309, 273), (335, 299), (309, 325)], 16)
+        if kind == "shuffle_on":
+            draw.ellipse(box((244, 334, 268, 358)), fill=255)
+        elif kind == "shuffle_unavailable":
+            draw.line([box((174, 169)), box((338, 335))], fill=0, width=34 * scale)
+            line([(174, 169), (338, 335)], 14)
     elif kind == "open":
         line([(290, 184), (174, 184), (174, 330), (330, 330), (330, 280)], 18)
         line([(242, 270), (340, 172)], 24)
@@ -187,14 +197,26 @@ def main():
         for name, size, background in [("icon", 20, False), ("key", 72, True)]:
             for suffix, scale in [("", 1), ("@2x", 2)]:
                 outputs[f"{plugin}/actions/{kind}/{name}{suffix}.png"] = (kind, size * scale, background, background)
+    queue_states = {"repeat": ("none", "all", "one", "unavailable"), "shuffle": ("off", "on", "unavailable")}
     for suffix, scale in [("", 1), ("@2x", 2)]:
         outputs[f"{plugin}/actions/toggle/pause{suffix}.png"] = ("pause", 72 * scale, True, True)
-        outputs[f"{plugin}/actions/repeat/icon{suffix}.png"] = ("repeat_none", 20 * scale, False)
-        for state in ("none", "all", "one", "unavailable"):
-            outputs[f"{plugin}/actions/repeat/{state}{suffix}.png"] = ("repeat_" + state, 72 * scale, True, True)
+        for action, states in queue_states.items():
+            outputs[f"{plugin}/actions/{action}/icon{suffix}.png"] = (f"{action}_{states[0]}", 20 * scale, False)
+            for state in states:
+                outputs[f"{plugin}/actions/{action}/{state}{suffix}.png"] = (f"{action}_{state}", 72 * scale, True, True)
         for kind in ("like", "dislike"):
             outputs[f"{plugin}/actions/{kind}/selected{suffix}.png"] = (kind + "_selected", 72 * scale, True, True)
     outputs[f"{plugin}/actions/volume/level@2x.png"] = ("volume_level", 144, True, True)
+    overlays = {(kind, "key"): kind for kind in ("toggle", "prev", "next", "mute", "volumeup", "volumedown",
+                                                  "volume", "open", "like", "dislike")}
+    overlays.update({("toggle", "pause"): "pause", ("like", "selected"): "like_selected",
+                     ("dislike", "selected"): "dislike_selected"})
+    for action, states in queue_states.items():
+        for state in states:
+            overlays[action, state] = f"{action}_{state}"
+            outputs[f"chrome-extension/icons/controls/{action}-{state}.png"] = (f"{action}_{state}", 144, True, True)
+    for (action, state), kind in overlays.items():
+        outputs[f"{plugin}/actions/{action}/{state}-overlay.png"] = (kind, 72, True, False, True)
     # Popup buttons reuse the same 2x key artwork, including observed states.
     for name, kind in {"previous": "prev", "play": "toggle", "pause": "pause", "next": "next",
                        "like": "like", "like-selected": "like_selected", "dislike": "dislike",

@@ -196,6 +196,35 @@ async function showState(h, state = playerState()) {
   await h.tick(); h.take('check').resolve(state); await flush();
 }
 
+test('popup queue controls select the bridge or the matching standalone player', async () => {
+  const local = { ...playerState({ repeatMode: 'ONE', shuffleEnabled: false }), mode: 'local', popupQueueControls: true };
+  const h = harness({ local }); await h.ready();
+  await showState(h, playerState());
+  assert.equal(h.element('repeat').attrs['aria-label'], 'repeatOne');
+  assert.equal(h.element('shuffle').disabled, false, 'Shuffle off remains available');
+  const shuffle = h.element('shuffle').click();
+  const standalone = h.take('local-control');
+  assert.equal(standalone.command, 'shuffle');
+  assert.equal(standalone.trackKey, local.player.key);
+  standalone.resolve({ ok: true }); await shuffle;
+  if (h.requests.some(request => request.type === 'check')) {
+    h.take('check').resolve(playerState()); await flush();
+  }
+  await showState(h, { ...playerState({ repeatMode: 'ALL', shuffleEnabled: true }), popupQueueControls: true });
+  assert.equal(h.element('repeat').attrs['aria-label'], 'repeatAll');
+  assert.equal(h.element('shuffle').attrs['aria-pressed'], 'true');
+  const repeat = h.element('repeat').click();
+  const paired = h.take('control');
+  assert.equal(paired.command, 'repeat');
+  paired.resolve({ ok: true }); await repeat;
+  if (h.requests.some(request => request.type === 'check')) {
+    h.take('check').resolve(playerState()); await flush();
+  }
+  h.setLocal({ ...local, player: { ...local.player, id: '13' } });
+  await showState(h, playerState());
+  assert.equal(h.element('shuffle').disabled, true, 'fallback cannot change a different selected tab');
+});
+
 test('unchanged status polls preserve icon sources while actual rating/mute changes replace them once', async () => {
   const h = harness(); await h.ready(); await showState(h);
   const icons = ['likeIcon', 'dislikeIcon', 'muteIcon'];

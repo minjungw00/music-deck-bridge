@@ -84,10 +84,12 @@ result = subprocess.run(['node', '-e', """
 const { keyTextBackground } = require(process.argv[1]);
 const cover = require('node:fs').readFileSync(0, 'utf8');
 const tiles = [{ row: 0, column: 0, width: 2, height: 2 },
-  { row: 1, column: 1, width: 2, height: 2 }, { row: 0, column: 2, width: 3, height: 1 }];
+  { row: 1, column: 1, width: 2, height: 2 }, { row: 0, column: 2, width: 3, height: 1, fit: 'width' },
+  { row: 0, column: 2, width: 3, height: 1, fit: 'height' }];
 console.log(JSON.stringify(tiles.map(tile => keyTextBackground(cover, 0, tile))));
 """, helper], cwd=ROOT, input=cover, text=True, capture_output=True, check=True)
-for uri, expected in zip(json.loads(result.stdout), [('red', 'red'), ('white', 'white'), ('green', 'white')], strict=True):
+for uri, expected in zip(json.loads(result.stdout),
+                         [('red', 'red'), ('white', 'white'), ('green', 'white'), ('black', 'black')], strict=True):
     image = QImage(144, 144, QImage.Format.Format_ARGB32)
     image.fill(QColor('black'))
     painter = QPainter(image)
@@ -97,4 +99,4 @@ for uri, expected in zip(json.loads(result.stdout), [('red', 'red'), ('white', '
     painter.end()
     assert image.pixelColor(72, 36) == QColor(expected[0])
     assert image.pixelColor(72, 108) == QColor(expected[1])
-print(f'Qt {qVersion()}: three sparse diagonal and rectangular linked crops match their canvas coordinates')
+print(f'Qt {qVersion()}: sparse diagonal and rectangular linked crops match both fit modes')

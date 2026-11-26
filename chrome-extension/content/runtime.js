@@ -92,7 +92,7 @@
       const bar = document.querySelector('ytmusic-player-bar');
       if (bar) observer?.observe(bar, { childList: true, subtree: true, attributes: true,
         attributeFilter: ['src', 'title', 'aria-label', 'style', 'aria-valuenow', 'aria-pressed', 'like-status',
-          'aria-disabled', 'disabled', 'hidden', 'icon'] });
+          'aria-disabled', 'disabled', 'hidden', 'icon', 'shuffle-on'] });
       clock = setInterval(synchronize, 800); // status fallback; browsers throttle idle tabs
       void synchronize();
       void listen();

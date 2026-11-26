@@ -20,6 +20,8 @@
     #stepLabel, #feedbackDurationLabel { color: #fff; font-variant-numeric: tabular-nums; min-width: 24px; }
     .port-input { width: 88px; min-width: 72px; }
     .connection { border-top: 1px solid #515151; padding-top: 10px; margin-top: 8px; }
+    .connection-first { border-top: 0; border-bottom: 1px solid #515151; padding: 0 0 8px; margin: 0 0 8px; }
+    #linkedArtworkFit { font: inherit; }
     sdpi-item { color: #e6e6e6; overflow-wrap: anywhere; }
     sdpi-button { white-space: nowrap; }
     /* Native range, matching the direct event.target.value approach used by Elgato's Discord plugin. */
@@ -49,14 +51,28 @@
         <option id="optKeyLinked" value="linked">Linked album artwork</option>
       </sdpi-select>
     </sdpi-item>
-    <sdpi-item id="keyArtworkOnlyRow" class="hidden" label="Album artwork">
-      <sdpi-checkbox id="keyArtworkOnly" setting="keyArtworkOnly" default="false" label="Artwork only"></sdpi-checkbox>
+    <sdpi-item id="keyArtworkIconRow" class="hidden" label="Album artwork">
+      <sdpi-checkbox id="keyArtworkShowIcon" setting="keyArtworkShowIcon" default="false" label="Show small icon"></sdpi-checkbox>
+    </sdpi-item>
+    <sdpi-item id="keyArtworkIconPositionRow" class="hidden" label="Icon position">
+      <sdpi-select id="keyArtworkIconPosition" setting="keyArtworkIconPosition" default="top-left">
+        <option id="optIconTopLeft" value="top-left">Top left</option>
+        <option id="optIconTopRight" value="top-right">Top right</option>
+        <option id="optIconBottomLeft" value="bottom-left">Bottom left</option>
+        <option id="optIconBottomRight" value="bottom-right">Bottom right</option>
+      </sdpi-select>
     </sdpi-item>
     <div id="albumGroupOptions" class="hidden">
       <sdpi-item id="albumGroupRow" label="Artwork group">
         <sdpi-textfield id="albumGroup" setting="albumGroup" maxlength="32" placeholder="Automatic"></sdpi-textfield>
       </sdpi-item>
       <p id="albumGroupHint" class="hint">Leave empty to group adjacent keys. Enter the same name on keys to link them across gaps.</p>
+      <sdpi-item id="linkedArtworkFitRow" label="Artwork fit">
+        <select id="linkedArtworkFit" aria-label="Artwork fit">
+          <option id="optLinkedFitHeight" value="height">Fit height</option>
+          <option id="optLinkedFitWidth" value="width">Fit width</option>
+        </select>
+      </sdpi-item>
     </div>
   </section>
   <section id="trackSection" class="hidden">
@@ -159,12 +175,7 @@
       </sdpi-item>
     </div>
   </section>
-  <section class="connection">
-    <sdpi-item id="keepLastTrackRow" label="Last played track">
-      <label><input id="keepLastTrack" type="checkbox" disabled aria-describedby="keepLastTrackHint"> <span id="keepLastTrackLabel">Keep after restart</span></label>
-    </sdpi-item>
-    <p id="keepLastTrackHint" class="hint">Save one track and its artwork on this PC. This setting applies to all keys and dials.</p>
-    <p id="keepLastTrackStatus" class="hint hidden" role="status"></p>
+  <section id="connectionSection" class="connection">
     <sdpi-item id="pinRow" label="Connection">
       <div class="inline connection-actions">
         <div><sdpi-button id="generatePin">Generate PIN</sdpi-button><output id="pinOutput" aria-live="polite"></output></div>

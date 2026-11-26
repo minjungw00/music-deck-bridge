@@ -196,5 +196,26 @@
   },
   "openPlayerFailed": {
     "message": "YouTube Music konnte nicht geöffnet werden. Versuche es erneut."
+  },
+  "repeatLabel": {
+    "message": "Wiederholen"
+  },
+  "repeatOff": {
+    "message": "Wiederholen aus"
+  },
+  "repeatAll": {
+    "message": "Alle wiederholen"
+  },
+  "repeatOne": {
+    "message": "Einen Titel wiederholen"
+  },
+  "shuffleLabel": {
+    "message": "Zufallswiedergabe"
+  },
+  "shuffleOff": {
+    "message": "Zufallswiedergabe aus"
+  },
+  "shuffleOn": {
+    "message": "Zufallswiedergabe an"
   }
 }

@@ -9,8 +9,8 @@ function createLastTrack({ storage, onChange, onError = () => {} }) {
     return auth ? createHash('sha256').update(auth.token).digest('hex') : '';
   };
   const saved = storage.readLastTrack();
-  let enabled = saved?.enabled === true, scope = pairScope();
-  const persisted = enabled && scope && scope === saved.scope ? saved.track : null;
+  let scope = pairScope();
+  const persisted = scope && scope === saved?.scope ? saved.track : null;
   let snapshot = persisted && typeof persisted.title === 'string' && clip(persisted.title, 180) ? {
     title: clip(persisted.title, 180), artist: typeof persisted.artist === 'string' ? clip(persisted.artist, 180) : '',
     trackId: typeof persisted.trackId === 'string' && /^[\w-]{11}$/.test(persisted.trackId) ? persisted.trackId : '',
@@ -30,11 +30,11 @@ function createLastTrack({ storage, onChange, onError = () => {} }) {
       snapshot = track;
       onChange();
     }
-    if (snapshot !== savedSnapshot && save({ enabled, scope, track: snapshot })) savedSnapshot = snapshot;
+    if (snapshot !== savedSnapshot && save({ scope, track: snapshot })) savedSnapshot = snapshot;
   }
   return {
     observe(state, image = '') {
-      if (!enabled || !scope || !state?.title) return;
+      if (!scope || !state?.title) return;
       const key = identity(state);
       const sameTrack = key === confirmedKey;
       if (!(state.playbackConfirmed ?? state.playing) && !sameTrack) return;
@@ -49,22 +49,12 @@ function createLastTrack({ storage, onChange, onError = () => {} }) {
         update({ ...snapshot, image });
       }
     },
-    get enabled() { return enabled; },
     get snapshot() { return snapshot; },
-    setEnabled(value) {
-      if (value === enabled) return true;
-      if (!save(value ? { enabled: true } : null)) return false;
-      enabled = value;
-      snapshot = savedSnapshot = null;
-      confirmedKey = coverSource = '';
-      onChange();
-      return true;
-    },
     resetPair() {
       scope = pairScope();
       snapshot = savedSnapshot = null;
       confirmedKey = coverSource = '';
-      if (enabled) save({ enabled: true });
+      save(null);
       onChange();
     },
   };

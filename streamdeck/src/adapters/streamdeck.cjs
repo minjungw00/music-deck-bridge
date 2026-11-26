@@ -16,6 +16,7 @@ function createDeckAdapter({ onEvent, onConnected, log, isTest = false }) {
       if (!action) return false;
       if (message.event === 'setTitle') result = action.setTitle(message.payload.title);
       else if (message.event === 'setImage') result = action.setImage(message.payload.image);
+      else if (message.event === 'setSettings') result = action.setSettings(message.payload.settings);
       else if (message.event === 'setFeedback' && action.isDial()) result = action.setFeedback(message.payload);
       else if (message.event === 'setFeedbackLayout' && action.isDial()) result = action.setFeedbackLayout(message.payload.layout);
       else if (message.event === 'showAlert') result = action.showAlert();

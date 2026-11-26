@@ -27,6 +27,8 @@
         playing: state.playing === true, muted: state.muted === true,
         volume: Number.isFinite(state.volume) ? Math.max(0, Math.min(100, Math.round(state.volume))) : null,
         rating: ['LIKE', 'DISLIKE', 'INDIFFERENT'].includes(state.rating) ? state.rating : null,
+        repeatMode: ['NONE', 'ALL', 'ONE'].includes(state.repeatMode) ? state.repeatMode : null,
+        shuffleEnabled: typeof state.shuffleEnabled === 'boolean' ? state.shuffleEnabled : null,
         coverKey: cover(state.cover), standalone: state.standalone === true, activeTab: tab.active === true };
     }
     async function check() {
@@ -37,7 +39,7 @@
       players.sort((a, b) => Number(b.standalone) - Number(a.standalone) || Number(b.playing) - Number(a.playing) ||
         Number(b.activeTab) - Number(a.activeTab));
       const player = players[0] || null;
-      return { ok: true, active: !!player, mode: 'local', popupControls: true, popupVolume: true,
+      return { ok: true, active: !!player, mode: 'local', popupControls: true, popupVolume: true, popupQueueControls: true,
         player, standalone: player?.standalone === true, coverStatus: player?.coverKey ? 'ready' : 'missing' };
     }
     function open() {
@@ -51,7 +53,7 @@
       return opening;
     }
     async function control({ command, amount, playerId, trackKey }) {
-      if (!['toggle', 'prev', 'next', 'like', 'dislike', 'mute', 'volume_set'].includes(command) ||
+      if (!['toggle', 'prev', 'next', 'like', 'dislike', 'mute', 'volume_set', 'repeat', 'shuffle'].includes(command) ||
           (command === 'volume_set' && (!Number.isInteger(amount) || amount < 0 || amount > 100))) {
         return { ok: false, reason: 'invalid-command' };
       }
@@ -59,6 +61,8 @@
       const selected = await check();
       if (!matches(selected)) return { ok: false, reason: 'player-changed' };
       if (['like', 'dislike'].includes(command) && selected.player.rating === null) return { ok: false, reason: 'player-not-ready' };
+      if (command === 'repeat' && selected.player.repeatMode === null) return { ok: false, reason: 'repeat-unavailable' };
+      if (command === 'shuffle' && selected.player.shuffleEnabled === null) return { ok: false, reason: 'shuffle-unavailable' };
       const tabId = Number(playerId);
       leases.set(tabId, (leases.get(tabId) || 0) + 1);
       const diagnostic = {};

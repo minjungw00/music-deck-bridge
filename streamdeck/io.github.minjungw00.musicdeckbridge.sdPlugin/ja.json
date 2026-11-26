@@ -66,5 +66,9 @@
   "io.github.minjungw00.musicdeckbridge.repeat": {
     "Name": "リピート",
     "Tooltip": "YouTube Music で使用できるリピートモードを順番に切り替えます。"
+  },
+  "io.github.minjungw00.musicdeckbridge.shuffle": {
+    "Name": "シャッフル",
+    "Tooltip": "現在の YouTube Music のキューをシャッフルします。"
   }
 }

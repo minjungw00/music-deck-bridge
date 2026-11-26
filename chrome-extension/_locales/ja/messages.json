@@ -196,5 +196,26 @@
   },
   "openPlayerFailed": {
     "message": "YouTube Music を開けませんでした。もう一度お試しください。"
+  },
+  "repeatLabel": {
+    "message": "リピート"
+  },
+  "repeatOff": {
+    "message": "リピート オフ"
+  },
+  "repeatAll": {
+    "message": "すべてリピート"
+  },
+  "repeatOne": {
+    "message": "1 曲リピート"
+  },
+  "shuffleLabel": {
+    "message": "シャッフル"
+  },
+  "shuffleOff": {
+    "message": "シャッフル オフ"
+  },
+  "shuffleOn": {
+    "message": "シャッフル オン"
   }
 }

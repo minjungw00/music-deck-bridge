@@ -196,5 +196,26 @@
   },
   "openPlayerFailed": {
     "message": "Could not open YouTube Music. Try again."
+  },
+  "repeatLabel": {
+    "message": "Repeat"
+  },
+  "repeatOff": {
+    "message": "Repeat off"
+  },
+  "repeatAll": {
+    "message": "Repeat all"
+  },
+  "repeatOne": {
+    "message": "Repeat one"
+  },
+  "shuffleLabel": {
+    "message": "Shuffle"
+  },
+  "shuffleOff": {
+    "message": "Shuffle off"
+  },
+  "shuffleOn": {
+    "message": "Shuffle on"
   }
 }

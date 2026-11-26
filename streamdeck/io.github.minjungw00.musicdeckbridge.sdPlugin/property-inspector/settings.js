@@ -14,7 +14,9 @@ let lastPinExpiresAt = 0;
 let portIsDirty = false;
 let volumeKey = false;
 let currentTrackKey = false;
-let repeatKey = false;
+let queueKey = '';
+const connectionSection = $('connectionSection');
+const connectionEnd = connectionSection.nextElementSibling;
 const { validVolume, validDuration, createVolumeEditor } = MusicDeckVolumeEditor;
 const editor = createVolumeEditor({
   onValue(value) { $('volumeStep').value = String(value); updateVolumeLabel(); },
@@ -45,14 +47,17 @@ function localize() {
   $('optKeyDefault').textContent = t('keyDisplayDefault');
   $('optKeyArtwork').textContent = t('dialArtwork');
   $('optKeyLinked').textContent = t('keyDisplayLinked');
-  setLabel('keyArtworkOnlyRow', t('dialArtwork'));
-  setLabel('keyArtworkOnly', t('keyArtworkOnly'));
+  setLabel('keyArtworkIconRow', t('dialArtwork'));
+  setLabel('keyArtworkShowIcon', t('keyArtworkShowIcon'));
+  setLabel('keyArtworkIconPositionRow', t('keyArtworkIconPosition'));
+  for (const corner of ['TopLeft', 'TopRight', 'BottomLeft', 'BottomRight']) $('optIcon' + corner).textContent = t('icon' + corner);
   setLabel('albumGroupRow', t('albumGroup'));
   $('albumGroup').setAttribute('placeholder', t('albumGroupAuto'));
   $('albumGroupHint').textContent = t('albumGroupHint');
-  setLabel('keepLastTrackRow', t('keepLastTrack'));
-  $('keepLastTrackLabel').textContent = t('keepLastTrackLabel');
-  $('keepLastTrackHint').textContent = t('keepLastTrackHint');
+  setLabel('linkedArtworkFitRow', t('artworkFit'));
+  $('linkedArtworkFit').setAttribute('aria-label', t('artworkFit'));
+  $('optLinkedFitHeight').textContent = t('artworkHeight');
+  $('optLinkedFitWidth').textContent = t('artworkWidth');
   setLabel('titleModeRow', t('titleRow'));
   $('optTruncate').textContent = t('truncate');
   $('optScroll').textContent = t('scroll');
@@ -110,7 +115,7 @@ function localize() {
   updateVolumeLabel();
   updateDurationLabel();
   // SDPI caches option labels separately from the original option nodes.
-  for (const id of ['keyDisplay', 'artistPosition', 'titleMode', 'dialDisplay', 'infoTitleMode', 'artworkFit',
+  for (const id of ['keyDisplay', 'keyArtworkIconPosition', 'artistPosition', 'titleMode', 'dialDisplay', 'infoTitleMode', 'artworkFit',
     'artworkArtistPosition', 'artworkTitleMode']) $(id).refresh?.();
 }
 function updateVolumeLabel() {
@@ -139,35 +144,42 @@ function updateArtworkOptions(mode = $('dialDisplay').value, showTitle = $('artw
   $('artworkTextOptions').classList.toggle('hidden', mode !== 'artwork' || showTitle !== true);
   $('artworkArtistPositionRow').classList.toggle('hidden', mode !== 'artwork' || showTitle !== true || showArtist !== true);
 }
-function updateKeyArtworkOptions(mode = $('keyDisplay').value, only = $('keyArtworkOnly').value) {
+function updateKeyArtworkOptions(mode = $('keyDisplay').value, showIcon = $('keyArtworkShowIcon').value) {
   const artwork = mode === 'artwork' || mode === 'linked';
-  $('keyArtworkOnlyRow').classList.toggle('hidden', !artwork);
+  $('keyArtworkIconRow').classList.toggle('hidden', !artwork);
+  $('keyArtworkIconPositionRow').classList.toggle('hidden', !artwork || showIcon !== true);
   $('albumGroupOptions').classList.toggle('hidden', mode !== 'linked');
-  $('trackSection').classList.toggle('hidden', !currentTrackKey || (artwork && only === true));
+  $('trackSection').classList.toggle('hidden', !currentTrackKey || artwork);
+  $('volumeFeedbackOptions').classList.toggle('hidden', !volumeKey || artwork);
 }
 $('keyDisplay').addEventListener('valuechange', () => updateKeyArtworkOptions());
-$('keyArtworkOnly').addEventListener('valuechange', () => updateKeyArtworkOptions());
+$('keyArtworkShowIcon').addEventListener('valuechange', () => updateKeyArtworkOptions());
 $('dialDisplay').addEventListener('valuechange', () => updateArtworkOptions());
 $('artworkShowTitle').addEventListener('valuechange', () => updateArtworkOptions());
 $('artworkShowArtist').addEventListener('valuechange', () => updateArtworkOptions());
 $('showArtist').addEventListener('valuechange', () => $('keyArtistPositionRow').classList.toggle('hidden', $('showArtist').value === false));
+function prioritizeConnection(connected) {
+  const body = document.body;
+  const target = connected ? connectionEnd : body.firstElementChild;
+  if (target !== connectionSection && connectionSection.nextElementSibling !== target) {
+    if (typeof body.moveBefore === 'function') body.moveBefore(connectionSection, target);
+    else body.insertBefore(connectionSection, target);
+  }
+  connectionSection.classList.toggle('connection-first', !connected);
+}
 function showConnection(payload) {
   currentStatus = payload;
-  if (typeof payload.keepLastTrack === 'boolean') {
-    $('keepLastTrack').disabled = false;
-    $('keepLastTrack').checked = payload.keepLastTrack;
-  }
-  if (payload.lastTrackSaveFailed) {
-    $('keepLastTrackStatus').textContent = t('keepLastTrackFailed');
-    $('keepLastTrackStatus').classList.remove('hidden');
-  }
-  const error = repeatKey && payload.repeatError ? null : payload.lastCommandError;
+  const connected = payload.paired && payload.extensionOnline && payload.bridgeOnline !== false && payload.compatibility?.compatible !== false;
+  prioritizeConnection(connected);
+  $('linkedArtworkFit').value = payload.linkedArtworkFit === 'width' ? 'width' : 'height';
+  const queueError = queueKey && payload[queueKey + 'Error'];
+  const error = queueError ? null : payload.lastCommandError;
   const hint = error === 'autoplay-blocked' ? 'commandAutoplay' :
     ['pairing-required', 'authorization-lost'].includes(error) ? 'commandPairing' :
     ['extension-unavailable', 'browser-api-failed', 'bridge-unavailable'].includes(error) ? 'commandExtension' :
     ['delivery-uncertain', 'playback-unconfirmed'].includes(error) ? 'commandDelivery' : 'commandPlayer';
-  const repeatHint = payload.repeatError === 'repeat-update-required' ? 'repeatUpdate' : 'repeatUnavailable';
-  $('commandStatus').textContent = repeatKey && payload.repeatError ? t(repeatHint) :
+  const queueHint = queueKey + (queueError?.endsWith('-update-required') ? 'Update' : 'Unavailable');
+  $('commandStatus').textContent = queueError ? t(queueHint) :
     error ? `${t('commandFailed')} ${t(hint)} (${error})` : '';
   const compatibility = payload.compatibility;
   $('versionInfo').textContent = `${t('pluginLabel')} ${payload.pluginVersion || '—'} · ${t('extensionLabel')} ${compatibility?.extensionVersion || '—'} · ${t('protocolLabel')} ${compatibility?.negotiatedProtocolVersion || '—'}${compatibility?.legacy ? ` (${t('legacyProtocol')})` : ''}`;
@@ -206,7 +218,7 @@ function showConnection(payload) {
 async function requestConnection(type='get-connection', fields = {}) {
   if (!connectedToHost) return;
   try { await client.send('sendToPlugin', { type, ...fields }); }
-  catch { $('pairState').textContent = t('offline'); }
+  catch { $('pairState').textContent = t('offline'); prioritizeConnection(false); }
 }
 client.sendToPropertyInspector.subscribe(msg => {
   if (msg.payload?.type === 'connection') showConnection(msg.payload);
@@ -227,7 +239,7 @@ client.didReceiveSettings.subscribe(msg => {
   editor.receive(msg.payload?.settings);
   updateVolumeFeedbackOptions(editor.settings.volumeShowValue !== false);
   updateArtworkOptions(editor.settings.dialDisplay || 'info', editor.settings.artworkShowTitle === true, editor.settings.artworkShowArtist === true);
-  updateKeyArtworkOptions(editor.settings.keyDisplay, editor.settings.keyArtworkOnly === true);
+  updateKeyArtworkOptions(editor.settings.keyDisplay, editor.settings.keyArtworkShowIcon === true);
   $('keyArtistPositionRow').classList.toggle('hidden', editor.settings.showArtist === false);
 });
 $('installExtension').addEventListener('click', async () => {
@@ -236,9 +248,8 @@ $('installExtension').addEventListener('click', async () => {
   catch { $('companionHint').textContent = t('storeOpenFailed'); }
 });
 $('generatePin').addEventListener('click', () => { lastPin = ''; void requestConnection('generate-pin'); });
-$('keepLastTrack').addEventListener('change', event => {
-  $('keepLastTrackStatus').classList.add('hidden');
-  void requestConnection('set-last-track', { enabled: event.target.checked });
+$('linkedArtworkFit').addEventListener('change', event => {
+  void requestConnection('set-linked-fit', { fit: event.target.value });
 });
 // Read event.target.value from the native input while persistence is pending.
 $('volumeStep').addEventListener('input', event => editor.input(event.target.value));
@@ -269,21 +280,24 @@ void (async () => {
     const action = actionInfo?.action || '';
     volumeKey = action.endsWith('.volumeup') || action.endsWith('.volumedown');
     currentTrackKey = action.endsWith('.nowplaying');
-    repeatKey = action.endsWith('.repeat');
+    queueKey = action.endsWith('.repeat') ? 'repeat' : action.endsWith('.shuffle') ? 'shuffle' : '';
     localize();
     if (action && !action.endsWith('.volume') && !action.endsWith('.trackdial')) $('keyArtworkSection').classList.remove('hidden');
-    updateKeyArtworkOptions(editor.settings.keyDisplay, editor.settings.keyArtworkOnly === true);
     if (action.endsWith('.trackdial')) $('dialSection').classList.remove('hidden');
     if (volumeKey || action.endsWith('.volume')) $('volumeSection').classList.remove('hidden');
     if (volumeKey) $('volumeFeedbackOptions').classList.remove('hidden');
+    updateKeyArtworkOptions(editor.settings.keyDisplay, editor.settings.keyArtworkShowIcon === true);
     // Recover from races where the plugin answers before the inspector is ready.
-    responseTimer = setTimeout(() => { if (!currentStatus) $('pairState').textContent = t('bridgeWait'); }, 3500);
+    responseTimer = setTimeout(() => {
+      if (!currentStatus) { $('pairState').textContent = t('bridgeWait'); prioritizeConnection(false); }
+    }, 3500);
     await requestConnection();
     setTimeout(() => { if (!currentStatus) void requestConnection(); }, 700);
     statusPoll = setInterval(() => { void requestConnection(); }, 1000);
     setTimeout(updateVolumeLabel, 250);
   } catch {
     $('pairState').textContent = t('offline');
+    prioritizeConnection(false);
   }
 })();
 window.addEventListener('pagehide', () => { if (statusPoll) clearInterval(statusPoll); if (responseTimer) clearTimeout(responseTimer); });

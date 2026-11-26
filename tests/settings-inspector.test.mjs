@@ -13,6 +13,18 @@ function makeInspector(action='io.github.minjungw00.musicdeckbridge.nowplaying',
     setAttribute(k,v){this.attrs[k]=v},addEventListener(k,v){this.listeners[k]=v},
     classList:{removed:[],hidden:true,add(){this.hidden=true},remove(k){this.removed.push(k);this.hidden=false},toggle(k,value){this.hidden=value;return value;}},
   }]));
+  const end = { id: 'scripts' };
+  const sections = ['keyArtworkSection', 'trackSection', 'dialSection', 'volumeSection', 'connectionSection'].map(id => elems[id]).concat(end);
+  Object.defineProperty(elems.connectionSection, 'nextElementSibling', {
+    get: () => sections[sections.indexOf(elems.connectionSection) + 1],
+  });
+  const body = {
+    get firstElementChild() { return sections[0]; },
+    insertBefore(node, reference) {
+      sections.splice(sections.indexOf(node), 1);
+      sections.splice(sections.indexOf(reference), 0, node);
+    },
+  };
   const calls=[];const subscribers={};const client={
     sendToPropertyInspector:{subscribe:fn=>subscribers.connection=fn},
     didReceiveSettings:{subscribe:fn=>subscribers.settings=fn},
@@ -21,7 +33,7 @@ function makeInspector(action='io.github.minjungw00.musicdeckbridge.nowplaying',
     send:async(event,payload)=>{calls.push({event,payload})},
   };
   const sandbox={SDPIComponents:{streamDeckClient:client},
-    document:{getElementById:id=>elems[id],documentElement:{lang:''}},
+    document:{getElementById:id=>elems[id],documentElement:{lang:''},body},
     window:{addEventListener:()=>{}},Date,Number,Math,Promise,JSON,
     setTimeout:()=>1,clearTimeout:()=>{},setInterval:()=>1,clearInterval:()=>{}};
   const context = vm.createContext(sandbox);
@@ -54,7 +66,7 @@ test('uses bundled official SDPI components in dark style and locale-aware label
 });
 
 test('each action can generate a PIN, with real connection-state messages', async()=>{
-  for (const name of ['nowplaying','toggle','prev','next','mute','volumeup','volumedown','volume','trackdial','open','like','dislike','repeat']) {
+  for (const name of ['nowplaying','toggle','prev','next','mute','volumeup','volumedown','volume','trackdial','open','like','dislike','repeat','shuffle']) {
     const pi=makeInspector('io.github.minjungw00.musicdeckbridge.'+name); await pi.ready();
     pi.elems.generatePin.listeners.click();await pi.ready();
     assert.equal(pi.calls.at(-1).payload.type,'generate-pin');
@@ -71,23 +83,27 @@ test('each action can generate a PIN, with real connection-state messages', asyn
   }
 });
 
-test('artwork settings and global last-track storage are exposed on their corresponding controls', async () => {
+test('artwork settings and disconnected connection controls are exposed on their corresponding screens', async () => {
   const key = makeInspector('io.github.minjungw00.musicdeckbridge.nowplaying');
   await key.ready();
   assert.equal(key.elems.keyArtworkSection.classList.hidden, false);
   assert.equal(key.elems.albumGroupOptions.classList.hidden, true);
-  key.subscribers.settings({ payload: { settings: { keyDisplay: 'linked', keyArtworkOnly: true } } });
+  key.subscribers.settings({ payload: { settings: { keyDisplay: 'linked' } } });
   assert.equal(key.elems.albumGroupOptions.classList.hidden, false);
-  assert.equal(key.elems.keyArtworkOnlyRow.classList.hidden, false);
+  assert.equal(key.elems.keyArtworkIconRow.classList.hidden, false);
+  assert.equal(key.elems.keyArtworkIconPositionRow.classList.hidden, true);
   assert.equal(key.elems.trackSection.classList.hidden, true);
-  key.subscribers.connection({ payload: { type: 'connection', keepLastTrack: false } });
-  assert.equal(key.elems.keepLastTrack.disabled, false);
-  key.elems.keepLastTrack.listeners.change({ target: { checked: true } });
-  assert.equal(key.calls.at(-1).payload.type, 'set-last-track');
-  assert.equal(key.calls.at(-1).payload.enabled, true);
-  key.subscribers.connection({ payload: { type: 'connection', keepLastTrack: false, lastTrackSaveFailed: true } });
-  assert.equal(key.elems.keepLastTrack.checked, false);
-  assert.match(key.elems.keepLastTrackStatus.textContent, /저장하지 못했습니다/);
+  key.subscribers.settings({ payload: { settings: { keyDisplay: 'linked', keyArtworkShowIcon: true } } });
+  assert.equal(key.elems.keyArtworkIconPositionRow.classList.hidden, false);
+  key.elems.linkedArtworkFit.listeners.change({ target: { value: 'width' } });
+  assert.equal(key.calls.at(-1).payload.type, 'set-linked-fit');
+  assert.equal(key.calls.at(-1).payload.fit, 'width');
+  key.subscribers.connection({ payload: { type: 'connection', paired: true, extensionOnline: false, linkedArtworkFit: 'width' } });
+  assert.equal(key.sandbox.document.body.firstElementChild.id, 'connectionSection');
+  assert.equal(key.elems.linkedArtworkFit.value, 'width');
+  key.subscribers.connection({ payload: { type: 'connection', paired: true, extensionOnline: true, playerActive: false } });
+  assert.equal(key.sandbox.document.body.firstElementChild.id, 'keyArtworkSection', 'Chrome connection is sufficient even before opening a track');
+  assert.equal(key.elems.keepLastTrack, undefined);
 
   const dial = makeInspector('io.github.minjungw00.musicdeckbridge.trackdial');
   await dial.ready();

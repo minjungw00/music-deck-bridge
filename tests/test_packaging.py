@@ -66,10 +66,11 @@ class PackagingTests(unittest.TestCase):
                 name = f"_locales/{locale}/messages.json"
                 self.assertEqual(bundle.read(name), (self.root / "chrome-extension" / name).read_bytes())
             controls = list((self.root / "chrome-extension/icons/controls").glob("*.png"))
-            self.assertEqual(len(controls), 10)
+            self.assertEqual(len(controls), 17)
             for image in controls:
                 name = image.relative_to(self.root / "chrome-extension").as_posix()
                 self.assertEqual(bundle.read(name), image.read_bytes())
+            self.assertFalse(any(name.endswith("last-track.json") for name in names))
 
     def test_streamdeck_staging_preserves_runtime_resources_and_licenses(self):
         plugin = self.root / "streamdeck" / packaging_tool.PLUGIN

@@ -6,7 +6,9 @@ const COMMAND_ERRORS = new Set(['pairing-required', 'extension-unavailable', 'co
   'authorization-lost', 'injection-unavailable', 'receiver-unavailable', 'delivery-uncertain',
   'player-rejected', 'player-not-ready', 'browser-api-failed', 'bridge-unavailable', 'command-failed',
   'autoplay-blocked', 'player-error', 'playback-unconfirmed', 'command-superseded', 'protocol-incompatible',
-  'invalid-protocol', 'player-changed', 'repeat-update-required', 'repeat-unavailable']);
+  'invalid-protocol', 'player-changed', 'repeat-update-required', 'repeat-unavailable',
+  'shuffle-update-required', 'shuffle-unavailable']);
+const queueControl = type => type === 'repeat' || type === 'shuffle';
 
 // A channel port supplies reply(data, status) and onClose(callback); no HTTP objects enter this service.
 function createCommandService({ getSession, selectedEntry, launch, log,
@@ -21,9 +23,11 @@ function createCommandService({ getSession, selectedEntry, launch, log,
   let nativeLaunchTimer = null;
   let browserCapable = false;
   let browserRepeat = false;
+  let browserShuffle = false;
   let lastCommandError = '';
   let latestRequest = 0;
-  const hasLaunchableRequest = () => [...browserRequests.values()].some(request => request.type !== 'repeat');
+  const hasLaunchableRequest = () => [...browserRequests.values()].some(request => !queueControl(request.type));
+  const supports = type => type === 'repeat' ? browserRepeat : browserShuffle;
   function addCommand(type, ticks = 0) {
     if (getSession().blocked) return false;
     const entry = selectedEntry();
@@ -117,7 +121,7 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     const pending = [...browserRequests.values()];
     const request = browserWaiter?.concurrent ? pending.find(item => item.state === 'queued') : pending[0];
     if (!browserWaiter || !request || request.state === 'delivered') return;
-    if (request.type === 'repeat' && !browserRepeat) return request.finish(false, 'repeat-update-required');
+    if (queueControl(request.type) && !supports(request.type)) return request.finish(false, `${request.type}-update-required`);
     if (browserWaiter.concurrent && pending.filter(item => item.state === 'delivered').length >= 8) return;
     request.state = 'delivered';
     clearTimeout(nativeLaunchTimer); nativeLaunchTimer = null;
@@ -127,10 +131,11 @@ function createCommandService({ getSession, selectedEntry, launch, log,
       ...(request.playerKey ? { playerKey: request.playerKey } : {}) }] });
     nativeTabPending = false;
   }
-  function listenForBrowser(channel, { concurrent = false, repeat = false } = {}) {
+  function listenForBrowser(channel, { concurrent = false, repeat = false, shuffle = false } = {}) {
     // One paired extension profile owns the browser-wide channel, even with no tabs.
     browserCapable = true;
     browserRepeat = repeat;
+    browserShuffle = shuffle;
     browserWaiter?.reply({ commands: [] });
     const waiter = {
       concurrent,
@@ -149,18 +154,19 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     });
     flushBrowserRequest();
   }
-  function repeatError(state) {
-    if (browserCapable && !browserRepeat) return 'repeat-update-required';
-    return browserRepeat && state?.repeatMode && now() - state.lastMediaSyncAt < PLAYER_STALE_MS ? '' : 'repeat-unavailable';
+  function queueError(type, state) {
+    if (browserCapable && !supports(type)) return `${type}-update-required`;
+    const available = type === 'repeat' ? Boolean(state?.repeatMode) : typeof state?.shuffleEnabled === 'boolean';
+    return supports(type) && available && now() - state.lastMediaSyncAt < PLAYER_STALE_MS ? '' : `${type}-unavailable`;
   }
   async function requestPlayerCommand(type, amount = 0, { playerKey } = {}) {
-    if (!['open', 'toggle', 'prev', 'next', 'mute', 'volume_delta', 'volume_set', 'like', 'dislike', 'repeat'].includes(type)) return false;
+    if (!['open', 'toggle', 'prev', 'next', 'mute', 'volume_delta', 'volume_set', 'like', 'dislike', 'repeat', 'shuffle'].includes(type)) return false;
     if (getSession().pairingRequired) { lastCommandError = 'pairing-required'; return false; }
     if (getSession().blocked) { lastCommandError = getSession().errorCode; return false; }
     const entry = selectedEntry();
     const state = entry?.[1];
-    if (type === 'repeat') {
-      const error = repeatError(state);
+    if (queueControl(type)) {
+      const error = queueError(type, state);
       if (error) { lastCommandError = error; return false; }
       playerKey = state.trackId || JSON.stringify([state.title, state.artist]);
     }
@@ -173,7 +179,7 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     if (browserRequests.size >= 60) return false;
     let resolve;
     const promise = new Promise(done => { resolve = done; });
-    const timeout = type === 'repeat' ? 4000 : 45000;
+    const timeout = queueControl(type) ? 4000 : 45000;
     const request = {
       id: newId(), type, amount, promise, state: 'queued', order: ++latestRequest,
       expiresAt: now() + timeout, preferredTabId: entry ? Number(entry[0]) : null,
@@ -217,6 +223,7 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     nativeTabPending = false;
     browserCapable = false;
     browserRepeat = false;
+    browserShuffle = false;
     for (const waiters of [...listenWaiters.values()]) {
       for (const waiter of [...waiters]) waiter.reply(message, status);
     }
@@ -226,7 +233,8 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     request: requestPlayerCommand, addLegacy: addCommand, dispatch,
     listen: listenForCommands, listenBrowser: listenForBrowser,
     get lastError() { return lastCommandError; },
-    get repeatError() { return repeatError(selectedEntry()?.[1]); },
+    get repeatError() { return queueError('repeat', selectedEntry()?.[1]); },
+    get shuffleError() { return queueError('shuffle', selectedEntry()?.[1]); },
     clearProtocolError() {
       if (['protocol-incompatible', 'invalid-protocol'].includes(lastCommandError)) lastCommandError = '';
     },

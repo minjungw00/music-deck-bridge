@@ -34,7 +34,6 @@ for (const protectedManifest of [false, true]) {
     storage.saveAuth({ origin, token: 'a'.repeat(64) });
     const lastTrack = createLastTrack({ storage, onChange() {} });
     const artwork = 'data:image/png;base64,' + readFileSync(join(installed, 'imgs/plugin/icon.png')).toString('base64');
-    lastTrack.setEnabled(true);
     lastTrack.observe({ title: 'Saved song', artist: 'Saved artist', trackId: 'aaaaaaaaaaa', playing: true }, artwork);
     // Exercise the SDK's opaque-manifest path; actual Maker Console DRM still needs a device test.
     if (protectedManifest) writeFileSync(join(installed, 'manifest.json'), 'opaque manifest fixture');
@@ -127,7 +126,7 @@ for (const protectedManifest of [false, true]) {
     const dialLayout = () => messages.findLast(m => m.event === 'setFeedbackLayout' && m.context === 'trackdial')?.payload.layout;
     await waitFor(() => dialLayout() === '$A1' && dialFeedback()?.icon === playImage);
     assert.equal(dialFeedback().value, 'Saved song');
-    const linked = { keyDisplay: 'linked', keyArtworkOnly: true };
+    const linked = { keyDisplay: 'linked' };
     send('willAppear', 'prev', { controller: 'Keypad', settings: linked, coordinates: { column: 1, row: 0 } }, 'art-top');
     send('willAppear', 'next', { controller: 'Keypad', settings: linked, coordinates: { column: 2, row: 1 } }, 'art-bottom');
     const svg = context => {
@@ -149,7 +148,7 @@ for (const protectedManifest of [false, true]) {
     assert.equal(reply.payload.pin, '654321');
     assert.ok(reply.payload.expiresAt > Date.now());
     const { token } = await post('/pair', { pin: reply.payload.pin });
-    assert.deepEqual(storage.readLastTrack(), { enabled: true });
+    assert.equal(storage.readLastTrack(), null);
     const state = { title: 'SDK song', artist: 'Artist', playing: true, volume: 50, rating: 'INDIFFERENT' };
     await post('/sync', { token, clientId: 1, state });
     await waitFor(() => toggleImage() === pauseImage);

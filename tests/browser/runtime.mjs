@@ -20,6 +20,7 @@ const fixture = (restored = false, ignoredStartupRequests = 0) => `<!doctype htm
  <button class="next-button" disabled onclick="control('next')">Next</button>
  <button class="volume" onclick="muted=!muted;record('mute')">Mute</button>
  <yt-icon-button class="repeat" onclick="repeat()" style="display:inline-block">Repeat</yt-icon-button>
+ <yt-icon-button class="shuffle" onclick="shuffle()" style="display:inline-block">Shuffle</yt-icon-button>
  <div id="volume-slider" style="width:100px;height:20px" aria-valuenow="50"></div>
  <ytmusic-like-button-renderer like-status="INDIFFERENT">
   <div id="button-shape-like"><button onclick="rate('LIKE')">Like</button></div>
@@ -36,6 +37,17 @@ const playerBar=document.querySelector('ytmusic-player-bar');
 const repeatModes=['NONE','ALL','ONE'];
 playerBar.repeatMode='NONE';
 playerBar.isRepeatButtonDisabled=false;
+playerBar.shuffleOn=false;
+playerBar.isShuffleDisabled=false;
+let legacyShuffle=false, shuffleOrder=['a','b','c'];
+playerBar.queue={getItems:()=>shuffleOrder};
+function shuffle(){
+ if(playerBar.isShuffleDisabled)return;
+ if(legacyShuffle)shuffleOrder.reverse();
+ else playerBar.shuffleOn=!playerBar.shuffleOn;
+ document.querySelector('.shuffle').setAttribute('shuffle-on',playerBar.shuffleOn);
+ record('shuffle');
+}
 function repeat(){
  if(playerBar.isRepeatButtonDisabled)return;
  playerBar.repeatMode=repeatModes[(repeatModes.indexOf(playerBar.repeatMode)+1)%repeatModes.length];
@@ -150,7 +162,8 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
       if (url.endsWith('/listen')) legacyPollsStarted++;
       if (url.endsWith('/sync')) {
         const { clientId, state } = JSON.parse(options.body);
-        playerSnapshots.push({ clientId, playing: state.playing, muted: state.muted, repeatMode: state.repeatMode });
+        playerSnapshots.push({ clientId, playing: state.playing, muted: state.muted,
+          repeatMode: state.repeatMode, shuffleEnabled: state.shuffleEnabled });
       }
       if (url.endsWith('/browser-result')) {
         const { ok, reason } = JSON.parse(options.body);
@@ -207,6 +220,17 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   await repeatPage.evaluate(() => { playerBar.isRepeatButtonDisabled = true; });
   await until(() => worker.evaluate(() => playerSnapshots.at(-1)?.repeatMode === null), 'disabled repeat state sync');
   await repeatPage.evaluate(() => { playerBar.isRepeatButtonDisabled = false; });
+  await until(() => worker.evaluate(() => playerSnapshots.at(-1)?.shuffleEnabled === false), 'shuffle mode sync');
+  let beforeShuffle = await worker.evaluate(() => acknowledgments.length);
+  await postEvent('shuffle');
+  assert.equal((await until(() => worker.evaluate(before => acknowledgments[before], beforeShuffle), 'Shuffle ACK')).ok, true);
+  await until(() => worker.evaluate(() => playerSnapshots.at(-1)?.shuffleEnabled === true), 'observed shuffle sync');
+  await repeatPage.evaluate(() => { playerBar.shuffleOn = false; legacyShuffle = true; });
+  await until(() => worker.evaluate(() => playerSnapshots.at(-1)?.shuffleEnabled === false), 'legacy shuffle mode sync');
+  beforeShuffle = await worker.evaluate(() => acknowledgments.length);
+  await postEvent('shuffle');
+  assert.equal((await until(() => worker.evaluate(before => acknowledgments[before], beforeShuffle), 'Legacy Shuffle ACK')).ok, true);
+  assert.equal(await repeatPage.evaluate(() => shuffleOrder.join('')), 'cba');
 
   // A second launch reuses the existing music tab; a normal input keeps working.
   for (const type of ['open', 'next']) {
@@ -378,6 +402,16 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
       return popupStatus = message.result.result.value;
     } finally { popupSession.off('Target.receivedMessageFromTarget', listener); }
   }
+  async function popupQueueControls(mode, repeat, shuffle) {
+    await until(() => popupEvaluate(`currentPlayer?.mode === "${mode}" && !document.getElementById("repeat").disabled`), 'popup repeat ready');
+    await popupEvaluate('document.getElementById("repeat").click()');
+    await until(() => music.evaluate(desired => playerBar.repeatMode === desired, repeat), 'popup repeat executed');
+    await until(() => popupEvaluate(`document.getElementById("repeatIcon").src.includes("repeat-${repeat.toLowerCase()}.png")`), 'popup repeat state');
+    await until(() => popupEvaluate('!document.getElementById("shuffle").disabled'), 'popup shuffle ready');
+    await popupEvaluate('document.getElementById("shuffle").click()');
+    await until(() => music.evaluate(desired => playerBar.shuffleOn === desired, shuffle), 'popup shuffle executed');
+    await until(() => popupEvaluate(`document.getElementById("shuffle").getAttribute("aria-pressed") === "${shuffle}"`), 'popup shuffle state');
+  }
   try {
     await until(async () => (await popupEvaluate()).includes('Fixture song'), 'initial popup track');
     await music.evaluate(() => { document.querySelector('ytmusic-player-bar .title').textContent = 'Updated fixture song'; });
@@ -412,6 +446,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
       await until(() => music.evaluate(desired => muted === desired, desired), 'popup site mute');
       await until(() => popupEvaluate(`document.getElementById("mute").getAttribute("aria-pressed") === "${desired}"`), 'observed popup mute');
     }
+    await popupQueueControls('bridge', 'ALL', true);
     assert.equal(await popupEvaluate('[...document.querySelectorAll(".media-button img")].every(img => img.complete && img.naturalWidth === 144)'), true, 'shared Stream Deck PNG resources loaded');
     const beforeLocal = await worker.evaluate(() => acknowledgments.length);
     await child.stop();
@@ -429,6 +464,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     await until(() => music.evaluate(() => muted), 'standalone mute');
     await popupEvaluate('document.getElementById("like").click()');
     await until(() => music.evaluate(() => document.querySelector('ytmusic-like-button-renderer').getAttribute('like-status') === 'LIKE'), 'standalone rating');
+    await popupQueueControls('local', 'ONE', false);
     assert.equal(await worker.evaluate(() => acknowledgments.length), beforeLocal, 'standalone inputs do not enter the stopped bridge channel');
     assert.equal(await worker.evaluate(() => pairedToken()), '', 'standalone controls need no pairing token');
     await worker.evaluate(token => chrome.storage.local.set({ bridgeToken: token }), token);

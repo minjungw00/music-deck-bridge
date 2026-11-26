@@ -66,5 +66,9 @@
   "io.github.minjungw00.musicdeckbridge.repeat": {
     "Name": "重複播放",
     "Tooltip": "依序切換 YouTube Music 中可用的重複播放模式。"
+  },
+  "io.github.minjungw00.musicdeckbridge.shuffle": {
+    "Name": "隨機播放",
+    "Tooltip": "打亂目前的 YouTube Music 播放佇列。"
   }
 }

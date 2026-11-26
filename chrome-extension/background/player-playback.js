@@ -16,9 +16,10 @@
       const state = readPlayer();
       const playbackConfirmed = state.playable && (Number.isFinite(state.state) ? state.state === 1 :
         state.playing && state.media?.readyState >= 2);
-      return { playing: state.playing, playbackConfirmed, muted: state.muted, repeatMode: readRepeat()?.mode ?? null };
+      return { playing: state.playing, playbackConfirmed, muted: state.muted,
+        repeatMode: readQueueControl('repeat')?.mode ?? null, shuffleEnabled: readQueueControl('shuffle')?.mode ?? null };
     }
-    if (type === 'repeat') return await cycleRepeat();
+    if (type === 'repeat' || type === 'shuffle') return await changeQueueControl();
     if (!['play', 'toggle', 'next', 'prev'].includes(type)) return { ok: false };
 
     const sequence = ++control.sequence;
@@ -49,27 +50,41 @@
       return button && !button.disabled && button.getAttribute('aria-disabled') !== 'true' &&
         !button.closest?.('[disabled], [aria-disabled="true"]');
     }
-    function readRepeat() {
+    function readQueueControl(command) {
       const owners = document.querySelectorAll('ytmusic-player-bar, ytmusic-player-controls');
       for (const owner of owners) {
-        if (owner.isRepeatButtonDisabled === true) continue;
-        const mode = owner.repeatMode;
-        if (!['NONE', 'ALL', 'ONE'].includes(mode)) continue;
-        const buttons = [...owner.querySelectorAll('yt-icon-button.repeat')].filter(candidate =>
+        const repeat = command === 'repeat';
+        if (repeat ? owner.isRepeatButtonDisabled === true :
+          owner.isShuffleDisabled === true || owner.isShuffleButtonDisabled === true) continue;
+        const mode = repeat ? owner.repeatMode : owner.shuffleOn;
+        if (repeat ? !['NONE', 'ALL', 'ONE'].includes(mode) : typeof mode !== 'boolean') continue;
+        const buttons = [...owner.querySelectorAll(`yt-icon-button.${command}`)].filter(candidate =>
           usable(candidate) && !candidate.hidden);
         const button = buttons.find(candidate => candidate.getClientRects().length > 0) || buttons[0];
         if (button) return { owner, button, mode };
       }
       return null;
     }
-    async function cycleRepeat() {
+    function queueItems(owner) {
+      try {
+        const items = owner.queue?.getItems?.();
+        return Array.isArray(items) ? items.slice(0, 256) : null;
+      } catch { return null; }
+    }
+    async function changeQueueControl() {
       const deadline = Math.min(Number(expiresAt) || Infinity, Date.now() + 1200);
-      const before = readRepeat();
-      if (!before || Date.now() >= deadline) return { ok: false, reason: 'repeat-unavailable' };
+      const before = readQueueControl(type);
+      if (!before || Date.now() >= deadline) return { ok: false, reason: `${type}-unavailable` };
+      // Some player variants shuffle locally without retaining an on/off mode.
+      const order = type === 'shuffle' && !before.mode ? queueItems(before.owner) : null;
       before.button.click();
       while (Date.now() < deadline) {
-        const after = readRepeat();
-        if (after?.owner === before.owner && after.mode !== before.mode) return { ok: true };
+        const after = readQueueControl(type);
+        if (after?.owner === before.owner) {
+          if (after.mode !== before.mode) return { ok: true };
+          const next = order && queueItems(after.owner);
+          if (next && next.length === order.length && next.some((item, index) => item !== order[index])) return { ok: true };
+        }
         await wait();
       }
       return { ok: false, reason: 'playback-unconfirmed' };

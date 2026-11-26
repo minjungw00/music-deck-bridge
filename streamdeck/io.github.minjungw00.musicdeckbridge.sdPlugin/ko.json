@@ -66,5 +66,9 @@
   "io.github.minjungw00.musicdeckbridge.repeat": {
     "Name": "반복",
     "Tooltip": "YouTube Music에서 사용 가능한 반복 모드를 순서대로 전환합니다."
+  },
+  "io.github.minjungw00.musicdeckbridge.shuffle": {
+    "Name": "셔플",
+    "Tooltip": "현재 YouTube Music 재생 대기열을 섞습니다."
   }
 }

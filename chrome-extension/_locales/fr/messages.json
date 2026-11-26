@@ -196,5 +196,26 @@
   },
   "openPlayerFailed": {
     "message": "Impossible d’ouvrir YouTube Music. Réessayez."
+  },
+  "repeatLabel": {
+    "message": "Répéter"
+  },
+  "repeatOff": {
+    "message": "Répétition désactivée"
+  },
+  "repeatAll": {
+    "message": "Tout répéter"
+  },
+  "repeatOne": {
+    "message": "Répéter un titre"
+  },
+  "shuffleLabel": {
+    "message": "Aléatoire"
+  },
+  "shuffleOff": {
+    "message": "Lecture aléatoire désactivée"
+  },
+  "shuffleOn": {
+    "message": "Lecture aléatoire activée"
   }
 }

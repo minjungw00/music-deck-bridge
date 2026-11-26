@@ -66,5 +66,9 @@
   "io.github.minjungw00.musicdeckbridge.repeat": {
     "Name": "Wiederholen",
     "Tooltip": "Wechselt zwischen den verfügbaren Wiederholungsmodi in YouTube Music."
+  },
+  "io.github.minjungw00.musicdeckbridge.shuffle": {
+    "Name": "Zufallswiedergabe",
+    "Tooltip": "Mischt die aktuelle YouTube Music-Warteschlange."
   }
 }

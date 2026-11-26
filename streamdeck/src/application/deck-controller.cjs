@@ -5,8 +5,9 @@ const { limit } = require('../domain/values.cjs');
 const { PLAYER_STALE_MS } = require('../domain/player-state.cjs');
 const { validFeedbackSeconds } = require('../domain/volume-feedback.cjs');
 const { createVolumeKeyFeedback } = require('./volume-key-feedback.cjs');
+const { albumGroups, albumFit, keyDisplay } = require('../presentation/album-groups.cjs');
 
-function createDeckController({ displayed, commands, session, ports, players, lastTrack, observeTrack, output, onChange,
+function createDeckController({ displayed, commands, session, ports, players, output, onChange,
   version, now = Date.now }) {
   function controlPlayer(context, type, amount = 0) {
     void commands.request(type, amount).then(ok => { if (ok === false) output.send({ event: 'showAlert', context }); });
@@ -104,10 +105,19 @@ function createDeckController({ displayed, commands, session, ports, players, la
         });
         return;
       }
-      if (request === 'generate-pin' || request === 'get-connection' || request === 'set-last-track') {
-        const saveFailed = request === 'set-last-track' && typeof e.payload.enabled === 'boolean' &&
-          lastTrack?.setEnabled(e.payload.enabled) === false;
-        if (request === 'set-last-track' && !saveFailed) observeTrack?.();
+      if (request === 'generate-pin' || request === 'get-connection' || request === 'set-linked-fit') {
+        const item = displayed.get(e.context);
+        const group = item && keyDisplay(item.settings) === 'linked' ?
+          albumGroups(displayed).find(members => members.some(key => key.context === e.context)) || [{ context: e.context, settings: item.settings }] : [];
+        if (request === 'set-linked-fit' && ['width', 'height'].includes(e.payload.fit) && group.length) {
+          for (const key of group) {
+            if (key.settings.linkedArtworkFit === e.payload.fit) continue;
+            const settings = { ...key.settings, linkedArtworkFit: e.payload.fit };
+            displayed.get(key.context).settings = key.settings = settings;
+            output.send({ event: 'setSettings', context: key.context, payload: { settings } });
+          }
+          onChange();
+        }
         const chosen = players.selected();
         output.send({ event: 'sendToPropertyInspector', context: e.context,
           payload: { type: 'connection', paired: session.paired,
@@ -116,8 +126,8 @@ function createDeckController({ displayed, commands, session, ports, players, la
             playerStale: Boolean(chosen) && now() - chosen[1].lastMediaSyncAt > PLAYER_STALE_MS,
             pin: session.pin, expiresAt: session.expiresAt,
             serverPort: ports.port, bridgeOnline: ports.online, portError: ports.error, lastCommandError: commands.lastError,
-            repeatError: commands.repeatError, keepLastTrack: lastTrack?.enabled === true,
-            ...(request === 'set-last-track' ? { lastTrackSaveFailed: saveFailed } : {}),
+            repeatError: commands.repeatError, shuffleError: commands.shuffleError,
+            linkedArtworkFit: albumFit(group),
             pluginVersion: version, ...protocol.descriptor, compatibility: session.compatibility } });
       }
       return;
@@ -128,7 +138,7 @@ function createDeckController({ displayed, commands, session, ports, players, la
         return;
       }
       const type = ({ nowplaying: 'toggle', toggle: 'toggle', open: 'open', prev: 'prev',
-        next: 'next', mute: 'mute', like: 'like', dislike: 'dislike', repeat: 'repeat' })[kind];
+        next: 'next', mute: 'mute', like: 'like', dislike: 'dislike', repeat: 'repeat', shuffle: 'shuffle' })[kind];
       if (type) controlPlayer(e.context, type);
     } else if (e.event === 'dialRotate') {
       const ticks = Number(e.payload?.ticks) || 0;

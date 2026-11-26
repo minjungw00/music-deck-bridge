@@ -7,11 +7,10 @@ const { KEY_ACTION_NAMES } = require('../domain/actions.cjs');
 const keyActions = new Set(KEY_ACTION_NAMES);
 const EMPTY_KEY_IMAGE = 'data:image/svg+xml;base64,' +
   btoa('<svg xmlns="http://www.w3.org/2000/svg" width="144" height="144"><rect width="144" height="144" fill="black"/></svg>');
-const imageOnly = settings => keyDisplay(settings) !== 'default' && settings?.keyArtworkOnly === true;
 
 function needsMarquee(displayed, actionName) {
   return [...displayed.values()].some(item =>
-    (actionName(item.action) === 'nowplaying' && !imageOnly(item.settings) && item.settings?.titleMode === 'scroll') ||
+    (actionName(item.action) === 'nowplaying' && keyDisplay(item.settings) === 'default' && item.settings?.titleMode === 'scroll') ||
     (actionName(item.action) === 'trackdial' && (item.settings?.dialDisplay === 'artwork' ?
       item.settings?.artworkShowTitle === true && item.settings?.artworkTitleMode === 'scroll' :
       item.settings?.infoTitleMode === 'scroll')));
@@ -19,7 +18,7 @@ function needsMarquee(displayed, actionName) {
 
 // Output and artwork are ports: this module can run in Node, tests or a preview.
 function createRenderer({ displayed, covers, selectedEntry, actionName, online = () => true,
-  lastTrack = () => null, repeatAvailable = () => true,
+  lastTrack = () => null, repeatAvailable = () => true, shuffleAvailable = () => true,
   tr = key => translate('en', key), now = Date.now, fitDialArtwork, keyTextBackground, volumeKeyImage,
   setTimeout = globalThis.setTimeout, clearTimeout = globalThis.clearTimeout,
   output: { setImage, setTitle, setFeedback, sendStream } }) {
@@ -31,11 +30,13 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
   const coverFor = track => track?.image || covers.image(track?.cover) || null;
 
   function keyArtwork(item, cover, lines, tile, badge) {
-    const signature = JSON.stringify([lines, tile, badge]);
+    const position = item.settings?.keyArtworkIconPosition;
+    const corner = ['top-right', 'bottom-left', 'bottom-right'].includes(position) ? position : 'top-left';
+    const signature = JSON.stringify([lines, tile, badge, corner]);
     if (item.keyCover !== cover || item.keyArtworkSignature !== signature) {
       item.keyCover = cover;
       item.keyArtworkSignature = signature;
-      item.keyArtwork = keyTextBackground(cover, lines, tile, badge);
+      item.keyArtwork = keyTextBackground(cover, lines, tile, badge, corner);
     }
     return item.keyArtwork;
   }
@@ -47,9 +48,15 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
       const mode = repeatAvailable() ? state?.repeatMode?.toLowerCase() : null;
       return `imgs/actions/repeat/${mode || 'unavailable'}@2x.png`;
     }
+    if (kind === 'shuffle') {
+      const mode = shuffleAvailable() && typeof state?.shuffleEnabled === 'boolean' ?
+        (state.shuffleEnabled ? 'on' : 'off') : 'unavailable';
+      return `imgs/actions/shuffle/${mode}@2x.png`;
+    }
     const selected = (kind === 'like' || kind === 'dislike') && state?.rating === kind.toUpperCase();
     return `imgs/actions/${kind}/${selected ? 'selected' : 'key'}@2x.png`;
   }
+  const overlay = (settings, icon) => settings?.keyArtworkShowIcon === true ? icon.replace('@2x.png', '-overlay.png') : '';
 
   function queueDialFeedback(context, item, frame) {
     // Keep one in-flight frame and one replaceable pending frame per dial.
@@ -129,8 +136,8 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
   }
   function renderCurrentTrackKey(context, item, state, tile, playback = state) {
     const settings = item.settings || {};
-    const only = imageOnly(settings);
-    const showTitle = !only && settings.showTitle !== false, showArtist = !only && settings.showArtist !== false;
+    const artwork = keyDisplay(settings) !== 'default';
+    const showTitle = !artwork && settings.showTitle !== false, showArtist = !artwork && settings.showArtist !== false;
     const below = settings.artistPosition !== 'inline';
     const sig = JSON.stringify([state?.trackId, state?.title, state?.artist, showTitle, showArtist, below, settings.titleMode]);
     if (item.trackSignature !== sig) { item.trackSignature = sig; item.marqueeStart = now(); }
@@ -143,22 +150,21 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     writeTitle(context, item, text);
     const cover = coverFor(state);
     const lines = settings.titleBackground === true && text ? below && rawTitle && rawArtist ? 2 : 1 : 0;
-    const badge = cover && !only && keyDisplay(settings) !== 'default' ? keyIcon('nowplaying', playback) : '';
-    const image = keyArtwork(item, cover, lines, tile, badge) || (only ? EMPTY_KEY_IMAGE : null);
+    const badge = artwork ? overlay(settings, keyIcon('nowplaying', playback)) : '';
+    const image = keyArtwork(item, cover, lines, tile, badge) || (artwork ? EMPTY_KEY_IMAGE : null);
     writeImage(context, item, image);
   }
   function renderActionKey(context, item, kind, chosen, track, tile) {
     const icon = keyIcon(kind, chosen?.[1]);
     const artwork = keyDisplay(item.settings) !== 'default';
-    const only = imageOnly(item.settings);
-    const frame = only ? null : item.volumeFeedback?.frame(chosen, item.settings, now());
+    const frame = artwork ? null : item.volumeFeedback?.frame(chosen, item.settings, now());
     const value = frame?.volume != null ? volumeKeyImage?.(frame.volume, item.settings?.volumeShowPercent === true) : null;
     const nativeImage = kind === 'prev' || kind === 'next' || kind === 'open';
-    const hideTitle = kind === 'toggle' || kind === 'like' || kind === 'dislike' || kind === 'open' || kind === 'repeat';
+    const hideTitle = ['toggle', 'like', 'dislike', 'open', 'repeat', 'shuffle'].includes(kind);
     if (artwork) {
       const cover = coverFor(track);
-      const composed = keyArtwork(item, cover, 0, tile, only ? '' : icon);
-      writeImage(context, item, value || composed || (only ? EMPTY_KEY_IMAGE : icon));
+      const composed = keyArtwork(item, cover, 0, tile, overlay(item.settings, icon));
+      writeImage(context, item, composed || EMPTY_KEY_IMAGE);
     } else {
       if (!nativeImage || item.albumMode) writeImage(context, item, value || (nativeImage ? null : icon));
       if (item.albumMode) {

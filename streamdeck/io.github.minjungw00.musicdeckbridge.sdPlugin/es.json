@@ -66,5 +66,9 @@
   "io.github.minjungw00.musicdeckbridge.repeat": {
     "Name": "Repetir",
     "Tooltip": "Alterna los modos de repetición disponibles en YouTube Music."
+  },
+  "io.github.minjungw00.musicdeckbridge.shuffle": {
+    "Name": "Aleatorio",
+    "Tooltip": "Mezcla la cola actual de YouTube Music."
   }
 }
