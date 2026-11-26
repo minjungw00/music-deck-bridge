@@ -6,6 +6,7 @@ Evidence through November 27, 2026 (Asia/Seoul). [Release verification](releases
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
+| November 27 Windows and YouTube Music, `e633272` | Installed plugin bundle and Chrome extension matched the development build. Windows recognized Stream Deck +, and the real inspector reported a connected player. The Chrome toolbar popup and the paired bridge changed Repeat and Shuffle on live YouTube Music. [Windows record](#november-27-windows-and-youtube-music) | The installed-app launch reported `standalone: false`. Physical key and dial output, restart restoration and a mixed-version installation remain open. |
 | November 27 1.3.0-dev layout revision, `aa76314` | 309 Node tests, two Python packaging tests, static checks and three Chromium fixtures passed. The linked-fit control matched the dial's SDPI styles. Chromium verified three edge-aligned popup rows in eight locales. Node verified nine icon positions and shared gap settings. | Mock host and routed player. Physical key spacing, Windows device rendering and signed-in Chrome/PWA remain unverified. |
 | November 27 revised 1.3.0-dev, `bc74b4d` | 308 Node tests, two Python packaging tests, static checks and three Chromium fixtures passed. Qt verified shared width/height cropping with sparse groups. Alpha and pixel comparisons verified transparent corner assets and equal Repeat arrow weights. | Linux fixtures, mock Stream Deck host and routed YouTube Music. Physical controls, Windows restart and signed-in Chrome/PWA remain manual checks. |
 | November 27 local 1.3.0-dev, `c0e0e10` | 306 Node tests, two Python packaging tests, static checks, three Chromium 158 fixtures, and Qt 6.10.2 key/dial rendering comparisons passed. The bundled plugin restored a saved track without Chrome, joined diagonal keys and repainted the remaining key after removal. MV3 exercised sequential Repeat, web UI changes and disabled Repeat. | Linux, a mock Stream Deck host and a routed YouTube Music fixture. Physical display, Windows reboot, signed-in Chrome/PWA and store-processed DRM operation remain unverified. |
@@ -36,6 +37,16 @@ The November 7 `main` run used `@elgato/streamdeck` 3.0.4, `@elgato/cli` 1.10.4 
 | Key/dial output | Settings, profile reappearance, rotation/press/touch, proportional artwork, artist placement, backdrops and scrolling; Qt 6.10.3 reference rendering |
 | Popup | Real toolbar controls, captured routes, slider coalescing/closure, native catalogs and button bounds in all eight UI languages; separately labeled sample previews |
 | Distribution | Real worker import graph, serialized MAIN entry point, package allowlists/notices, fixed development versions and source/checksum metadata |
+
+### November 27 Windows and YouTube Music
+
+The clean `1.3.0-dev+ge63327252fe8.local20261126200306409` build passed 315 Node tests, three Chromium fixtures, two Python packaging tests, static checks and Qt 6.10.2 key and dial pixel comparisons. Both local archives matched their staged files and recorded checksums.
+
+On Windows build 26300, Stream Deck 7.6.1.23033 recognized a connected Stream Deck + and the real property inspector showed a connected Music player. The installed plugin bundle matched the development installer by SHA-256. The paired unpacked extension matched all 47 runtime files in the Chrome ZIP and ran in Chrome 158.0.8127.36.
+
+A public test track played in a regular YouTube Music tab and delivered its artwork to the plugin. The actual Chrome toolbar popup cycled Repeat from Off to All to One to Off and switched Shuffle on and off. The live player snapshots confirmed each change. A separate launch through the registered YouTube Music app ID opened and played the same track. The paired bridge confirmed the same Repeat and Shuffle changes and reported `standalone: false` for that launch. App classification, selection priority and YouTube Music sign-in state require separate verification.
+
+Windows retained the test track and artwork in the single `last-track.json` record under the existing pairing after the test windows closed. Six linked-artwork key settings were present in the Windows profiles. Physical display and input behavior, restoration after application or PC restart, and a real mixed-version `1.2.0` / `1.3.0` installation require separate observations.
 
 ### November 27 1.3.0-dev measured gaps and popup layout
 
