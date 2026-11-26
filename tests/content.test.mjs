@@ -6,7 +6,7 @@ import { playerHarness } from './helpers/player.mjs';
 
 async function scenario(useMediaSession=false, { commands, manualVolume, compact = false,
   rating = 'INDIFFERENT', ratingsAvailable = true, ratingsDisabled = false,
-  browserInputs = [], initiallyPaused = false } = {}) {
+  browserInputs = [], initiallyPaused = false, displayMode = 'standalone' } = {}) {
   let playClicks = 0, nextClicks = 0, syncCount = 0, lastState;
   const player = playerHarness({ compact, delay: 2 });
   const { audio } = player;
@@ -29,7 +29,7 @@ async function scenario(useMediaSession=false, { commands, manualVolume, compact
   let gotCommands=false;
   let interval;
   const sandbox={
-    window:{matchMedia(){return {matches:true};}},
+    window: { matchMedia(query) { return { matches: query === `(display-mode: ${displayMode})` }; } },
     location:{href:'https://music.youtube.com/'},
     navigator:{mediaSession:{metadata:{title:'Media title', artist:'Media artist',
       artwork:[{src:'https://lh3.googleusercontent.com/metadata=w500',sizes:'500x500'}]}}},
@@ -107,6 +107,15 @@ test('Current track: artwork from YTM player-bar image, volume commands',async()
 test('Falls back to Media Session artwork when thumbnail DOM contains no image',async()=>{
   const r=await scenario(true);
   assert.equal(r.lastState.cover,'https://lh3.googleusercontent.com/metadata=w500');
+});
+
+test('the minimal-ui app window is reported as an app while browser and fullscreen tabs are not', async () => {
+  for (const [displayMode, standalone] of [
+    ['minimal-ui', true], ['browser', false], ['fullscreen', false], ['standalone', true], ['window-controls-overlay', true],
+  ]) {
+    const { lastState } = await scenario(false, { commands: [], displayMode });
+    assert.equal(lastState.standalone, standalone, displayMode);
+  }
 });
 
 test('rapid dial commands stay ordered and report the site percentage rather than raw audio gain',async()=>{

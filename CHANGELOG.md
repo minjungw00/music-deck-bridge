@@ -8,6 +8,7 @@
 - Arrange the Chrome popup in three edge-aligned rows for transport, ratings and queue controls, and volume.
 - Keep a single last-played track and its artwork locally for offline display after Chrome, Stream Deck or Windows restarts. Each confirmed track replaces the previous one.
 - Place Chrome connection and port settings first while Chrome is disconnected.
+- Recognize the installed YouTube Music window in `minimal-ui` mode and prefer it over regular browser tabs.
 
 ## v1.2.0 — 2026-11-14
 

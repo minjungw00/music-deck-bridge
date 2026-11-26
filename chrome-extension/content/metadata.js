@@ -128,6 +128,7 @@
         muted: el ? !!el.muted : false,
         volume: siteVolume() ?? (el ? Math.round(el.volume * 100) : 0),
         standalone: window.matchMedia('(display-mode: standalone)').matches ||
+          window.matchMedia('(display-mode: minimal-ui)').matches ||
           window.matchMedia('(display-mode: window-controls-overlay)').matches,
       };
     }
