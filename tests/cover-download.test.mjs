@@ -2,15 +2,17 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createCoverStore, validCover, fetchCover } from '../streamdeck/src/adapters/cover-store.cjs';
 
-const response = () => new Response(Uint8Array.of(1, 2, 3), {
-  headers: { 'content-type': 'image/webp', 'content-length': '3' },
+const webp = 'UklGRh4AAABXRUJQVlA4TBEAAAAvAUAAAAdQ1U6Uuf+BiOh/AAA=';
+const webpUri = `data:image/webp;base64,${webp}`;
+const response = () => new Response(Buffer.from(webp, 'base64'), {
+  headers: { 'content-type': 'image/webp' },
 });
 
 test('album-cover downloader accepts webp from numbered Googleusercontent hosts', async () => {
   assert.equal(validCover('https://lh5.googleusercontent.com/path'), true);
   assert.equal(validCover('http://localhost:8080/path'), false);
   assert.equal(await fetchCover('https://lh5.googleusercontent.com/path', async () => response()),
-    'data:image/webp;base64,AQID');
+    webpUri);
 });
 
 test('album cover redirects must remain within the approved hosts', async () => {
@@ -41,7 +43,7 @@ test('cover failures back off, retry and become ready without retaining an old s
   finish(response());
   await pending;
   assert.equal(store.status(src), 'ready');
-  assert.equal(store.image(src), 'data:image/webp;base64,AQID');
+  assert.equal(store.image(src), webpUri);
   store.resetSelection();
   assert.equal(store.image(src), '');
   await store.load(src);
@@ -85,4 +87,17 @@ test('an unavailable high-resolution cover falls back only to an approved image 
   } });
   await recovered.load(source, fallback);
   assert.equal(recovered.status(source), 'ready');
+});
+
+test('an unreadable or mislabeled raster never becomes the ready cover', async () => {
+  const source = 'https://i.ytimg.com/vi/high.jpg', fallback = 'https://i.ytimg.com/vi/low.webp';
+  const mislabeled = () => new Response(Buffer.from(webp, 'base64'), { headers: { 'content-type': 'image/jpeg' } });
+  const unreadable = () => new Response('invalid', { headers: { 'content-type': 'image/png' } });
+  await assert.rejects(fetchCover(source, mislabeled), /이미지 데이터/);
+  await assert.rejects(fetchCover(source, unreadable), /이미지 데이터/);
+  const store = createCoverStore({ selectedSource: () => source, onChange() {},
+    fetch: async url => url === fallback ? response() : mislabeled() });
+  await store.load(source, fallback);
+  assert.equal(store.status(source), 'ready');
+  assert.equal(store.image(source), webpUri);
 });

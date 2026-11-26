@@ -1,5 +1,6 @@
 'use strict';
 const artwork = require('../../../chrome-extension/artwork-policy.js');
+const { rasterDimensions, MAX_IMAGE_BYTES } = require('../domain/raster-artwork.cjs');
 const validCover = source => artwork.parse(source) !== null;
 async function fetchCover(source, fetch = globalThis.fetch) {
   // Reject redirects off Google/YouTube image hosts; do not follow to arbitrary targets.
@@ -21,7 +22,7 @@ async function fetchCover(source, fetch = globalThis.fetch) {
     const type = response.headers.get('content-type')?.split(';')[0]?.trim()?.toLowerCase();
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(type)) throw new Error(`지원하지 않는 이미지 형식: ${type || 'unknown'}`);
     const size = Number(response.headers.get('content-length'));
-    if (size > 2000000) throw new Error('이미지 크기 제한 초과 (2MB)');
+    if (size > MAX_IMAGE_BYTES) throw new Error('이미지 크기 제한 초과 (2MB)');
     const reader = response.body?.getReader();
     if (!reader) throw new Error('이미지 본문 없음');
     const chunks = []; let total = 0;
@@ -29,11 +30,13 @@ async function fetchCover(source, fetch = globalThis.fetch) {
       const { done, value } = await reader.read();
       if (done) break;
       total += value.byteLength;
-      if (total > 2000000) { await reader.cancel(); throw new Error('이미지 크기 제한 초과 (2MB)'); }
+      if (total > MAX_IMAGE_BYTES) { await reader.cancel(); throw new Error('이미지 크기 제한 초과 (2MB)'); }
       chunks.push(Buffer.from(value));
     }
     if (!total) throw new Error('비어 있는 이미지');
-    return `data:${type};base64,${Buffer.concat(chunks).toString('base64')}`;
+    const bytes = Buffer.concat(chunks, total);
+    if (!rasterDimensions(bytes, type.slice('image/'.length))) throw new Error('잘못된 이미지 데이터');
+    return `data:${type};base64,${bytes.toString('base64')}`;
   }
   throw new Error('이미지 리디렉션이 너무 많음');
 }
