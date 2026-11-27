@@ -29,7 +29,7 @@ CHROME_FILES = (
 STREAMDECK_FILES = (
     "bin/plugin.js", "property-inspector/settings.html", "property-inspector/settings.js",
     "property-inspector/sdpi-components.js", "property-inspector/language.js", "property-inspector/locales.js",
-    "property-inspector/volume-editor.js", "layouts/current-track-artwork.json", "layouts/current-track-info.json",
+    "property-inspector/key-display.js", "property-inspector/volume-editor.js", "layouts/current-track-artwork.json", "layouts/current-track-info.json",
     "layouts/current-track-title.json",
     *(f"{locale}.json" for locale in LOCALES),
 )

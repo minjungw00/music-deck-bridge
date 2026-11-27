@@ -8,7 +8,8 @@ import { WebSocketServer } from 'ws';
 const { supported, html } = createRequire(import.meta.url)('../../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/property-inspector/language.js');
 const inspector = new URL('../../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/property-inspector/settings.html', import.meta.url);
 const actionPrefix = 'io.github.minjungw00.musicdeckbridge.';
-const checkedByDefault = new Set(['showTitle', 'showArtist', 'volumeShowValue']);
+const trackTextSettings = { showTitle: 'keyShowTitle', showArtist: 'keyShowArtist' };
+const legacyTrack = { keyDisplay: 'default', showArtist: false };
 const saved = { showTitle: false, showArtist: true, titleBackground: false, artworkShowTitle: true,
   artworkShowArtist: true, artworkTitleBackground: false, volumeShowValue: true, volumeShowPercent: false,
   volumeStep: 3, volumeFeedbackSeconds: 1.5, dialDisplay: 'artwork', infoTitleMode: 'scroll',
@@ -36,8 +37,9 @@ test('real SDPI components localize their first rendered labels without changing
         payload: { type: 'connection', paired: false, serverPort: 17864 } }));
     });
   });
-  for (const language of supported) for (const settings of [{}, saved]) {
+  for (const language of supported) for (const settings of language === 'ko' ? [{}, saved, legacyTrack] : [{}, saved]) {
     for (const action of ['nowplaying', 'trackdial', 'volumeup', 'volumedown']) {
+      if (settings === legacyTrack && action !== 'nowplaying') continue;
       const page = await browser.newPage({ viewport: { width: 380, height: 900 } });
       const errors = [];
       page.on('pageerror', error => errors.push(error.message));
@@ -81,17 +83,20 @@ test('real SDPI components localize their first rendered labels without changing
       });
       for (const select of selects) {
         assert.deepEqual(select.actual, select.expected, `${language}/${action}/${select.id}: rendered dropdown text`);
-        if (select.id === 'keyDisplay' && (language === 'ko' || language === 'en')) {
-          const [trackInfo, defaultDisplay] = language === 'ko' ? ['곡 정보', '기본 표시'] : ['Track info', 'Default'];
-          const [defaultOption] = select.actual;
-          assert.deepEqual(defaultOption, ['default', action === 'nowplaying' ? trackInfo : defaultDisplay]);
+        if (select.id === 'keyDisplay') {
+          const iconValue = action === 'nowplaying' ? 'icon' : 'default';
+          assert.deepEqual(select.actual.map(([value]) => value), [iconValue, 'artwork', 'linked']);
+          if (language === 'ko' || language === 'en') {
+            assert.equal(select.actual[0][1], language === 'ko' ? '아이콘' : 'Icon');
+          }
         }
         if (select.id === 'linkedArtworkFit') {
           assert.equal(select.selected, 'height');
           assert.equal(select.value, 'height');
           continue;
         }
-        assert.equal(select.selected, settings[select.id] || select.fallback);
+        const legacyDisplay = settings === legacyTrack && select.id === 'keyDisplay';
+        assert.equal(select.selected, (legacyDisplay ? undefined : settings[select.id]) || select.fallback);
         assert.equal(select.value, settings[select.id]);
       }
       assert.equal(await page.locator('#albumGroup').evaluate(element => element.value), settings.albumGroup);
@@ -100,8 +105,11 @@ test('real SDPI components localize their first rendered labels without changing
         assert.equal(label.actual, label.expected + (label.kind === 'sdpi-item' ? ':' : ''),
           `${language}/${action}/${Object.keys(settings).length ? 'saved' : 'fresh'}/${label.id}`);
         if (label.kind === 'sdpi-checkbox') {
-          assert.equal(label.value, settings[label.id], `${label.id}: localization preserves the setting value`);
-          assert.equal(label.checked, settings[label.id] ?? checkedByDefault.has(label.id), `${label.id}: rendered checkbox state`);
+          const setting = trackTextSettings[label.id] || label.id;
+          const defaultChecked = label.id === 'volumeShowValue' ||
+            (Boolean(trackTextSettings[label.id]) && action === 'nowplaying' && settings !== saved && settings[label.id] !== false);
+          assert.equal(label.value, settings[setting], `${label.id}: localization preserves the setting value`);
+          assert.equal(label.checked, settings[setting] ?? defaultChecked, `${label.id}: rendered checkbox state`);
         }
       }
       const clipped = await page.evaluate(() => [...document.querySelectorAll('sdpi-item, sdpi-checkbox')].flatMap(element => {
@@ -134,17 +142,31 @@ test('real SDPI components localize their first rendered labels without changing
           assert.ok(savedMode(), mode);
         }
       }
-      if (language === 'ko' && action === 'nowplaying' && settings !== saved) {
+      if (language === 'ko' && action === 'nowplaying' && settings !== saved && settings !== legacyTrack) {
         const display = page.locator('#keyDisplay select');
         const iconRow = page.locator('#keyArtworkIconRow');
+        await display.selectOption('icon');
+        await iconRow.waitFor({ state: 'hidden' });
+        const title = page.locator('#showTitle input');
+        const artist = page.locator('#showArtist input');
+        assert.equal(await title.isChecked(), false);
+        assert.equal(await artist.isChecked(), false);
+        await page.locator('#showTitle .checkable-symbol').click();
+        await page.locator('#showArtist .checkable-symbol').click();
         for (const mode of ['artwork', 'linked']) {
           await display.selectOption(mode);
           await iconRow.waitFor({ state: 'visible' });
+          assert.equal(await title.isChecked(), true, mode);
+          assert.equal(await artist.isChecked(), true, mode);
           assert.equal(await page.locator('#keyArtworkShowIcon input').isChecked(), false, mode);
           assert.equal(await page.locator('#keyArtworkIconPositionRow').isVisible(), false, mode);
-          await display.selectOption('default');
+          await display.selectOption('icon');
           await iconRow.waitFor({ state: 'hidden' });
         }
+        await page.waitForFunction(() => document.querySelector('#showTitle').value === true &&
+          document.querySelector('#showArtist').value === true);
+        assert.ok(messages.slice(before).some(message => message.event === 'setSettings' &&
+          message.payload?.keyShowTitle === true && message.payload?.keyShowArtist === true));
       }
       if (language === 'ko' && action === 'nowplaying' && settings === saved) {
         await page.locator('#keyArtworkIconPositionRow').waitFor({ state: 'visible' });
@@ -189,5 +211,5 @@ test('real SDPI components localize their first rendered labels without changing
       await page.close();
     }
   }
-  t.diagnostic('Bundled sdpi-components 4.0.1 and real Shadow DOM; 64 locale/action/settings combinations. Mock Stream Deck host; no physical host observation.');
+  t.diagnostic('Bundled sdpi-components 4.0.1 and real Shadow DOM; 65 locale/action/settings combinations. Mock Stream Deck host; no physical host observation.');
 });

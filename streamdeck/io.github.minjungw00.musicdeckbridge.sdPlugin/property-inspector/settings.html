@@ -46,7 +46,7 @@
   <section id="keyArtworkSection" class="hidden">
     <sdpi-item id="keyDisplayRow" label="Key display">
       <sdpi-select id="keyDisplay" setting="keyDisplay" default="default">
-        <option id="optKeyDefault" value="default">Default</option>
+        <option id="optKeyIcon" value="default">Icon</option>
         <option id="optKeyArtwork" value="artwork">Album artwork</option>
         <option id="optKeyLinked" value="linked">Linked album artwork</option>
       </sdpi-select>
@@ -95,10 +95,10 @@
   </section>
   <section id="trackSection" class="hidden">
     <sdpi-item id="keyTitleRow" label="Song name">
-      <sdpi-checkbox id="showTitle" setting="showTitle" default="true" label="Show song name"></sdpi-checkbox>
+      <sdpi-checkbox id="showTitle" setting="keyShowTitle" label="Show song name"></sdpi-checkbox>
     </sdpi-item>
     <sdpi-item id="keyArtistRow" label="Artist">
-      <sdpi-checkbox id="showArtist" setting="showArtist" default="true" label="Show artist name"></sdpi-checkbox>
+      <sdpi-checkbox id="showArtist" setting="keyShowArtist" label="Show artist name"></sdpi-checkbox>
     </sdpi-item>
     <sdpi-item id="keyArtistPositionRow" label="Artist position">
       <sdpi-select id="artistPosition" setting="artistPosition" default="below">
@@ -217,6 +217,7 @@
   <script src="language.js"></script>
   <script src="locales.js"></script>
   <script src="volume-editor.js"></script>
+  <script src="key-display.js"></script>
   <script src="settings.js"></script>
 </body>
 </html>

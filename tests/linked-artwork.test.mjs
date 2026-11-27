@@ -123,6 +123,39 @@ test('returning to the saved track retains its cover while the live cover loads'
   for (const image of images.values()) assert.ok(!decode(image).includes(raster));
 });
 
+test('current track text works with icon, individual artwork and linked artwork layouts', async () => {
+  const track = { ...key(0, 0), action: PLUGIN_ID + '.nowplaying' };
+  const displayed = new Map([['track', track], ['next', { ...key(0, 1), action: PLUGIN_ID + '.next' }]]);
+  const state = { title: 'A song', artist: 'An artist', playing: true, image: raster };
+  const images = new Map(), titles = new Map();
+  const renderer = createRenderer({ displayed, actionName, selectedEntry: () => ['8', state],
+    covers: { image: () => '' }, keyTextBackground,
+    output: { setImage: (id, value) => images.set(id, value), setTitle: (id, value) => titles.set(id, value) } });
+  async function render(settings) {
+    track.settings = settings;
+    renderer.paint();
+    await renderer.settled();
+    return { title: titles.get('track'), image: images.get('track') };
+  }
+  assert.deepEqual(await render({ keyDisplay: 'default', showArtist: false }), { title: 'A song', image: raster });
+  assert.deepEqual(await render({ keyDisplay: 'artwork', showTitle: true, showArtist: true }), { title: '', image: raster });
+  assert.deepEqual(await render({ keyDisplay: 'icon', keyShowTitle: true }), {
+    title: 'A song', image: 'imgs/actions/toggle/pause@2x.png',
+  });
+  for (const mode of ['icon', 'artwork', 'linked']) {
+    const result = await render({ keyDisplay: mode, keyShowTitle: true, keyShowArtist: true, titleBackground: true });
+    assert.equal(result.title, 'A song\nAn artist');
+    const svg = decode(result.image);
+    assert.match(svg, /y="90" width="144" height="54" fill="black"/);
+    assert.equal(svg.includes(raster), mode !== 'icon');
+    if (mode === 'linked') assert.match(svg, /x="72" y="0" width="144" height="144"/);
+    assert.equal(titles.get('next'), '', 'the linked title is local to the current track key');
+  }
+  assert.deepEqual(await render({ keyDisplay: 'artwork', keyShowTitle: false, keyShowArtist: true }), {
+    title: 'An artist', image: raster,
+  });
+});
+
 test('shared artwork settings persist from any member and the optional icon supports all nine positions', () => {
   const displayed = new Map([
     ['top', { ...key(0, 0), action: PLUGIN_ID + '.prev' }],

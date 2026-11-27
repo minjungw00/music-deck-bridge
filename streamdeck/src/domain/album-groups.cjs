@@ -1,10 +1,7 @@
 'use strict';
 // Shared geometry and settings for linked keys, independent of rendering and SDK output.
+const { keyDisplay } = require('../../io.github.minjungw00.musicdeckbridge.sdPlugin/property-inspector/key-display.js');
 const cell = (row, column) => `${row}:${column}`;
-
-function keyDisplay(settings) {
-  return settings?.keyDisplay === 'linked' || settings?.keyDisplay === 'artwork' ? settings.keyDisplay : 'default';
-}
 
 function albumGroups(displayed) {
   const devices = new Map();

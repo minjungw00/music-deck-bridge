@@ -92,7 +92,9 @@ test('artwork settings and disconnected connection controls are exposed on their
   assert.equal(key.elems.albumGroupOptions.classList.hidden, false);
   assert.equal(key.elems.keyArtworkIconRow.classList.hidden, false);
   assert.equal(key.elems.keyArtworkIconPositionRow.classList.hidden, true);
-  assert.equal(key.elems.trackSection.classList.hidden, true);
+  assert.equal(key.elems.trackSection.classList.hidden, false);
+  assert.equal(key.elems.showTitle.defaultValue, false);
+  assert.equal(key.elems.showArtist.defaultValue, false);
   key.subscribers.settings({ payload: { settings: { keyDisplay: 'linked', keyArtworkShowIcon: true } } });
   assert.equal(key.elems.keyArtworkIconPositionRow.classList.hidden, false);
   key.elems.linkedArtworkFit.value = 'width';
@@ -239,13 +241,12 @@ test('current-track key exposes independent visibility, artist placement and bac
   assert.equal(pi.elems.showArtist.attrs.label, '가수명 표시');
   assert.equal(pi.elems.titleBackground.attrs.label, '배경 표시');
   assert.equal(pi.elems.keyArtistPositionRow.classList.hidden, false);
+  assert.equal(pi.elems.showTitle.defaultValue, true);
+  assert.equal(pi.elems.showArtist.defaultValue, true);
   pi.elems.showArtist.value = false; pi.elems.showArtist.listeners.valuechange();
   assert.equal(pi.elems.keyArtistPositionRow.classList.hidden, true);
-  pi.subscribers.settings({ payload: { settings: { showArtist: true } } });
+  pi.subscribers.settings({ payload: { settings: { keyDisplay: 'artwork', keyShowArtist: true } } });
   assert.equal(pi.elems.keyArtistPositionRow.classList.hidden, false);
-  for (const name of ['showTitle', 'showArtist']) {
-    assert.match(html, new RegExp('<sdpi-checkbox[^>]+setting="' + name + '"[^>]+default="true"'));
-  }
   assert.match(html, /<sdpi-select[^>]+setting="artistPosition"[^>]+default="below"/);
 });
 

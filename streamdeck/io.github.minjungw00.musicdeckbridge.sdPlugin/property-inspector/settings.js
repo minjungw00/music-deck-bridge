@@ -4,6 +4,7 @@ const client = SDPIComponents.streamDeckClient;
 const CHROME_STORE_URL = 'https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca?utm_source=streamdeck_plugin&utm_medium=referral&utm_campaign=companion_setup';
 const $ = id => document.getElementById(id);
 const strings = MusicDeckInspectorStrings;
+const { keyDisplay, currentTrackKeySettings } = MusicDeckKeyDisplay;
 let language = 'en';
 let currentStatus = null;
 let statusPoll = null;
@@ -46,7 +47,7 @@ function localize() {
   document.documentElement.lang = MusicDeckLanguage.html(language);
   document.title = `Music Deck Bridge – ${t('settingsTitle')}`;
   setLabel('keyDisplayRow', t('keyDisplay'));
-  $('optKeyDefault').textContent = t(currentTrackKey ? 'keyDisplayTrackInfo' : 'keyDisplayDefault');
+  $('optKeyIcon').textContent = t('keyDisplayIcon');
   $('optKeyArtwork').textContent = t('dialArtwork');
   $('optKeyLinked').textContent = t('keyDisplayLinked');
   setLabel('keyArtworkIconRow', t('dialArtwork'));
@@ -152,20 +153,35 @@ function updateArtworkOptions(mode = $('dialDisplay').value, showTitle = $('artw
   $('artworkTextOptions').classList.toggle('hidden', mode !== 'artwork' || showTitle !== true);
   $('artworkArtistPositionRow').classList.toggle('hidden', mode !== 'artwork' || showTitle !== true || showArtist !== true);
 }
-function updateKeyArtworkOptions(mode = $('keyDisplay').value, showIcon = $('keyArtworkShowIcon').value) {
-  const artwork = mode === 'artwork' || mode === 'linked';
+function updateKeyArtworkOptions(settings = editor.settings) {
+  const track = currentTrackKey ? currentTrackKeySettings(settings) : null;
+  const mode = track?.mode ?? keyDisplay(settings);
+  const artwork = mode !== 'icon';
   $('keyArtworkIconRow').classList.toggle('hidden', !artwork);
-  $('keyArtworkIconPositionRow').classList.toggle('hidden', !artwork || showIcon !== true);
+  $('keyArtworkIconPositionRow').classList.toggle('hidden', !artwork || settings.keyArtworkShowIcon !== true);
   $('albumGroupOptions').classList.toggle('hidden', mode !== 'linked');
-  $('trackSection').classList.toggle('hidden', !currentTrackKey || artwork);
+  $('trackSection').classList.toggle('hidden', !currentTrackKey);
+  if (track) {
+    $('showTitle').defaultValue = track.showTitle;
+    $('showArtist').defaultValue = track.showArtist;
+    $('keyArtistPositionRow').classList.toggle('hidden', !track.showArtist);
+  }
   $('volumeFeedbackOptions').classList.toggle('hidden', !volumeKey || artwork);
 }
-$('keyDisplay').addEventListener('valuechange', () => updateKeyArtworkOptions());
-$('keyArtworkShowIcon').addEventListener('valuechange', () => updateKeyArtworkOptions());
+function updateKeyArtworkFromControls() {
+  updateKeyArtworkOptions({ ...editor.settings, keyDisplay: $('keyDisplay').value,
+    keyArtworkShowIcon: $('keyArtworkShowIcon').value, keyShowTitle: $('showTitle').value,
+    keyShowArtist: $('showArtist').value });
+}
+$('keyDisplay').addEventListener('valuechange', updateKeyArtworkFromControls);
+$('keyArtworkShowIcon').addEventListener('valuechange', updateKeyArtworkFromControls);
 $('dialDisplay').addEventListener('valuechange', () => updateArtworkOptions());
 $('artworkShowTitle').addEventListener('valuechange', () => updateArtworkOptions());
 $('artworkShowArtist').addEventListener('valuechange', () => updateArtworkOptions());
-$('showArtist').addEventListener('valuechange', () => $('keyArtistPositionRow').classList.toggle('hidden', $('showArtist').value === false));
+$('showArtist').addEventListener('valuechange', () => {
+  const artist = $('showArtist');
+  $('keyArtistPositionRow').classList.toggle('hidden', !(artist.value ?? artist.defaultValue));
+});
 function prioritizeConnection(connected) {
   const body = document.body;
   const target = connected ? connectionEnd : body.firstElementChild;
@@ -253,8 +269,7 @@ client.didReceiveSettings.subscribe(msg => {
   editor.receive(msg.payload?.settings);
   updateVolumeFeedbackOptions(editor.settings.volumeShowValue !== false);
   updateArtworkOptions(editor.settings.dialDisplay || 'info', editor.settings.artworkShowTitle === true, editor.settings.artworkShowArtist === true);
-  updateKeyArtworkOptions(editor.settings.keyDisplay, editor.settings.keyArtworkShowIcon === true);
-  $('keyArtistPositionRow').classList.toggle('hidden', editor.settings.showArtist === false);
+  updateKeyArtworkOptions(msg.payload?.settings || {});
 });
 $('installExtension').addEventListener('click', async () => {
   $('companionHint').textContent = t('companionHint');
@@ -307,18 +322,21 @@ void (async () => {
     editor.receive(actionInfo?.payload?.settings || {});
     updateVolumeFeedbackOptions(editor.settings.volumeShowValue !== false);
     updateArtworkOptions(editor.settings.dialDisplay || 'info', editor.settings.artworkShowTitle === true, editor.settings.artworkShowArtist === true);
-    $('keyArtistPositionRow').classList.toggle('hidden', editor.settings.showArtist === false);
     language = MusicDeckLanguage.resolve(info?.application?.language);
     const action = actionInfo?.action || '';
     volumeKey = action.endsWith('.volumeup') || action.endsWith('.volumedown');
     currentTrackKey = action.endsWith('.nowplaying');
+    if (currentTrackKey) {
+      $('optKeyIcon').value = 'icon';
+      $('keyDisplay').setAttribute('default', 'artwork');
+    }
     queueKey = action.endsWith('.repeat') ? 'repeat' : action.endsWith('.shuffle') ? 'shuffle' : '';
     localize();
     if (action && !action.endsWith('.volume') && !action.endsWith('.trackdial')) $('keyArtworkSection').classList.remove('hidden');
     if (action.endsWith('.trackdial')) $('dialSection').classList.remove('hidden');
     if (volumeKey || action.endsWith('.volume')) $('volumeSection').classList.remove('hidden');
     if (volumeKey) $('volumeFeedbackOptions').classList.remove('hidden');
-    updateKeyArtworkOptions(editor.settings.keyDisplay, editor.settings.keyArtworkShowIcon === true);
+    updateKeyArtworkOptions();
     // Recover from races where the plugin answers before the inspector is ready.
     responseTimer = setTimeout(() => {
       if (!currentStatus) { $('pairState').textContent = t('bridgeWait'); prioritizeConnection(false); }

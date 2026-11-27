@@ -28,9 +28,9 @@ function assetImage(filename) {
   }
   return assets.get(filename);
 }
-function keyTextBackground(image, lines, tile, badge = '', corner = 'top-left') {
+function keyTextBackground(image, lines, tile, badge = '', corner = 'top-left', backgroundIcon = 'imgs/actions/nowplaying/key@2x.png') {
   if (!image && !lines && !badge) return null;
-  if (!image && lines) image = assetImage('imgs/actions/nowplaying/key@2x.png');
+  if (!image && lines && backgroundIcon) image = assetImage(backgroundIcon);
   if (image !== lastImage) {
     lastImage = image;
     dimensions = rasterSize(image);

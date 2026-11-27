@@ -3,6 +3,7 @@ const { createOutputCache } = require('./output-cache.cjs');
 const { ellipsis, marquee, MARQUEE_STEP_MS } = require('./track-text.cjs');
 const { translate } = require('./messages.cjs');
 const { albumTiles, keyDisplay } = require('../domain/album-groups.cjs');
+const { currentTrackKeySettings } = require('../../io.github.minjungw00.musicdeckbridge.sdPlugin/property-inspector/key-display.js');
 const { KEY_ACTION_NAMES } = require('../domain/actions.cjs');
 const { trackKey } = require('../domain/player-state.cjs');
 const keyActions = new Set(KEY_ACTION_NAMES);
@@ -18,7 +19,7 @@ function formatPlaybackTime(seconds) {
 
 function needsMarquee(displayed, actionName) {
   return [...displayed.values()].some(item =>
-    (actionName(item.action) === 'nowplaying' && keyDisplay(item.settings) === 'default' && item.settings?.titleMode === 'scroll') ||
+    (actionName(item.action) === 'nowplaying' && item.settings?.titleMode === 'scroll') ||
     (actionName(item.action) === 'trackdial' && (item.settings?.dialDisplay === 'artwork' ?
       item.settings?.artworkShowTitle === true && item.settings?.artworkTitleMode === 'scroll' :
       item.settings?.infoTitleMode === 'scroll')));
@@ -46,14 +47,14 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     return state;
   }
 
-  function keyArtwork(item, cover, lines, tile, badge) {
+  function keyArtwork(item, cover, lines, tile, badge, backgroundIcon) {
     const position = item.settings?.keyArtworkIconPosition;
     const corner = typeof position === 'string' ? position : 'top-left';
-    const signature = JSON.stringify([lines, tile, badge, corner]);
+    const signature = JSON.stringify([lines, tile, badge, corner, backgroundIcon]);
     if (item.keyCover !== cover || item.keyArtworkSignature !== signature) {
       item.keyCover = cover;
       item.keyArtworkSignature = signature;
-      item.keyArtwork = keyTextBackground(cover, lines, tile, badge, corner);
+      item.keyArtwork = keyTextBackground(cover, lines, tile, badge, corner, backgroundIcon);
     }
     return item.keyArtwork;
   }
@@ -166,8 +167,7 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
   }
   function renderCurrentTrackKey(context, item, state, tile, playback = state) {
     const settings = item.settings || {};
-    const artwork = keyDisplay(settings) !== 'default';
-    const showTitle = !artwork && settings.showTitle !== false, showArtist = !artwork && settings.showArtist !== false;
+    const { mode, showTitle, showArtist, legacy } = currentTrackKeySettings(settings);
     const below = settings.artistPosition !== 'inline';
     const sig = JSON.stringify([state?.trackId, state?.title, state?.artist, showTitle, showArtist, below, settings.titleMode]);
     if (item.trackSignature !== sig) { item.trackSignature = sig; item.marqueeStart = now(); }
@@ -178,16 +178,20 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     const text = below ? [format(rawTitle, 12), format(rawArtist, 11, 600)].filter(Boolean).join('\n') :
       format([rawTitle, rawArtist].filter(Boolean).join(' — '), 12);
     writeTitle(context, item, text);
-    const cover = coverFor(state);
     const lines = settings.titleBackground === true && text ? below && rawTitle && rawArtist ? 2 : 1 : 0;
-    const badge = artwork ? overlay(settings, keyIcon('nowplaying', playback)) : '';
-    const image = keyArtwork(item, cover, lines, tile, badge) || (artwork ? EMPTY_KEY_IMAGE : null);
-    writeImage(context, item, image);
+    const icon = keyIcon('nowplaying', playback);
+    if (mode === 'icon') {
+      const image = lines ? keyArtwork(item, null, lines, null, '', icon) : null;
+      writeImage(context, item, image || icon);
+    } else {
+      const image = keyArtwork(item, coverFor(state), lines, tile, overlay(settings, icon), legacy ? undefined : '');
+      writeImage(context, item, image || (legacy ? null : EMPTY_KEY_IMAGE));
+    }
   }
   function renderActionKey(context, item, kind, chosen, track, tile) {
     const live = chosen?.[1];
     const icon = keyIcon(kind, live ?? track, Boolean(live));
-    const artwork = keyDisplay(item.settings) !== 'default';
+    const artwork = keyDisplay(item.settings) !== 'icon';
     const frame = artwork ? null : item.volumeFeedback?.frame(chosen, item.settings, now());
     const value = frame?.volume != null ? volumeKeyImage?.(frame.volume, item.settings?.volumeShowPercent === true) : null;
     const nativeImage = kind === 'prev' || kind === 'next' || kind === 'open';
