@@ -1,11 +1,12 @@
 # Runtime verification
 
-Evidence through November 27, 2026 (Asia/Seoul). [Release verification](releases.md) holds published source, CI and package hashes. This record separates local models, maintainer reports and independently observed operation.
+Evidence through November 28, 2026 (Asia/Seoul). [Release verification](releases.md) holds published source, CI and package hashes. This record separates local models, maintainer reports and independently observed operation.
 
 ## Current evidence
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
+| November 28 Windows refactor verification, `394b941` | 336 Node tests, three Chromium fixtures, two Python packaging tests and static checks passed. Both installed packages matched the tested build. Isolated Windows Chrome and plugin processes exercised toolbar controls, restart restoration and retry after a failed deletion. [Refactor verification](#november-28-windows-refactor-verification) | The isolated Windows test used a local player model. Signed-in playback, physical input/display and PC reboot require separate verification. |
 | November 27 Windows mixed-version upgrade, `a512a7f` | Both mixed pairings retained credentials and the custom port. Actual Chrome toolbar popups controlled Play/Pause. The development popup used Chrome-local Repeat and Shuffle with the 1.2.0 plugin. [Mixed-version record](#november-27-windows-mixed-version-upgrade) | Native Windows Chrome and packaged plugin processes shared an isolated test pairing and a local player model. Physical profiles and Marketplace installations require separate verification. |
 | November 27 Windows installed-app priority, `a512a7f` | Windows Chrome reported the installed YouTube Music player as an app. The paired bridge preferred the paused app over a playing regular tab and returned control to the tab after the app closed. [App record](#november-27-windows-installed-app-priority) | Tested the existing Windows development pairing. YouTube Music sign-in status requires separate verification. |
 | November 27 Windows and YouTube Music, `e633272` | The installed build controlled Repeat and Shuffle on live YouTube Music. The Stream Deck + software preview restored saved artwork and the dial title after a Stream Deck restart with zero Chrome processes. The existing pair reconnected after Chrome reopened. [Windows record](#november-27-windows-and-youtube-music) | The installed-app launch reported `standalone: false`. Physical output and input and restoration after PC reboot require separate verification. |
@@ -39,6 +40,14 @@ The November 7 `main` run used `@elgato/streamdeck` 3.0.4, `@elgato/cli` 1.10.4 
 | Key/dial output | Settings, profile reappearance, rotation/press/touch, proportional artwork, artist placement, backdrops and scrolling; Qt 6.10.3 reference rendering |
 | Popup | Real toolbar controls, captured routes, slider coalescing/closure, native catalogs and button bounds in all eight UI languages; separately labeled sample previews |
 | Distribution | Real worker import graph, serialized MAIN entry point, package allowlists/notices, fixed development versions and source/checksum metadata |
+
+### November 28 Windows refactor verification
+
+The clean `1.3.0-dev+g394b941c5195.local20261127144842119` packages passed SHA-256 and full payload comparison against the checkout and installed Windows files (54 Chrome files and 115 Stream Deck files, with the plugin manifest compared as JSON). Windows build 26300 detected the Stream Deck Plus, and the installed Chrome 158.0.8127.37 process connected to the loopback listener of the plugin launched by Stream Deck 7.6.1.23033.
+
+In a disposable Windows Chrome profile and plugin AppData directory, the same packages paired on a separate port. The toolbar popup played and paused the local player model, rated a song using its title and artist when the video ID was invalid, and observed mute, Repeat All and Shuffle On. Both components saved the last track with those settings and 37% volume. Restarting both isolated processes retained the pairing and port. The plugin's single track record matched its pre-restart bytes, and the popup displayed the saved song and controls with no Music tab open. An injected first Chrome storage deletion failure produced a retry message in the toolbar. A second Unpair removed the remaining record after the pairing had already been revoked.
+
+Linux verification passed all 336 Node tests, three Chromium fixtures, two Python packaging tests and static checks. The changes have fixture coverage for late port responses, transient storage errors and complete dial output on retry. In a fresh Windows Chrome profile, the public YouTube Music watch URL redirected to `www.youtube.com/musicpremium` before playback. Signed-in Music playback, physical key/dial output and input, and PC restart were outside the measured outcomes.
 
 ### November 27 Windows and YouTube Music
 
