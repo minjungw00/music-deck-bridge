@@ -23,7 +23,6 @@
     button.secondary { background: #414759; }
     button:disabled { opacity: .4; cursor: default; }
     button[aria-pressed="true"] { background: #653054; color: #ffb9ec; }
-    .store-link { color: #9cc9ff; text-decoration: underline; }
     input:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid #f72575; outline-offset: 2px; }
     .port-row { display: flex; gap: 8px; }
     .port-row input { flex: 1; min-width: 0; font-size: 13px; letter-spacing: 0; padding: 8px; }
@@ -43,6 +42,9 @@
       line-height: 20px; text-align: center; white-space: normal;
     }
     .popup-action:not(:disabled):hover { background: #4c5468; }
+    .companion-actions { display: grid; gap: 8px; }
+    .companion-actions .popup-action { display: flex; align-items: center; justify-content: center; gap: 8px; padding-inline: 12px; text-decoration: none; }
+    .companion-actions svg { width: 16px; height: 16px; }
     #openPlayer { margin-top: 12px; }
     #connectionSettings { margin-top: 8px; }
     #settingsSummary { position: relative; list-style: none; }
@@ -120,7 +122,16 @@
   <details id="connectionSettings" open>
     <summary id="settingsSummary" class="popup-action">Stream Deck connection settings</summary>
     <p id="companionHint" class="small-hint">Install the Stream Deck plugin to use Stream Deck controls.</p>
-    <p><a id="installPlugin" class="store-link" href="https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd?utm_source=chrome_extension&amp;utm_medium=referral&amp;utm_campaign=companion_setup" target="_blank" rel="noopener noreferrer">Install Stream Deck plugin</a></p>
+    <div class="companion-actions">
+      <a id="installPlugin" class="popup-action" href="https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd?utm_source=chrome_extension&amp;utm_medium=referral&amp;utm_campaign=companion_setup" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 16v4h16v-4"/></svg>
+        <span id="installPluginLabel">Install Stream Deck plugin</span>
+      </a>
+      <a id="openStreamDeck" class="popup-action" href="streamdeck://plugins/message/io.github.minjungw00.musicdeckbridge/open">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 8h2v2H8zm6 0h2v2h-2zm-6 6h2v2H8zm6 0h2v2h-2z"/></svg>
+        <span id="openStreamDeckLabel">Open Stream Deck</span>
+      </a>
+    </div>
     <label id="pinLabel" for="pin">Connection PIN</label>
     <p id="guide" class="small-hint">Generate a PIN in Stream Deck action settings and enter it here.</p>
     <input id="pin" maxlength="6" inputmode="numeric" autocomplete="off" placeholder="000000" aria-describedby="guide" />

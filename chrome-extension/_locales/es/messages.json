@@ -8,6 +8,9 @@
   "installPlugin": {
     "message": "Instalar complemento de Stream Deck"
   },
+  "openStreamDeck": {
+    "message": "Abrir Stream Deck"
+  },
   "guide": {
     "message": "Genera un PIN en los ajustes de la acción de Stream Deck e introdúcelo aquí."
   },

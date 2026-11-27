@@ -8,6 +8,9 @@
   "installPlugin": {
     "message": "安装 Stream Deck 插件"
   },
+  "openStreamDeck": {
+    "message": "打开 Stream Deck"
+  },
   "guide": {
     "message": "在 Stream Deck 操作设置中生成 PIN，然后在此输入。"
   },

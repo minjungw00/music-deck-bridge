@@ -123,6 +123,8 @@ Starting with extension 1.2.0, the popup controls YouTube Music with or without 
 
 **Open YouTube Music** is always available below the volume row. It opens a Music tab or focuses the existing tab or app. Expand **Stream Deck connection settings** for optional plugin installation, PIN pairing and port changes. **Stream Deck connection status** reports only that connection. A healthy paired plugin uses the existing ordered bridge path; otherwise the popup controls the selected Music player through Chrome APIs, without an additional server or pairing token. Failed commands are not automatically retried through another route. After reconnection, normal page-state synchronization supplies the plugin with the current state.
 
+Use **Install Stream Deck plugin** to visit its Marketplace page. With the app and plugin installed, **Open Stream Deck** uses Elgato's app link to bring its window forward. Chrome may ask you to confirm opening the app. [Elgato deep links](https://docs.elgato.com/streamdeck/sdk/guides/deep-linking/)
+
 Artwork uses the plugin cache when connected. In standalone mode the popup displays only approved YouTube/Google image URLs; image failure leaves a placeholder and does not disable playback.
 
 Reinstalling the Chrome extension removes its local pairing token even if the plugin still stores previous credentials. Generate a new PIN in the Stream Deck action settings and pair the reinstalled extension. If using a custom port, match it in the popup first. Updating files in the same unpacked folder and reloading avoids removing extension storage.

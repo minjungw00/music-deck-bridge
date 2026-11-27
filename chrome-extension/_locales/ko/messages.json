@@ -8,6 +8,9 @@
   "installPlugin": {
     "message": "Stream Deck 플러그인 설치"
   },
+  "openStreamDeck": {
+    "message": "Stream Deck 열기"
+  },
   "guide": {
     "message": "Stream Deck 설정에서 PIN을 발급한 후 여기 입력하세요."
   },

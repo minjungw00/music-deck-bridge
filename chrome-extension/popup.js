@@ -4,7 +4,7 @@ const asset = path => chrome.runtime.getURL?.(path) || path;
 const language = chrome.i18n.getMessage('uiLanguageCode') || 'en';
 const text = Object.fromEntries(
   ["heading","subtitle","companionHint","installPlugin","guide","pin","connect","refresh","forget","portLabel","savePort","portHint","portInvalid","portSaved","portLocal","invalid","checking","fail","connected","unknown","player","app","tab","current","waiting","artwork","stale","paired","removed","nowPlayingLabel","playerWaiting","settingsSummary","connectionStatusLabel","previous","next","play","pause","likeLabel","dislikeLabel","controlFailed","controlChanged","controlUpdate","volumeLabel","mute","unmute","openPlayer","openPlayerFailed",
-    "repeatLabel","repeatOff","repeatAll","repeatOne","shuffleLabel","shuffleOff","shuffleOn","lastTrackLabel"]
+    "repeatLabel","repeatOff","repeatAll","repeatOne","shuffleLabel","shuffleOff","shuffleOn","lastTrackLabel","openStreamDeck"]
     .map(key => [key, chrome.i18n.getMessage(key)])
 );
 const coverMessages = new Map([
@@ -13,7 +13,7 @@ const coverMessages = new Map([
 ].map(([code, key]) => [code, chrome.i18n.getMessage(key)]));
 document.documentElement.lang = language;
 document.title = chrome.i18n.getMessage('extensionName');
-for (const [id, key] of [['heading','heading'],['subtitle','subtitle'],['companionHint','companionHint'],['installPlugin','installPlugin'],['guide','guide'],['pinLabel','pin'],['connect','connect'],['refresh','refresh'],['forget','forget'],['portLabel','portLabel'],['savePort','savePort'],['portHint','portHint'],['nowPlayingLabel','nowPlayingLabel'],['settingsSummary','settingsSummary'],['connectionStatusLabel','connectionStatusLabel'],['likeLabel','likeLabel'],['dislikeLabel','dislikeLabel'],['openPlayer','openPlayer']]) {
+for (const [id, key] of [['heading','heading'],['subtitle','subtitle'],['companionHint','companionHint'],['installPluginLabel','installPlugin'],['openStreamDeckLabel','openStreamDeck'],['guide','guide'],['pinLabel','pin'],['connect','connect'],['refresh','refresh'],['forget','forget'],['portLabel','portLabel'],['savePort','savePort'],['portHint','portHint'],['nowPlayingLabel','nowPlayingLabel'],['settingsSummary','settingsSummary'],['connectionStatusLabel','connectionStatusLabel'],['likeLabel','likeLabel'],['dislikeLabel','dislikeLabel'],['openPlayer','openPlayer']]) {
   $(id).textContent = text[key];
 }
 let latestRequest = 0;

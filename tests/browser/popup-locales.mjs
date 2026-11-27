@@ -1,12 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
 const extension = fileURLToPath(new URL('../../chrome-extension/', import.meta.url));
+const { UUID: pluginId } = JSON.parse(await readFile(new URL(
+  '../../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/manifest.json', import.meta.url), 'utf8'));
 const languages = ['en', 'ko', 'zh-CN', 'zh-TW', 'ja', 'es', 'fr', 'de'];
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -19,7 +21,7 @@ test('native extension catalogs and toolbar popup render all eight UI languages 
         args: [`--disable-extensions-except=${extension}`, `--load-extension=${extension}`, `--lang=${language}`] });
       const worker = browser.serviceWorkers()[0] || await browser.waitForEvent('serviceworker');
       const catalog = await worker.evaluate(() => Object.fromEntries(['uiLanguageCode','connect','refresh','forget','portLabel',
-        'settingsSummary','previous','next','play','mute','openPlayer','repeatLabel','shuffleLabel'].map(key => [key, chrome.i18n.getMessage(key)])));
+        'settingsSummary','previous','next','play','mute','openPlayer','installPlugin','openStreamDeck','repeatLabel','shuffleLabel'].map(key => [key, chrome.i18n.getMessage(key)])));
       assert.equal(catalog.uiLanguageCode, language);
       const rootSession = await browser.browser().newBrowserCDPSession();
       await worker.evaluate(() => chrome.action.openPopup());
@@ -56,7 +58,9 @@ test('native extension catalogs and toolbar popup render all eight UI languages 
       }
       assert.ok(ready, language);
       const ui = await evaluate(`(() => ({lang:document.documentElement.lang,
-        labels:Object.fromEntries(['connect','refresh','forget','portLabel','settingsSummary','openPlayer'].map(id=>[id,document.getElementById(id).textContent])),
+        labels:{ ...Object.fromEntries(['connect','refresh','forget','portLabel','settingsSummary','openPlayer'].map(id=>[id,document.getElementById(id).textContent])),
+          installPlugin:document.getElementById('installPluginLabel').textContent,
+          openStreamDeck:document.getElementById('openStreamDeckLabel').textContent },
         controls:Object.fromEntries(['previous','next','playPause','mute','repeat','shuffle'].map(id=>[id,document.getElementById(id).getAttribute('aria-label')])),
         rows:['.player-controls','.queue-controls','.volume-controls'].map(selector=>{
           const controls=[...document.querySelector(selector).children].filter(control=>!control.classList.contains('sr-only'));
@@ -108,9 +112,12 @@ test('native extension catalogs and toolbar popup render all eight UI languages 
         settings.click();
         const expanded = { ...appearance(settings), arrow: getComputedStyle(settings, '::after').transform,
           open: details.open };
+        const companion = [...details.querySelectorAll('.companion-actions a')].map(link => ({
+          ...appearance(link), href: link.href, width: link.getBoundingClientRect().width,
+          icon: !!link.querySelector('svg[aria-hidden="true"]') }));
         if (!initial) settings.click();
         const openBounds = open.getBoundingClientRect(), settingsBounds = settings.getBoundingClientRect();
-        return { open: appearance(open), closed, expanded, width: openBounds.width, settingsWidth: settingsBounds.width,
+        return { open: appearance(open), closed, expanded, companion, width: openBounds.width, settingsWidth: settingsBounds.width,
           unclipped: settings.scrollWidth <= settings.clientWidth,
           belowVolume: openBounds.height > 0 && open.previousElementSibling.matches('.volume-controls') &&
             openBounds.top >= open.previousElementSibling.getBoundingClientRect().bottom };
@@ -124,6 +131,15 @@ test('native extension catalogs and toolbar popup render all eight UI languages 
       assert.notEqual(actions.expanded.arrow, actions.closed.arrow);
       assert.equal(actions.closed.open, false);
       assert.equal(actions.expanded.open, true);
+      const [install, launch] = actions.companion;
+      assert.equal(new URL(install.href).origin, 'https://marketplace.elgato.com');
+      assert.equal(launch.href, `streamdeck://plugins/message/${pluginId}/open`);
+      for (const button of [install, launch]) {
+        assert.equal(button.width, actions.width);
+        assert.equal(button.background, actions.open.background);
+        assert.equal(button.radius, actions.open.radius);
+        assert.equal(button.icon, true);
+      }
       if (language === 'en') {
         await browser.route('https://music.youtube.com/**', route => route.fulfill({
           contentType: 'text/html', body: '<!doctype html><title>Music opening fixture</title><p>Music opening fixture</p>' }));
