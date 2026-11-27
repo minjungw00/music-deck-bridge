@@ -6,6 +6,7 @@ Evidence through November 28, 2026 (Asia/Seoul). [Release verification](releases
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
+| November 28 final 1.3.0-dev validation, `94593e7` | Final archives matched their staged payloads. Windows fixture verified toolbar controls, replacement by a paused selection before its first play, and retained state across Chrome and plugin restart. The live Music app and a fully loaded regular tab passed Play/Pause, Repeat and Shuffle. [Final validation](#november-28-final-130-dev-validation) | Early Play/Pause in the regular tab was unconfirmed. Physical output and input, PC reboot, cross-device import on the live service and a Maker Console processed build require separate verification. |
 | November 28 native YouTube Music controls, `394b941` | The installed Windows bridge observed playback, Repeat, Shuffle and artwork in the regular Chrome tab and installed app. Closing the app left one saved track with artwork and settings. [Native playback record](#november-28-native-youtube-music-controls) | Confirmation came through the bridge. Account sign-in status, an imported selection closed before playback, physical input/display and PC reboot remain unverified. |
 | November 28 Windows refactor verification, `394b941` | 336 Node tests, three Chromium fixtures, two Python packaging tests and static checks passed. Both installed packages matched the tested build. Isolated Windows Chrome and plugin processes exercised toolbar controls, restart restoration and retry after a failed deletion. [Refactor verification](#november-28-windows-refactor-verification) | The isolated Windows test used a local player model. Signed-in playback, physical input/display and PC reboot require separate verification. |
 | November 27 Windows mixed-version upgrade, `a512a7f` | Both mixed pairings retained credentials and the custom port. Actual Chrome toolbar popups controlled Play/Pause. The development popup used Chrome-local Repeat and Shuffle with the 1.2.0 plugin. [Mixed-version record](#november-27-windows-mixed-version-upgrade) | Native Windows Chrome and packaged plugin processes shared an isolated test pairing and a local player model. Physical profiles and Marketplace installations require separate verification. |
@@ -41,6 +42,16 @@ The November 7 `main` run used `@elgato/streamdeck` 3.0.4, `@elgato/cli` 1.10.4 
 | Key/dial output | Settings, profile reappearance, rotation/press/touch, proportional artwork, artist placement, backdrops and scrolling; Qt 6.10.3 reference rendering |
 | Popup | Real toolbar controls, captured routes, slider coalescing/closure, native catalogs and button bounds in all eight UI languages; separately labeled sample previews |
 | Distribution | Real worker import graph, serialized MAIN entry point, package allowlists/notices, fixed development versions and source/checksum metadata |
+
+### November 28 final 1.3.0-dev validation
+
+Build `1.3.0-dev+g94593e7fce13.local20261127211531654` passed 337 Node tests in serial and with the default parallel command, three Chromium fixtures, two Python packaging tests, static checks, four Qt rendering checks and the official Elgato packager. SHA-256 and payload checks matched the staged archives, covering 54 Chrome and 116 Stream Deck files.
+
+On Windows build 26300, a disposable Chrome 158.0.8127.37 profile and the packaged plugin used a separate port. The actual toolbar popup controlled playback, rating, mute, Repeat and Shuffle against a local player model. A different, paused song replaced the previous record in both components with zero play inputs. Restarting Chrome and the plugin retained pairing, the custom port and one saved track. The restored popup showed the new saved track and settings, and a second Unpair cleared the remaining local record after an injected first removal failure.
+
+On the existing Windows Stream Deck 7.6.1.23033 host, packaged plugin code and dial layout files were copied temporarily and verified by checksum. The live installed YouTube Music app confirmed Play/Pause, Repeat Off → All → One → Off, Shuffle Off → On → Off and artwork. The regular Chrome tab also confirmed Repeat, Shuffle and artwork. Closing either sample window left the track, cover, 31% volume and queue settings available after a plugin restart. The settled Stream Deck profile preview matched pixel-for-pixel across restart with no Music player open. The installed files, pairing, port settings and initial plugin track record were restored.
+
+The regular site's bridge reported `playback-unconfirmed` in early attempts. The attempted comparison with the site's accessible playback button did not find an enabled matching button. A follow-up passed paired Play/Pause after artwork became ready and a six-second wait. That establishes the fully loaded path. The early failure's cause and timing threshold remain unverified.
 
 ### November 28 native YouTube Music controls
 
