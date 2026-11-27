@@ -1,6 +1,6 @@
 'use strict';
 (function (root) {
-  const { isBrowserCommand } = root.MusicDeckCommandPolicy;
+  const { isBrowserCommand, isQueueControl } = root.MusicDeckCommandPolicy;
   const { normalizeTrackId } = root.MusicDeckTrackIdentity;
   function createBrowserChannel({ chrome, client, contentScripts }) {
     const { post, pairedToken } = client;
@@ -49,6 +49,7 @@
     async function performBrowserCommand(command, stillPaired = async () => true, diagnostic = {}, onAccepted = () => {}) {
       const failed = reason => { diagnostic.reason = reason; return false; };
       if (!isBrowserCommand(command?.type)) return false;
+      const queueStartup = isQueueControl(command.type) && command.queueStartup === true;
       const deadline = Math.min(Number(command.expiresAt) || Date.now() + 30000, Date.now() + 30000);
       const allowed = async (confirm = false) => !client.blocked() && Date.now() < deadline && await stillPaired(confirm) && !client.blocked() && Date.now() < deadline;
       const denied = () => failed(client.blocked() ? 'protocol-incompatible' : ['bridge-unavailable', 'player-changed'].includes(diagnostic.reason) ? diagnostic.reason :
@@ -91,6 +92,7 @@
               type: command.type === 'toggle' && opened ? 'play' : command.type,
               amount: command.amount, trackKey, allowCurrentTrack: !trackKey,
               ...(command.playerKey ? { playerKey: command.playerKey } : {}),
+              ...(queueStartup ? { queueStartup: true } : {}),
             } }, { frameId: 0 });
           if (result?.pending) {
             // Receipt starts an ordered MAIN-world dispatch operation. Keep its
@@ -146,7 +148,7 @@
           try {
             const tabs = await chrome.tabs.query({ url: MUSIC_URL + '*' });
             result = await post('/browser-listen', { token, clientIds: tabs.map(tab => tab.id),
-              concurrent: true, repeat: true, shuffle: true }, 15500);
+              concurrent: true, repeat: true, shuffle: true, queueStartup: true }, 15500);
           }
           catch (error) {
             if (error.httpStatus === 404) browserChannelAvailable = false;

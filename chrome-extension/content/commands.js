@@ -1,14 +1,17 @@
 'use strict';
 (function (root) {
   const { normalizeTrackIdentity, trackKey } = root.MusicDeckTrackIdentity;
+  const isQueueControl = type => type === 'repeat' || type === 'shuffle';
   const keyFor = state => trackKey(normalizeTrackIdentity(state));
   function createCommandExecutor({ chrome, document, metadata, isActive, scheduleSync }) {
     const { current, media, siteVolume, ratingButton } = metadata;
     let volumeCommands = Promise.resolve();
     async function command(message) {
       if (!message || typeof message.type !== 'string' || !isActive()) return { ok: false };
-      const scopedTrack = message.playerKey ? current() : null;
-      if (scopedTrack && keyFor(scopedTrack) !== message.playerKey) {
+      const queueStartup = message.queueStartup === true && isQueueControl(message.type);
+      const scopedTrack = message.playerKey || queueStartup ? current() : null;
+      if (queueStartup && !scopedTrack.trackConfirmed) return { ok: false, retry: true };
+      if (message.playerKey && keyFor(scopedTrack) !== message.playerKey) {
         scheduleSync(60);
         return { ok: false, reason: 'player-changed' };
       }
@@ -22,7 +25,8 @@
         case 'repeat':
         case 'shuffle':
           result = await chrome.runtime.sendMessage({ type: 'player-playback', command: message.type,
-            expiresAt: message.expiresAt, dispatchOnly: message.dispatchOnly === true });
+            expiresAt: message.expiresAt, dispatchOnly: message.dispatchOnly === true,
+            ...(queueStartup ? { queueStartup: true } : {}) });
           result = result || { ok: false, reason: 'playback-unconfirmed' };
           break;
         case 'playback-result':

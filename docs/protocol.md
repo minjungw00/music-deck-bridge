@@ -52,7 +52,9 @@ Standalone popup messages (`player-status`, `local-control`) remain inside the e
 
 ### Optional Repeat and Shuffle controls
 
-The 1.3.0 development extension advertises `repeat: true` and `shuffle: true` on `/browser-listen` and reports `repeatMode` (`NONE`, `ALL`, `ONE` or `null`) and `shuffleEnabled` (boolean or `null`) in player metadata. The plugin sends the corresponding command when supported and the selected player has fresh state. These commands are bound to the player and confirmed by a mode change or a queue reorder for shuffle variants without a persistent toggle.
+The 1.3.0 development extension advertises `repeat: true` and `shuffle: true` on `/browser-listen` and reports `repeatMode` (`NONE`, `ALL`, `ONE` or `null`) and `shuffleEnabled` (boolean or `null`) in player metadata. Live inputs are bound to the selected player and track. Confirmation requires a mode change or a queue reorder for shuffle variants without a persistent toggle.
+
+`queueStartup: true` on `/browser-listen` advertises support for Repeat and Shuffle requests made from Stream Deck before a player is available. The plugin can queue these inputs while the paired Chrome profile starts. The extension reuses a music tab or opens the YouTube Music home page, then waits for a current track and an enabled control. It acts on the queue YouTube Music restores and uses the same confirmation rules as for live input. A request bound to a tab that remains present keeps its original track check.
 
 `/status` advertises `popupQueueControls: true` and includes both fields in the player snapshot. When advertised, `/control` also accepts `repeat` and `shuffle` with the same selected player and track checks. The popup can control the matching player locally when a paired older plugin lacks this capability. Both capabilities are additive under protocol 1.
 

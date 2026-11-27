@@ -21,7 +21,9 @@
       }
       if (msg?.type === 'player-playback' && mainFrame) {
         if (!['play', 'toggle', 'next', 'prev', 'repeat', 'shuffle'].includes(msg.command)) { respond({ ok: false }); return false; }
-        return runPlayback(tabId, [msg.command, msg.expiresAt, msg.dispatchOnly === true], respond);
+        const args = [msg.command, msg.expiresAt, msg.dispatchOnly === true];
+        if (msg.queueStartup === true) args.push(true);
+        return runPlayback(tabId, args, respond);
       }
       if (msg?.type === 'player-playback-result' && mainFrame && Number.isSafeInteger(msg.pending) && msg.pending > 0) {
         return runPlayback(tabId, ['result', msg.pending], respond);

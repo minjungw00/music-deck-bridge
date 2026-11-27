@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const musicURL = 'https://music.youtube.com/';
-const fixture = (restored = false, ignoredStartupRequests = 0) => `<!doctype html><html><body>
+const fixture = (restored = false, ignoredStartupRequests = 0, delayedQueue = false) => `<!doctype html><html><body>
 <ytmusic-player-bar>
  <span class="title">Fixture song</span><span class="byline">Fixture artist</span>
  <audio></audio><div id="movie_player"></div>
@@ -33,13 +33,20 @@ let buffering=false;
 let destinationUnstarted=false, unstartedDestination=false, ignoredDestinationPlays=0, destinationPlays=0;
 const restored=${restored};
 const ignoredStartupRequests=${ignoredStartupRequests};
+const delayedQueue=${delayedQueue};
 const playerListeners=new Map();
 const playerBar=document.querySelector('ytmusic-player-bar');
 const repeatModes=['NONE','ALL','ONE'];
 playerBar.repeatMode='NONE';
-playerBar.isRepeatButtonDisabled=false;
+playerBar.isRepeatButtonDisabled=delayedQueue;
 playerBar.shuffleOn=false;
-playerBar.isShuffleDisabled=false;
+playerBar.isShuffleDisabled=delayedQueue;
+if(delayedQueue){
+ const title=playerBar.querySelector('.title');
+ title.textContent='';
+ setTimeout(()=>{title.textContent='Fixture song';},500);
+ setTimeout(()=>{playerBar.isRepeatButtonDisabled=false;playerBar.isShuffleDisabled=false;},1000);
+}
 let legacyShuffle=false, shuffleOrder=['a','b','c'];
 playerBar.queue={getItems:()=>shuffleOrder};
 function shuffle(){
@@ -126,6 +133,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   let browser, process, child, site;
   let restoredStartup = false;
   let ignoredStartupRequests = 0;
+  let delayedQueue = false;
   t.after(async () => {
     await browser?.close();
     if (child) await child.stop();
@@ -136,7 +144,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '1',
     '-keyout', join(temp, 'key'), '-out', join(temp, 'cert'), '-subj', '/CN=music.youtube.com'], { stdio: 'ignore' });
   site = httpsServer({ key: await readFile(join(temp, 'key')), cert: await readFile(join(temp, 'cert')) },
-    (_req, res) => { setTimeout(() => { res.setHeader('Content-Type', 'text/html'); res.end(fixture(restoredStartup, ignoredStartupRequests)); }, 250); });
+    (_req, res) => { setTimeout(() => { res.setHeader('Content-Type', 'text/html'); res.end(fixture(restoredStartup, ignoredStartupRequests, delayedQueue)); }, 250); });
   await new Promise(resolve => site.listen(0, '127.0.0.1', resolve));
   const port = await freePort();
   async function startBridge() {
@@ -150,11 +158,12 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   }
   await startBridge();
   const extension = join(root, 'chrome-extension');
-  browser = await chromium.launchPersistentContext(join(temp, 'profile'), {
+  const launchBrowser = () => chromium.launchPersistentContext(join(temp, 'profile'), {
     channel: 'chromium', headless: true,
     args: [`--disable-extensions-except=${extension}`, `--load-extension=${extension}`,
       `--host-resolver-rules=MAP music.youtube.com 127.0.0.1:${site.address().port}`, '--ignore-certificate-errors'],
   });
+  browser = await launchBrowser();
   const worker = browser.serviceWorkers()[0] || await browser.waitForEvent('serviceworker');
   const origin = new URL(worker.url()).origin === 'null' ? worker.url().split('/').slice(0, 3).join('/') : new URL(worker.url()).origin;
   const token = await worker.evaluate(async port => {
@@ -587,5 +596,21 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   assert.equal(savedTrack.repeatMode, 'ONE');
   assert.equal(savedTrack.shuffleEnabled, false);
   assert.equal(savedTrack.rating, 'LIKE');
-  t.diagnostic(`Chromium ${version}; paused selection capture, saved-track reopening, startup recovery, toolbar controls, reconnection and saved state after browser exit passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
+
+  // Key presses happen before Chromium starts. The bridge's test launcher is
+  // a no-op, so restart the paired profile after its native launch delay.
+  delayedQueue = true;
+  await postEvent('repeat');
+  await postEvent('shuffle');
+  await new Promise(resolve => setTimeout(resolve, 2200));
+  browser = await launchBrowser();
+  const queuePage = await until(() => browser.pages().find(page => page.url().startsWith(musicURL)), 'queue input opens a music tab');
+  await until(async () => {
+    const { track } = JSON.parse(await readFile(join(temp, 'MusicDeckBridge', 'last-track.json'), 'utf8'));
+    return track.repeatMode === 'ALL' && track.shuffleEnabled === true;
+  }, 'both deferred queue controls are observed');
+  assert.deepEqual(await queuePage.evaluate(() => ({ repeat: document.body.dataset.repeatModes,
+    shuffle: document.body.dataset.shuffle, playing, playRequests: document.body.dataset.playRequest })),
+  { repeat: ' ALL', shuffle: '1', playing: false, playRequests: undefined });
+  t.diagnostic(`Chromium ${version}; Repeat and Shuffle pressed before browser startup each changed the restored player once. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
 });

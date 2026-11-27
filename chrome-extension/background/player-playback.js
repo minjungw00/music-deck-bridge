@@ -2,7 +2,7 @@
 (function (root) {
   // Chrome serializes this function into MAIN. All helpers must stay inside it;
   // the worker module only publishes its entry point, never page data.
-  async function playerPlayback(type, expiresAt, dispatchOnly = false) {
+  async function playerPlayback(type, expiresAt, dispatchOnly = false, queueStartup = false) {
     const key = Symbol.for('music-deck-bridge.playback');
     const control = globalThis[key] ||= { sequence: 0, latest: 0, interrupt: 0,
       dispatch: Promise.resolve(), results: new Map() };
@@ -74,7 +74,8 @@
     async function changeQueueControl() {
       const deadline = Math.min(Number(expiresAt) || Infinity, Date.now() + 1200);
       const before = readQueueControl(type);
-      if (!before || Date.now() >= deadline) return { ok: false, reason: `${type}-unavailable` };
+      if (Date.now() >= deadline) return { ok: false, reason: `${type}-unavailable` };
+      if (!before) return { ok: false, reason: `${type}-unavailable`, ...(queueStartup ? { retry: true } : {}) };
       // Some player variants shuffle locally without retaining an on/off mode.
       const order = type === 'shuffle' && !before.mode ? queueItems(before.owner) : null;
       before.button.click();

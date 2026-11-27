@@ -27,7 +27,7 @@ function createCommandService({ getSession, selectedEntry, launch, log,
   let browserShuffle = false;
   let lastCommandError = '';
   let latestRequest = 0;
-  const hasLaunchableRequest = () => [...browserRequests.values()].some(request => !queueControl(request.type));
+  const hasLaunchableRequest = () => [...browserRequests.values()].some(request => request.queueStartup || !queueControl(request.type));
   const supports = type => type === 'repeat' ? browserRepeat : browserShuffle;
   function addCommand(type, ticks = 0) {
     if (getSession().blocked) return false;
@@ -122,24 +122,35 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     const pending = [...browserRequests.values()];
     const request = browserWaiter?.concurrent ? pending.find(item => item.state === 'queued') : pending[0];
     if (!browserWaiter || !request || request.state === 'delivered') return;
-    if (queueControl(request.type) && !supports(request.type)) return request.finish(false, `${request.type}-update-required`);
+    // The browser poll has reconciled closed tabs, including those that could
+    // not report their closure before Chrome exited. Keep the track binding
+    // if the original tab is still present after a brief polling gap.
+    const selected = request.queueStartup ? selectedEntry() : null;
+    const selectedTabId = selected ? Number(selected[0]) : null;
+    const queueStartup = request.queueStartup && (!request.playerKey ||
+      !(browserWaiter.clientIds?.includes(request.preferredTabId) ?? (selectedTabId === request.preferredTabId)));
+    if (queueControl(request.type) && (!supports(request.type) || (queueStartup && !browserWaiter.queueStartup))) {
+      return request.finish(false, `${request.type}-update-required`);
+    }
     if (browserWaiter.concurrent && pending.filter(item => item.state === 'delivered').length >= 8) return;
+    const preferredTabId = queueStartup ? selectedTabId : request.preferredTabId;
+    const playerKey = queueStartup ? undefined : request.playerKey;
     request.state = 'delivered';
     clearTimeout(nativeLaunchTimer); nativeLaunchTimer = null;
     browserWaiter.reply({ commands: [{ id: request.id, type: request.type, amount: request.amount,
       expiresAt: request.expiresAt, nativeLaunched: nativeTabPending,
-      preferredTabId: request.preferredTabId, ...(request.trackKey ? { trackKey: request.trackKey } : {}),
-      ...(request.playerKey ? { playerKey: request.playerKey } : {}) }] });
+      preferredTabId, ...(request.trackKey ? { trackKey: request.trackKey } : {}),
+      ...(playerKey ? { playerKey } : {}), ...(queueStartup ? { queueStartup: true } : {}) }] });
     nativeTabPending = false;
   }
-  function listenForBrowser(channel, { concurrent = false, repeat = false, shuffle = false } = {}) {
+  function listenForBrowser(channel, { concurrent = false, repeat = false, shuffle = false, queueStartup = false, clientIds } = {}) {
     // One paired extension profile owns the browser-wide channel, even with no tabs.
     browserCapable = true;
     browserRepeat = repeat;
     browserShuffle = shuffle;
     browserWaiter?.reply({ commands: [] });
     const waiter = {
-      concurrent,
+      concurrent, clientIds, queueStartup,
       timer: null,
       reply(message, status = 200) {
         clearTimeout(waiter.timer);
@@ -162,17 +173,20 @@ function createCommandService({ getSession, selectedEntry, launch, log,
   }
   async function requestPlayerCommand(type, amount = 0, { playerKey } = {}) {
     if (!isBrowserCommand(type)) return false;
-    if (getSession().pairingRequired) { lastCommandError = 'pairing-required'; return false; }
-    if (getSession().blocked) { lastCommandError = getSession().errorCode; return false; }
+    const session = getSession();
+    if (session.pairingRequired) { lastCommandError = 'pairing-required'; return false; }
+    if (session.blocked) { lastCommandError = session.errorCode; return false; }
     const entry = selectedEntry();
     const state = entry?.[1];
-    if (queueControl(type)) {
-      const error = queueError(type, state);
+    const isQueue = queueControl(type);
+    const queueStartup = isQueue && !playerKey && (!state?.title || !browserWaiter);
+    if (isQueue) {
+      const error = queueStartup ? (session.paired ? '' : 'pairing-required') : queueError(type, state);
       if (error) { lastCommandError = error; return false; }
-      playerKey = trackKey(state);
+      if (state?.title) playerKey = trackKey(state);
     }
     // Keep existing controls available when paired with a legacy extension.
-    if (type !== 'open' && !browserCapable && entry && !playerKey) return addCommand(type, amount);
+    if (type !== 'open' && !isQueue && !browserCapable && entry && !playerKey) return addCommand(type, amount);
     if (type === 'open') {
       const existing = [...browserRequests.values()].find(request => request.type === 'open');
       if (existing) return existing.promise;
@@ -180,11 +194,11 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     if (browserRequests.size >= 60) return false;
     let resolve;
     const promise = new Promise(done => { resolve = done; });
-    const timeout = queueControl(type) ? 4000 : 45000;
+    const timeout = isQueue && !queueStartup ? 4000 : 45000;
     const request = {
       id: newId(), type, amount, promise, state: 'queued', order: ++latestRequest,
       expiresAt: now() + timeout, preferredTabId: entry ? Number(entry[0]) : null,
-      playerKey,
+      playerKey, queueStartup,
       trackKey: isRatingCommand(type) && state?.title ? trackKey(state) : null,
       finish(ok, reason = 'command-failed') {
         if (!['queued', 'delivered'].includes(request.state)) return;
