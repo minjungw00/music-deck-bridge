@@ -429,7 +429,7 @@ test('a queued volume edit retains its captured route when the bridge recovers',
   h.close();
 });
 
-test('the empty popup opens Music without a player and suppresses duplicate clicks', async () => {
+test('the popup always offers Open Music and suppresses duplicate clicks', async () => {
   const h = harness(); await h.ready();
   assert.equal(h.element('openPlayer').hidden, false);
   assert.equal(h.element('openPlayer').disabled, false);
@@ -442,7 +442,10 @@ test('the empty popup opens Music without a player and suppresses duplicate clic
   assert.ok(!h.requests.some(request => request.type === 'open-player'));
   open.resolve({ ok: true }); await action;
   h.take('check').resolve(playerState()); await flush();
-  assert.equal(h.element('openPlayer').hidden, true);
+  assert.equal(h.element('openPlayer').hidden, false);
+  const focus = h.element('openPlayer').click();
+  h.take('open-player').resolve({ ok: true }); await focus;
+  h.take('check').resolve(playerState()); await flush();
   await showState(h, { ok: true, active: false });
   assert.equal(h.element('openPlayer').hidden, false);
 });

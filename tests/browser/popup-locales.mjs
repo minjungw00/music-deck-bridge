@@ -93,6 +93,37 @@ test('native extension catalogs and toolbar popup render all eight UI languages 
       assert.ok(transport.gaps.every(gap => Math.abs(gap - ratingsGap) < 0.5), `${language}: compact transport spacing`);
       assert.deepEqual(ui.clipped, [], `${language}: clipped button labels`);
       assert.equal(ui.overflow, false, `${language}: horizontal overflow`);
+      const actions = await evaluate(`(() => {
+        const open = document.getElementById('openPlayer');
+        const details = document.getElementById('connectionSettings');
+        const settings = details.querySelector('summary');
+        const initial = details.open;
+        const appearance = element => {
+          const style = getComputedStyle(element);
+          return { background: style.backgroundColor, radius: style.borderRadius };
+        };
+        if (initial) settings.click();
+        const closed = { ...appearance(settings), arrow: getComputedStyle(settings, '::after').transform,
+          open: details.open };
+        settings.click();
+        const expanded = { ...appearance(settings), arrow: getComputedStyle(settings, '::after').transform,
+          open: details.open };
+        if (!initial) settings.click();
+        const openBounds = open.getBoundingClientRect(), settingsBounds = settings.getBoundingClientRect();
+        return { open: appearance(open), closed, expanded, width: openBounds.width, settingsWidth: settingsBounds.width,
+          unclipped: settings.scrollWidth <= settings.clientWidth,
+          belowVolume: openBounds.height > 0 && open.previousElementSibling.matches('.volume-controls') &&
+            openBounds.top >= open.previousElementSibling.getBoundingClientRect().bottom };
+      })()`);
+      assert.equal(actions.belowVolume, true, `${language}: Open Music follows the volume row`);
+      assert.equal(actions.width, actions.settingsWidth, `${language}: both actions share a width`);
+      assert.equal(actions.unclipped, true, `${language}: settings label fits`);
+      assert.equal(actions.closed.radius, actions.open.radius);
+      assert.equal(actions.closed.background, actions.open.background);
+      assert.notEqual(actions.expanded.background, actions.closed.background);
+      assert.notEqual(actions.expanded.arrow, actions.closed.arrow);
+      assert.equal(actions.closed.open, false);
+      assert.equal(actions.expanded.open, true);
       if (language === 'en') {
         await browser.route('https://music.youtube.com/**', route => route.fulfill({
           contentType: 'text/html', body: '<!doctype html><title>Music opening fixture</title><p>Music opening fixture</p>' }));

@@ -6,6 +6,7 @@
 - Add truncation and scrolling to the Current Track Dial's Icon + song name display. Reset scrolling when the track changes.
 - Add individual and linked album artwork for all plugin keys. Artwork is displayed on its own by default, with an optional transparent action icon in nine positions. Linked layouts preserve diagonal positions and empty cells, offer proportional width or height fitting, and can compensate for measured gaps between physical keys.
 - Arrange the Chrome popup in three edge-aligned rows for transport, ratings and queue controls, and volume.
+- Keep Open YouTube Music below the volume row in the Chrome popup. Style the connection settings toggle as a matching button with a distinct expanded state.
 - Keep the latest track confirmed by the YouTube Music player, including restored selections before playback. Stream Deck retains artwork, volume, mute, Repeat, Shuffle, rating and playback time. The Chrome popup retains one track in its profile and can reopen YouTube Music and control the same track after its tab closes.
 - Place Chrome connection and port settings first while Chrome is disconnected.
 - Recognize the installed YouTube Music window in `minimal-ui` mode and prefer it over regular browser tabs.

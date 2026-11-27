@@ -53,7 +53,6 @@ function updateIcon(id, path) {
   if ($(id).getAttribute('src') !== source) $(id).src = source;
 }
 function updateControls() {
-  $('openPlayer').hidden = Boolean(currentPlayer && currentPlayer.mode !== 'saved');
   $('openPlayer').disabled = openingPlayer || closed;
   $('openPlayer').setAttribute('aria-busy', String(openingPlayer));
   const enabled = controlsAvailable && currentPlayer && !pendingActions;
