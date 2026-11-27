@@ -21,9 +21,9 @@ Elgato 갤러리 초안은 모두 영어 1920 × 960 PNG입니다. 공개 갤러
 
 1. [제품 소개](elgato-gallery-01-overview-1920x960.png) — Stream Deck 플러그인과 Chrome 확장 프로그램을 `+`로 묶고 `→`로 YouTube Music과 연결합니다.
 2. [Stream Deck 키 기능](elgato-gallery-02-controls-1920x960.png) — MK.2와 Stream Deck +의 재생, 반복·셔플, 볼륨·평가 매핑과 Stream Deck +의 두 다이얼을 보여줍니다.
-3. [연결 방법](elgato-gallery-03-connection-1920x960.png) — Stream Deck의 Chrome 연결·로컬 서버 포트, Chrome 확장의 연결 설정, YouTube Music 브라우저를 순서대로 보여줍니다. 두 설정 화면에는 동일한 예시 PIN과 포트를 표시합니다.
+3. [연결 방법](elgato-gallery-03-connection-1920x960.png) — Stream Deck과 Chrome 확장의 설정 화면에 여백을 두어 예시 PIN, 로컬 서버 포트와 버튼이 모두 보이도록 했습니다. 마지막에 YouTube Music 브라우저를 보여줍니다.
 4. [Chrome 단독 제어](elgato-gallery-04-chrome-1920x960.png) — 확장 팝업과 YouTube Music 브라우저를 함께 보여줍니다.
-5. [연결 앨범 이미지](elgato-gallery-05-linked-artwork-1920x960.png) — MK.2와 XL의 15개 및 32개 키 전체에 각각 하나의 예시 앨범 이미지를 연결합니다.
+5. [연결 앨범 이미지](elgato-gallery-05-linked-artwork-1920x960.png) — MK.2와 XL에서 선택한 키에 앨범 이미지를 연결하고, 다른 키에는 재생·볼륨 등의 동작 아이콘을 표시하거나 비워 둡니다.
 
 Chrome의 권한 및 호스트 범위는 1.2.0과 동일합니다. 개인정보 양식은 이번 버전이 마지막 곡 한 개와 플레이어 상태를 로컬에 보존하고 Google·YouTube 이미지 서버에서 앨범 이미지를 가져오는 동작을 반영해야 합니다. [개인정보 처리방침](../../../PRIVACY.md)
 
