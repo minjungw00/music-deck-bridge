@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {dirname,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import { selectPlayer } from '../streamdeck/src/domain/player-state.cjs';
+import { LIVE_MS, selectPlayer } from '../streamdeck/src/domain/player-state.cjs';
 import { createPlayerRegistry } from '../streamdeck/src/application/player-registry.cjs';
 test('idle player stays selected for up to 90 seconds instead of dropping after 3.5s',()=>{
   const candidates=new Map([['123',{lastSeen:100000,playing:false,standalone:true,title:'Paused song'}]]);
@@ -19,6 +19,20 @@ test('idle player stays selected for up to 90 seconds instead of dropping after 
   players.remove('123');
   assert.equal(players.touch('123'), false);
 
+});
+
+test('sync reports the same player used for snapshot observation, with stable priority until the lease expires', () => {
+  let time = 1000;
+  const observed = [];
+  const players = createPlayerRegistry({ now: () => time, onChange() {}, onObserved: entry => observed.push(entry[0]) });
+  assert.equal(players.sync('first', { playing: true }), true);
+  assert.equal(players.sync('second', { playing: true }), false, 'equal priority keeps insertion order');
+  assert.equal(players.sync('app', { standalone: true, playing: false }), true);
+  time++;
+  assert.equal(players.sync('second', { playing: true }), false, 'installed app wins over a newer playing tab');
+  time = 1000 + LIVE_MS;
+  assert.equal(players.sync('second', { playing: true }), true, 'the lease expires at the timeout boundary');
+  assert.deepEqual(observed, ['first', 'first', 'app', 'app', 'second']);
 });
 
 test('English and Korean localized action-list names are bundled',()=>{

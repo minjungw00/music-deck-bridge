@@ -8,16 +8,16 @@ function createPlayerRegistry({ onChange, onObserved = () => {}, now = Date.now 
   return {
     selected,
     sync(clientId, data) {
-      const state = normalizeState(data, now());
-      candidates.set(clientId, state);
-      for (const [id, s] of candidates) if (now() - s.lastSeen > LIVE_MS * 2) candidates.delete(id);
-      const chosen = selected();
-      const signature = JSON.stringify(chosen ? [chosen[0], chosen[1].title, chosen[1].artist,
-        chosen[1].trackId, chosen[1].cover, chosen[1].coverFallback, chosen[1].playing,
-        chosen[1].volume, chosen[1].muted, chosen[1].rating, chosen[1].repeatMode, chosen[1].shuffleEnabled,
-        chosen[1].positionSeconds, chosen[1].durationSeconds] : []);
+      const timestamp = now();
+      candidates.set(clientId, normalizeState(data, timestamp));
+      for (const [id, state] of candidates) if (timestamp - state.lastSeen > LIVE_MS * 2) candidates.delete(id);
+      const chosen = selectPlayer(candidates, timestamp);
+      const state = chosen?.[1];
+      const signature = JSON.stringify(state ? [chosen[0], state.title, state.artist, state.trackId,
+        state.cover, state.coverFallback, state.playing, state.volume, state.muted, state.rating, state.repeatMode,
+        state.shuffleEnabled, state.positionSeconds, state.durationSeconds] : []);
       if (signature !== selectedSignature) { selectedSignature = signature; onChange(); }
-      onObserved();
+      onObserved(chosen);
       return chosen && chosen[0] === clientId;
     },
     touch(clientId) {

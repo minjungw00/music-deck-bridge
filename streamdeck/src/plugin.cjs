@@ -37,15 +37,12 @@ function log(message) {
 const storage = createFileStore({ testPort: isTest ? process.env.MUSIC_DECK_BRIDGE_TEST_PORT : undefined });
 const lastTrack = createLastTrack({ storage, onChange: drawSoon,
   onError: () => log('Unable to update the saved last track.') });
-function observeTrack() {
-  const state = players.selected()?.[1];
-  if (state?.title) lastTrack.observe(state, covers.image(state.cover));
-}
-const players = createPlayerRegistry({ onChange: drawSoon, onObserved: () => {
+const players = createPlayerRegistry({ onChange: drawSoon, onObserved: entry => {
   // A fresh 0/100 snapshot can confirm a bounded volume input without changing
   // the registry's display signature. Wake only keys waiting for that snapshot.
   if ([...displayed.values()].some(item => item.volumeFeedback?.awaitingSnapshot())) drawSoon();
-  observeTrack();
+  const state = entry?.[1];
+  if (state?.title) lastTrack.observe(state, covers.image(state.cover));
 } });
 const commands = createCommandService({ selectedEntry: players.selected, log,
   getSession: () => session.access, launch: isTest ? async () => {} : launchChrome });

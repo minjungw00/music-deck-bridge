@@ -35,12 +35,16 @@ function normalizeState(data, timestamp = Date.now()) {
     lastSeen: timestamp, lastMediaSyncAt: timestamp,
   };
 }
+function comparePriority(a, b) {
+  // Prefer installed apps, then playing tabs, then newer observations.
+  return Number(a.standalone) - Number(b.standalone) || Number(a.playing) - Number(b.playing) || a.lastSeen - b.lastSeen;
+}
 function selectPlayer(candidates, now = Date.now()) {
-  const live = [...candidates.entries()].filter(([, s]) => now - s.lastSeen < LIVE_MS);
-  if (!live.length) return null;
-  // Installed PWA is always preferred; a playing player wins over paused ones.
-  live.sort((a, b) => Number(b[1].standalone) - Number(a[1].standalone) ||
-    Number(b[1].playing) - Number(a[1].playing) || b[1].lastSeen - a[1].lastSeen);
-  return live[0];
+  let selected = null;
+  for (const candidate of candidates) {
+    const state = candidate[1];
+    if (now - state.lastSeen < LIVE_MS && (!selected || comparePriority(state, selected[1]) > 0)) selected = candidate;
+  }
+  return selected;
 }
 module.exports = { normalizeState, normalizePlayerControls, normalizePlaybackTime, selectPlayer, trackKey, LIVE_MS, PLAYER_STALE_MS };
