@@ -32,7 +32,7 @@ let artworkKey = '';
 let artworkRevision = 0;
 let latestControl = 0;
 let localStatus = null;
-let bridgePlayback = null;
+let bridgeStatus = null;
 let localRequests = 0;
 const pendingControls = new Map();
 const controlButtons = { previous: 'prev', playPause: 'toggle', next: 'next', like: 'like', dislike: 'dislike',
@@ -146,15 +146,22 @@ function showPlayer(result) {
   }
   updateControls();
 }
-function applyPlayback() { showPlayer(bridgePlayback || localStatus); }
+function applyPlayback() {
+  const paired = bridgeStatus?.ok && bridgeStatus.active ? bridgeStatus : null;
+  const liveBridge = paired && !paired.playerStale ? paired : null;
+  const controlledBridge = liveBridge?.popupControls === true && liveBridge.popupVolume === true ? liveBridge : null;
+  const localPlayer = localStatus?.ok && localStatus.active ? localStatus : null;
+  const saved = localStatus?.ok && localStatus.savedPlayer ? localStatus : null;
+  showPlayer(controlledBridge || localPlayer || liveBridge || saved || paired || localStatus);
+}
 async function refreshLocalPlayer() {
   if (closed || localRequests || document.hidden) return;
   localRequests++;
   try {
     const result = await chrome.runtime.sendMessage({ type: 'player-status' });
-    if (!closed) { localStatus = result; if (!bridgePlayback) applyPlayback(); else updateControls(); }
+    if (!closed) { localStatus = result; applyPlayback(); }
   } catch {
-    if (!closed) { localStatus = null; if (!bridgePlayback) applyPlayback(); else updateControls(); }
+    if (!closed) { localStatus = null; applyPlayback(); }
   } finally { localRequests--; }
 }
 $('artwork').addEventListener('error', clearArtwork);
@@ -200,9 +207,8 @@ async function refreshStatus(automatic = false) {
     const r = await chrome.runtime.sendMessage({ type:'check' });
     if (closed || request !== latestRequest) return;
     showVersions(r?.compatibility);
-    bridgePlayback = r?.ok && r.active && r.popupControls === true && r.popupVolume === true && !r.playerStale ? r : null;
-    // Legacy connected plugins retain their display if no local snapshot exists.
-    if (!bridgePlayback && !localStatus?.active && r?.ok && r.active) showPlayer(r); else applyPlayback();
+    bridgeStatus = r;
+    applyPlayback();
     if (!settingsInitialized) {
       if (!settingsTouched) $('connectionSettings').open = !r?.ok && !localStatus?.active;
       settingsInitialized = true;
@@ -215,7 +221,7 @@ async function refreshStatus(automatic = false) {
       (r.popupControls === true || localStatus?.active ? '' : `\n${text.controlUpdate}`);
     display('status', r.playerStale ? `${data}\n${text.stale}` : data, !r.playerStale);
   } catch (e) {
-    if (!closed && request === latestRequest) { bridgePlayback = null; applyPlayback(); display('status', e.message); }
+    if (!closed && request === latestRequest) { bridgeStatus = null; applyPlayback(); display('status', e.message); }
   }
   finally { statusRequests--; }
 }
@@ -226,7 +232,7 @@ onAction('forget', async request => {
     if (request !== latestRequest) return;
     if (!result?.ok) return info(result?.error || text.fail);
     showVersions(null);
-    bridgePlayback = null;
+    bridgeStatus = null;
     if (localStatus?.savedPlayer) localStatus = { ...localStatus, savedPlayer: null };
     applyPlayback();
     display('status', '');

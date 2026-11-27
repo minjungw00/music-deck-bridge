@@ -216,6 +216,20 @@ async function showState(h, state = playerState()) {
   await h.tick(); h.take('check').resolve(state); await flush();
 }
 
+test('a local refresh keeps live legacy bridge metadata ahead of a saved track', async () => {
+  const h = harness({ local: { ok: true, active: false, mode: 'local', popupControls: true, popupVolume: true,
+    savedPlayer: { title: 'Saved song', key: 'saved-song', volume: 30 } } });
+  await h.ready();
+  const legacy = { ok: true, active: true, track: 'Legacy player song' };
+  await showState(h, legacy);
+  assert.equal(h.element('trackTitle').textContent, 'Legacy player song');
+  await h.tick();
+  assert.equal(h.element('trackTitle').textContent, 'Legacy player song', 'local polling cannot replace active bridge metadata');
+  h.take('check').resolve({ ...legacy, playerStale: true }); await flush();
+  assert.equal(h.element('trackTitle').textContent, 'Saved song');
+  assert.equal(h.element('nowPlayingLabel').textContent, 'lastTrackLabel');
+});
+
 test('popup queue controls select the bridge or the matching standalone player', async () => {
   const local = { ...playerState({ repeatMode: 'ONE', shuffleEnabled: false }), mode: 'local', popupQueueControls: true };
   const h = harness({ local }); await h.ready();
