@@ -1,5 +1,7 @@
 'use strict';
 const crypto = require('node:crypto');
+const { isBrowserCommand, isLegacyCommand, isRatingCommand, isQueueControl: queueControl } =
+  require('../../../chrome-extension/command-policy.js');
 const { PLAYER_STALE_MS, trackKey } = require('../domain/player-state.cjs');
 const { limit } = require('../domain/values.cjs');
 const COMMAND_ERRORS = new Set(['pairing-required', 'extension-unavailable', 'command-timeout',
@@ -8,7 +10,6 @@ const COMMAND_ERRORS = new Set(['pairing-required', 'extension-unavailable', 'co
   'autoplay-blocked', 'player-error', 'playback-unconfirmed', 'command-superseded', 'protocol-incompatible',
   'invalid-protocol', 'player-changed', 'repeat-update-required', 'repeat-unavailable',
   'shuffle-update-required', 'shuffle-unavailable']);
-const queueControl = type => type === 'repeat' || type === 'shuffle';
 
 // A channel port supplies reply(data, status) and onClose(callback); no HTTP objects enter this service.
 function createCommandService({ getSession, selectedEntry, launch, log,
@@ -33,10 +34,10 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     const entry = selectedEntry();
     if (!entry) return false;
     const [clientId, state] = entry;
-    if (!['toggle', 'next', 'prev', 'mute', 'volume_delta', 'like', 'dislike'].includes(type)) return false;
+    if (!isLegacyCommand(type)) return false;
     const amount = type === 'volume_delta' ? limit(Number(ticks) || 0, -100, 100) : 0;
     if (type === 'volume_delta' && amount === 0) return true;
-    const rating = type === 'like' || type === 'dislike';
+    const rating = isRatingCommand(type);
     if (rating && (!state.title || state.rating === null)) return false;
     queue.push({ clientId, type, amount, created: now(),
       ...(rating ? { trackKey: trackKey(state) } : {}) });
@@ -160,7 +161,7 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     return supports(type) && available && now() - state.lastMediaSyncAt < PLAYER_STALE_MS ? '' : `${type}-unavailable`;
   }
   async function requestPlayerCommand(type, amount = 0, { playerKey } = {}) {
-    if (!['open', 'toggle', 'prev', 'next', 'mute', 'volume_delta', 'volume_set', 'like', 'dislike', 'repeat', 'shuffle'].includes(type)) return false;
+    if (!isBrowserCommand(type)) return false;
     if (getSession().pairingRequired) { lastCommandError = 'pairing-required'; return false; }
     if (getSession().blocked) { lastCommandError = getSession().errorCode; return false; }
     const entry = selectedEntry();
@@ -184,7 +185,7 @@ function createCommandService({ getSession, selectedEntry, launch, log,
       id: newId(), type, amount, promise, state: 'queued', order: ++latestRequest,
       expiresAt: now() + timeout, preferredTabId: entry ? Number(entry[0]) : null,
       playerKey,
-      trackKey: (type === 'like' || type === 'dislike') && state?.title ? trackKey(state) : null,
+      trackKey: isRatingCommand(type) && state?.title ? trackKey(state) : null,
       finish(ok, reason = 'command-failed') {
         if (!['queued', 'delivered'].includes(request.state)) return;
         request.state = reason === 'command-superseded' ? 'cancelled' : ok ? 'succeeded' :

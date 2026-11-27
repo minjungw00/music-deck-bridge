@@ -1,5 +1,6 @@
 'use strict';
 (function (root) {
+  const { isStandaloneCommand, isRatingCommand } = root.MusicDeckCommandPolicy;
   function createLocalPlayer({ chrome, pageControls, contentScripts, lastPlayer,
     now = Date.now, wait = ms => new Promise(resolve => setTimeout(resolve, ms)) }) {
     const leases = new Map();
@@ -46,18 +47,14 @@
       })().finally(() => { opening = null; });
       return opening;
     }
-    function validCommand(command, amount) {
-      return ['toggle', 'prev', 'next', 'like', 'dislike', 'mute', 'volume_set', 'repeat', 'shuffle'].includes(command) &&
-        (command !== 'volume_set' || (Number.isInteger(amount) && amount >= 0 && amount <= 100));
-    }
     function unavailable(command, player) {
-      if (['like', 'dislike'].includes(command) && player.rating === null) return 'player-not-ready';
+      if (isRatingCommand(command) && player.rating === null) return 'player-not-ready';
       if (command === 'repeat' && player.repeatMode === null) return 'repeat-unavailable';
       if (command === 'shuffle' && player.shuffleEnabled === null) return 'shuffle-unavailable';
       return '';
     }
     async function control({ command, amount, playerId, trackKey }, playFromSaved = false) {
-      if (!validCommand(command, amount)) return { ok: false, reason: 'invalid-command' };
+      if (!isStandaloneCommand(command, amount)) return { ok: false, reason: 'invalid-command' };
       const matches = result => result.player?.id === String(playerId) && result.player?.key === trackKey;
       const selected = await check();
       if (!matches(selected)) return { ok: false, reason: 'player-changed' };
@@ -71,7 +68,7 @@
         // Reuse the exact same bounded dispatch/confirmation engine as bridge inputs.
         const ok = await native.perform({ id: `popup-local-${Date.now()}-${++sequence}`, type: command,
           amount, preferredTabId: tabId, playerKey: trackKey, nativeLaunched: playFromSaved && command === 'toggle',
-          ...(['like', 'dislike'].includes(command) ? { trackKey } : {}), expiresAt: Date.now() + 30000 },
+          ...(isRatingCommand(command) ? { trackKey } : {}), expiresAt: Date.now() + 30000 },
         async () => {
           if (matches(await check())) return true;
           diagnostic.reason = 'player-changed'; return false;
@@ -83,7 +80,7 @@
       }
     }
     async function savedControl({ command, amount, trackKey }) {
-      if (!validCommand(command, amount)) return { ok: false, reason: 'invalid-command' };
+      if (!isStandaloneCommand(command, amount)) return { ok: false, reason: 'invalid-command' };
       const saved = await lastPlayer?.get();
       if (!saved || saved.key !== trackKey) return { ok: false, reason: 'player-changed' };
       let { player } = await check();

@@ -1,5 +1,6 @@
 'use strict';
 (function (root) {
+  const { isBrowserCommand } = root.MusicDeckCommandPolicy;
   function createBrowserChannel({ chrome, client, contentScripts }) {
     const { post, pairedToken } = client;
     const MUSIC_URL = 'https://music.youtube.com/';
@@ -39,11 +40,10 @@
           ? data.startupAttempts : null });
       console.warn('Music Deck Bridge playback diagnostic:', JSON.stringify(lastFailure));
     }
-    const PLAYER_COMMANDS = ['toggle', 'prev', 'next', 'mute', 'volume_delta', 'volume_set', 'like', 'dislike', 'repeat', 'shuffle'];
     const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
     async function performBrowserCommand(command, stillPaired = async () => true, diagnostic = {}, onAccepted = () => {}) {
       const failed = reason => { diagnostic.reason = reason; return false; };
-      if (!['open', ...PLAYER_COMMANDS].includes(command?.type)) return false;
+      if (!isBrowserCommand(command?.type)) return false;
       const deadline = Math.min(Number(command.expiresAt) || Date.now() + 30000, Date.now() + 30000);
       const allowed = async (confirm = false) => !client.blocked() && Date.now() < deadline && await stillPaired(confirm) && !client.blocked() && Date.now() < deadline;
       const denied = () => failed(client.blocked() ? 'protocol-incompatible' : ['bridge-unavailable', 'player-changed'].includes(diagnostic.reason) ? diagnostic.reason :

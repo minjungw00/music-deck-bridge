@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import artwork from '../chrome-extension/artwork-policy.js';
+import commandPolicy from '../chrome-extension/command-policy.js';
 import { readFileSync } from 'node:fs';
 
 function harness(saved = null) {
@@ -18,7 +19,8 @@ function harness(saved = null) {
     if (options.world === 'MAIN') return [{ result: { playing: state.playing, muted: state.muted === true } }];
     return [{ result: state }];
   } } };
-  const context = vm.createContext({ chrome, URL, Date, MusicDeckArtworkPolicy: artwork, MusicDeckBrowserChannel: { create: () => ({ async perform(command, allowed) {
+  const context = vm.createContext({ chrome, URL, Date, MusicDeckArtworkPolicy: artwork, MusicDeckCommandPolicy: commandPolicy,
+    MusicDeckBrowserChannel: { create: () => ({ async perform(command, allowed) {
     assert.equal(service.controlling(command.preferredTabId), command.type !== 'open');
     inputs.push(command); beforeDispatch();
     return command.type === 'open' ? true : allowed(true);
@@ -63,6 +65,7 @@ test('standalone controls and artwork reject invalid commands, volume and non-CD
     assert.equal((await h.service.control({ command: 'volume_set', amount })).reason, 'invalid-command');
   }
   assert.equal((await h.service.control({ command: 'open' })).reason, 'invalid-command');
+  assert.equal((await h.service.control({ command: 'volume_delta', amount: 5 })).reason, 'invalid-command');
   for (const cover of ['http://localhost/image', 'https://untrusted.test/image', 'https://user:pass@i.ytimg.com/image']) {
     h.states.get(2).cover = cover;
     assert.equal((await h.service.check()).player.coverKey, '');

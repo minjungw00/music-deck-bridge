@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
+import commandPolicy from '../chrome-extension/command-policy.js';
 
 function deferred() {
   let resolve;
@@ -11,7 +12,7 @@ function deferred() {
 const flush = async () => { for (let i = 0; i < 20; i++) await Promise.resolve(); };
 
 function harness({ paired = true, pairReply, tokenWrite, portReply, controlReply } = {}) {
-  const context = vm.createContext({});
+  const context = vm.createContext({ MusicDeckCommandPolicy: commandPolicy });
   vm.runInContext(readFileSync(new URL('../chrome-extension/background/management-service.js', import.meta.url), 'utf8'), context);
   const state = { token: paired ? 'old-fixture-token' : '', serverToken: paired ? 'old-fixture-token' : '',
     port: 17864, serverPort: 17864, savingToken: false, failUnpair: false };

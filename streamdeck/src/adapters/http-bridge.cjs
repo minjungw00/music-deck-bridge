@@ -1,6 +1,7 @@
 'use strict';
 const http = require('node:http');
 const protocol = require('../../../chrome-extension/protocol.js');
+const { isPopupCommand, isRatingCommand, isVolumeAdjustment } = require('../../../chrome-extension/command-policy.js');
 const { validOrigin } = require('../domain/credentials.cjs');
 const { PLAYER_STALE_MS, trackKey } = require('../domain/player-state.cjs');
 const LOCALHOST = '127.0.0.1';
@@ -75,9 +76,7 @@ function createHttpBridge({ session, players, commands, covers, getPorts, onDeck
         coverStatus: covers.status(chosen?.[1].cover) }, origin);
     }
     if (req.url === '/control' || req.url === '/artwork') {
-      if (req.url === '/control' && (!['toggle', 'prev', 'next', 'like', 'dislike', 'mute', 'volume_delta', 'volume_set', 'repeat', 'shuffle'].includes(body.command) ||
-          (body.command === 'volume_delta' && (!Number.isInteger(body.amount) || body.amount === 0 || Math.abs(body.amount) > 100)) ||
-          (body.command === 'volume_set' && (!Number.isInteger(body.amount) || body.amount < 0 || body.amount > 100)))) {
+      if (req.url === '/control' && !isPopupCommand(body.command, body.amount)) {
         return sendHttp(res, 400, { error: 'Invalid popup command' }, origin);
       }
       const chosen = players.selected();
@@ -92,10 +91,10 @@ function createHttpBridge({ session, players, commands, covers, getPorts, onDeck
         return sendHttp(res, 200, { ok: true, image }, origin);
       }
       if (Date.now() - chosen[1].lastMediaSyncAt > PLAYER_STALE_MS ||
-          (['like', 'dislike'].includes(body.command) && chosen[1].rating === null)) {
+          (isRatingCommand(body.command) && chosen[1].rating === null)) {
         return sendHttp(res, 200, { ok: false, reason: 'player-not-ready' }, origin);
       }
-      const ok = await commands.request(body.command, ['volume_delta', 'volume_set'].includes(body.command) ? body.amount : 0, { playerKey: player.key });
+      const ok = await commands.request(body.command, isVolumeAdjustment(body.command) ? body.amount : 0, { playerKey: player.key });
       return sendHttp(res, 200, { ok: ok === true,
         ...(!ok ? { reason: ok === null ? 'command-superseded' : 'command-failed' } : {}) }, origin);
     }

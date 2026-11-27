@@ -18,6 +18,7 @@ test('popup endpoints authenticate and bind controls/artwork to the selected pla
     rating: 'INDIFFERENT', volume: 55, muted: false, repeatMode: null, shuffleEnabled: null, coverKey: '' });
   const command = { token, command: 'like', playerId: '11', trackKey: 'aaaaaaaaaaa' };
   assert.equal((await bridge.post('/control', { ...command, command: 'arbitrary' })).status, 400);
+  assert.equal((await bridge.post('/control', { ...command, command: 'open' })).status, 400);
   for (const amount of [undefined, 0, 101, -101, 0.5, '5']) {
     assert.equal((await bridge.post('/control', { ...command, command: 'volume_delta', amount })).status, 400);
   }

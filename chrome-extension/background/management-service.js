@@ -1,5 +1,6 @@
 'use strict';
 (function (root) {
+  const { isPopupCommand, isVolumeAdjustment } = root.MusicDeckCommandPolicy;
   function createManagementService({ client, browserChannel, lastPlayer, translate = () => '' }) {
     const { post, pairedToken, configuredPort, setLocalPort, validPort } = client;
     let pending = Promise.resolve();
@@ -85,9 +86,7 @@
     };
     const controlToken = serialize(() => pairedToken());
     async function control({ command, playerId, trackKey, amount }) {
-      if (!['toggle', 'prev', 'next', 'like', 'dislike', 'mute', 'volume_delta', 'volume_set', 'repeat', 'shuffle'].includes(command) ||
-          (command === 'volume_delta' && (!Number.isInteger(amount) || amount === 0 || Math.abs(amount) > 100)) ||
-          (command === 'volume_set' && (!Number.isInteger(amount) || amount < 0 || amount > 100))) {
+      if (!isPopupCommand(command, amount)) {
         throw new Error(translate('controlFailed') || 'Could not control the player.');
       }
       // Wait for preceding credential/port writes, then release the management
@@ -95,7 +94,7 @@
       const token = await controlToken();
       if (!token) return { ok: false, reason: 'pairing-required' };
       return post('/control', { token, command, playerId, trackKey,
-        ...(['volume_delta', 'volume_set'].includes(command) ? { amount } : {}) }, 50000);
+        ...(isVolumeAdjustment(command) ? { amount } : {}) }, 50000);
     }
     // Include reads: status can update compatibility/port, and both reads must
     // see credentials and configuration after preceding writes have settled.
