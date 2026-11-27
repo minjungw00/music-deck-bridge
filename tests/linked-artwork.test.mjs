@@ -139,15 +139,17 @@ test('current track text works with icon, individual artwork and linked artwork 
   }
   assert.deepEqual(await render({ keyDisplay: 'default', showArtist: false }), { title: 'A song', image: raster });
   assert.deepEqual(await render({ keyDisplay: 'artwork', showTitle: true, showArtist: true }), { title: '', image: raster });
-  assert.deepEqual(await render({ keyDisplay: 'icon', keyShowTitle: true }), {
-    title: 'A song', image: 'imgs/actions/toggle/pause@2x.png',
-  });
+  assert.deepEqual(await render({ keyDisplay: 'icon' }), { title: '', image: 'imgs/actions/toggle/pause@2x.png' });
+  const iconWithTitle = await render({ keyDisplay: 'icon', keyShowTitle: true });
+  assert.equal(iconWithTitle.title, 'A song');
+  assert.match(decode(iconWithTitle.image), /x="15" y="0" width="114" height="114"/);
   for (const mode of ['icon', 'artwork', 'linked']) {
     const result = await render({ keyDisplay: mode, keyShowTitle: true, keyShowArtist: true, titleBackground: true });
     assert.equal(result.title, 'A song\nAn artist');
     const svg = decode(result.image);
     assert.match(svg, /y="90" width="144" height="54" fill="black"/);
     assert.equal(svg.includes(raster), mode !== 'icon');
+    if (mode === 'icon') assert.match(svg, /x="27" y="0" width="90" height="90"/);
     if (mode === 'linked') assert.match(svg, /x="72" y="0" width="144" height="144"/);
     assert.equal(titles.get('next'), '', 'the linked title is local to the current track key');
   }

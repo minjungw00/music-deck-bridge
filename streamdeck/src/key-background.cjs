@@ -19,6 +19,7 @@ const assets = new Map();
 let lastImage = '', dimensions = null, variantLength = 0;
 const variants = new Map();
 const svgImage = svg => `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+const titleBand = lines => lines > 1 ? 54 : lines === 1 ? 30 : 0;
 
 function assetImage(filename) {
   if (!assets.has(filename)) {
@@ -28,9 +29,11 @@ function assetImage(filename) {
   }
   return assets.get(filename);
 }
-function keyTextBackground(image, lines, tile, badge = '', corner = 'top-left', backgroundIcon = 'imgs/actions/nowplaying/key@2x.png') {
+function keyTextBackground(image, lines, tile, badge = '', corner = 'top-left',
+  { icon, textLines = 0, useArtworkFallback = true } = {}) {
+  if (icon) image = assetImage(icon);
   if (!image && !lines && !badge) return null;
-  if (!image && lines && backgroundIcon) image = assetImage(backgroundIcon);
+  if (!image && lines && useArtworkFallback) image = assetImage('imgs/actions/nowplaying/key@2x.png');
   if (image !== lastImage) {
     lastImage = image;
     dimensions = rasterSize(image);
@@ -39,14 +42,14 @@ function keyTextBackground(image, lines, tile, badge = '', corner = 'top-left', 
   }
   if (image && !dimensions) return null;
   const { width, height } = dimensions || { width: 144, height: 144 };
-  if (!lines && !tile && !badge && width === height) return image;
-  const variant = JSON.stringify([lines, tile, badge, corner]);
+  if (!lines && !textLines && !tile && !badge && width === height) return image;
+  const variant = JSON.stringify([lines, textLines, tile, badge, corner]);
   if (variants.has(variant)) return variants.get(variant);
   const gapX = KEY_SIZE * ((tile?.gap?.horizontal ?? 0) / 100);
   const gapY = KEY_SIZE * ((tile?.gap?.vertical ?? 0) / 100);
   const pitchX = KEY_SIZE + gapX, pitchY = KEY_SIZE + gapY;
   const canvasWidth = KEY_SIZE + pitchX * ((tile?.width ?? 1) - 1);
-  const canvasHeight = KEY_SIZE + pitchY * ((tile?.height ?? 1) - 1);
+  const canvasHeight = KEY_SIZE + pitchY * ((tile?.height ?? 1) - 1) - titleBand(textLines);
   // Fit the shared image on one axis and clip any overflow on the other axis.
   const scale = tile ? (tile.fit === 'width' ? canvasWidth / width : canvasHeight / height) :
     Math.min(canvasWidth / width, canvasHeight / height);
@@ -56,8 +59,8 @@ function keyTextBackground(image, lines, tile, badge = '', corner = 'top-left', 
   // Native key titles use the existing bottom-aligned Stream Deck text layer.
   // Qt SVG ignores embedded-image aspect-ratio attributes. Fit the source with
   // explicit geometry, including when no optional title backdrop is requested.
-  const band = lines > 1 ? 54 : 30;
-  const margin = tile || width !== height || !image ? '<rect width="144" height="144" fill="black"/>' : '';
+  const band = titleBand(lines);
+  const margin = tile || textLines || width !== height || !image ? '<rect width="144" height="144" fill="black"/>' : '';
   const backdrop = lines ? `<rect x="0" y="${144 - band}" width="144" height="${band}" fill="black"/>` : '';
   const art = image ? `<image x="${x}" y="${y}" width="${w}" height="${h}" xlink:href="${image}"/>` : '';
   const [badgeX, badgeY] = iconPositions.get(corner) || iconPositions.get('top-left');

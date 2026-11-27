@@ -47,14 +47,14 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     return state;
   }
 
-  function keyArtwork(item, cover, lines, tile, badge, backgroundIcon) {
+  function keyArtwork(item, cover, lines, tile, badge, options) {
     const position = item.settings?.keyArtworkIconPosition;
     const corner = typeof position === 'string' ? position : 'top-left';
-    const signature = JSON.stringify([lines, tile, badge, corner, backgroundIcon]);
+    const signature = JSON.stringify([lines, tile, badge, corner, options]);
     if (item.keyCover !== cover || item.keyArtworkSignature !== signature) {
       item.keyCover = cover;
       item.keyArtworkSignature = signature;
-      item.keyArtwork = keyTextBackground(cover, lines, tile, badge, corner, backgroundIcon);
+      item.keyArtwork = keyTextBackground(cover, lines, tile, badge, corner, options);
     }
     return item.keyArtwork;
   }
@@ -178,13 +178,14 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     const text = below ? [format(rawTitle, 12), format(rawArtist, 11, 600)].filter(Boolean).join('\n') :
       format([rawTitle, rawArtist].filter(Boolean).join(' — '), 12);
     writeTitle(context, item, text);
-    const lines = settings.titleBackground === true && text ? below && rawTitle && rawArtist ? 2 : 1 : 0;
+    const textLines = text ? (below && rawTitle && rawArtist ? 2 : 1) : 0;
+    const lines = settings.titleBackground === true ? textLines : 0;
     const icon = keyIcon('nowplaying', playback);
     if (mode === 'icon') {
-      const image = lines ? keyArtwork(item, null, lines, null, '', icon) : null;
+      const image = textLines ? keyArtwork(item, null, lines, null, '', { icon, textLines }) : null;
       writeImage(context, item, image || icon);
     } else {
-      const image = keyArtwork(item, coverFor(state), lines, tile, overlay(settings, icon), legacy ? undefined : '');
+      const image = keyArtwork(item, coverFor(state), lines, tile, overlay(settings, icon), { useArtworkFallback: legacy });
       writeImage(context, item, image || (legacy ? null : EMPTY_KEY_IMAGE));
     }
   }
