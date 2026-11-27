@@ -5,7 +5,7 @@ export const musicSender = { tab: { id: 55 }, frameId: 0, url: 'https://music.yo
 
 // Model the two site sliders and a deliberately nonlinear audio volume curve.
 // The isolated content script only sees shared DOM attributes, not page properties.
-export function playerHarness({ compact = false, available = true, delay = 0 } = {}) {
+export function playerHarness({ compact = false, available = true, delay = 0, date = Date } = {}) {
   const audio = { readyState: 4, paused: false, ended: false, muted: false, volume: 0.25, duration: 120,
     currentSrc: 'fixture://initial', currentTime: 0 };
   const state = { savedVolume: 50, changes: [], muteClicks: 0 };
@@ -40,7 +40,7 @@ export function playerHarness({ compact = false, available = true, delay = 0 } =
     querySelectorAll: selector => available && selector === '#volume-slider, #expand-volume-slider' ? sliders : [],
   };
   const page = { document: { querySelector: selector => available && selector === 'ytmusic-player-bar' ? bar : null }, Event,
-    setTimeout, Date };
+    setTimeout, Date: date };
   const scriptCalls = [];
   // MAIN-world globals persist across injections in a real document.
   const pageContext = vm.createContext(page);
@@ -60,7 +60,7 @@ export function playerHarness({ compact = false, available = true, delay = 0 } =
       return [{ result }];
     } },
   };
-  loadExtension({ chrome });
+  loadExtension({ chrome, Date: date });
   return {
     audio, sliders, state, scriptCalls, setSiteVolume,
     setQueue(queue) { bar.queue = queue; },

@@ -106,8 +106,8 @@ const slider=document.querySelector('#volume-slider');slider.value=50;
 slider.addEventListener('change',()=>{slider.setAttribute('aria-valuenow',slider.value);record('volume_delta');});
 </script></body></html>`;
 async function until(check, label) {
-  const deadline = Date.now() + 10000;
-  while (Date.now() < deadline) {
+  const deadline = performance.now() + 10000;
+  while (performance.now() < deadline) {
     const result = await check();
     if (result) return result;
     await new Promise(resolve => setTimeout(resolve, 30));
@@ -355,10 +355,10 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     if (!stall) {
       await until(() => controlled.evaluate(() => playing), 'same-item playback recovered without seek event');
     }
-    const start = Date.now();
+    const start = performance.now();
     await postEvent('toggle');
     await until(() => controlled.evaluate(() => !playing), 'Pause overtakes old outcome verification');
-    const delay = Date.now()-start;
+    const delay = Math.round(performance.now() - start);
     pauseDelays.push(delay);
     assert.ok(delay < 1000, 'Pause must not wait for a ten-second result timeout');
     await until(async () => (await worker.evaluate(() => acknowledgments.length)) >= before+2, 'both final results');

@@ -2,12 +2,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { playerHarness } from './helpers/player.mjs';
 
+// Use one epoch clock for test deadlines and the simulated browser. Its
+// elapsed time follows the timers even when the host wall clock is adjusted.
+const Date = class extends globalThis.Date {
+  static now() { return Math.floor(performance.timeOrigin + performance.now()); }
+};
+
 function harness({ ready = true, blocked = false, error = false, noEffect = false,
   restart = false, playBlocked = false, playNoEffect = false, initialState = 2,
   cueOnNavigation = false, ignoreUntilPlaying = false, seekEvent = true, ignoredTypes = [], playPromise,
   unloadedUntilPlay = false, rejectUncued = false, clearOnError = false, clickError,
   ignoredPlayRequests = 0, blockedPlayRequest = 0, unstartedOnNavigation = false } = {}) {
-  const player = playerHarness();
+  const player = playerHarness({ date: Date });
   let state = initialState, track = 'aaaaaaaaaaa', clicks = 0, time = 0, plays = 0, ignored = 0;
   let initialized = !unloadedUntilPlay;
   if (unloadedUntilPlay) { player.audio.readyState = 0; player.audio.currentSrc = ''; player.audio.paused = true; }
