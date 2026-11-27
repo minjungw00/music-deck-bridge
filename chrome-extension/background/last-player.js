@@ -2,15 +2,13 @@
 (function (root) {
   const STORAGE_KEY = 'lastTrack';
   const LIVE_MS = 90000;
-  const clean = value => typeof value === 'string' ? value.replace(/[\x00-\x1f\x7f]/g, ' ').trim().slice(0, 180) : '';
+  const { normalizeTrackIdentity, trackKey } = root.MusicDeckTrackIdentity;
   function normalize(state) {
-    const title = clean(state?.title);
-    if (!title) return null;
-    const artist = clean(state.artist);
-    const trackId = typeof state.trackId === 'string' && /^[\w-]{11}$/.test(state.trackId) ? state.trackId : '';
+    const identity = normalizeTrackIdentity(state);
+    if (!identity.title) return null;
     const source = state.coverKey || state.cover;
     const coverKey = typeof source === 'string' && source.length <= 4096 ? root.MusicDeckArtworkPolicy.parse(source)?.href || '' : '';
-    return { key: trackId || JSON.stringify([title, artist]), title, artist, trackId, coverKey,
+    return { key: trackKey(identity), ...identity, coverKey,
       volume: Number.isFinite(state.volume) ? Math.max(0, Math.min(100, Math.round(state.volume))) : null,
       muted: state.muted === true, rating: ['LIKE', 'DISLIKE', 'INDIFFERENT'].includes(state.rating) ? state.rating : null,
       repeatMode: ['NONE', 'ALL', 'ONE'].includes(state.repeatMode) ? state.repeatMode : null,

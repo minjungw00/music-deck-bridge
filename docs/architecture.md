@@ -56,6 +56,8 @@ Artwork URL admission is shared by the content reader, standalone player, popup 
 
 The Chrome worker and Stream Deck bridge share command recognition and popup volume validation in `chrome-extension/command-policy.js`. The policy keeps standalone popup, paired popup, browser channel and legacy tab capabilities distinct. Sender authorization and command delivery stay in their existing layers.
 
+The Chrome worker, isolated content scripts and Stream Deck bridge share track identity in `chrome-extension/track-identity.js`. They use a valid YouTube video ID when available and a key derived from the normalized title and artist otherwise.
+
 The isolated-world content entry point composes metadata, command execution and runtime/lifecycle modules under `content/`. Both manifest loading and reinjection use the manifest’s complete ordered script list.
 
 The inspector keeps its translations and volume editing model separate from DOM/host wiring, preserving pending edits against delayed saved-setting notifications.

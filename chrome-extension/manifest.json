@@ -21,6 +21,7 @@
       ],
       "js": [
         "artwork-policy.js",
+        "track-identity.js",
         "content/metadata.js",
         "content/commands.js",
         "content/runtime.js",

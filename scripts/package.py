@@ -12,7 +12,7 @@ PLUGIN = "io.github.minjungw00.musicdeckbridge.sdPlugin"
 LOCALES = ("en", "ko", "zh_CN", "zh_TW", "ja", "es", "fr", "de")
 LEGAL = ("LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md", "PRIVACY.md")
 CHROME_FILES = (
-    "background.js", "protocol.js", "artwork-policy.js", "command-policy.js",
+    "background.js", "protocol.js", "artwork-policy.js", "command-policy.js", "track-identity.js",
     "background/bridge-client.js", "background/browser-channel.js",
     "background/player-playback.js", "background/page-controls.js", "background/local-player.js", "background/last-player.js",
     "background/message-router.js", "background/management-service.js", "background/player-sync-service.js",

@@ -1,8 +1,8 @@
 'use strict';
-const { clip, limit } = require('./values.cjs');
+const { limit } = require('./values.cjs');
+const { normalizeTrackIdentity, trackKey } = require('../../../chrome-extension/track-identity.js');
 const LIVE_MS = 90000;
 const PLAYER_STALE_MS = 35000;
-const trackKey = state => state.trackId || JSON.stringify([state.title, state.artist]);
 function normalizePlayerControls(state) {
   return {
     rating: ['LIKE', 'DISLIKE', 'INDIFFERENT'].includes(state.rating) ? state.rating : null,
@@ -18,8 +18,9 @@ function normalizePlaybackTime({ positionSeconds, durationSeconds }) {
 function normalizeState(data, timestamp = Date.now()) {
   const s = data && typeof data === 'object' ? data : {};
   const volumeReported = Number.isFinite(s.volume);
+  const identity = normalizeTrackIdentity({ title: String(s.title ?? ''), artist: String(s.artist ?? ''), trackId: s.trackId });
   return {
-    title: clip(s.title, 180), artist: clip(s.artist, 180),
+    ...identity,
     cover: typeof s.cover === 'string' ? s.cover.slice(0, 4096) : '',
     coverFallback: typeof s.coverFallback === 'string' ? s.coverFallback.slice(0, 4096) : '',
     playing: s.playing === true,
@@ -31,7 +32,6 @@ function normalizeState(data, timestamp = Date.now()) {
     standalone: s.standalone === true,
     ...normalizePlayerControls(s),
     ...normalizePlaybackTime(s),
-    trackId: typeof s.trackId === 'string' && /^[\w-]{11}$/.test(s.trackId) ? s.trackId : '',
     lastSeen: timestamp, lastMediaSyncAt: timestamp,
   };
 }

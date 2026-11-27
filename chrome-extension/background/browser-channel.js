@@ -1,6 +1,7 @@
 'use strict';
 (function (root) {
   const { isBrowserCommand } = root.MusicDeckCommandPolicy;
+  const { normalizeTrackId } = root.MusicDeckTrackIdentity;
   function createBrowserChannel({ chrome, client, contentScripts }) {
     const { post, pairedToken } = client;
     const MUSIC_URL = 'https://music.youtube.com/';
@@ -56,8 +57,8 @@
       let opened = command.nativeLaunched === true;
       if (!tab) {
         if (!await allowed(true)) return denied();
-        const url = command.type === 'open' && /^[\w-]{11}$/.test(command.videoId || '') ?
-          `${MUSIC_URL}watch?v=${command.videoId}` : MUSIC_URL;
+        const videoId = command.type === 'open' ? normalizeTrackId(command.videoId) : '';
+        const url = videoId ? `${MUSIC_URL}watch?v=${videoId}` : MUSIC_URL;
         tab = await chrome.tabs.create({ url, active: true });
         opened = true;
       }

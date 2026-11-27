@@ -1,8 +1,8 @@
 'use strict';
 const { createHash } = require('node:crypto');
+const { normalizeTrackIdentity, trackKey } = require('../../../chrome-extension/track-identity.js');
 const { rasterSize } = require('../domain/raster-artwork.cjs');
-const { trackKey, normalizePlayerControls, normalizePlaybackTime } = require('../domain/player-state.cjs');
-const { clip } = require('../domain/values.cjs');
+const { normalizePlayerControls, normalizePlaybackTime } = require('../domain/player-state.cjs');
 const PROGRESS_SAVE_MS = 10000;
 const TRACK_FIELDS = ['title', 'artist', 'trackId', 'image', 'volume', 'muted', 'rating', 'repeatMode', 'shuffleEnabled', 'durationSeconds'];
 
@@ -32,9 +32,9 @@ function createLastTrack({ storage, onChange, onError = () => {}, now = Date.now
   const saved = storage.readLastTrack();
   let scope = pairScope();
   const persisted = scope && scope === saved?.scope ? saved.track : null;
-  let snapshot = persisted && typeof persisted.title === 'string' && clip(persisted.title, 180) ? {
-    title: clip(persisted.title, 180), artist: typeof persisted.artist === 'string' ? clip(persisted.artist, 180) : '',
-    trackId: typeof persisted.trackId === 'string' && /^[\w-]{11}$/.test(persisted.trackId) ? persisted.trackId : '',
+  const identity = normalizeTrackIdentity(persisted);
+  let snapshot = identity.title ? {
+    ...identity,
     image: rasterSize(persisted.image) ? persisted.image : '',
     ...volumeFields(persisted),
     ...controlFields(persisted),

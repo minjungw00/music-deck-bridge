@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import artwork from '../chrome-extension/artwork-policy.js';
 import commandPolicy from '../chrome-extension/command-policy.js';
+import trackIdentity from '../chrome-extension/track-identity.js';
 import { readFileSync } from 'node:fs';
 
 function harness(saved = null) {
@@ -19,7 +20,8 @@ function harness(saved = null) {
     if (options.world === 'MAIN') return [{ result: { playing: state.playing, muted: state.muted === true } }];
     return [{ result: state }];
   } } };
-  const context = vm.createContext({ chrome, URL, Date, MusicDeckArtworkPolicy: artwork, MusicDeckCommandPolicy: commandPolicy,
+  const context = vm.createContext({ chrome, URL, Date, MusicDeckArtworkPolicy: artwork,
+    MusicDeckCommandPolicy: commandPolicy, MusicDeckTrackIdentity: trackIdentity,
     MusicDeckBrowserChannel: { create: () => ({ async perform(command, allowed) {
     assert.equal(service.controlling(command.preferredTabId), command.type !== 'open');
     inputs.push(command); beforeDispatch();

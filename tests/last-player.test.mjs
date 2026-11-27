@@ -2,16 +2,28 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import artwork from '../chrome-extension/artwork-policy.js';
+import trackIdentity from '../chrome-extension/track-identity.js';
+import playerState from '../streamdeck/src/domain/player-state.cjs';
 import { readFileSync } from 'node:fs';
 
 const source = readFileSync(new URL('../chrome-extension/background/last-player.js', import.meta.url), 'utf8');
 const track = (id, title, fields = {}) => ({ trackId: id.repeat(11), title, artist: 'Artist', trackConfirmed: true, ...fields });
 
 function openCache(storage, now = Date.now) {
-  const context = vm.createContext({ MusicDeckArtworkPolicy: artwork });
+  const context = vm.createContext({ MusicDeckArtworkPolicy: artwork, MusicDeckTrackIdentity: trackIdentity });
   vm.runInContext(source, context);
   return context.MusicDeckLastPlayer.create({ storage, ready: Promise.resolve(), now });
 }
+
+test('Chrome and Stream Deck keep the same title and artist key when no video ID is available', async () => {
+  const prefix = 'a'.repeat(179);
+  const state = { title: `${prefix} next`, artist: '  Artist\u0000Name  ', trackId: 'invalid', trackConfirmed: true };
+  const expected = JSON.stringify([`${prefix} `, 'Artist Name']);
+  const lastTrack = openCache({ async set() {} });
+  await lastTrack.observe({ id: 1 }, state);
+  assert.equal((await lastTrack.get()).key, expected);
+  assert.equal(playerState.trackKey(playerState.normalizeState(state)), expected);
+});
 
 test('Chrome stores one selected track before playback and restores it in a fresh extension worker', async () => {
   let saved = {}, time = 0, writes = 0;
