@@ -348,7 +348,8 @@ for (const protectedManifest of [false, true]) {
     await new Promise(resolve => setTimeout(resolve, 3200));
     await waitFor(() => toggleImage() === playImage);
     const offlineStart = messages.length;
-    send('didReceiveSettings', 'volume', { settings: { volumeStep: 2 } });
+    send('willDisappear', 'volume');
+    send('willAppear', 'volume', { controller: 'Encoder', settings: { volumeStep: 2 }, state: 0 });
     assert.equal((await waitFor(() => volumeFeedback(offlineStart))).value, '음소거 8%');
     assert.equal(storage.readLastTrack().track.positionSeconds, 84, 'disconnect flushes the latest progress');
     assert.equal(dialFeedback().time, '1:24 / 4:00');

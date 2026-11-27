@@ -4,18 +4,20 @@
 // A failed/skipped write stays unconfirmed and is retried on the next repaint.
 function createOutputCache({ isCurrent }) {
   const entries = new WeakMap(), pending = new Set();
-  function write(context, item, field, value, send) {
+  function write(context, item, field, value, send, signature = value) {
     let fields = entries.get(item);
     if (!fields) { fields = new Map(); entries.set(item, fields); }
     let entry = fields.get(field);
     if (!entry) { entry = { confirmed: false }; fields.set(field, entry); }
     entry.desired = value;
+    entry.desiredSignature = signature;
     function flush() {
-      if (entry.pending || (entry.confirmed && entry.value === entry.desired)) return;
+      if (entry.pending || (entry.confirmed && entry.signature === entry.desiredSignature)) return;
       const sent = entry.desired;
+      const sentSignature = entry.desiredSignature;
       const confirm = result => {
         entry.confirmed = result !== false;
-        if (entry.confirmed) { entry.value = sent; item[field] = sent; }
+        if (entry.confirmed) { entry.signature = sentSignature; item[field] = sent; }
       };
       let result;
       try { result = send(sent); }
@@ -25,7 +27,7 @@ function createOutputCache({ isCurrent }) {
       const operation = Promise.resolve(result).then(confirm, () => { entry.confirmed = false; }).then(() => {
         entry.pending = false;
         pending.delete(operation);
-        if (entry.desired !== sent && isCurrent(context, item)) flush();
+        if (entry.desiredSignature !== sentSignature && isCurrent(context, item)) flush();
       });
       pending.add(operation);
     }

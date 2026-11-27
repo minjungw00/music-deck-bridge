@@ -204,6 +204,14 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     return frame?.expiresAt ?? Infinity;
   }
 
+  function renderVolumeDial(context, item, state) {
+    const volume = state?.volume ?? 0;
+    const value = state ? `${state.muted ? tr('muted') + ' ' : ''}${volume}%` : tr('absent');
+    const icon = keyIcon('mute', state);
+    const feedback = { title: 'YouTube Music', icon, value, indicator: { value: volume, range: { min: 0, max: 100 } } };
+    cache.write(context, item, 'lastVolumeFeedback', feedback, next => setFeedback(context, next), JSON.stringify([icon, value, volume]));
+  }
+
   function paint() {
     if (hasDrawing) return;
     hasDrawing = true;
@@ -220,11 +228,7 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
         } else if (keyActions.has(kind)) {
           nextVolumeExpiry = Math.min(nextVolumeExpiry, renderActionKey(context, item, kind, chosen, track, tiles.get(context)));
         } else if (kind === 'volume') {
-          const volumeState = state ?? (Number.isFinite(track?.volume) ? track : null);
-          const vol = volumeState ? `${volumeState.muted ? tr('muted') + ' ' : ''}${volumeState.volume}%` : tr('absent');
-          const icon = keyIcon('mute', volumeState);
-          setFeedback(context, { title: 'YouTube Music', icon, value: vol,
-            indicator: { value: volumeState?.volume ?? 0, range: { min: 0, max: 100 } } });
+          renderVolumeDial(context, item, state ?? (Number.isFinite(track?.volume) ? track : null));
         } else if (kind === 'trackdial') {
           renderCurrentTrackDial(context, item, track, state);
         }
