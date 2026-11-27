@@ -119,6 +119,9 @@
   "subtitle": {
     "message": "适用于 YouTube Music · 集成 Stream Deck"
   },
+  "clearLastTrackFailed": {
+    "message": "无法删除上次的歌曲记录。请再次选择取消配对。"
+  },
   "unpairFailed": {
     "message": "无法取消配对。请启动 Stream Deck，检查端口后重试。"
   },

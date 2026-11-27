@@ -60,6 +60,8 @@ Select **Unpair** in the popup to revoke the server token, delete the plugin's `
 
 If the bridge cannot be reached or revocation fails, the popup reports failure and retains the token so you can start Stream Deck, match the port and retry. A token already rejected by the server can be removed locally. A new successful pairing replaces the previous token and extension origin and rejects the previous session's pending requests.
 
+If Chrome cannot delete the saved track after revocation, the popup reports the storage error and **Unpair** retries deletion locally.
+
 For a full reset, quit Stream Deck, delete `auth.json`, `config.json` and `last-track.json` from `%APPDATA%\MusicDeckBridge\`, and remove the extension through `chrome://extensions` to delete its local storage. To uninstall the plugin, delete `io.github.minjungw00.musicdeckbridge.sdPlugin` from `%APPDATA%\Elgato\StreamDeck\Plugins`. Remove associated Stream Deck actions/profiles through Stream Deck if you also want to delete their settings.
 
 For questions use the [repository issues](https://github.com/minjungw00/music-deck-bridge/issues); for sensitive information follow [SECURITY.md](SECURITY.md).

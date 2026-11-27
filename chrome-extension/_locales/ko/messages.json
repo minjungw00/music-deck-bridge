@@ -119,6 +119,9 @@
   "subtitle": {
     "message": "YouTube Music · Stream Deck 연동"
   },
+  "clearLastTrackFailed": {
+    "message": "마지막 곡 기록을 삭제하지 못했습니다. 해제를 다시 눌러 재시도하세요."
+  },
   "unpairFailed": {
     "message": "연결을 해제하지 못했습니다. Stream Deck을 실행하고 포트를 확인한 뒤 다시 시도하세요."
   },

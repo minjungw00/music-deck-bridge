@@ -119,6 +119,9 @@
   "subtitle": {
     "message": "Für YouTube Music · Stream Deck-Integration"
   },
+  "clearLastTrackFailed": {
+    "message": "Der letzte Titel konnte nicht gelöscht werden. Wähle erneut Trennen."
+  },
   "unpairFailed": {
     "message": "Kopplung konnte nicht aufgehoben werden. Stream Deck starten, Port prüfen und erneut versuchen."
   },

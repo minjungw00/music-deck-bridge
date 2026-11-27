@@ -18,28 +18,31 @@
   }
   function create({ storage, ready, now = Date.now }) {
     const players = new Map();
-    let latest, written, reading, writing;
+    let latest, written, reading, writing, clearing;
     async function get() {
       if (latest !== undefined) return latest;
       reading ??= ready.then(() => storage.get(STORAGE_KEY)).then(data => {
         if (latest === undefined) latest = written = normalize(data[STORAGE_KEY]);
         return latest;
-      }).catch(() => latest || null);
+      }).catch(() => latest || null).finally(() => { reading = null; });
       return reading;
     }
     function persist() {
-      if (latest === written) return writing;
-      let failed = false;
-      writing ??= ready.then(async () => {
-        while (latest !== written) {
+      if (clearing) return clearing.then(persist);
+      if (writing || latest === written) return writing;
+      writing = ready.then(async () => {
+        while (!clearing && latest !== written) {
           const record = latest;
           if (record) await storage.set({ [STORAGE_KEY]: record });
           else await storage.remove(STORAGE_KEY);
           written = record;
         }
-      }).catch(() => { failed = true; }).finally(() => {
+      }).then(() => {
         writing = null;
-        if (!failed && latest !== written) return persist();
+        if (!clearing && latest !== written) return persist();
+      }, error => {
+        writing = null;
+        throw error;
       });
       return writing;
     }
@@ -63,9 +66,20 @@
       const selected = [...players.values()].sort((a, b) => Number(b.standalone) - Number(a.standalone) ||
         Number(b.playing) - Number(a.playing) || b.seen - a.seen)[0].record;
       if (JSON.stringify(selected) !== JSON.stringify(latest)) latest = selected;
-      return persist();
+      return persist()?.catch(() => { /* A subsequent observation can retry the write. */ });
     }
-    return { get, observe, remove: id => players.delete(id), clear() { players.clear(); latest = null; return persist(); } };
+    function clear() {
+      players.clear();
+      latest = null;
+      // Block new writes until deletion finishes and report a failure to Unpair.
+      clearing ??= Promise.resolve(writing).catch(() => {}).then(async () => {
+        await ready;
+        await storage.remove(STORAGE_KEY);
+        written = null;
+      }).finally(() => { clearing = null; });
+      return clearing;
+    }
+    return { get, observe, remove: id => players.delete(id), clear };
   }
   root.MusicDeckLastPlayer = Object.freeze({ create, normalize });
 })(globalThis);

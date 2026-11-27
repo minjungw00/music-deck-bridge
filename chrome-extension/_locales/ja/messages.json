@@ -119,6 +119,9 @@
   "subtitle": {
     "message": "YouTube Music 用 · Stream Deck 連携"
   },
+  "clearLastTrackFailed": {
+    "message": "最後の曲の記録を削除できませんでした。もう一度「解除」を選択してください。"
+  },
   "unpairFailed": {
     "message": "接続を解除できませんでした。Stream Deck を起動し、ポートを確認して再試行してください。"
   },

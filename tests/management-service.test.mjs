@@ -11,7 +11,7 @@ function deferred() {
 }
 const flush = async () => { for (let i = 0; i < 20; i++) await Promise.resolve(); };
 
-function harness({ paired = true, pairReply, tokenWrite, portReply, controlReply } = {}) {
+function harness({ paired = true, pairReply, tokenWrite, portReply, controlReply, lastPlayer } = {}) {
   const context = vm.createContext({ MusicDeckCommandPolicy: commandPolicy });
   vm.runInContext(readFileSync(new URL('../chrome-extension/background/management-service.js', import.meta.url), 'utf8'), context);
   const state = { token: paired ? 'old-fixture-token' : '', serverToken: paired ? 'old-fixture-token' : '',
@@ -51,9 +51,20 @@ function harness({ paired = true, pairReply, tokenWrite, portReply, controlReply
       return { paired: true, serverPort: state.serverPort };
     },
   };
-  const service = context.MusicDeckManagementService.create({ client, browserChannel: { start() {} } });
+  const service = context.MusicDeckManagementService.create({ client, browserChannel: { start() {} }, lastPlayer });
   return { service, state, requests, client };
 }
+
+test('unpair reports failed track deletion and retries it without revoking the already removed token again', async () => {
+  let clears = 0;
+  const h = harness({ lastPlayer: { async clear() { if (++clears === 1) throw Error('Storage failed'); } } });
+  await assert.rejects(h.service.unpair(), /Could not delete the last track/);
+  assert.equal(h.state.token, '');
+  assert.equal(h.client.compatibility, null);
+  assert.equal((await h.service.unpair()).ok, true);
+  assert.equal(clears, 2);
+  assert.deepEqual(h.requests.map(request => request.route), ['/unpair']);
+});
 
 for (const paired of [false, true]) {
   test(`unpair waits for both pairing response and credential persistence (previous pair: ${paired})`, async () => {

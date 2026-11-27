@@ -119,6 +119,9 @@
   "subtitle": {
     "message": "Pour YouTube Music · Intégration Stream Deck"
   },
+  "clearLastTrackFailed": {
+    "message": "Le dernier titre n’a pas pu être effacé. Sélectionnez à nouveau Dissocier."
+  },
   "unpairFailed": {
     "message": "Impossible de supprimer l’association. Lancez Stream Deck, vérifiez le port et réessayez."
   },

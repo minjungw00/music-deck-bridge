@@ -73,8 +73,9 @@
           }
         }
         await client.removeToken();
-        await lastPlayer?.clear();
         client.clearCompatibility();
+        try { await lastPlayer?.clear(); }
+        catch { throw new Error(translate('clearLastTrackFailed') || 'Could not delete the last track. Select Unpair again to retry.'); }
         return { ok: true };
       },
       async getPort() { return { ok: true, port: await configuredPort() }; },

@@ -119,6 +119,9 @@
   "subtitle": {
     "message": "Para YouTube Music · Integración con Stream Deck"
   },
+  "clearLastTrackFailed": {
+    "message": "No se pudo borrar la última canción. Selecciona Olvidar de nuevo."
+  },
   "unpairFailed": {
     "message": "No se pudo desvincular. Inicia Stream Deck, comprueba el puerto e inténtalo de nuevo."
   },
