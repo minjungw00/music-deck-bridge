@@ -13,7 +13,7 @@ const flush = async () => { for (let i = 0; i < 12; i++) await Promise.resolve()
 function harness({ observe = async () => [] } = {}) {
   const context = vm.createContext({});
   vm.runInContext(readFileSync(new URL('../chrome-extension/background/player-sync-service.js', import.meta.url), 'utf8'), context);
-  const requests = [], applied = [];
+  const requests = [], applied = [], saved = [];
   let present = false;
   const players = context.MusicDeckPlayerSyncService.create({
     chrome: { scripting: { executeScript: observe } },
@@ -31,35 +31,25 @@ function harness({ observe = async () => [] } = {}) {
         return Promise.resolve({ ok: true });
       } },
     browserChannel: { start() {} }, pageControls: { playerPlayback() {} },
+    lastPlayer: { observe(_tab, state, provisional) { saved.push([state.title, provisional === true]); },
+      remove(id) { saved.push(['removed', id]); } },
   });
-  return { players, requests, applied, get present() { return present; },
+  return { players, requests, applied, saved, get present() { return present; },
     sync: (title, fields) => players.synchronize('sync', { title, ...fields }, { tab: { id: 7 }, frameId: 0 }) };
 }
 
-test('tab closure waits for every overlapping sync, even when the latest request finishes first', async () => {
+test('a failed publication does not prevent a queued confirmed snapshot from being applied before closure', async () => {
   const h = harness();
-  const older = h.sync('older'), newer = h.sync('newer');
+  const older = h.sync('older', { trackConfirmed: true });
+  await flush();
+  const newer = h.sync('newer', { trackConfirmed: true });
+  const rejected = assert.rejects(older, /fixture failure/);
   await flush();
   h.players.onRemoved(7);
-  h.requests[1].resolve(); await newer; await flush();
-  assert.deepEqual(h.applied, ['newer'], 'closure must still wait for the older request');
-  h.requests[0].resolve(); await older; await flush();
-  assert.deepEqual(h.applied, ['newer', 'older', 'closed']);
-  assert.equal(h.present, false);
-  await h.sync('after-close');
-  assert.equal(h.requests.length, 2, 'a closed tab cannot submit another snapshot');
-});
-
-test('a failed sync does not release closure while another sync is pending', async () => {
-  const h = harness();
-  const older = h.sync('older'), newer = h.sync('newer');
-  const rejected = assert.rejects(newer, /fixture failure/);
-  await flush();
-  h.players.onRemoved(7);
-  h.requests[1].reject(new Error('fixture failure')); await rejected; await flush();
+  h.requests[0].reject(new Error('fixture failure')); await rejected; await flush();
   assert.deepEqual(h.applied, []);
-  h.requests[0].resolve(); await older; await flush();
-  assert.deepEqual(h.applied, ['older', 'closed']);
+  h.requests[1].resolve(); await newer; await flush();
+  assert.deepEqual(h.applied, ['newer', 'closed']);
   assert.equal(h.present, false);
 });
 
@@ -82,10 +72,12 @@ test('a restored, paused player title captured before closing is still forwarded
   const sync = h.sync('Restored selection', { trackConfirmed: true, playing: false });
   await flush();
   h.players.onRemoved(7);
+  assert.deepEqual(h.saved, [['Restored selection', true], ['removed', 7]], 'local selection is removed immediately');
   observation.reject(new Error('tab closed'));
   await flush();
   h.requests[0].resolve(); await sync; await flush();
   assert.deepEqual(h.applied, ['Restored selection', 'closed']);
+  assert.deepEqual(h.saved, [['Restored selection', true], ['removed', 7]], 'closed tabs cannot repopulate the local registry');
 });
 
 test('an older confirmed title still being enriched cannot replace a newer selection', async () => {
@@ -99,4 +91,21 @@ test('an older confirmed title still being enriched cannot replace a newer selec
   h.requests[0].resolve(); await recent;
   first.resolve([]); await old;
   assert.deepEqual(h.applied, ['Restored selection']);
+});
+
+test('the final confirmed selection is applied after an earlier publication in the same tab', async () => {
+  const h = harness();
+  const old = h.sync('Earlier song', { trackConfirmed: true });
+  await flush();
+  const recent = h.sync('Final song', { trackConfirmed: true });
+  await flush();
+  h.players.onRemoved(7);
+  assert.equal(h.requests.length, 1, 'a later publication must wait for the request already in flight');
+  h.requests[0].resolve(); await old; await flush();
+  assert.equal(h.requests.length, 2);
+  h.requests[1].resolve(); await recent; await flush();
+  assert.deepEqual(h.applied, ['Earlier song', 'Final song', 'closed']);
+  assert.equal(h.present, false);
+  await h.sync('after-close');
+  assert.equal(h.requests.length, 2, 'a closed tab cannot submit another snapshot');
 });
