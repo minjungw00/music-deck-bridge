@@ -6,6 +6,7 @@ Evidence through November 28, 2026 (Asia/Seoul). [Release verification](releases
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
+| November 28 native YouTube Music controls, `394b941` | The installed Windows bridge observed playback, Repeat, Shuffle and artwork in the regular Chrome tab and installed app. Closing the app left one saved track with artwork and settings. [Native playback record](#november-28-native-youtube-music-controls) | Confirmation came through the bridge. Account sign-in status, an imported selection closed before playback, physical input/display and PC reboot remain unverified. |
 | November 28 Windows refactor verification, `394b941` | 336 Node tests, three Chromium fixtures, two Python packaging tests and static checks passed. Both installed packages matched the tested build. Isolated Windows Chrome and plugin processes exercised toolbar controls, restart restoration and retry after a failed deletion. [Refactor verification](#november-28-windows-refactor-verification) | The isolated Windows test used a local player model. Signed-in playback, physical input/display and PC reboot require separate verification. |
 | November 27 Windows mixed-version upgrade, `a512a7f` | Both mixed pairings retained credentials and the custom port. Actual Chrome toolbar popups controlled Play/Pause. The development popup used Chrome-local Repeat and Shuffle with the 1.2.0 plugin. [Mixed-version record](#november-27-windows-mixed-version-upgrade) | Native Windows Chrome and packaged plugin processes shared an isolated test pairing and a local player model. Physical profiles and Marketplace installations require separate verification. |
 | November 27 Windows installed-app priority, `a512a7f` | Windows Chrome reported the installed YouTube Music player as an app. The paired bridge preferred the paused app over a playing regular tab and returned control to the tab after the app closed. [App record](#november-27-windows-installed-app-priority) | Tested the existing Windows development pairing. YouTube Music sign-in status requires separate verification. |
@@ -40,6 +41,14 @@ The November 7 `main` run used `@elgato/streamdeck` 3.0.4, `@elgato/cli` 1.10.4 
 | Key/dial output | Settings, profile reappearance, rotation/press/touch, proportional artwork, artist placement, backdrops and scrolling; Qt 6.10.3 reference rendering |
 | Popup | Real toolbar controls, captured routes, slider coalescing/closure, native catalogs and button bounds in all eight UI languages; separately labeled sample previews |
 | Distribution | Real worker import graph, serialized MAIN entry point, package allowlists/notices, fixed development versions and source/checksum metadata |
+
+### November 28 native YouTube Music controls
+
+The installed `394b941` build played a public test track in Chrome 158.0.8127.37 and the registered YouTube Music app on Windows. The paired bridge classified the regular tab with `standalone: false` and the app with `standalone: true`. Bridge control cycled Repeat through all three modes and Shuffle off → on → off on each route. The bridge observed artwork ready in both. Account sign-in status was inconclusive.
+
+The initial attempt read Repeat immediately after command completion, before the bridge had observed the new snapshot. The follow-up checked the observed values before moving to the next command and restored the test's initial Repeat and Shuffle settings. After pausing and closing the test app, the bridge had no active player and `last-track.json` retained the test track, artwork, 31% volume, Repeat Off and Shuffle Off. This checks an already played song's retention. The imported, never-played selection remains covered by the automated player model.
+
+A separate Windows run paired the 1.2.0 packages on a custom port, then tested both upgrade orders with `394b941`. All 44 extension and 76 plugin files used for the 1.2.0 baseline matched fresh downloads from the [canonical release](releases.md#v120). Updating the plugin first retained the saved pairing and port and preserved paired Play/Pause. Updating the extension first used Chrome's extension manager Reload on the same profile, preserved paired Play/Pause and enabled Chrome-local Repeat and Shuffle alongside the 1.2.0 plugin. These upgrades used a local player model and a disposable profile and AppData directory. Physical profile migration and the Marketplace installer require separate verification.
 
 ### November 28 Windows refactor verification
 
