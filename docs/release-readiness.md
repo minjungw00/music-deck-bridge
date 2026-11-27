@@ -1,6 +1,6 @@
 # Release readiness
 
-Updated November 28, 2026 (Asia/Seoul) with final development verification, the confirmed Elgato gallery and the maintainer's PC reboot check. General installation starts with the [official stores](installation.en.md#method-1-official-stores).
+Updated November 28, 2026 (Asia/Seoul) with development verification, the confirmed Elgato gallery and the maintainer's physical Stream Deck and PC reboot checks. General installation starts with the [official stores](installation.en.md#method-1-official-stores).
 
 ## Current versions and distribution
 
@@ -23,6 +23,7 @@ The [runtime record](verification/runtime.md#current-evidence) is the source for
 
 | Area | Current evidence | Remaining limit |
 | --- | --- | --- |
+| Physical Stream Deck | The maintainer reported completing the requested 1.3.0-dev hardware check. [Maintainer report](verification/runtime.md#130-dev-physical-stream-deck) | The live-service buffering and cross-device selection checks have separate criteria. |
 | November 28 final 1.3.0-dev build, `94593e7` | 337 Node tests in serial and parallel, Chromium and packaging checks, and final package checksums passed. Windows verified queue controls, retained state and the loaded live playback paths. The maintainer separately confirmed state restoration after reboot. [Final runtime validation](verification/runtime.md#november-28-final-130-dev-validation) · [Maintainer report](verification/runtime.md#130-dev-pc-reboot) | The regular tab's early Play/Pause was unconfirmed. Physical input/output and exact tagged-source CI remain separate. |
 | November 28 final dial styling, product source `1a38762` | 337 Node tests passed in a serial run, along with static checks, two Python packaging tests, three Chromium fixtures and package checksums. Windows Stream Deck app captures confirmed the matching dial headings and icons. [Media and native app evidence](verification/media.md#november-28-revised-130-elgato-gallery) | Two suites cancelled during a local parallel run. Exact-source Windows/Ubuntu CI, physical-device output and PC reboot still need verification. |
 | November 28 Windows native and mixed-version checks, `394b941` | Live Chrome tab and installed app cycled Repeat and Shuffle through the paired bridge. The plugin saved the closed app's last track, artwork and playback settings. Both mixed upgrades from 1.2.0 retained pairing, port and popup playback. [Windows record](verification/runtime.md#november-28-native-youtube-music-controls) | Account sign-in, imported paused selection on the live site, physical output/input, PC reboot and Marketplace-processed installer require separate verification. |
@@ -63,7 +64,7 @@ The [runtime record](verification/runtime.md#current-evidence) is the source for
 
 The maintainer selected all five Elgato gallery PNGs at `9b866cd`. The submission index includes the selected gallery, two prepared Chrome screenshots and store copy. [Store submission index](../store-assets/drafts/v1.3.0/README.md)
 
-- Verify the latest build on physical Stream Deck hardware, including the new dial displays, linked artwork and retention when Chrome is closed. A cross-device selection closed before playback still needs a live-service check. The new buffering recovery passed Chromium fixtures and awaits a YouTube Music live-service check. [Buffered playback recovery](verification/runtime.md#buffered-playback-recovery)
+- Verify buffering Pause and saving a cross-device selection closed before playback in a signed-in YouTube Music test session. The unsigned-in Windows profiles did not expose a playable test player. The buffering recovery and saving an unplayed selection passed automated player fixtures. [Live-service check](verification/runtime.md#live-youtube-music-checks-for-130-dev)
 - Once authorized, promote `1.3.0-dev` to `1.3.0`, finish the changelog, verify Windows and Ubuntu CI against the tagged source, and verify the release package checksums. [Release checklist](development.md#release-checklist)
 - Complete both store submissions, including Chrome's privacy form. Verify the Maker Console processed installer on Windows, then record submission, approval, and publication separately. [Marketplace DRM record](verification/marketplace-drm.md) · [Store record](verification/stores.md)
 

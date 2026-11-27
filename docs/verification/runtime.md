@@ -6,6 +6,7 @@ Evidence through November 28, 2026 (Asia/Seoul). [Release verification](releases
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
+| Maintainer report on physical Stream Deck | The maintainer reported completing the requested 1.3.0-dev hardware check. [Maintainer report](#130-dev-physical-stream-deck) | Covers the requested hardware pass. The separate live-service scenarios and processed installer are tracked independently. |
 | Repeat and Shuffle after Chrome exits, `00698f6` | A paired Chromium profile applied queued Stream Deck Repeat and Shuffle once each after restart. [Restart check](#repeat-and-shuffle-after-chrome-exits) | Real MV3 worker and local player fixture. The test runner restarted Chrome in place of the Windows launcher. |
 | Maintainer report after PC reboot | Saved state was restored. [Maintainer report](#130-dev-pc-reboot) | Covers saved-state restoration. Starting playback in a new browser uses the position chosen by YouTube Music. |
 | November 28 final 1.3.0-dev validation, `94593e7` | Final archives matched their staged payloads. Windows fixture verified toolbar controls, replacement by a paused selection before its first play, and retained state across Chrome and plugin restart. The live Music app and a fully loaded regular tab passed Play/Pause, Repeat and Shuffle. [Final validation](#november-28-final-130-dev-validation) | Early Play/Pause in the regular tab was unconfirmed. Physical output and input, cross-device import on the live service and a Maker Console processed build require separate verification. The PC reboot was covered by the separate maintainer report. |
@@ -66,6 +67,14 @@ A focused comparison on the unchanged playback code reproduced the same error in
 #### Buffered playback recovery
 
 At `95d9774`, 344 Node tests, three Chromium fixtures, two Python packaging tests and static checks passed. The MV3 integration fixture ignored the first explicit Pause during buffering and confirmed exactly one repeat Pause after the original track started. No toggle click was sent for that recovery. Unit checks covered an immediate Pause, same-track/API guards, later input cancelling the retry, explicit Play waiting for a Playing state, and diagnostics separating outcome retrieval from player observation. The clean development archives matched their recorded SHA-256 checksums. The original cause remains unconfirmed, and the updated build awaits a live-service check.
+
+### Live YouTube Music checks for 1.3.0-dev
+
+On November 28, Windows Chrome 158.0.8127.89 opened the public sample from the earlier playback comparisons in separate, unsigned-in profiles. A regular window redirected to the YouTube Music Premium page. Headless Chrome reached the Music page, but the test observed no current track, playback control, or media element during the 19-second observation window. Neither run produced a player state with which to exercise the bridge. These were site-access probes, separate from the earlier live playback observations with the existing profile.
+
+At `d2443a3`, the packages passed SHA-256 verification. Thirteen targeted Node cases and the Chromium MV3 integration fixture passed, including Pause during modeled buffering and recording an unplayed selection in both components.
+
+The buffering case requires confirming the player is buffering at the time of the Pause input and observing the resulting paused state. The cross-device case requires a song selected on another device using the same account, visibly restored on the Windows player without starting playback. Close the Music page and check that its selection replaces the previous entry in the extension and Stream Deck. The maintainer will perform both live checks.
 
 ### Repeat and Shuffle after Chrome exits
 
@@ -380,6 +389,10 @@ Separate Chromium checks load the real English/Korean popup with delayed mock ex
 ## Maintainer confirmation
 
 These are maintainer reports, separate from automated fixtures and independent observation. Missing artifact/environment metadata does not require repeating completed validation solely to fill it in.
+
+### 1.3.0-dev physical Stream Deck
+
+On November 28, after the Now Playing icon update, the maintainer reported that the requested physical Stream Deck check was complete. The requested pass covered the Now Playing display modes, dial displays, linked artwork and Repeat and Shuffle when Chrome is closed. The report did not itemize individual observations or include an artifact checksum.
 
 ### 1.3.0-dev PC reboot
 
