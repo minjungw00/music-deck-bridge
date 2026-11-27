@@ -174,7 +174,7 @@ for (const protectedManifest of [false, true]) {
     const state = { title: 'SDK song', artist: 'Artist', playing: true, volume: 50, rating: 'INDIFFERENT' };
     await post('/sync', { token, clientId: 1, state });
     await waitFor(() => toggleImage() === pauseImage);
-    await waitFor(() => dialFeedback()?.icon === pauseIcon && dialFeedback()?.value === state.title);
+    await waitFor(() => dialFeedback()?.icon === pauseIcon && dialFeedback()?.value?.value === state.title);
     assert.equal(dialFeedback().title, 'YouTube Music');
     send('didReceiveSettings', 'trackdial', { settings: { dialDisplay: 'artwork' } });
     await waitFor(() => dialLayout() === 'layouts/current-track-artwork.json' && dialFeedback()?.fallback?.value === pauseIcon);
@@ -194,7 +194,7 @@ for (const protectedManifest of [false, true]) {
     send('didReceiveSettings', 'trackdial', { settings: { dialDisplay: 'artwork', artworkShowTitle: false } });
     await waitFor(() => dialFeedback()?.songName?.enabled === false);
     send('didReceiveSettings', 'trackdial', { settings: { dialDisplay: 'info' } });
-    await waitFor(() => dialLayout() === '$A1' && dialFeedback()?.value === state.title);
+    await waitFor(() => dialLayout() === 'layouts/current-track-info.json' && dialFeedback()?.value?.value === state.title);
     await post('/sync', { token, clientId: 2, state: { ...state, standalone: true, playing: false } });
     await waitFor(() => toggleImage() === playImage);
     await post('/player-closed', { token, clientId: 2 });
@@ -274,7 +274,7 @@ for (const protectedManifest of [false, true]) {
     assert.equal(dialFeedback().songName.value, state.title + ' — ' + state.artist);
     assert.equal(dialFeedback().songName.background, 'black');
     send('didReceiveSettings', 'trackdial', { settings: { dialDisplay: 'info' } });
-    await waitFor(() => dialLayout() === '$A1' && dialFeedback()?.icon === pauseIcon);
+    await waitFor(() => dialLayout() === 'layouts/current-track-info.json' && dialFeedback()?.icon === pauseIcon);
     const ratingImage = kind => messages.findLast(m => m.event === 'setImage' && m.context === kind)?.payload.image;
     await waitFor(() => ratingImage('like') === 'imgs/actions/like/key@2x.png');
     state.rating = 'LIKE';

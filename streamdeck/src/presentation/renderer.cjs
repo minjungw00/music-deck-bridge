@@ -115,9 +115,8 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     const background = item.settings?.artworkTitleBackground === true ? 'black' : 'transparent';
     const time = !artwork && state?.durationSeconds ?
       `${formatPlaybackTime(state.positionSeconds)} / ${formatPlaybackTime(state.durationSeconds)}` : '';
-    const layout = artwork ? 'layouts/current-track-artwork.json' : titleOnly ? 'layouts/current-track-title.json' :
-      time ? 'layouts/current-track-info.json' : '$A1';
-    const customText = titleOnly || Boolean(time);
+    const layout = artwork ? 'layouts/current-track-artwork.json' :
+      titleOnly ? 'layouts/current-track-title.json' : 'layouts/current-track-info.json';
     const cover = artwork ? coverFor(state) : '';
     const fitted = cover ? fitDialArtwork(cover, fit) : '';
     const image = titleOnly ? null : fitted || icon;
@@ -135,8 +134,8 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     let value = '';
     if (!artwork) {
       if (!state) value = tr('unavailable');
-      else if (infoScroll) value = marquee(state.title, item.artworkMarqueeStart, now(), titleOnly ? 11 : time ? 7 : 14, customText);
-      else value = customText ? state.title : ellipsis(state.title, 14);
+      else if (infoScroll) value = marquee(state.title, item.artworkMarqueeStart, now(), titleOnly ? 9 : 6, true);
+      else value = state.title;
     }
     const signature = JSON.stringify([layout, title, artist, below, value, time, fit, showName, scroll, infoScroll, background]);
     if (item.dialSignature === signature && item.dialImage === image) return;
@@ -154,8 +153,8 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
         alignment: scroll ? 'left' : 'center', 'text-overflow': scroll ? 'clip' : 'ellipsis' });
       const feedback = artwork ? { songName: line(title, showName && title && !below),
         songTitleAbove: line(title, below && title), songArtist: line(artist, below && artist) } :
-        { title, value: customText ? { value, 'text-overflow': infoScroll ? 'clip' : 'ellipsis' } : value,
-          ...(titleOnly ? { time } : { icon, ...(time && { time }) }) };
+        { title, value: { value, alignment: titleOnly || infoScroll ? 'left' : 'right',
+          'text-overflow': infoScroll ? 'clip' : 'ellipsis' }, time, ...(!titleOnly && { icon }) };
       const sent = item.sentDialFrame;
       if (artwork && (!sent || sent.layout !== layout || sent.image !== image || sent.fit !== fit)) {
         feedback.artwork = { value: fitted, enabled: Boolean(fitted) };

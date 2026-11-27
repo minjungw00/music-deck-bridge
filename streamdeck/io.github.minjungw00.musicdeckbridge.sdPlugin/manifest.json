@@ -160,7 +160,7 @@
       "Tooltip": "Turn for previous/next track; push or touch to play/pause. Show song info or album artwork.",
       "Encoder": {
         "Icon": "imgs/actions/toggle/key",
-        "layout": "$A1",
+        "layout": "layouts/current-track-info.json",
         "TriggerDescription": {
           "Push": "Play / Pause",
           "Rotate": "Previous / next track",

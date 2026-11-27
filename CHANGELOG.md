@@ -3,7 +3,7 @@
 ## Unreleased — 1.3.0
 
 - Add Repeat and Shuffle to Stream Deck and the Chrome popup. The popup supports both paired and standalone control, and the buttons reflect the player's confirmed modes.
-- Add a Song name mode to the Current Track Dial alongside Icon + song name and Album artwork. Both text modes show the YouTube Music heading and support truncation and scrolling.
+- Add a Song name mode to the Current Track Dial alongside Icon + song name and Album artwork. Its text modes use the Volume Dial's YouTube Music heading style, and the playback icon matches the volume icon's size and position. Both text modes support truncation and scrolling.
 - Use transparent icon backgrounds on the Volume and Current Track touch-strip displays.
 - Add individual and linked album artwork for all plugin keys. Artwork is displayed on its own by default, with an optional transparent action icon in nine positions. Linked layouts preserve diagonal positions and empty cells, offer proportional width or height fitting, and can compensate for measured gaps between physical keys.
 - Arrange the Chrome popup in three edge-aligned rows for transport, ratings and queue controls, and volume.

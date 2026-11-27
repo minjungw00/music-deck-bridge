@@ -30,16 +30,25 @@ const fixtureJS = await readFile(join(root, 'store-assets/preview/popup-fixture.
 const scriptJSON = value => JSON.stringify(value).replaceAll('<', '\\u003c');
 const inline = value => value.replaceAll(/<\/script/gi, '<\\/script');
 const icon = 'data:image/png;base64,' + (await readFile(join(root, 'chrome-extension/icons/128.png'))).toString('base64');
+const layouts = Object.fromEntries(await Promise.all(['artwork', 'info', 'title'].map(async mode => {
+  const name = `layouts/current-track-${mode}.json`;
+  return [name, await json(join('streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin', name))];
+})));
+// The Volume Dial uses Stream Deck's built-in $B1 layout. Its title and icon geometry
+// are shared by the Current Track Dial's information layout.
+const infoItems = layouts['layouts/current-track-info.json'].items;
+layouts.$B1 = { items: [
+  ...infoItems.filter(item => item.key === 'title' || item.key === 'icon'),
+  { key: 'value', type: 'text', rect: [76, 40, 108, 32], font: { size: 24, weight: 600 }, alignment: 'right' },
+  { key: 'indicator', type: 'bar', rect: [76, 74, 108, 12] },
+] };
 const data = {
   title: 'Prelude No. 1 in C major, BWV 846', artist: 'Kimiko Ishizaka',
   album: 'Bach: Well-Tempered Clavier, Book 1', version: pkg.version,
   protocol: protocol.descriptor.protocolVersion, cover, icon,
   fits: Object.fromEntries(['height', 'width'].map(mode => [mode, fitDialArtwork(cover, mode)])),
   backdrops: [cover, keyTextBackground(cover, 1), keyTextBackground(cover, 2)],
-  layouts: Object.fromEntries(await Promise.all(['artwork', 'info', 'title'].map(async mode => {
-    const name = `layouts/current-track-${mode}.json`;
-    return [name, await json(join('streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin', name))];
-  }))),
+  layouts,
   icons: {}, popups: {},
 };
 for (const action of ['prev', 'toggle', 'next', 'like', 'open', 'nowplaying', 'mute', 'dislike', 'volume']) {

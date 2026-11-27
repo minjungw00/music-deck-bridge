@@ -6,16 +6,15 @@
     {
       "key": "title",
       "type": "text",
-      "rect": [12, 10, 176, 22],
-      "font": { "size": 13 },
-      "alignment": "left",
-      "color": "white"
+      "rect": [16, 10, 136, 24],
+      "font": { "size": 16, "weight": 600 },
+      "alignment": "left"
     },
     {
       "key": "value",
       "type": "text",
-      "rect": [12, 32, 176, 32],
-      "font": { "size": 16, "weight": 600 },
+      "rect": [16, 40, 168, 32],
+      "font": { "size": 18, "weight": 600 },
       "alignment": "left",
       "color": "white",
       "text-overflow": "ellipsis"
@@ -23,7 +22,7 @@
     {
       "key": "time",
       "type": "text",
-      "rect": [12, 64, 176, 24],
+      "rect": [16, 72, 168, 16],
       "font": { "size": 12 },
       "alignment": "left",
       "color": "white"

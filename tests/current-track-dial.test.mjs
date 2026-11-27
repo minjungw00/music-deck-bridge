@@ -7,6 +7,7 @@ import { fitDialArtwork } from '../streamdeck/src/dial-artwork.cjs';
 const raster = 'data:image/png;base64,' + readFileSync(new URL('../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/plugin/icon.png', import.meta.url)).toString('base64');
 const play = 'imgs/actions/toggle/key-overlay.png';
 const pause = 'imgs/actions/toggle/pause-overlay.png';
+const infoLayout = 'layouts/current-track-info.json';
 function harness(output = {}) {
   const calls = [], displayed = new Map();
   const context = { cachedCoverUrl: '', cachedCoverData: '', Date: { now: () => 1000 } };
@@ -30,17 +31,17 @@ test('icon-and-name mode can scroll and restarts for a different track with the 
   const state = { title, trackId: 'aaaaaaaaaaa', playing: true };
   await h.paint('dial', item, state);
   const value = () => h.calls.filter(call => call.event === 'feedback').at(-1).feedback.value;
-  assert.equal(value(), 'abcdefghijklm…');
+  assert.deepEqual(value(), { value: title, alignment: 'right', 'text-overflow': 'ellipsis' });
   assert.equal(needsMarquee(h.displayed, () => 'trackdial'), false);
   item.settings.infoTitleMode = 'scroll';
   await h.paint('dial', item, state);
-  assert.equal(value(), 'abcdefghijklmn');
+  assert.deepEqual(value(), { value: title, alignment: 'left', 'text-overflow': 'clip' });
   assert.equal(needsMarquee(h.displayed, () => 'trackdial'), true);
   h.context.Date.now = () => 1000 + 4 * 380;
   await h.paint('dial', item, state);
-  assert.equal(value(), 'bcdefghijklmno');
+  assert.equal(value().value, title.slice(1) + '   a');
   await h.paint('dial', item, { ...state, trackId: 'bbbbbbbbbbb' });
-  assert.equal(value(), 'abcdefghijklmn');
+  assert.deepEqual(value(), { value: title, alignment: 'left', 'text-overflow': 'clip' });
   assert.equal(h.calls.filter(call => call.event === 'layout').length, 1);
 });
 
@@ -74,28 +75,29 @@ test('display mode is per dial, with confirmed play/pause icons in the informati
   const h = harness(), info = h.add('info', undefined), art = h.add('art', 'artwork');
   await h.paint('info', info, { title: 'Song', playing: true });
   await h.paint('art', art, { title: 'Song', playing: true });
-  assert.equal(h.calls.find(call => call.id === 'info' && call.event === 'layout').layout, '$A1');
+  assert.equal(h.calls.find(call => call.id === 'info' && call.event === 'layout').layout, infoLayout);
   assert.equal(h.calls.find(call => call.id === 'art' && call.event === 'layout').layout, 'layouts/current-track-artwork.json');
   assert.equal(h.calls.find(call => call.id === 'info' && call.event === 'image').image, 'imgs/actions/toggle/pause@2x.png');
   assert.equal(h.calls.find(call => call.id === 'info' && call.event === 'feedback').feedback.icon, pause);
   await h.paint('info', info, { title: 'Song', playing: false });
   assert.equal(h.calls.at(-1).feedback.icon, play);
-  assert.equal(h.calls.at(-1).feedback.value, 'Song');
+  assert.equal(h.calls.at(-1).feedback.value.value, 'Song');
 });
 
-test('the info dial displays saved playback time and restores the basic layout when time is unknown', async () => {
+test('the info dial shows saved playback time and clears it in the same layout when unknown', async () => {
   const h = harness(), item = h.add('dial', 'info');
   const state = { title: 'Song', positionSeconds: 0, durationSeconds: 3661 };
   await h.paint('dial', item, state);
-  assert.equal(h.calls.find(call => call.event === 'layout').layout, 'layouts/current-track-info.json');
-  assert.deepEqual(h.calls.at(-1).feedback, { title: 'YouTube Music', value: { value: 'Song', 'text-overflow': 'ellipsis' },
+  assert.equal(h.calls.find(call => call.event === 'layout').layout, infoLayout);
+  assert.deepEqual(h.calls.at(-1).feedback, { title: 'YouTube Music', value: { value: 'Song', alignment: 'right', 'text-overflow': 'ellipsis' },
     icon: play, time: '0:00 / 1:01:01' });
   item.settings.infoTitleMode = 'scroll';
   await h.paint('dial', item, state);
-  assert.deepEqual(h.calls.at(-1).feedback.value, { value: 'Song', 'text-overflow': 'clip' });
+  assert.deepEqual(h.calls.at(-1).feedback.value, { value: 'Song', alignment: 'left', 'text-overflow': 'clip' });
   await h.paint('dial', item, { title: 'New song' });
-  assert.equal(h.calls.at(-2).layout, '$A1');
-  assert.equal(h.calls.at(-1).feedback.value, 'New song');
+  assert.equal(h.calls.filter(call => call.event === 'layout').length, 1);
+  assert.equal(h.calls.at(-1).feedback.value.value, 'New song');
+  assert.equal(h.calls.at(-1).feedback.time, '');
 });
 
 test('song-name mode uses the full text layout, clears elapsed time and sends no touch-strip icon', async () => {
@@ -105,7 +107,7 @@ test('song-name mode uses the full text layout, clears elapsed time and sends no
   await h.paint('dial', item, state);
   assert.equal(h.calls.find(call => call.event === 'layout').layout, 'layouts/current-track-title.json');
   assert.deepEqual(h.calls.at(-1).feedback, {
-    title: 'YouTube Music', value: { value: title, 'text-overflow': 'ellipsis' }, time: '0:42 / 4:30',
+    title: 'YouTube Music', value: { value: title, alignment: 'left', 'text-overflow': 'ellipsis' }, time: '0:42 / 4:30',
   });
   const count = h.calls.filter(call => call.event === 'feedback').length;
   await h.paint('dial', item, { ...state, playing: false });
@@ -113,7 +115,7 @@ test('song-name mode uses the full text layout, clears elapsed time and sends no
   assert.equal(h.calls.at(-1).image, 'imgs/actions/toggle/key@2x.png');
   item.settings.infoTitleMode = 'scroll';
   await h.paint('dial', item, { title });
-  assert.deepEqual(h.calls.at(-1).feedback.value, { value: title, 'text-overflow': 'clip' });
+  assert.deepEqual(h.calls.at(-1).feedback.value, { value: title, alignment: 'left', 'text-overflow': 'clip' });
   assert.equal(h.calls.at(-1).feedback.time, '');
   h.context.Date.now = () => 1000 + 4 * 380;
   await h.paint('dial', item, { title });
@@ -121,7 +123,7 @@ test('song-name mode uses the full text layout, clears elapsed time and sends no
   assert.equal(h.calls.filter(call => call.event === 'layout').length, 1);
   item.settings.dialDisplay = 'info';
   await h.paint('dial', item, { title });
-  assert.equal(h.calls.at(-2).layout, '$A1');
+  assert.equal(h.calls.at(-2).layout, infoLayout);
   assert.equal(h.calls.at(-1).feedback.icon, play);
 });
 
@@ -257,8 +259,8 @@ test('rapid mode switches preserve layout-before-content order and a reappearing
   assert.equal(h.calls.at(-1).feedback.fallback.value, play);
   const next = h.add('dial', 'info');
   await h.paint('dial', next, state);
-  assert.equal(h.calls.at(-2).layout, '$A1');
-  assert.equal(h.calls.at(-1).feedback.value, 'Song');
+  assert.equal(h.calls.at(-2).layout, infoLayout);
+  assert.equal(h.calls.at(-1).feedback.value.value, 'Song');
 });
 
 function deferred() {
@@ -271,7 +273,7 @@ const flush = async () => { for (let i = 0; i < 12; i++) await Promise.resolve()
 test('a delayed layout retains only the in-flight frame and the latest pending dial frame', async () => {
   const layout = deferred(), values = [];
   const h = harness({ sendStream: () => layout.promise,
-    setFeedback(_id, feedback) { values.push(feedback.value); } });
+    setFeedback(_id, feedback) { values.push(feedback.value.value); } });
   const item = h.add('dial', 'info');
   h.context.render('dial', item, { title: 'First' }); await flush();
   for (let i = 1; i <= 20; i++) h.context.render('dial', item, { title: `State ${i}` });
@@ -322,7 +324,7 @@ test('failed or skipped dial outputs retry and a failed older frame does not inv
   for (const skipped of [false, true]) {
     const first = deferred(), values = [];
     const h = harness({ setFeedback(_id, value) {
-      values.push(value.value); if (values.length === 1) return first.promise;
+      values.push(value.value.value); if (values.length === 1) return first.promise;
     } });
     const item = h.add('dial', 'info');
     h.context.render('dial', item, { title: 'Old' }); await flush();
@@ -350,14 +352,14 @@ test('retrying the first artwork frame sends its fallback icon even if the info 
     assert.deepEqual(frames[2].fallback, { value: play, enabled: true });
     assert.deepEqual(frames[2].artwork, { value: '', enabled: false });
     assert.deepEqual(h.calls.filter(call => call.event === 'layout').map(call => call.layout),
-      ['$A1', 'layouts/current-track-artwork.json']);
+      [infoLayout, 'layouts/current-track-artwork.json']);
   }
 });
 
 test('returning to the in-flight frame discards redundant intermediate dial states', async () => {
   const first = deferred(), values = [];
   const h = harness({ setFeedback(_id, value) {
-    values.push(value.value); if (values.length === 1) return first.promise;
+    values.push(value.value.value); if (values.length === 1) return first.promise;
   } });
   const item = h.add('dial', 'info');
   h.context.render('dial', item, { title: 'First' }); await flush();
@@ -371,7 +373,7 @@ for (const stage of ['layout', 'feedback']) {
   test(`a disappearing dial discards queued content while its ${stage} is pending`, async () => {
     const first = deferred(), values = [];
     const h = harness({ sendStream() { if (stage === 'layout') return first.promise; },
-      setFeedback(_id, value) { values.push(value.value); return first.promise; } });
+      setFeedback(_id, value) { values.push(value.value.value); return first.promise; } });
     const item = h.add('dial', 'info');
     h.context.render('dial', item, { title: 'First' }); await flush();
     h.context.render('dial', item, { title: 'Queued' });

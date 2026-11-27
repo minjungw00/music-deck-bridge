@@ -165,7 +165,7 @@ Without an eligible player the Play / Pause key displays Play. Play/Pause, Like,
 
 ### Current Track Dial
 
-The Current Track Dial retains the `.trackdial` action UUID. Rotation moves to the previous or next song, and pressing or tapping toggles playback. The per-action `dialDisplay` setting selects `title`, `info` (default) or `artwork`. The `title` mode uses a wide text layout. The `info` mode shows the Play/Pause icon in `$A1`, using a custom layout when the position and duration are known. Both text modes show the YouTube Music heading and include playback time when known. The `infoTitleMode` setting selects `truncate` (default) or `scroll` for both.
+The Current Track Dial retains the `.trackdial` action UUID. Rotation moves to the previous or next song, and pressing or tapping toggles playback. The per-action `dialDisplay` setting selects `title`, `info` (default) or `artwork`. The `title` mode uses a wide text layout. The `info` mode uses the same YouTube Music heading and icon geometry as the Volume Dial's built-in `$B1` layout. Both text modes show the heading and include playback time when known. The `infoTitleMode` setting selects `truncate` (default) or `scroll` for both.
 
 Artwork uses a 200 × 100 pixmap containing a raster-backed SVG: `artworkFit: height` (default) scales the original height to 100 px, while `width` scales the width to 200 px. The bundled `image-size` header reader supplies PNG/JPEG/WebP dimensions; the SVG explicitly sets the centered image geometry with the original aspect ratio and a fixed viewport for cropping. Text overlay settings are stored per action:
 
@@ -177,7 +177,7 @@ Artwork uses a 200 × 100 pixmap containing a raster-backed SVG: `artworkFit: he
 | `artworkTitleBackground` | Black text backdrop; default `false` |
 | `artworkTitleMode` | Native ellipsis (`truncate`, default) or grapheme-aware left scrolling (`scroll`) |
 
-Scrolling uses the Now Playing key's 380 ms cadence and initial pause. The built-in `$A1` layout receives a 14-grapheme window. The custom layouts receive a cyclic string and clip it to the text field width. Text, track identity and display mode changes reset the scroll position.
+Scrolling uses the Now Playing key's 380 ms cadence and initial pause. The dial layouts receive a cyclic string and clip it to the text field width. Text, track identity and display mode changes reset the scroll position.
 
 A separate centered 100 × 100 playback icon handles missing/pending artwork. Layout changes precede content updates through a per-instance queue. Cached images are resent only when the source, fit or layout changes; title changes update text independently. Volume Dial push and touch both toggle mute.
 

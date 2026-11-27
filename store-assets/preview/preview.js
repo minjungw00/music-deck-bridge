@@ -28,22 +28,10 @@ async function sendStream({ context, payload }) {
   target.replaceChildren();
 }
 async function setFeedback(context, payload) {
-  const target = context === 'volume' ? $('volume-feedback') : $('track-feedback');
-  const layout = data.layouts[target.dataset.layout];
-  if (!layout) {
-    target.replaceChildren();
-    for (const [className, text] of [['a1-title', payload.title], ['a1-value', payload.value]]) {
-      const element = document.createElement('div'); element.className = className; element.textContent = text; target.append(element);
-    }
-    const icon = document.createElement('img'); icon.className = 'a1-icon'; icon.src = imageSource(payload.icon); icon.alt = ''; target.append(icon);
-    if (payload.indicator) {
-      const meter = document.createElement('div'); meter.className = 'meter';
-      const fill = document.createElement('div'); fill.className = 'meter-fill'; fill.style.width = `${payload.indicator.value}%`;
-      meter.append(fill); target.append(meter);
-      $('volume-icon').src = imageSource(payload.icon.replace('-overlay.png', '@2x.png'));
-    }
-    return;
-  }
+  const volume = context === 'volume';
+  const target = $(volume ? 'volume-feedback' : 'track-feedback');
+  const layout = data.layouts[volume ? '$B1' : target.dataset.layout];
+  if (volume) $('volume-icon').src = imageSource(payload.icon.replace('-overlay.png', '@2x.png'));
   for (const spec of layout.items) {
     if (!Object.hasOwn(payload, spec.key)) continue;
     const entry = payload[spec.key];
@@ -51,10 +39,17 @@ async function setFeedback(context, payload) {
     let element = target.querySelector(`[data-field="${spec.key}"]`);
     if (!element) { element = document.createElement('div'); element.dataset.field = spec.key; target.append(element); }
     element.hidden = field.enabled === false;
-    element.className = 'feedback-layer' + (spec.type === 'text' ? ' text' : '');
+    element.className = spec.type === 'bar' ? 'feedback-layer meter' : 'feedback-layer';
     const [x, y, width, height] = spec.rect;
     Object.assign(element.style, { left: `${x / 2}%`, top: `${y}%`, width: `${width / 2}%`, height: `${height}%`,
-      zIndex: String(spec.zOrder ?? 0), background: field.background ?? spec.background ?? 'transparent' });
+      zIndex: String(spec.zOrder ?? 0) });
+    if (spec.type === 'bar') {
+      const fill = document.createElement('div');
+      fill.className = 'meter-fill';
+      fill.style.width = `${field.value}%`;
+      element.replaceChildren(fill);
+      continue;
+    }
     if (spec.type === 'pixmap') {
       const image = document.createElement('img'); image.alt = '';
       if (field.value) image.src = imageSource(field.value);
@@ -63,6 +58,7 @@ async function setFeedback(context, payload) {
       element.textContent = field.value;
       Object.assign(element.style, { fontSize: `${spec.font.size}px`, fontWeight: String(spec.font.weight ?? 400),
         lineHeight: `${height}px`, textAlign: field.alignment ?? spec.alignment ?? 'center',
+        background: field.background ?? spec.background ?? 'transparent',
         textOverflow: field['text-overflow'] ?? spec['text-overflow'] ?? 'clip' });
     }
   }

@@ -27,7 +27,15 @@ test('dial names, default icons and touch descriptions match their controls', ()
   const volume = m.Actions.find(a => a.UUID.endsWith('.volume'));
   assert.equal(dial.Name, 'Current Track Dial');
   assert.equal(dial.Icon, 'imgs/actions/toggle/icon');
-  assert.equal(dial.Encoder.layout, '$A1');
+  assert.equal(dial.Encoder.layout, 'layouts/current-track-info.json');
+  assert.equal(volume.Encoder.layout, '$B1');
+  const info = JSON.parse(readFileSync(join(root, dial.Encoder.layout), 'utf8'));
+  const title = JSON.parse(readFileSync(join(root, 'layouts/current-track-title.json'), 'utf8'));
+  const header = { key: 'title', type: 'text', rect: [16, 10, 136, 24], font: { size: 16, weight: 600 }, alignment: 'left' };
+  assert.deepEqual(info.items.find(item => item.key === 'title'), header);
+  assert.deepEqual(title.items.find(item => item.key === 'title'), header);
+  assert.deepEqual(info.items.find(item => item.key === 'icon'), { key: 'icon', type: 'pixmap', rect: [16, 40, 48, 48] });
+  assert.ok(title.items.every(item => item.type === 'text'));
   assert.equal(volume.Encoder.TriggerDescription.Touch, 'Mute');
   const ko = JSON.parse(readFileSync(join(root, 'ko.json'), 'utf8'));
   assert.equal(ko[dial.UUID].Name, '현재 곡 다이얼');
