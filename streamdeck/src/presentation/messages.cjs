@@ -8,7 +8,6 @@ const STRINGS = {
     "play": "재생",
     "muted": "음소거",
     "absent": "YTM 없음",
-    "currentTrack": "현재 곡",
     "open": "YTM 실행",
     "like": "좋아요",
     "dislike": "싫어요"
@@ -20,7 +19,6 @@ const STRINGS = {
     "play": "Play",
     "muted": "Muted",
     "absent": "No YTM",
-    "currentTrack": "Current Track",
     "open": "Open YTM",
     "like": "Like",
     "dislike": "Dislike"
@@ -32,7 +30,6 @@ const STRINGS = {
     "play": "播放",
     "muted": "已静音",
     "absent": "没有 YTM",
-    "currentTrack": "当前歌曲",
     "open": "打开 YTM",
     "like": "喜欢",
     "dislike": "不喜欢"
@@ -44,7 +41,6 @@ const STRINGS = {
     "play": "播放",
     "muted": "已靜音",
     "absent": "沒有 YTM",
-    "currentTrack": "目前歌曲",
     "open": "開啟 YTM",
     "like": "喜歡",
     "dislike": "不喜歡"
@@ -56,7 +52,6 @@ const STRINGS = {
     "play": "再生",
     "muted": "ミュート中",
     "absent": "YTM なし",
-    "currentTrack": "現在の曲",
     "open": "YTM を開く",
     "like": "高評価",
     "dislike": "低評価"
@@ -68,7 +63,6 @@ const STRINGS = {
     "play": "Reproducir",
     "muted": "Silenciado",
     "absent": "Sin YTM",
-    "currentTrack": "Canción actual",
     "open": "Abrir YTM",
     "like": "Me gusta",
     "dislike": "No me gusta"
@@ -80,7 +74,6 @@ const STRINGS = {
     "play": "Lire",
     "muted": "Muet",
     "absent": "Pas de YTM",
-    "currentTrack": "Titre actuel",
     "open": "Ouvrir YTM",
     "like": "J’aime",
     "dislike": "Je n’aime pas"
@@ -92,7 +85,6 @@ const STRINGS = {
     "play": "Wiedergabe",
     "muted": "Stumm",
     "absent": "Kein YTM",
-    "currentTrack": "Aktueller Titel",
     "open": "YTM öffnen",
     "like": "Gefällt mir",
     "dislike": "Gefällt mir nicht"

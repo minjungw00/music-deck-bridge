@@ -81,6 +81,7 @@ function localize() {
     $(below).textContent = t('artistBelow'); $(inline).textContent = t('artistInline');
   }
   setLabel('dialDisplayRow', t('dialDisplayRow'));
+  $('optDialTitle').textContent = t('dialTitle');
   $('optDialInfo').textContent = t('dialInfo');
   $('optDialArtwork').textContent = t('dialArtwork');
   $('dialDisplayHint').textContent = t('dialDisplayHint');

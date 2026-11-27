@@ -36,7 +36,10 @@ const data = {
   protocol: protocol.descriptor.protocolVersion, cover, icon,
   fits: Object.fromEntries(['height', 'width'].map(mode => [mode, fitDialArtwork(cover, mode)])),
   backdrops: [cover, keyTextBackground(cover, 1), keyTextBackground(cover, 2)],
-  layout: await json('streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/layouts/current-track-artwork.json'),
+  layouts: Object.fromEntries(await Promise.all(['artwork', 'info', 'title'].map(async mode => {
+    const name = `layouts/current-track-${mode}.json`;
+    return [name, await json(join('streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin', name))];
+  }))),
   icons: {}, popups: {},
 };
 for (const action of ['prev', 'toggle', 'next', 'like', 'open', 'nowplaying', 'mute', 'dislike', 'volume']) {

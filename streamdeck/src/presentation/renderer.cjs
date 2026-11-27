@@ -106,33 +106,37 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     const keyImage = keyIcon('toggle', playback);
     writeImage(context, item, keyImage);
     const icon = transparentBadge(keyImage);
-    const artwork = item.settings?.dialDisplay === 'artwork';
+    const display = item.settings?.dialDisplay;
+    const artwork = display === 'artwork';
+    const titleOnly = display === 'title';
     const fit = item.settings?.artworkFit === 'width' ? 'width' : 'height';
     const showName = artwork && item.settings?.artworkShowTitle === true;
     const scroll = item.settings?.artworkTitleMode === 'scroll';
     const background = item.settings?.artworkTitleBackground === true ? 'black' : 'transparent';
     const time = !artwork && state?.durationSeconds ?
       `${formatPlaybackTime(state.positionSeconds)} / ${formatPlaybackTime(state.durationSeconds)}` : '';
-    const layout = artwork ? 'layouts/current-track-artwork.json' : time ? 'layouts/current-track-info.json' : '$A1';
+    const layout = artwork ? 'layouts/current-track-artwork.json' : titleOnly ? 'layouts/current-track-title.json' :
+      time ? 'layouts/current-track-info.json' : '$A1';
+    const customText = titleOnly || Boolean(time);
     const cover = artwork ? coverFor(state) : '';
     const fitted = cover ? fitDialArtwork(cover, fit) : '';
-    const image = fitted || icon;
+    const image = titleOnly ? null : fitted || icon;
     const text = showName && state?.title ? state.title +
       (item.settings?.artworkShowArtist === true && state.artist && item.settings?.artworkArtistPosition !== 'below' ? ` — ${state.artist}` : '') : '';
     const below = showName && item.settings?.artworkShowArtist === true && item.settings?.artworkArtistPosition === 'below' && Boolean(state?.artist);
     const infoScroll = !artwork && item.settings?.infoTitleMode === 'scroll';
-    const trackSignature = JSON.stringify([state?.trackId, state?.title, state?.artist, artwork, infoScroll,
+    const trackSignature = JSON.stringify([state?.trackId, state?.title, state?.artist, artwork, titleOnly, infoScroll,
       item.settings?.artworkShowArtist, item.settings?.artworkArtistPosition, showName, scroll]);
     if (item.artworkTrackSignature !== trackSignature) {
       item.artworkTrackSignature = trackSignature; item.artworkMarqueeStart = now();
     }
-    const title = artwork ? scroll ? marquee(text, item.artworkMarqueeStart, now(), 14, true) : text : tr('currentTrack');
+    const title = artwork ? scroll ? marquee(text, item.artworkMarqueeStart, now(), 14, true) : text : 'YouTube Music';
     const artist = below ? scroll ? marquee(state.artist, item.artworkMarqueeStart + 600, now(), 14, true) : state.artist : '';
     let value = '';
     if (!artwork) {
       if (!state) value = tr('unavailable');
-      else if (infoScroll) value = marquee(state.title, item.artworkMarqueeStart, now(), time ? 7 : 14, Boolean(time));
-      else value = time ? state.title : ellipsis(state.title, 14);
+      else if (infoScroll) value = marquee(state.title, item.artworkMarqueeStart, now(), titleOnly ? 11 : time ? 7 : 14, customText);
+      else value = customText ? state.title : ellipsis(state.title, 14);
     }
     const signature = JSON.stringify([layout, title, artist, below, value, time, fit, showName, scroll, infoScroll, background]);
     if (item.dialSignature === signature && item.dialImage === image) return;
@@ -150,7 +154,8 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
         alignment: scroll ? 'left' : 'center', 'text-overflow': scroll ? 'clip' : 'ellipsis' });
       const feedback = artwork ? { songName: line(title, showName && title && !below),
         songTitleAbove: line(title, below && title), songArtist: line(artist, below && artist) } :
-        { title, value: time ? { value, 'text-overflow': infoScroll ? 'clip' : 'ellipsis' } : value, icon, ...(time && { time }) };
+        { title, value: customText ? { value, 'text-overflow': infoScroll ? 'clip' : 'ellipsis' } : value,
+          ...(titleOnly ? { time } : { icon, ...(time && { time }) }) };
       const sent = item.sentDialFrame;
       if (artwork && (!sent || sent.layout !== layout || sent.image !== image || sent.fit !== fit)) {
         feedback.artwork = { value: fitted, enabled: Boolean(fitted) };

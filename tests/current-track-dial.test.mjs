@@ -88,7 +88,7 @@ test('the info dial displays saved playback time and restores the basic layout w
   const state = { title: 'Song', positionSeconds: 0, durationSeconds: 3661 };
   await h.paint('dial', item, state);
   assert.equal(h.calls.find(call => call.event === 'layout').layout, 'layouts/current-track-info.json');
-  assert.deepEqual(h.calls.at(-1).feedback, { title: 'currentTrack', value: { value: 'Song', 'text-overflow': 'ellipsis' },
+  assert.deepEqual(h.calls.at(-1).feedback, { title: 'YouTube Music', value: { value: 'Song', 'text-overflow': 'ellipsis' },
     icon: play, time: '0:00 / 1:01:01' });
   item.settings.infoTitleMode = 'scroll';
   await h.paint('dial', item, state);
@@ -96,6 +96,33 @@ test('the info dial displays saved playback time and restores the basic layout w
   await h.paint('dial', item, { title: 'New song' });
   assert.equal(h.calls.at(-2).layout, '$A1');
   assert.equal(h.calls.at(-1).feedback.value, 'New song');
+});
+
+test('song-name mode uses the full text layout, clears elapsed time and sends no touch-strip icon', async () => {
+  const h = harness(), item = h.add('dial', 'title');
+  const title = 'A long song name with room across the strip';
+  const state = { title, positionSeconds: 42, durationSeconds: 270, playing: true };
+  await h.paint('dial', item, state);
+  assert.equal(h.calls.find(call => call.event === 'layout').layout, 'layouts/current-track-title.json');
+  assert.deepEqual(h.calls.at(-1).feedback, {
+    title: 'YouTube Music', value: { value: title, 'text-overflow': 'ellipsis' }, time: '0:42 / 4:30',
+  });
+  const count = h.calls.filter(call => call.event === 'feedback').length;
+  await h.paint('dial', item, { ...state, playing: false });
+  assert.equal(h.calls.filter(call => call.event === 'feedback').length, count);
+  assert.equal(h.calls.at(-1).image, 'imgs/actions/toggle/key@2x.png');
+  item.settings.infoTitleMode = 'scroll';
+  await h.paint('dial', item, { title });
+  assert.deepEqual(h.calls.at(-1).feedback.value, { value: title, 'text-overflow': 'clip' });
+  assert.equal(h.calls.at(-1).feedback.time, '');
+  h.context.Date.now = () => 1000 + 4 * 380;
+  await h.paint('dial', item, { title });
+  assert.ok(h.calls.at(-1).feedback.value.value.startsWith(title.slice(1)));
+  assert.equal(h.calls.filter(call => call.event === 'layout').length, 1);
+  item.settings.dialDisplay = 'info';
+  await h.paint('dial', item, { title });
+  assert.equal(h.calls.at(-2).layout, '$A1');
+  assert.equal(h.calls.at(-1).feedback.icon, play);
 });
 
 test('artwork fit is independent per dial and title updates do not resend cached artwork', async () => {

@@ -87,7 +87,7 @@ class PackagingTests(unittest.TestCase):
         for name in (*packaging_tool.LEGAL, manifest["CodePath"], manifest["PropertyInspectorPath"],
                      "property-inspector/settings.js", "property-inspector/sdpi-components.js",
                      *[f"{locale}.json" for locale in packaging_tool.LOCALES],
-                     "layouts/current-track-artwork.json", "layouts/current-track-info.json"):
+                     "layouts/current-track-artwork.json", "layouts/current-track-info.json", "layouts/current-track-title.json"):
             self.assertTrue((staged / name).is_file(), name)
         inspector = staged / manifest["PropertyInspectorPath"]
         for locale in packaging_tool.LOCALES:

@@ -174,7 +174,7 @@ Configure each key independently in its action settings:
 
 ### Current Track Dial artwork
 
-Choose **Touch strip display → Icon + song name** (default) or **Album artwork**. Artwork mode offers these settings per dial:
+Under **Touch strip display**, choose **Song name**, **Icon + song name** (default), or **Album artwork**. Song name gives the title more room by hiding the playback icon. Both text modes display **YouTube Music** above the song name. Artwork mode offers these settings per dial:
 
 | Setting | Options | Default |
 | --- | --- | --- |
@@ -189,14 +189,14 @@ Both fit modes preserve the original proportions and crop content outside the sc
 
 ### Key artwork and last track
 
-These settings are available in **1.3.0-dev**. In **Icon + song name** mode on the Current Track Dial, select **Text display → Truncate** or **Scroll left**. The default is Truncate.
+In **1.3.0-dev**, **Text display → Truncate** or **Scroll left** is available in both **Song name** and **Icon + song name** modes. The default is Truncate.
 
 1. In a key's action settings, choose **Key display → Album artwork** or **Linked album artwork**. The default is the cover alone. Enable **Show small icon** and choose a position in the 3×3 grid, including the center.
 2. For linked artwork, leave **Artwork group** empty to join neighboring linked keys, including diagonals. To join separated keys, give them the same group name on the same device and page. Select **Fit height** (default) or **Fit width** on any member to change the whole group. The source is centered and scaled on the selected axis with its proportions intact. The keys show their part of that image, preserving interior gaps, and any overflow is cropped. A single key or a key inside a multi-action uses the individual display.
 3. To compensate for physical spacing, enter **Horizontal gap (%)** and **Vertical gap (%)**, then select **Apply**. Divide the space between adjacent keys by the visible key width or height on the same axis, multiply by 100, and round to the nearest whole percent. A 4 mm gap beside a 16 mm key is 25%. Each value defaults to 0. The same values apply to the whole group.
 4. If your Stream Deck action has a custom title or image, reset it in Stream Deck to let the plugin control that layer again.
 
-When Chrome is closed, including after Stream Deck or Windows restarts, the plugin restores the last confirmed track, cover, volume, mute, Repeat, Shuffle and rating displays. The Current Track Dial's **Icon + song name** mode shows the last position and duration when available. The open player supplies current values after reconnection. Each confirmed track replaces the previous local record. Unpairing clears the record.
+When Chrome is closed, including after Stream Deck or Windows restarts, the plugin restores the last confirmed track, cover, volume, mute, Repeat, Shuffle and rating displays. Both Current Track Dial text modes show the last position and duration when available. The open player supplies current values after reconnection. Each confirmed track replaces the previous local record. Unpairing clears the record.
 
 A title shown in the YouTube Music player bar can replace the record before playback, including a restored selection from another device. The Chrome popup also shows **Last track** when the Music tab is closed. Its controls can reopen YouTube Music and wait for the matching track. Queue and rating controls depend on availability in the reopened player.
 

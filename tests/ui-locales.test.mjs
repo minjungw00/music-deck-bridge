@@ -41,10 +41,8 @@ test('inspector, extension and native action catalogs are complete for every sup
 });
 
 test('device status captions use the same locale mapping as settings', () => {
-  for (const [locale, expected] of [['en','Current Track'], ['ko','현재 곡'], ['zh_CN','当前歌曲'],
-    ['zh_TW','目前歌曲'], ['ja','現在の曲'], ['es','Canción actual'], ['fr','Titre actuel'], ['de','Aktueller Titel']]) {
-    assert.equal(translate(locale, 'currentTrack'), expected);
+  for (const locale of supported) {
     for (const key of ['unavailable','offline','pause','play','muted','absent','open','like','dislike']) assert.ok(translate(locale, key));
   }
-  assert.equal(translate('pt-BR', 'currentTrack'), 'Current Track');
+  assert.equal(translate('pt-BR', 'unavailable'), translate('en', 'unavailable'));
 });

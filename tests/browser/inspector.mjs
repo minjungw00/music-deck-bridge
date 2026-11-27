@@ -108,6 +108,27 @@ test('real SDPI components localize their first rendered labels without changing
       assert.deepEqual(clipped, [], `${language}/${action}: text outside inspector viewport`);
       assert.deepEqual(messages.slice(before).filter(message => message.event === 'setSettings'), [], 'localization must not save defaults or change settings');
       assert.deepEqual(errors, []);
+      if (action === 'trackdial') {
+        const dial = selects.find(select => select.id === 'dialDisplay');
+        assert.deepEqual(dial.actual.map(([value]) => value), ['title', 'info', 'artwork']);
+      }
+      if (language === 'ko' && action === 'trackdial' && settings !== saved) {
+        const display = page.locator('#dialDisplay select');
+        const textOptions = page.locator('#infoTitleModeRow');
+        const artworkOptions = page.locator('#artworkOptions');
+        for (const mode of ['title', 'artwork', 'info']) {
+          const since = messages.length;
+          await display.selectOption(mode);
+          await textOptions.waitFor({ state: mode === 'artwork' ? 'hidden' : 'visible' });
+          await artworkOptions.waitFor({ state: mode === 'artwork' ? 'visible' : 'hidden' });
+          const savedMode = () => messages.slice(since).some(message =>
+            message.event === 'setSettings' && message.payload?.dialDisplay === mode);
+          for (let attempt = 0; attempt < 25 && !savedMode(); attempt++) {
+            await new Promise(resolve => setTimeout(resolve, 20));
+          }
+          assert.ok(savedMode(), mode);
+        }
+      }
       if (language === 'ko' && action === 'nowplaying' && settings !== saved) {
         const display = page.locator('#keyDisplay select');
         const iconRow = page.locator('#keyArtworkIconRow');

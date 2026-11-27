@@ -5,7 +5,8 @@ let locale = 'en';
 const { createRenderer, translate, MARQUEE_STEP_MS } = MusicDeckRendering;
 const displayed = new Map();
 const cachedCoverUrl = 'preview-cover', cachedCoverData = data.cover;
-const state = { title: data.title, artist: data.artist, cover: cachedCoverUrl, playing: true, muted: false, volume: 35 };
+const state = { title: data.title, artist: data.artist, cover: cachedCoverUrl, playing: true, muted: false, volume: 35,
+  positionSeconds: 34, durationSeconds: 163 };
 const selectedEntry = () => ['preview', state];
 const actionName = action => action.split('.').at(-1);
 const fitDialArtwork = (_, mode) => data.fits[mode];
@@ -20,10 +21,16 @@ function setTitle(context, value) {
   const title = document.querySelector(`[data-context="${context}"] .key-title`);
   if (title) title.textContent = value;
 }
-async function sendStream() { /* Layout selection is applied by setFeedback below. */ }
+async function sendStream({ context, payload }) {
+  if (context !== 'trackdial') return;
+  const target = $('track-feedback');
+  target.dataset.layout = payload.layout;
+  target.replaceChildren();
+}
 async function setFeedback(context, payload) {
   const target = context === 'volume' ? $('volume-feedback') : $('track-feedback');
-  if (context === 'volume' || displayed.get('trackdial').settings.dialDisplay !== 'artwork') {
+  const layout = data.layouts[target.dataset.layout];
+  if (!layout) {
     target.replaceChildren();
     for (const [className, text] of [['a1-title', payload.title], ['a1-value', payload.value]]) {
       const element = document.createElement('div'); element.className = className; element.textContent = text; target.append(element);
@@ -37,22 +44,26 @@ async function setFeedback(context, payload) {
     }
     return;
   }
-  if (target.dataset.layout !== 'artwork') { target.replaceChildren(); target.dataset.layout = 'artwork'; }
-  for (const spec of data.layout.items) {
-    const field = payload[spec.key]; if (!field) continue;
+  for (const spec of layout.items) {
+    if (!Object.hasOwn(payload, spec.key)) continue;
+    const entry = payload[spec.key];
+    const field = typeof entry === 'object' ? entry : { value: entry };
     let element = target.querySelector(`[data-field="${spec.key}"]`);
     if (!element) { element = document.createElement('div'); element.dataset.field = spec.key; target.append(element); }
     element.hidden = field.enabled === false;
     element.className = 'feedback-layer' + (spec.type === 'text' ? ' text' : '');
     const [x, y, width, height] = spec.rect;
-    Object.assign(element.style, { left: `${x / 2}%`, top: `${y}%`, width: `${width / 2}%`, height: `${height}%`, zIndex: String(spec.zOrder), background: field.background || 'transparent' });
+    Object.assign(element.style, { left: `${x / 2}%`, top: `${y}%`, width: `${width / 2}%`, height: `${height}%`,
+      zIndex: String(spec.zOrder ?? 0), background: field.background ?? spec.background ?? 'transparent' });
     if (spec.type === 'pixmap') {
-      const image = document.createElement('img'); image.alt = ''; image.src = imageSource(field.value); element.replaceChildren(image);
+      const image = document.createElement('img'); image.alt = '';
+      if (field.value) image.src = imageSource(field.value);
+      element.replaceChildren(image);
     } else {
       element.textContent = field.value;
-      Object.assign(element.style, { fontSize: `${spec.font.size}px`, fontWeight: String(spec.font.weight),
-        lineHeight: `${height}px`, textAlign: field.alignment === 'left' ? 'left' : 'center',
-        textOverflow: field['text-overflow'] === 'ellipsis' ? 'ellipsis' : 'clip' });
+      Object.assign(element.style, { fontSize: `${spec.font.size}px`, fontWeight: String(spec.font.weight ?? 400),
+        lineHeight: `${height}px`, textAlign: field.alignment ?? spec.alignment ?? 'center',
+        textOverflow: field['text-overflow'] ?? spec['text-overflow'] ?? 'clip' });
     }
   }
 }
@@ -82,8 +93,8 @@ function render() {
     titleBackground: background, titleMode: $('scroll').checked ? 'scroll' : 'truncate' };
   displayed.get('trackdial').settings = { dialDisplay: $('display').value, artworkFit: $('fit').value,
     artworkShowTitle: title, artworkShowArtist: artist !== 'hidden', artworkArtistPosition: artist,
-    artworkTitleBackground: background, artworkTitleMode: $('scroll').checked ? 'scroll' : 'truncate' };
-  if ($('display').value !== 'artwork') $('track-feedback').dataset.layout = 'information';
+    artworkTitleBackground: background, artworkTitleMode: $('scroll').checked ? 'scroll' : 'truncate',
+    infoTitleMode: $('scroll').checked ? 'scroll' : 'truncate' };
   renderer.paint();
 }
 for (const context of ['prev', 'toggle', 'next', 'like', 'open', 'nowplaying', 'mute', 'dislike', 'volume', 'trackdial']) {

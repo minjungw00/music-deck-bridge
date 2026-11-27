@@ -137,8 +137,14 @@ for (const protectedManifest of [false, true]) {
     const dialFeedback = () => messages.findLast(m => m.event === 'setFeedback' && m.context === 'trackdial')?.payload;
     const dialLayout = () => messages.findLast(m => m.event === 'setFeedbackLayout' && m.context === 'trackdial')?.payload.layout;
     await waitFor(() => dialLayout() === 'layouts/current-track-info.json' && dialFeedback()?.icon === playIcon);
+    assert.equal(dialFeedback().title, 'YouTube Music');
     assert.equal(dialFeedback().value.value, 'Saved song');
     assert.equal(dialFeedback().time, '1:02 / 4:00');
+    send('didReceiveSettings', 'trackdial', { settings: { dialDisplay: 'title' } });
+    await waitFor(() => dialLayout() === 'layouts/current-track-title.json' && !dialFeedback()?.icon);
+    assert.equal(dialFeedback().value.value, 'Saved song');
+    assert.equal(dialFeedback().time, '1:02 / 4:00');
+    send('didReceiveSettings', 'trackdial', { settings: { dialDisplay: 'info' } });
     const linked = { keyDisplay: 'linked' };
     send('willAppear', 'prev', { controller: 'Keypad', settings: linked, coordinates: { column: 1, row: 0 } }, 'art-top');
     send('willAppear', 'next', { controller: 'Keypad', settings: linked, coordinates: { column: 2, row: 1 } }, 'art-bottom');
@@ -169,7 +175,7 @@ for (const protectedManifest of [false, true]) {
     await post('/sync', { token, clientId: 1, state });
     await waitFor(() => toggleImage() === pauseImage);
     await waitFor(() => dialFeedback()?.icon === pauseIcon && dialFeedback()?.value === state.title);
-    assert.equal(dialFeedback().title, '현재 곡');
+    assert.equal(dialFeedback().title, 'YouTube Music');
     send('didReceiveSettings', 'trackdial', { settings: { dialDisplay: 'artwork' } });
     await waitFor(() => dialLayout() === 'layouts/current-track-artwork.json' && dialFeedback()?.fallback?.value === pauseIcon);
     assert.equal(dialFeedback().songName.enabled, false, 'song name is hidden by default');
