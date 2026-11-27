@@ -1,5 +1,5 @@
 - Added Repeat and Shuffle on Stream Deck and in the Chrome popup.
 - Added album artwork for individual keys and across linked keys, with width or height fitting and an optional action icon.
-- Added title scrolling to the Current Track Dial's icon and song name mode.
+- Added a Song name display to the Current Track Dial, with title scrolling in both text modes.
 - Stream Deck and the Chrome popup show the last track after the browser closes. Stream Deck also restores saved artwork and player settings.
 - Updated the Chrome popup layout and made Open YouTube Music always available.
