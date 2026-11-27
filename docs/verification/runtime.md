@@ -6,7 +6,8 @@ Evidence through November 28, 2026 (Asia/Seoul). [Release verification](releases
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
-| November 28 final 1.3.0-dev validation, `94593e7` | Final archives matched their staged payloads. Windows fixture verified toolbar controls, replacement by a paused selection before its first play, and retained state across Chrome and plugin restart. The live Music app and a fully loaded regular tab passed Play/Pause, Repeat and Shuffle. [Final validation](#november-28-final-130-dev-validation) | Early Play/Pause in the regular tab was unconfirmed. Physical output and input, PC reboot, cross-device import on the live service and a Maker Console processed build require separate verification. |
+| Maintainer report after PC reboot | Saved state was restored. [Maintainer report](#130-dev-pc-reboot) | Covers saved-state restoration. Starting playback in a new browser uses the position chosen by YouTube Music. |
+| November 28 final 1.3.0-dev validation, `94593e7` | Final archives matched their staged payloads. Windows fixture verified toolbar controls, replacement by a paused selection before its first play, and retained state across Chrome and plugin restart. The live Music app and a fully loaded regular tab passed Play/Pause, Repeat and Shuffle. [Final validation](#november-28-final-130-dev-validation) | Early Play/Pause in the regular tab was unconfirmed. Physical output and input, cross-device import on the live service and a Maker Console processed build require separate verification. The PC reboot was covered by the separate maintainer report. |
 | November 28 native YouTube Music controls, `394b941` | The installed Windows bridge observed playback, Repeat, Shuffle and artwork in the regular Chrome tab and installed app. Closing the app left one saved track with artwork and settings. [Native playback record](#november-28-native-youtube-music-controls) | Confirmation came through the bridge. Account sign-in status, an imported selection closed before playback, physical input/display and PC reboot remain unverified. |
 | November 28 Windows refactor verification, `394b941` | 336 Node tests, three Chromium fixtures, two Python packaging tests and static checks passed. Both installed packages matched the tested build. Isolated Windows Chrome and plugin processes exercised toolbar controls, restart restoration and retry after a failed deletion. [Refactor verification](#november-28-windows-refactor-verification) | The isolated Windows test used a local player model. Signed-in playback, physical input/display and PC reboot require separate verification. |
 | November 27 Windows mixed-version upgrade, `a512a7f` | Both mixed pairings retained credentials and the custom port. Actual Chrome toolbar popups controlled Play/Pause. The development popup used Chrome-local Repeat and Shuffle with the 1.2.0 plugin. [Mixed-version record](#november-27-windows-mixed-version-upgrade) | Native Windows Chrome and packaged plugin processes shared an isolated test pairing and a local player model. Physical profiles and Marketplace installations require separate verification. |
@@ -358,6 +359,10 @@ Separate Chromium checks load the real English/Korean popup with delayed mock ex
 ## Maintainer confirmation
 
 These are maintainer reports, separate from automated fixtures and independent observation. Missing artifact/environment metadata does not require repeating completed validation solely to fill it in.
+
+### 1.3.0-dev PC reboot
+
+The maintainer confirmed that the saved state returned after a PC reboot. They also observed that pressing Play to open a new browser did not resume at the previous timestamp. The plugin retains the last observed position for its dial displays. When playback starts, the new YouTube Music player supplies its current position.
 
 ### Official store components
 
