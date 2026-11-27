@@ -5,9 +5,11 @@
     const managementMethods = Object.freeze({ __proto__: null, pair: 'pair', check: 'check',
       'get-port': 'getPort', 'set-port': 'setPort', unpair: 'unpair', control: 'control', artwork: 'artwork' });
     function runPlayback(tabId, args, respond) {
+      const phase = args[0] === 'result' ? 'result' : 'dispatch';
+      const failed = source => ({ ok: false, reason: 'playback-unconfirmed', diagnostic: { phase, source } });
       chrome.scripting.executeScript({ target: { tabId, frameIds: [0] }, world: 'MAIN', func: playerPlayback, args })
-        .then(results => respond(results[0]?.result || { ok: false }))
-        .catch(() => respond({ ok: false, reason: 'playback-unconfirmed' }));
+        .then(results => respond(results[0]?.result || failed('missing-result')),
+          () => respond(failed('script-execution')));
       return true;
     }
     function onMessage(msg, sender, respond) {

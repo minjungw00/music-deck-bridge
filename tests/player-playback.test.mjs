@@ -12,7 +12,7 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
   restart = false, playBlocked = false, playNoEffect = false, initialState = 2,
   cueOnNavigation = false, ignoreUntilPlaying = false, seekEvent = true, ignoredTypes = [], playPromise,
   unloadedUntilPlay = false, rejectUncued = false, clearOnError = false, clickError,
-  ignoredPlayRequests = 0, blockedPlayRequest = 0, unstartedOnNavigation = false } = {}) {
+  ignoredPlayRequests = 0, blockedPlayRequest = 0, unstartedOnNavigation = false, pause } = {}) {
   const player = playerHarness({ date: Date });
   let state = initialState, track = 'aaaaaaaaaaa', clicks = 0, time = 0, plays = 0, ignored = 0;
   let initialized = !unloadedUntilPlay;
@@ -36,6 +36,7 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
       if (!playNoEffect) state = 1;
       return playPromise;
     },
+    ...(pause && { pauseVideo: () => pause(() => { state = 2; player.audio.paused = true; }) }),
     addEventListener: (name, fn) => add(listeners, name, fn),
     removeEventListener: (name, fn) => remove(listeners, name, fn),
   };
@@ -569,6 +570,82 @@ test('buffering playback settles before navigation without an extra Play request
     assert.equal(h.plays(), 0);
     assert.equal(h.clicks(), 1);
   } finally { clearTimeout(timer); }
+});
+
+test('an ignored buffering toggle recovers Pause once after the same player starts', async () => {
+  let pauses = 0;
+  const h = harness({ initialState: 3, pause(confirm) { if (++pauses === 2) confirm(); } });
+  const pending = await h.send('toggle', Date.now() + 700, true);
+  await until(() => pauses === 1);
+  assert.equal(h.state(), 3);
+  h.setState(1);
+  assert.equal((await h.result(pending.pending)).ok, true);
+  assert.equal(h.state(), 2);
+  assert.equal(pauses, 2);
+  assert.equal(h.clicks(), 0);
+});
+
+test('a buffering Pause that takes effect immediately sends a single explicit request', async () => {
+  let pauses = 0;
+  const h = harness({ initialState: 3, pause(confirm) { pauses++; confirm(); } });
+  assert.equal((await h.send('toggle')).ok, true);
+  assert.equal(h.state(), 2);
+  assert.equal(pauses, 1);
+  assert.equal(h.clicks(), 0);
+});
+
+test('buffering Pause recovery skips a different track, a replacement API and a later input', async () => {
+  for (const change of ['track', 'api', 'input']) {
+    let pauses = 0;
+    const h = harness({ initialState: 3, pause() { pauses++; } });
+    const pending = await h.send('toggle', Date.now() + 400, true);
+    await until(() => pauses === 1);
+    if (change === 'track') h.setTrack('bbbbbbbbbbb');
+    if (change === 'api') h.replaceApi();
+    if (change === 'input') await h.send('play', Date.now() + 500, true);
+    h.setState(1);
+    assert.equal((await h.result(pending.pending)).ok, false, change);
+    assert.equal(pauses, 1, change);
+    assert.equal(h.clicks(), 0, change);
+  }
+});
+
+test('buffering Pause recovery does not repeat and preserves an API/media disagreement', async () => {
+  let pauses = 0;
+  const h = harness({ initialState: 3, pause() {
+    if (++pauses === 2) h.player.audio.paused = true;
+  } });
+  const pending = await h.send('toggle', Date.now() + 500, true);
+  await until(() => pauses === 1);
+  h.setState(1);
+  const result = await h.result(pending.pending);
+  assert.equal(result.reason, 'playback-unconfirmed');
+  assert.equal(result.diagnostic.inputAction, 'pause-api');
+  assert.equal(result.diagnostic.inputMediaPaused, false);
+  assert.equal(result.diagnostic.mediaPaused, true);
+  assert.equal(result.diagnostic.state, 1);
+  assert.equal(pauses, 2);
+  assert.equal(h.clicks(), 0);
+});
+
+test('explicit Play in a buffering player waits for real playback without toggling', async () => {
+  const h = harness({ initialState: 3 });
+  const timer = setTimeout(() => h.setState(1), 30);
+  try {
+    assert.equal((await h.send('play', Date.now() + 500)).ok, true);
+    assert.equal(h.state(), 1);
+    assert.equal(h.clicks(), 0);
+    assert.equal(h.plays(), 0);
+  } finally { clearTimeout(timer); }
+});
+
+test('a missing playback result retains a distinct diagnostic without replaying', async () => {
+  const h = harness();
+  const result = await h.result(22);
+  assert.equal(result.reason, 'playback-unconfirmed');
+  assert.equal(result.diagnostic?.phase, 'result');
+  assert.equal(result.diagnostic?.source, 'missing-result');
+  assert.equal(h.clicks(), 0);
 });
 
 for (const [config, reason] of [[{ blocked: true }, 'autoplay-blocked'], [{ error: true }, 'player-error']]) {

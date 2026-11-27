@@ -29,6 +29,7 @@ const fixture = (restored = false, ignoredStartupRequests = 0) => `<!doctype htm
 </ytmusic-player-bar>
 <script>
 let playing=false, muted=false, ready=false, cued=false, initialized=false, index=2, time=0, stallPrevious=false, seekSignal=true;
+let buffering=false;
 let destinationUnstarted=false, unstartedDestination=false, ignoredDestinationPlays=0, destinationPlays=0;
 const restored=${restored};
 const ignoredStartupRequests=${ignoredStartupRequests};
@@ -81,7 +82,7 @@ Object.defineProperties(document.querySelector('audio'), {
  currentSrc:{get:()=>initialized?tracks[index]:''}, currentTime:{get:()=>time}
 });
 const api=document.querySelector('#movie_player');
-api.isReady=()=>ready;api.getPlayerState=()=>unstartedDestination?-1:!initialized?(cued&&!restored?5:-1):playing?1:2;
+api.isReady=()=>ready;api.getPlayerState=()=>unstartedDestination?-1:!initialized?(cued&&!restored?5:-1):buffering?3:playing?1:2;
 api.getVideoData=()=>({video_id:initialized||restored?tracks[index]:''});
 api.getCurrentTime=()=>time;
 api.getDuration=()=>180;
@@ -94,6 +95,11 @@ api.playVideo=()=>{
  if(unstartedDestination&&++destinationPlays<=ignoredDestinationPlays){record('ignoredDestinationRequest');return;}
  unstartedDestination=false;
  playing=true;initialized=true;
+};
+api.pauseVideo=()=>{
+ record('pauseRequest');
+ if(buffering){record('ignoredBufferingPause');return;}
+ playing=false;
 };
 api.isMuted=()=>muted;
 api.addEventListener=(name,fn)=>{if(!playerListeners.has(name))playerListeners.set(name,new Set());playerListeners.get(name).add(fn);};
@@ -313,6 +319,17 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   }
   restoredStartup = false;
   ignoredStartupRequests = 0;
+  const bufferingPage = browser.pages().find(page => page.url().startsWith(musicURL));
+  await bufferingPage.evaluate(() => { playing=true;buffering=true; });
+  const bufferingClicks = await bufferingPage.evaluate(() => document.body.dataset.toggle);
+  const beforePause = await worker.evaluate(() => acknowledgments.length);
+  await postEvent('toggle');
+  await until(() => bufferingPage.evaluate(() => document.body.dataset.ignoredBufferingPause), 'buffering Pause request');
+  await bufferingPage.evaluate(() => { buffering=false; });
+  const pauseAck = await until(async () => (await worker.evaluate(() => acknowledgments))[beforePause], 'buffering Pause recovery ACK');
+  assert.equal(pauseAck.ok, true, JSON.stringify(pauseAck));
+  assert.deepEqual(await bufferingPage.evaluate(() => [playing, document.body.dataset.ignoredBufferingPause,
+    document.body.dataset.pauseRequest, document.body.dataset.toggle]), [false, '1', '2', bufferingClicks]);
   // Navigation changes the ID but leaves the destination UNSTARTED. Its first
   // Play is ignored; recovery must not click Previous/Next a second time.
   const destinationPage = browser.pages().find(page => page.url().startsWith(musicURL));

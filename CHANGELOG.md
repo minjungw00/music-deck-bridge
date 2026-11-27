@@ -11,6 +11,7 @@
 - Keep the latest track confirmed by the YouTube Music player, including restored selections before playback. Stream Deck retains artwork, volume, mute, Repeat, Shuffle, rating and the last observed playback time for display. The Chrome popup retains one track in its profile and can reopen YouTube Music and control the same track after its tab closes.
 - Place Chrome connection and port settings first while Chrome is disconnected.
 - Recognize the installed YouTube Music window in `minimal-ui` mode and prefer it over regular browser tabs.
+- Send an explicit Pause during initial buffering when supported, with one retry if the same track starts playing. Explicit Play waits for confirmed playback during buffering, and diagnostics distinguish missing results from player confirmation failures.
 
 ## v1.2.0 — 2026-11-14
 

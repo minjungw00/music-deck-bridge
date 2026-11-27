@@ -15,11 +15,14 @@
       const id = typeof message.id === 'string' ? message.id : null;
       let operation = id && browserCommands.get(id);
       if (message.type === 'bridge-command-result') {
-        if (!operation) { respond({ ok: false, reason: 'playback-unconfirmed' }); return false; }
+        if (!operation) {
+          respond({ ok: false, reason: 'playback-unconfirmed', diagnostic: { phase: 'result', source: 'missing-result' } });
+          return false;
+        }
         if (!browserResults.has(id)) {
           const result = operation.then(dispatched => dispatched.pending ?
             command({ type: 'playback-result', pending: dispatched.pending }) : dispatched)
-            .catch(() => ({ ok: false, reason: 'playback-unconfirmed' }));
+            .catch(() => ({ ok: false, reason: 'playback-unconfirmed', diagnostic: { phase: 'result', source: 'result-transport' } }));
           browserResults.set(id, result);
           result.then(value => { if (value.retry) { browserCommands.delete(id); browserResults.delete(id); } });
         }

@@ -8,7 +8,7 @@
       dispatch: Promise.resolve(), results: new Map() };
     if (type === 'result') {
       const result = control.results.get(expiresAt);
-      if (!result) return { ok: false, reason: 'playback-unconfirmed' };
+      if (!result) return { ok: false, reason: 'playback-unconfirmed', diagnostic: { phase: 'result', source: 'missing-result' } };
       try { return await result; }
       finally { control.results.delete(expiresAt); }
     }
@@ -98,6 +98,10 @@
       return state.ready && state.state === -1 && !(state.media?.readyState > 0) &&
         /^[\w-]{11}$/.test(state.key) && typeof state.api?.playVideo === 'function';
     }
+    function canPauseDuringBuffering(state) {
+      return type === 'toggle' && state.state === 3 &&
+        /^[\w-]{11}$/.test(state.key) && typeof state.api?.pauseVideo === 'function';
+    }
     function wait() { return new Promise(resolve => setTimeout(resolve, 80)); }
     function error(state) { return superseded() ? 'command-superseded' : events.failure(state); }
 
@@ -118,6 +122,12 @@
       diagnostic.phase = 'play-button';
       diagnostic.capture(state);
       button.click(); return true;
+    }
+
+    function requestPause(state) {
+      diagnostic.phase = 'pause-api';
+      diagnostic.capture(state);
+      state.api.pauseVideo()?.catch?.(error => events.reject(error, 'pause-api'));
     }
 
     async function prepareAndDispatch() {
@@ -148,7 +158,15 @@
       if (error(before)) return { result: failure(error(before)) };
       if (Date.now() >= deadline) return { result: failure('command-timeout') };
       recovery.clear();
-      if (type === 'play' && before.playing) return { result: { ok: true } };
+      if (type === 'play' && before.playing) {
+        if (started(before)) return { result: { ok: true } };
+        // A new tab may already have requested playback and still be buffering.
+        events.subscribe(before);
+        control.latest = sequence;
+        deadline = Math.min(expires, Date.now() + 10000);
+        diagnostic.phase = 'confirm';
+        return { before };
+      }
       const selector = ({ play: '.play-pause-button', toggle: '.play-pause-button',
         next: '.next-button', prev: '.previous-button' })[type];
       const button = document.querySelector('ytmusic-player-bar ' + selector);
@@ -156,8 +174,10 @@
       if (!events.subscribed) events.subscribe(before);
       events.watchSeek(before.media);
       control.latest = sequence;
+      const bufferingPause = canPauseDuringBuffering(before);
       // Retain a restored track's Play intent if its first API call is ignored.
-      if (!navigation && before.ready && before.state === -1 && !(before.media?.readyState > 0) &&
+      if (bufferingPause) requestPause(before);
+      else if (!navigation && before.ready && before.state === -1 && !(before.media?.readyState > 0) &&
           typeof before.api?.playVideo === 'function') {
         await requestPlay(before, true);
       } else {
@@ -167,10 +187,10 @@
       }
       deadline = Math.min(expires, Date.now() + 10000);
       diagnostic.phase = 'confirm';
-      return { before };
+      return { before, bufferingPause };
     }
 
-    async function confirm(before) {
+    async function confirm(before, recoverBufferedPause) {
       const desiredPlaying = type === 'play' || !before.playing;
       const outcome = { navigated: false, destinationRecoveryStarted: false, played: new Set() };
       while (Date.now() < deadline) {
@@ -178,6 +198,16 @@
         if (error(after)) return failure(error(after));
         if (!navigation) {
           if (desiredPlaying ? started(after) : !after.playing) return { ok: true };
+          if (recoverBufferedPause) {
+            if (control.sequence !== sequence || after.api !== before.api || after.key !== before.key || after.index !== before.index) {
+              recoverBufferedPause = false;
+            } else if (after.ready && started(after)) {
+              // Some players ignore Pause while buffering. Retry the same
+              // intent once playback has actually started on this track.
+              recoverBufferedPause = false;
+              requestPause(after);
+            }
+          }
           await recovery.step(after);
           diagnostic.phase = 'confirm';
         } else if (await confirmNavigation(before, after, outcome)) return { ok: true };
@@ -210,10 +240,10 @@
     async function complete() {
       try {
         const dispatched = await dispatch;
-        return dispatched.result || await confirm(dispatched.before);
+        return dispatched.result || await confirm(dispatched.before, dispatched.bufferingPause);
       } catch (error) {
         diagnostic.recordFault('exception', null, error?.name);
-        return failure(error?.name === 'NotAllowedError' ? 'autoplay-blocked' : 'player-error');
+        return failure(error?.name === 'NotAllowedError' && diagnostic.phase !== 'pause-api' ? 'autoplay-blocked' : 'player-error');
       } finally { events.cleanup(); }
     }
 
@@ -265,9 +295,9 @@
           media = value;
           media?.addEventListener?.('seeked', onSeeked);
         },
-        reject(error) {
-          diagnostic.recordFault('play-rejection', null, error?.name, 'play-api');
-          if (error?.name === 'NotAllowedError') blocked = true;
+        reject(error, phase = 'play-api') {
+          diagnostic.recordFault(phase === 'pause-api' ? 'pause-rejection' : 'play-rejection', null, error?.name, phase);
+          if (phase === 'play-api' && error?.name === 'NotAllowedError') blocked = true;
           else failed = true;
         },
         failure(state) {
@@ -297,6 +327,7 @@
         capture(state) {
           // Capture primitives before a site error can clear media/selection.
           input = { state: state.state, apiReady: state.apiReady, mediaReady: state.media?.readyState,
+            mediaPaused: state.media?.paused,
             hasTrack: Boolean(state.key), action: info.phase, api: state.apiSource,
             userActive: globalThis.navigator?.userActivation?.isActive ?? null,
             userEverActive: globalThis.navigator?.userActivation?.hasBeenActive ?? null };
@@ -312,10 +343,12 @@
             state: [-1, 0, 1, 2, 3, 5].includes(snapshot?.state) ? snapshot.state : null,
             apiReady: snapshot?.apiReady === true,
             mediaReady: [0, 1, 2, 3, 4].includes(snapshot?.media?.readyState) ? snapshot.media.readyState : null,
+            mediaPaused: snapshot?.media?.paused ?? null,
             hasTrack: Boolean(snapshot?.key), playable: snapshot?.playable !== false,
             inputState: [-1, 0, 1, 2, 3, 5].includes(input?.state) ? input.state : null,
             inputApiReady: input?.apiReady ?? null,
             inputMediaReady: [0, 1, 2, 3, 4].includes(input?.mediaReady) ? input.mediaReady : null,
+            inputMediaPaused: input?.mediaPaused ?? null,
             inputHasTrack: input?.hasTrack ?? null,
             inputAction: input?.action ?? null, inputApi: input?.api ?? null,
             inputUserActive: input?.userActive ?? null, inputUserEverActive: input?.userEverActive ?? null,

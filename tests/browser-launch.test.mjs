@@ -149,7 +149,18 @@ test('a receiver lost after dispatch receipt never replays navigation in a repla
   const diagnostic = {};
   assert.equal(await h.api.performBrowserCommand({ type: 'next', id: 'already-accepted' }, undefined, diagnostic), false);
   assert.equal(diagnostic.reason, 'delivery-uncertain');
+  assert.equal(h.api.failure().phase, 'result');
+  assert.equal(h.api.failure().source, 'result-transport');
   assert.equal(h.calls.filter(call => call[0] === 'message' && call[2].type === 'bridge-command').length, 1);
+});
+
+test('a rejected result script is distinguishable from a playback confirmation timeout', async () => {
+  const h = harness({ injectionFailures: 1 });
+  const reply = await h.send({ type: 'player-playback-result', pending: 1 },
+    { tab: { id: 2 }, frameId: 0, url: 'https://music.youtube.com/' });
+  assert.equal(reply.reason, 'playback-unconfirmed');
+  assert.equal(reply.diagnostic.phase, 'result');
+  assert.equal(reply.diagnostic.source, 'script-execution');
 });
 
 test('missing credentials are reported to the bridge without starting a browser command channel', async () => {

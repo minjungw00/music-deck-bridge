@@ -9,12 +9,14 @@
     let browserRetryTimer = null;
     let browserChannelAvailable = null;
     let lastFailure = null;
-    const phases = ['prepare', 'subscribe', 'play-button', 'play-api', 'navigate-button', 'confirm'];
-    const faultSources = ['observation', 'site-event', 'media', 'play-rejection', 'exception'];
+    const actions = ['play-button', 'play-api', 'pause-api', 'navigate-button'];
+    const phases = ['prepare', 'subscribe', ...actions, 'confirm', 'dispatch', 'result'];
+    const faultSources = ['observation', 'site-event', 'media', 'play-rejection', 'pause-rejection', 'exception',
+      'missing-result', 'script-execution', 'result-transport'];
     const exceptions = ['Error', 'TypeError', 'ReferenceError', 'NotAllowedError', 'InvalidStateError',
       'SecurityError', 'AbortError', 'NotSupportedError', 'Other'];
     function recordFailure(type, result) {
-      if (!['player-error', 'player-not-ready', 'playback-unconfirmed', 'autoplay-blocked'].includes(result?.reason)) return;
+      if (!['player-error', 'player-not-ready', 'playback-unconfirmed', 'autoplay-blocked', 'delivery-uncertain'].includes(result?.reason)) return;
       const data = result.diagnostic || {};
       // Retain only bounded enums/numbers/booleans, never page text, IDs,
       // exception messages, URLs, playback metadata or credentials.
@@ -27,13 +29,15 @@
         state: [-1, 0, 1, 2, 3, 5].includes(data.state) ? data.state : null,
         apiReady: typeof data.apiReady === 'boolean' ? data.apiReady : null,
         mediaReady: [0, 1, 2, 3, 4].includes(data.mediaReady) ? data.mediaReady : null,
+        mediaPaused: typeof data.mediaPaused === 'boolean' ? data.mediaPaused : null,
         hasTrack: typeof data.hasTrack === 'boolean' ? data.hasTrack : null,
         playable: typeof data.playable === 'boolean' ? data.playable : null,
         inputState: [-1, 0, 1, 2, 3, 5].includes(data.inputState) ? data.inputState : null,
         inputApiReady: typeof data.inputApiReady === 'boolean' ? data.inputApiReady : null,
         inputMediaReady: [0, 1, 2, 3, 4].includes(data.inputMediaReady) ? data.inputMediaReady : null,
+        inputMediaPaused: typeof data.inputMediaPaused === 'boolean' ? data.inputMediaPaused : null,
         inputHasTrack: typeof data.inputHasTrack === 'boolean' ? data.inputHasTrack : null,
-        inputAction: ['play-button', 'play-api', 'navigate-button'].includes(data.inputAction) ? data.inputAction : null,
+        inputAction: actions.includes(data.inputAction) ? data.inputAction : null,
         inputApi: ['none', 'player-bar', 'movie-player'].includes(data.inputApi) ? data.inputApi : null,
         inputUserActive: typeof data.inputUserActive === 'boolean' ? data.inputUserActive : null,
         inputUserEverActive: typeof data.inputUserEverActive === 'boolean' ? data.inputUserEverActive : null,
@@ -105,6 +109,8 @@
             await wait(200);
             continue;
           }
+          if (accepted) recordFailure(command.type, { reason: 'delivery-uncertain',
+            diagnostic: { phase: 'result', source: 'result-transport' } });
           return failed('delivery-uncertain');
         }
         if (result?.ok) return true;
