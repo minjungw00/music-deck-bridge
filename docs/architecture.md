@@ -153,7 +153,7 @@ The extension captures a visible player-bar title before checking the pairing or
 
 The Play / Pause key displays a Pause image while the selected player is playing or buffering, otherwise a Play image. A fixed `MAIN`-world function reads the site player's playback/mute state before metadata sync; media-element state is the fallback. This avoids treating an inactive media element as the active player.
 
-The Volume Dial touch-strip icon likewise uses the confirmed mute state, switching between the existing volume and mute artwork and restoring volume artwork when the player disappears. It uses the reported player state rather than optimistically toggling on key presses.
+The Volume Dial uses confirmed volume and mute state, including the saved values while the player is unavailable. Its output cache sends changed frames and keeps the latest pending frame while a send is in progress.
 
 Repeat and Shuffle read the player's state in the page's main world. The worker advertises support and preserves delivery order. Confirmation requires an observed mode change or, for shuffle variants without a persistent toggle, an observed queue reorder. [Repeat and Shuffle capabilities](protocol.md#optional-repeat-and-shuffle-controls)
 
@@ -161,7 +161,7 @@ Without an eligible player the Play / Pause key displays Play. Play/Pause, Like,
 
 ### Current Track Dial
 
-The Current Track Dial retains the `.trackdial` action UUID. Rotation preserves previous/next inputs; push and touch both toggle playback. Its default `$A1` layout shows the confirmed Play/Pause icon and song name. The per-action `dialDisplay` setting selects `info` or `artwork`. In `info` mode, `infoTitleMode` selects `truncate` (default) or `scroll`.
+The Current Track Dial retains the `.trackdial` action UUID. Rotation moves to the previous or next song, and pressing or tapping toggles playback. The per-action `dialDisplay` setting selects `info` or `artwork`. The `info` mode shows the Play/Pause icon and song name in `$A1` or adds the position and duration when known. In either information layout, `infoTitleMode` selects `truncate` (default) or `scroll`.
 
 Artwork uses a 200 × 100 pixmap containing a raster-backed SVG: `artworkFit: height` (default) scales the original height to 100 px, while `width` scales the width to 200 px. The bundled `image-size` header reader supplies PNG/JPEG/WebP dimensions; the SVG explicitly sets the centered image geometry with the original aspect ratio and a fixed viewport for cropping. Text overlay settings are stored per action:
 
