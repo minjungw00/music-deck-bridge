@@ -33,9 +33,15 @@ These local files do not identify which media were uploaded. Actual submission p
 
 ## November 28 1.3.0 Elgato gallery drafts
 
-The three [gallery PNGs](../../store-assets/drafts/v1.3.0/README.md) are 1920 × 960 RGB files. The artwork example uses the plugin's key renderer, an original geometric cover, a sparse group with a blank position, width fitting, 15% gaps and an optional action icon. The inspector screenshot shows the same width and gap settings. The playback example uses the packaged Repeat and Shuffle icons and the English Chrome preview at its native size. The dial example captures the bundled inspector in both display modes and renders the artwork feedback from the plugin's touch-strip layout in Chromium. The inspector and popup used sample settings and playback data. Captured UI is placed at its original dimensions.
+The initial, superseded gallery draft (`0ea98cf`) had three 1920 × 960 RGB PNGs. The artwork example used the plugin's key renderer, an original geometric cover, a sparse group with a blank position, width fitting, 15% gaps and an optional action icon. The inspector screenshot showed the same width and gap settings. The playback example used the packaged Repeat and Shuffle icons and the English Chrome preview at its native size. The dial example captured the bundled inspector in both display modes and rendered the artwork feedback from the plugin's touch-strip layout in Chromium. The inspector and popup used sample settings and playback data.
 
 Separately, on Windows Stream Deck 7.6.1.23033 with build `394b941`, the existing Stream Deck Plus page showed one cover across six linked keys, along with the saved 31% volume and artwork/title on the Current Track Dial while no Music player was active. The original page was restored after capture. The native software capture was kept out of the gallery drafts because the cover's reuse terms were unverified. The capture establishes software preview output; physical key and touch-strip output require separate verification.
+
+## November 28 revised 1.3.0 Elgato gallery
+
+The [four revised gallery drafts](../../store-assets/drafts/v1.3.0/README.md) use the layout, background colors and typography of the [published Marketplace gallery](https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd). The Stream Deck MK.2 and Stream Deck + product images come from [Elgato's device guide](https://www.elgato.com/us/en/explorer/products/stream-deck/which-stream-deck-should-you-get/). Packaged action icons and a newly drawn sample cover were composited onto the key displays. The linked example shows eight distinct crops of the same cover across the Stream Deck + keys.
+
+The two Chrome popup panels were captured from the bundle's English UI with sample playback in paired and standalone modes. The YouTube Music panel uses cropped Chrome and YouTube Music UI from a designated Windows playback window with the same original cover and sample title composited into it. Account controls, bookmarks and the original album cover were kept outside the export. The four English RGB PNGs were checked at 1920 × 960 and visually reviewed against the published design.
 
 ## Development key backgrounds
 

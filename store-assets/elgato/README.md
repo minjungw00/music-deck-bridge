@@ -4,6 +4,8 @@ Use this guide to select Marketplace upload files and regenerate exports. See th
 
 See the [store record](../../docs/verification/stores.md#november-27-publication-verification) for the published 1.2 listing. The [1.2.0 reference drafts](../drafts/v1.2.0/README.md) include the English description, seven reference translations, release notes and UTM links. The [October 29 How to Use draft](how-to-use.en.md) documents an earlier revision. Capture the current UI for future popup exports.
 
+The [1.3.0 submission drafts](../drafts/v1.3.0/README.md) list the four new gallery images in order, along with the description and What's new copy.
+
 ## Upload files
 
 Use the files in [listing/](listing/) for the Maker Console media fields:
