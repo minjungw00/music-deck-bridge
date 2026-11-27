@@ -35,7 +35,8 @@ for (const protectedManifest of [false, true]) {
     const lastTrack = createLastTrack({ storage, onChange() {} });
     const artwork = 'data:image/png;base64,' + readFileSync(join(installed, 'imgs/plugin/icon.png')).toString('base64');
     lastTrack.observe({ title: 'Saved song', artist: 'Saved artist', trackId: 'aaaaaaaaaaa', playing: true,
-      volume: 37, muted: true }, artwork);
+      volume: 37, muted: true, repeatMode: 'ONE', shuffleEnabled: false, rating: 'LIKE',
+      positionSeconds: 62, durationSeconds: 240 }, artwork);
     // Exercise the SDK's opaque-manifest path; actual Maker Console DRM still needs a device test.
     if (protectedManifest) writeFileSync(join(installed, 'manifest.json'), 'opaque manifest fixture');
     const bridgePort = await freePort();
@@ -107,13 +108,14 @@ for (const protectedManifest of [false, true]) {
     async function post(route, body, timeout = 2000) {
       const response = await fetch(`http://127.0.0.1:${bridgePort}` + route, { method: 'POST',
         headers: { Origin: origin, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-        signal: AbortSignal.timeout(timeout) });
-      assert.equal(response.status, 200);
+        signal: AbortSignal.timeout(timeout) }).catch(error => { throw new Error(`Request to ${route} failed`, { cause: error }); });
+      assert.equal(response.status, 200, route);
       return response.json();
     }
     await waitFor(() => messages.find(m => m.event === 'registerPlugin'));
     assert.equal(messages[0].uuid, id);
-    for (const name of ['nowplaying', 'toggle', 'prev', 'next', 'mute', 'volumeup', 'volumedown', 'volume', 'trackdial', 'open', 'like', 'dislike']) {
+    for (const name of ['nowplaying', 'toggle', 'prev', 'next', 'mute', 'volumeup', 'volumedown', 'volume', 'trackdial',
+      'open', 'like', 'dislike', 'repeat', 'shuffle']) {
       send('willAppear', name, { controller: ['volume', 'trackdial'].includes(name) ? 'Encoder' : 'Keypad',
         settings: { volumeStep: 3 }, coordinates: { column: 0, row: 0 }, state: 0 });
     }
@@ -123,13 +125,16 @@ for (const protectedManifest of [false, true]) {
     const volumeFeedback = (start = 0) => messages.slice(start).findLast(m => m.event === 'setFeedback' && m.context === 'volume')?.payload;
     // Recover the saved track before receiving any browser state. Live playback stays off.
     await waitFor(() => toggleImage() === playImage);
-    await waitFor(() => toggleImage('mute') === 'imgs/actions/volume/key@2x.png');
+    await waitFor(() => toggleImage('mute') === 'imgs/actions/mute/key@2x.png' &&
+      toggleImage('repeat') === 'imgs/actions/repeat/one@2x.png' && toggleImage('shuffle') === 'imgs/actions/shuffle/off@2x.png' &&
+      toggleImage('like') === 'imgs/actions/like/selected@2x.png');
     assert.deepEqual(await waitFor(() => volumeFeedback()), { title: 'YouTube Music', icon: 'imgs/actions/mute/key@2x.png',
       value: '음소거 37%', indicator: { value: 37, range: { min: 0, max: 100 } } });
     const dialFeedback = () => messages.findLast(m => m.event === 'setFeedback' && m.context === 'trackdial')?.payload;
     const dialLayout = () => messages.findLast(m => m.event === 'setFeedbackLayout' && m.context === 'trackdial')?.payload.layout;
-    await waitFor(() => dialLayout() === '$A1' && dialFeedback()?.icon === playImage);
-    assert.equal(dialFeedback().value, 'Saved song');
+    await waitFor(() => dialLayout() === 'layouts/current-track-info.json' && dialFeedback()?.icon === playImage);
+    assert.equal(dialFeedback().value.value, 'Saved song');
+    assert.equal(dialFeedback().time, '1:02 / 4:00');
     const linked = { keyDisplay: 'linked' };
     send('willAppear', 'prev', { controller: 'Keypad', settings: linked, coordinates: { column: 1, row: 0 } }, 'art-top');
     send('willAppear', 'next', { controller: 'Keypad', settings: linked, coordinates: { column: 2, row: 1 } }, 'art-bottom');
@@ -154,6 +159,8 @@ for (const protectedManifest of [false, true]) {
     const { token } = await post('/pair', { pin: reply.payload.pin });
     assert.equal(storage.readLastTrack(), null);
     await waitFor(() => volumeFeedback()?.value === 'YTM 없음');
+    await waitFor(() => toggleImage('repeat') === 'imgs/actions/repeat/unavailable@2x.png' &&
+      toggleImage('shuffle') === 'imgs/actions/shuffle/unavailable@2x.png');
     const state = { title: 'SDK song', artist: 'Artist', playing: true, volume: 50, rating: 'INDIFFERENT' };
     await post('/sync', { token, clientId: 1, state });
     await waitFor(() => toggleImage() === pauseImage);
@@ -330,19 +337,37 @@ for (const protectedManifest of [false, true]) {
     await post('/sync', { token, clientId: 1, state });
     await new Promise(resolve => setTimeout(resolve, 180));
     assert.ok(!messages.slice(count).some(m => m.context === 'nowplaying' && m.event === 'setTitle'));
-    state.muted = true;
+    Object.assign(state, { muted: true, repeatMode: 'ALL', shuffleEnabled: true, positionSeconds: 83, durationSeconds: 240 });
     await post('/sync', { token, clientId: 1, state });
     await waitFor(() => volumeFeedback()?.value === '음소거 8%');
+    state.positionSeconds = 84;
+    await post('/sync', { token, clientId: 1, state });
+    await waitFor(() => dialFeedback()?.time === '1:24 / 4:00');
+    assert.equal(storage.readLastTrack().track.positionSeconds, 83, 'progress alone awaits its next checkpoint');
     // A full Chrome exit can stop polling without sending a tab-close event.
     await new Promise(resolve => setTimeout(resolve, 3200));
     await waitFor(() => toggleImage() === playImage);
     const offlineStart = messages.length;
     send('didReceiveSettings', 'volume', { settings: { volumeStep: 2 } });
     assert.equal((await waitFor(() => volumeFeedback(offlineStart))).value, '음소거 8%');
+    assert.equal(storage.readLastTrack().track.positionSeconds, 84, 'disconnect flushes the latest progress');
+    assert.equal(dialFeedback().time, '1:24 / 4:00');
+    assert.equal(toggleImage('repeat'), 'imgs/actions/repeat/all@2x.png');
+    assert.equal(toggleImage('shuffle'), 'imgs/actions/shuffle/on@2x.png');
+    assert.equal(toggleImage('dislike'), 'imgs/actions/dislike/selected@2x.png');
     await post('/player-closed', { token, clientId: 1 });
     assert.equal((await post('/status', { token })).player, null);
-    await post('/sync', { token, clientId: 1, state: { ...state, volume: 0, muted: false } });
+    await post('/sync', { token, clientId: 1, state: { ...state, volume: 0, muted: false, rating: 'INDIFFERENT',
+      repeatMode: 'NONE', shuffleEnabled: false, positionSeconds: 94 } });
     await waitFor(() => volumeFeedback()?.value === '0%' && volumeFeedback()?.icon === 'imgs/actions/volume/key@2x.png');
+    await waitFor(() => dialFeedback()?.time === '1:34 / 4:00');
+    const liveControls = post('/browser-listen', { token, repeat: true, shuffle: true, clientIds: [1] }, 6000);
+    await waitFor(() => toggleImage('repeat') === 'imgs/actions/repeat/none@2x.png' &&
+      toggleImage('shuffle') === 'imgs/actions/shuffle/off@2x.png' && toggleImage('dislike') === 'imgs/actions/dislike/key@2x.png');
+    send('keyDown', 'repeat');
+    const { commands: [repeat] } = await liveControls;
+    assert.equal(repeat.type, 'repeat');
+    await post('/browser-result', { token, id: repeat.id, ok: true });
     await post('/unpair', { token });
     await waitFor(() => toggleImage() === playImage && toggleImage('toggle-2') === playImage);
     await waitFor(() => volumeFeedback()?.value === 'YTM 없음');

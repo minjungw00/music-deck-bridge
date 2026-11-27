@@ -96,6 +96,8 @@ test('Current track: artwork from YTM player-bar image, volume commands',async()
   assert.equal(r.lastState.cover,'https://lh5.googleusercontent.com/cover=w512-h512-rj');
   assert.equal(r.lastState.coverFallback,'https://lh5.googleusercontent.com/cover=w120-h120-rj');
   assert.equal(r.lastState.volume,58); // second state sync reflects applied command
+  assert.equal(r.lastState.positionSeconds, 0);
+  assert.equal(r.lastState.durationSeconds, 120);
   assert.equal(r.lastState.standalone,true);
   assert.equal(r.audio.volume,0.58 ** 2);
   assert.ok(r.player.sliders.every(slider=>slider.value===58));

@@ -3,6 +3,18 @@ const { clip, limit } = require('./values.cjs');
 const LIVE_MS = 90000;
 const PLAYER_STALE_MS = 35000;
 const trackKey = state => state.trackId || JSON.stringify([state.title, state.artist]);
+function normalizePlayerControls(state) {
+  return {
+    rating: ['LIKE', 'DISLIKE', 'INDIFFERENT'].includes(state.rating) ? state.rating : null,
+    repeatMode: ['NONE', 'ALL', 'ONE'].includes(state.repeatMode) ? state.repeatMode : null,
+    shuffleEnabled: typeof state.shuffleEnabled === 'boolean' ? state.shuffleEnabled : null,
+  };
+}
+function normalizePlaybackTime({ positionSeconds, durationSeconds }) {
+  if (!Number.isFinite(positionSeconds) || positionSeconds < 0 || !Number.isFinite(durationSeconds) ||
+      durationSeconds < 1 || !Number.isSafeInteger(Math.floor(durationSeconds))) return null;
+  return { positionSeconds: Math.floor(Math.min(positionSeconds, durationSeconds)), durationSeconds: Math.floor(durationSeconds) };
+}
 function normalizeState(data, timestamp = Date.now()) {
   const s = data && typeof data === 'object' ? data : {};
   const volumeReported = Number.isFinite(s.volume);
@@ -16,9 +28,8 @@ function normalizeState(data, timestamp = Date.now()) {
     volume: volumeReported ? limit(Math.round(s.volume), 0, 100) : 0,
     volumeReported,
     standalone: s.standalone === true,
-    rating: ['LIKE', 'DISLIKE', 'INDIFFERENT'].includes(s.rating) ? s.rating : null,
-    repeatMode: ['NONE', 'ALL', 'ONE'].includes(s.repeatMode) ? s.repeatMode : null,
-    shuffleEnabled: typeof s.shuffleEnabled === 'boolean' ? s.shuffleEnabled : null,
+    ...normalizePlayerControls(s),
+    ...normalizePlaybackTime(s),
     trackId: typeof s.trackId === 'string' && /^[\w-]{11}$/.test(s.trackId) ? s.trackId : '',
     lastSeen: timestamp, lastMediaSyncAt: timestamp,
   };
@@ -31,4 +42,4 @@ function selectPlayer(candidates, now = Date.now()) {
     Number(b[1].playing) - Number(a[1].playing) || b[1].lastSeen - a[1].lastSeen);
   return live[0];
 }
-module.exports = { normalizeState, selectPlayer, trackKey, LIVE_MS, PLAYER_STALE_MS };
+module.exports = { normalizeState, normalizePlayerControls, normalizePlaybackTime, selectPlayer, trackKey, LIVE_MS, PLAYER_STALE_MS };

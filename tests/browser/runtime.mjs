@@ -78,12 +78,13 @@ function control(type){
 }
 Object.defineProperties(document.querySelector('audio'), {
  paused:{get:()=>true}, ended:{get:()=>false}, readyState:{get:()=>ready&&initialized&&!unstartedDestination?4:0}, duration:{get:()=>180},
- currentSrc:{get:()=>initialized?tracks[index]:''}
+ currentSrc:{get:()=>initialized?tracks[index]:''}, currentTime:{get:()=>time}
 });
 const api=document.querySelector('#movie_player');
 api.isReady=()=>ready;api.getPlayerState=()=>unstartedDestination?-1:!initialized?(cued&&!restored?5:-1):playing?1:2;
 api.getVideoData=()=>({video_id:initialized||restored?tracks[index]:''});
 api.getCurrentTime=()=>time;
+api.getDuration=()=>180;
 api.playVideo=()=>{
  if(!ready){record('early');return;}
  document.body.dataset.apiUserActive=String(navigator.userActivation.isActive);
@@ -163,7 +164,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
       if (url.endsWith('/sync')) {
         const { clientId, state } = JSON.parse(options.body);
         playerSnapshots.push({ clientId, playing: state.playing, muted: state.muted,
-          repeatMode: state.repeatMode, shuffleEnabled: state.shuffleEnabled });
+          repeatMode: state.repeatMode, shuffleEnabled: state.shuffleEnabled, positionSeconds: state.positionSeconds });
       }
       if (url.endsWith('/browser-result')) {
         const { ok, reason } = JSON.parse(options.body);
@@ -535,5 +536,20 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   } finally {
     await music.evaluate(() => { document.querySelector('ytmusic-player-bar .play-pause-button').click = globalThis.originalPlayClick; delete globalThis.originalPlayClick; });
   }
-  t.diagnostic(`Chromium ${browser.browser().version()}; startup/destination recovery, interrupted Previous, receiver recovery, live toolbar popup controls, absolute volume slider, token-free control with plugin stopped, state synchronization after plugin restart and local control during bridge protocol blocking passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
+  const beforeSeek = await worker.evaluate(() => playerSnapshots.length);
+  await music.evaluate(() => { time = 62; document.querySelector('audio').dispatchEvent(new Event('seeked')); });
+  await until(() => worker.evaluate(start => playerSnapshots.slice(start).some(state => state.positionSeconds === 62), beforeSeek),
+    'playback position sync');
+  const version = browser.browser().version();
+  await browser.close();
+  browser = null;
+  const savedTrack = await until(async () => {
+    const { track } = JSON.parse(await readFile(join(temp, 'MusicDeckBridge', 'last-track.json'), 'utf8'));
+    return track.positionSeconds === 62 && track;
+  }, 'latest track snapshot after Chromium exits');
+  assert.equal(savedTrack.durationSeconds, 180);
+  assert.equal(savedTrack.repeatMode, 'ONE');
+  assert.equal(savedTrack.shuffleEnabled, false);
+  assert.equal(savedTrack.rating, 'LIKE');
+  t.diagnostic(`Chromium ${version}; startup/destination recovery, interrupted Previous, receiver recovery, toolbar controls, standalone fallback, reconnection, protocol blocking and the saved track state after browser exit passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
 });

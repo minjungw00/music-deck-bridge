@@ -8,8 +8,8 @@ Music Deck Bridge connects the YouTube Music web player in Chrome to a Stream De
 
 | Data | Purpose | Storage and retention |
 | --- | --- | --- |
-| Song title, artist, video ID, artwork URLs, playback, repeat, shuffle, mute, volume and like/dislike state | Display the current track and control the player | Plugin memory and the open extension popup. Live data is replaced as state changes and cleared on plugin exit or popup close. |
-| One last-played title, artist, video ID, cached artwork, volume and mute state, with a local hash that binds the record to the current pairing | Restore the track and Volume Dial displays after Chrome, Stream Deck or Windows restarts | Saved automatically to `last-track.json` on this computer. Each confirmed track replaces the single preceding record. Unpairing or pairing again clears the saved record. |
+| Song title, artist, video ID, artwork URLs, playback, position, duration, repeat, shuffle, mute, volume and like/dislike state | Display the current track and control the player | Plugin memory and the open extension popup. Live data is replaced as state changes and cleared on plugin exit or popup close. |
+| One last-played title, artist, video ID, cached artwork, volume, mute, repeat, shuffle, rating, position and duration, with a local hash that binds the record to the current pairing | Restore Stream Deck key and dial displays after Chrome, Stream Deck or Windows restarts | Saved automatically to `last-track.json` on this computer. Each confirmed track replaces the single preceding record. Unpairing or pairing again clears the saved record. |
 | Chrome tab ID and installed-app status | Select a player, preferring the installed Chrome app | Plugin memory; not a persistent browsing record |
 | Six-digit pairing PIN | Authorize a new extension connection | Plugin memory; expires after ten minutes or successful pairing |
 | Random pairing token and extension origin/ID | Authenticate local requests | Plugin `auth.json`; extension token in `chrome.storage.local`; retained until replaced or deleted |
@@ -27,7 +27,7 @@ Chrome manages the extension's local storage inside the active browser profile; 
 
 ## Network activity
 
-The extension reads playback, mute, repeat and shuffle states through a fixed function in the top-level page context. Media-element state can supply playback and mute when the site value is unavailable. Playback control also observes the current track, queue and media readiness in page memory to confirm requested actions and constrain recovery. Queue contents used for confirmation remain in the page. Track identifiers used for comparison are excluded from failure diagnostics. The extension reports closed tab IDs and the current music-tab IDs to remove stale players.
+The extension reads playback, position, duration, mute, repeat and shuffle through a fixed function in the top-level page context. Media-element state can supply playback, timing and mute when the site values are unavailable. Playback control also observes the current track, queue and media readiness in page memory to confirm requested actions and constrain recovery. Queue contents used for confirmation remain in the page. Track identifiers used for comparison are excluded from failure diagnostics. The extension reports closed tab IDs and the current music-tab IDs to remove stale players.
 
 The extension sends player state and authenticated commands to `http://127.0.0.1:<port>` (default `17864`). The bridge listens on the IPv4 loopback interface and accepts Chrome extension origins, with token and paired-origin checks after pairing.
 

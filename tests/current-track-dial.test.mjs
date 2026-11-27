@@ -82,6 +82,21 @@ test('display mode is per dial, with confirmed play/pause icons in the informati
   assert.equal(h.calls.at(-1).feedback.value, 'Song');
 });
 
+test('the info dial displays saved playback time and restores the basic layout when time is unknown', async () => {
+  const h = harness(), item = h.add('dial', 'info');
+  const state = { title: 'Song', positionSeconds: 0, durationSeconds: 3661 };
+  await h.paint('dial', item, state);
+  assert.equal(h.calls.find(call => call.event === 'layout').layout, 'layouts/current-track-info.json');
+  assert.deepEqual(h.calls.at(-1).feedback, { title: 'currentTrack', value: { value: 'Song', 'text-overflow': 'ellipsis' },
+    icon: play, time: '0:00 / 1:01:01' });
+  item.settings.infoTitleMode = 'scroll';
+  await h.paint('dial', item, state);
+  assert.deepEqual(h.calls.at(-1).feedback.value, { value: 'Song', 'text-overflow': 'clip' });
+  await h.paint('dial', item, { title: 'New song' });
+  assert.equal(h.calls.at(-2).layout, '$A1');
+  assert.equal(h.calls.at(-1).feedback.value, 'New song');
+});
+
 test('artwork fit is independent per dial and title updates do not resend cached artwork', async () => {
   const h = harness(), width = h.add('wide', 'artwork'), height = h.add('tall', 'artwork');
   Object.assign(width.settings, { artworkFit: 'width', artworkShowTitle: true });

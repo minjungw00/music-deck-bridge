@@ -194,7 +194,7 @@ These settings are available in **1.3.0-dev**. In **Icon + song name** mode on t
 3. To compensate for physical spacing, enter **Horizontal gap (%)** and **Vertical gap (%)**, then select **Apply**. Divide the space between adjacent keys by the visible key width or height on the same axis, multiply by 100, and round to the nearest whole percent. A 4 mm gap beside a 16 mm key is 25%. Each value defaults to 0. The same values apply to the whole group.
 4. If your Stream Deck action has a custom title or image, reset it in Stream Deck to let the plugin control that layer again.
 
-The plugin keeps one confirmed last-played track, its cached cover, volume and mute state locally. When Chrome is closed, including after Stream Deck or Windows restarts, the track and Volume Dial displays restore the saved values. Each confirmed track replaces the previous local record. Unpairing clears the record.
+When Chrome is closed, including after Stream Deck or Windows restarts, the plugin restores the last confirmed track, cover, volume, mute, Repeat, Shuffle and rating displays. The Current Track Dial's **Icon + song name** mode shows the last position and duration when available. The open player supplies current values after reconnection. Each confirmed track replaces the previous local record. Unpairing clears the record.
 
 **Repeat** and **Shuffle** use the controls available in the selected YouTube Music player. Both are available as Stream Deck keys and in the Chrome popup, including standalone popup use. The popup groups track navigation and playback in the first row, ratings and queue controls in the second, and volume in the third. When Chrome is disconnected, the Stream Deck action settings place **Chrome connection** and **Local server port** first.
 

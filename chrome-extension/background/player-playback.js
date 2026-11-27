@@ -16,7 +16,8 @@
       const state = readPlayer();
       const playbackConfirmed = state.playable && started(state);
       return { playing: state.playing, playbackConfirmed, muted: state.muted,
-        repeatMode: readQueueControl('repeat')?.mode ?? null, shuffleEnabled: readQueueControl('shuffle')?.mode ?? null };
+        repeatMode: readQueueControl('repeat')?.mode ?? null, shuffleEnabled: readQueueControl('shuffle')?.mode ?? null,
+        ...playbackTime(state) };
     }
     if (type === 'repeat' || type === 'shuffle') return await changeQueueControl();
     if (!['play', 'toggle', 'next', 'prev'].includes(type)) return { ok: false };
@@ -325,6 +326,14 @@
       return info;
     }
 
+    function playbackTime({ ready, playable, api, media, position }) {
+      if (!ready || !playable || !Number.isFinite(position) || position < 0) return null;
+      let duration;
+      try { duration = api?.getDuration?.(); } catch { /* Use the media element instead. */ }
+      if (!Number.isFinite(duration) || duration <= 0) duration = media?.duration;
+      return Number.isFinite(duration) && duration > 0 ? { positionSeconds: position, durationSeconds: duration } : null;
+    }
+
     function readPlayer() {
       const bar = document.querySelector('ytmusic-player-bar');
       const barApi = bar?.playerApi;
@@ -353,10 +362,11 @@
       ready &&= queueReady;
       const playing = Number.isFinite(state) ? state === 1 || state === 3 :
         Boolean(media && !media.paused && !media.ended);
+      const position = Number.isFinite(time) ? time : media?.currentTime;
       return { api, apiSource, media, ready, apiReady, queueReady, playable, playing, state, index,
         muted: typeof muted === 'boolean' ? muted : Boolean(media?.muted),
         key: videoId || media?.currentSrc || media?.src || '',
-        time: Number.isFinite(time) ? time : media?.currentTime || 0 };
+        time: position || 0, position };
     }
   }
 

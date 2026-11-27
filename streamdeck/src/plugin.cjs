@@ -23,7 +23,11 @@ const displayed = new Map();
 let updateTimer = null;
 function drawSoon() {
   if (updateTimer) return;
-  updateTimer = setTimeout(() => { updateTimer = null; renderer.paint(); }, 120);
+  updateTimer = setTimeout(() => {
+    updateTimer = null;
+    if (lastTrack.hasPending && !selectedDisplayEntry()) lastTrack.flush();
+    renderer.paint();
+  }, 120);
 }
 function log(message) {
   console.log('[Music Deck Bridge]', message);
@@ -57,8 +61,9 @@ const ports = createPortService({ initialPort: storage.readPort(), savePort: sto
   bindPort: transport.bind, notifyPortChange: commands.notifyPortChange, log });
 const controller = createDeckController({ displayed, commands, session, ports, players,
   output: deck, onChange: drawSoon, version });
+const selectedDisplayEntry = () => lastTrack.snapshot && !session.extensionOnline() ? null : players.selected();
 const renderer = createRenderer({ displayed, covers, actionName,
-  selectedEntry: () => lastTrack.snapshot && !session.extensionOnline() ? null : players.selected(),
+  selectedEntry: selectedDisplayEntry,
   lastTrack: () => lastTrack.snapshot, repeatAvailable: () => !commands.repeatError,
   shuffleAvailable: () => !commands.shuffleError,
   online: () => deck.online, tr: key => translate(deck.locale, key), fitDialArtwork, keyTextBackground, volumeKeyImage,
@@ -77,6 +82,6 @@ try {
   }, MARQUEE_STEP_MS);
   marqueeTimer.unref();
   // Refresh displays as inactive player leases expire.
-  setInterval(() => { if (displayed.size) drawSoon(); }, 2000).unref();
+  setInterval(() => { if (displayed.size || lastTrack.hasPending) drawSoon(); }, 2000).unref();
   deck.connect();
 } catch (error) { log(`Startup failure: ${error.stack}`); process.exitCode = 1; }

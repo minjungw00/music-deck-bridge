@@ -1,0 +1,37 @@
+{
+  "$schema": "https://schemas.elgato.com/streamdeck/plugins/layout.json",
+  "id": "current-track-info",
+  "controller": "Encoder",
+  "items": [
+    {
+      "key": "icon",
+      "type": "pixmap",
+      "rect": [4, 12, 76, 76]
+    },
+    {
+      "key": "title",
+      "type": "text",
+      "rect": [84, 10, 112, 22],
+      "font": { "size": 13 },
+      "alignment": "left",
+      "color": "white"
+    },
+    {
+      "key": "value",
+      "type": "text",
+      "rect": [84, 32, 112, 32],
+      "font": { "size": 16, "weight": 600 },
+      "alignment": "left",
+      "color": "white",
+      "text-overflow": "ellipsis"
+    },
+    {
+      "key": "time",
+      "type": "text",
+      "rect": [84, 64, 112, 24],
+      "font": { "size": 12 },
+      "alignment": "left",
+      "color": "white"
+    }
+  ]
+}

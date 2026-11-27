@@ -103,6 +103,7 @@
     }, true);
     document.addEventListener('play', () => scheduleSync(60), true);
     document.addEventListener('pause', () => scheduleSync(60), true);
+    document.addEventListener('seeked', () => scheduleSync(60), true);
     document.addEventListener('ended', () => scheduleSync(60), true);
     events.addEventListener('pagehide', () => {
       active = false;

@@ -9,6 +9,13 @@ const keyActions = new Set(KEY_ACTION_NAMES);
 const EMPTY_KEY_IMAGE = 'data:image/svg+xml;base64,' +
   btoa('<svg xmlns="http://www.w3.org/2000/svg" width="144" height="144"><rect width="144" height="144" fill="black"/></svg>');
 
+function formatPlaybackTime(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor(seconds / 60) % 60;
+  const remainder = String(seconds % 60).padStart(2, '0');
+  return hours ? `${hours}:${String(minutes).padStart(2, '0')}:${remainder}` : `${minutes}:${remainder}`;
+}
+
 function needsMarquee(displayed, actionName) {
   return [...displayed.values()].some(item =>
     (actionName(item.action) === 'nowplaying' && keyDisplay(item.settings) === 'default' && item.settings?.titleMode === 'scroll') ||
@@ -51,15 +58,15 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     return item.keyArtwork;
   }
 
-  function keyIcon(kind, state) {
+  function keyIcon(kind, state, live = true) {
     if (kind === 'toggle' || kind === 'nowplaying') return `imgs/actions/toggle/${state?.playing ? 'pause' : 'key'}@2x.png`;
     if (kind === 'mute') return `imgs/actions/${state?.muted ? 'mute' : 'volume'}/key@2x.png`;
     if (kind === 'repeat') {
-      const mode = repeatAvailable() ? state?.repeatMode?.toLowerCase() : null;
+      const mode = !live || repeatAvailable() ? state?.repeatMode?.toLowerCase() : null;
       return `imgs/actions/repeat/${mode || 'unavailable'}@2x.png`;
     }
     if (kind === 'shuffle') {
-      const mode = shuffleAvailable() && typeof state?.shuffleEnabled === 'boolean' ?
+      const mode = (!live || shuffleAvailable()) && typeof state?.shuffleEnabled === 'boolean' ?
         (state.shuffleEnabled ? 'on' : 'off') : 'unavailable';
       return `imgs/actions/shuffle/${mode}@2x.png`;
     }
@@ -101,7 +108,9 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     const showName = artwork && item.settings?.artworkShowTitle === true;
     const scroll = item.settings?.artworkTitleMode === 'scroll';
     const background = item.settings?.artworkTitleBackground === true ? 'black' : 'transparent';
-    const layout = artwork ? 'layouts/current-track-artwork.json' : '$A1';
+    const time = !artwork && state?.durationSeconds ?
+      `${formatPlaybackTime(state.positionSeconds)} / ${formatPlaybackTime(state.durationSeconds)}` : '';
+    const layout = artwork ? 'layouts/current-track-artwork.json' : time ? 'layouts/current-track-info.json' : '$A1';
     const cover = artwork ? coverFor(state) : '';
     const fitted = cover ? fitDialArtwork(cover, fit) : '';
     const image = fitted || icon;
@@ -116,9 +125,13 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     }
     const title = artwork ? scroll ? marquee(text, item.artworkMarqueeStart, now(), 14, true) : text : tr('currentTrack');
     const artist = below ? scroll ? marquee(state.artist, item.artworkMarqueeStart + 600, now(), 14, true) : state.artist : '';
-    const value = artwork ? '' : state ? (infoScroll ?
-      marquee(state.title, item.artworkMarqueeStart, now(), 14) : ellipsis(state.title, 14)) : tr('unavailable');
-    const signature = JSON.stringify([layout, title, artist, below, value, fit, showName, scroll, background]);
+    let value = '';
+    if (!artwork) {
+      if (!state) value = tr('unavailable');
+      else if (infoScroll) value = marquee(state.title, item.artworkMarqueeStart, now(), time ? 7 : 14, Boolean(time));
+      else value = time ? state.title : ellipsis(state.title, 14);
+    }
+    const signature = JSON.stringify([layout, title, artist, below, value, time, fit, showName, scroll, infoScroll, background]);
     if (item.dialSignature === signature && item.dialImage === image) return;
     item.dialSignature = signature; item.dialImage = image;
     // Serialize layout and image updates so mode changes cannot send artwork to
@@ -134,7 +147,8 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
       const line = (value, enabled) => ({ value, enabled: Boolean(enabled), background,
         alignment: scroll ? 'left' : 'center', 'text-overflow': scroll ? 'clip' : 'ellipsis' });
       const feedback = artwork ? { songName: line(title, showName && title && !below),
-        songTitleAbove: line(title, below && title), songArtist: line(artist, below && artist) } : { title, value, icon };
+        songTitleAbove: line(title, below && title), songArtist: line(artist, below && artist) } :
+        { title, value: time ? { value, 'text-overflow': infoScroll ? 'clip' : 'ellipsis' } : value, icon, ...(time && { time }) };
       if (artwork && (changedLayout || item.sentDialImage !== image || item.sentArtworkFit !== fit)) {
         feedback.artwork = { value: fitted, enabled: Boolean(fitted) };
         feedback.fallback = { value: icon, enabled: !fitted };
@@ -165,7 +179,8 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     writeImage(context, item, image);
   }
   function renderActionKey(context, item, kind, chosen, track, tile) {
-    const icon = keyIcon(kind, chosen?.[1]);
+    const live = chosen?.[1];
+    const icon = keyIcon(kind, live ?? track, Boolean(live));
     const artwork = keyDisplay(item.settings) !== 'default';
     const frame = artwork ? null : item.volumeFeedback?.frame(chosen, item.settings, now());
     const value = frame?.volume != null ? volumeKeyImage?.(frame.volume, item.settings?.volumeShowPercent === true) : null;
