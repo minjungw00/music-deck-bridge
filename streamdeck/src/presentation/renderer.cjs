@@ -85,10 +85,11 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
         while (item.pendingFeedback && displayed.get(context) === item) {
           const next = item.pendingFeedback;
           item.pendingFeedback = null;
-          if (item.sentDialSignature === next.signature && item.sentDialImage === next.image) continue;
+          const sent = item.sentDialFrame;
+          if (sent?.signature === next.signature && sent.image === next.image) continue;
           try { await next.send(); }
           catch {
-            item.sentDialSignature = null;
+            item.sentDialFrame = null;
             if (!item.pendingFeedback) item.dialSignature = null;
           }
         }
@@ -138,8 +139,7 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     // the previous layout, or leave a newly selected layout with stale content.
     queueDialFeedback(context, item, { signature, image, send: async () => {
       if (displayed.get(context) !== item) return;
-      const changedLayout = item.sentLayout !== layout;
-      if (changedLayout) {
+      if (item.sentLayout !== layout) {
         if (await sendStream({ event: 'setFeedbackLayout', context, payload: { layout } }) === false) throw new Error('Layout output skipped');
         item.sentLayout = layout;
       }
@@ -149,13 +149,13 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
       const feedback = artwork ? { songName: line(title, showName && title && !below),
         songTitleAbove: line(title, below && title), songArtist: line(artist, below && artist) } :
         { title, value: time ? { value, 'text-overflow': infoScroll ? 'clip' : 'ellipsis' } : value, icon, ...(time && { time }) };
-      if (artwork && (changedLayout || item.sentDialImage !== image || item.sentArtworkFit !== fit)) {
+      const sent = item.sentDialFrame;
+      if (artwork && (!sent || sent.layout !== layout || sent.image !== image || sent.fit !== fit)) {
         feedback.artwork = { value: fitted, enabled: Boolean(fitted) };
         feedback.fallback = { value: icon, enabled: !fitted };
       }
       if (await setFeedback(context, feedback) === false) throw new Error('Feedback output skipped');
-      item.sentDialImage = image; item.sentArtworkFit = fit;
-      item.sentDialSignature = signature;
+      item.sentDialFrame = { layout, image, fit, signature };
     } });
   }
   function renderCurrentTrackKey(context, item, state, tile, playback = state) {

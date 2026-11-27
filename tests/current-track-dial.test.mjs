@@ -306,6 +306,26 @@ test('failed or skipped dial outputs retry and a failed older frame does not inv
   }
 });
 
+test('retrying the first artwork frame sends its fallback icon even if the info frame used the same icon', async () => {
+  for (const fail of [() => false, () => Promise.reject(Error('SDK failure'))]) {
+    const frames = [];
+    const h = harness({ setFeedback(_id, frame) {
+      frames.push(frame);
+      if (frames.length === 2) return fail();
+    } });
+    const item = h.add('dial', 'info');
+    const state = { title: 'Song', playing: false };
+    await h.paint('dial', item, state);
+    item.settings.dialDisplay = 'artwork';
+    await h.paint('dial', item, state);
+    await h.paint('dial', item, state);
+    assert.deepEqual(frames[2].fallback, { value: play, enabled: true });
+    assert.deepEqual(frames[2].artwork, { value: '', enabled: false });
+    assert.deepEqual(h.calls.filter(call => call.event === 'layout').map(call => call.layout),
+      ['$A1', 'layouts/current-track-artwork.json']);
+  }
+});
+
 test('returning to the in-flight frame discards redundant intermediate dial states', async () => {
   const first = deferred(), values = [];
   const h = harness({ setFeedback(_id, value) {
