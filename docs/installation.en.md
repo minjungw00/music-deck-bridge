@@ -162,6 +162,8 @@ Previous can restart the current song instead of choosing another track. At the 
 
 Press the **Now Playing** key to play or pause. Enable the song title and artist independently under **Icon**, **Album artwork**, or **Linked album artwork**. Profiles that used the previous **Track info** mode display **Album artwork** with their existing text preferences.
 
+**Icon** uses the same Now Playing symbol as the action list. The icon keeps its size and position when you enable text. Enable **Show background** for more contrast behind the text.
+
 From 1.1.3, non-square album art is fitted proportionally in the key with black margins, including when the text backdrop is enabled. GitHub and store versions may differ; see [version status](release-readiness.md).
 
 Configure each key independently in its action settings:

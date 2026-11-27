@@ -47,20 +47,20 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     return state;
   }
 
-  function keyArtwork(item, cover, lines, tile, badge, options) {
+  function keyArtwork(item, cover, lines, tile, badge, useArtworkFallback = true) {
     const position = item.settings?.keyArtworkIconPosition;
     const corner = typeof position === 'string' ? position : 'top-left';
-    const signature = JSON.stringify([lines, tile, badge, corner, options]);
+    const signature = JSON.stringify([lines, tile, badge, corner, useArtworkFallback]);
     if (item.keyCover !== cover || item.keyArtworkSignature !== signature) {
       item.keyCover = cover;
       item.keyArtworkSignature = signature;
-      item.keyArtwork = keyTextBackground(cover, lines, tile, badge, corner, options);
+      item.keyArtwork = keyTextBackground(cover, lines, tile, badge, corner, useArtworkFallback);
     }
     return item.keyArtwork;
   }
 
   function keyIcon(kind, state, live = true) {
-    if (kind === 'toggle' || kind === 'nowplaying') return `imgs/actions/toggle/${state?.playing ? 'pause' : 'key'}@2x.png`;
+    if (kind === 'toggle') return `imgs/actions/toggle/${state?.playing ? 'pause' : 'key'}@2x.png`;
     if (kind === 'mute') return `imgs/actions/${state?.muted ? 'mute' : 'volume'}/key@2x.png`;
     if (kind === 'repeat') {
       const mode = !live || repeatAvailable() ? state?.repeatMode?.toLowerCase() : null;
@@ -165,7 +165,7 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
       item.sentDialFrame = { layout, image, fit, signature };
     } });
   }
-  function renderCurrentTrackKey(context, item, state, tile, playback = state) {
+  function renderCurrentTrackKey(context, item, state, tile) {
     const settings = item.settings || {};
     const { mode, showTitle, showArtist, legacy } = currentTrackKeySettings(settings);
     const below = settings.artistPosition !== 'inline';
@@ -178,14 +178,13 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     const text = below ? [format(rawTitle, 12), format(rawArtist, 11, 600)].filter(Boolean).join('\n') :
       format([rawTitle, rawArtist].filter(Boolean).join(' — '), 12);
     writeTitle(context, item, text);
-    const textLines = text ? (below && rawTitle && rawArtist ? 2 : 1) : 0;
-    const lines = settings.titleBackground === true ? textLines : 0;
-    const icon = keyIcon('nowplaying', playback);
+    const lines = settings.titleBackground === true && text ? (below && rawTitle && rawArtist ? 2 : 1) : 0;
     if (mode === 'icon') {
-      const image = textLines ? keyArtwork(item, null, lines, null, '', { icon, textLines }) : null;
-      writeImage(context, item, image || icon);
+      const image = lines ? keyArtwork(item, null, lines, null, '') : null;
+      writeImage(context, item, image || keyIcon('nowplaying'));
     } else {
-      const image = keyArtwork(item, coverFor(state), lines, tile, overlay(settings, icon), { useArtworkFallback: legacy });
+      const badge = settings.keyArtworkShowIcon === true ? 'imgs/actions/nowplaying/icon@2x.png' : '';
+      const image = keyArtwork(item, coverFor(state), lines, tile, badge, legacy);
       writeImage(context, item, image || (legacy ? null : EMPTY_KEY_IMAGE));
     }
   }
@@ -235,7 +234,7 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
       for (const [context, item] of displayed) {
         const kind = actionName(item.action);
         if (kind === 'nowplaying') {
-          renderCurrentTrackKey(context, item, track, tiles.get(context), state);
+          renderCurrentTrackKey(context, item, track, tiles.get(context));
         } else if (keyActions.has(kind)) {
           nextVolumeExpiry = Math.min(nextVolumeExpiry, renderActionKey(context, item, kind, chosen, track, tiles.get(context)));
         } else if (kind === 'volume') {

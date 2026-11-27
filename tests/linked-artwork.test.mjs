@@ -139,23 +139,34 @@ test('current track text works with icon, individual artwork and linked artwork 
   }
   assert.deepEqual(await render({ keyDisplay: 'default', showArtist: false }), { title: 'A song', image: raster });
   assert.deepEqual(await render({ keyDisplay: 'artwork', showTitle: true, showArtist: true }), { title: '', image: raster });
-  assert.deepEqual(await render({ keyDisplay: 'icon' }), { title: '', image: 'imgs/actions/toggle/pause@2x.png' });
-  const iconWithTitle = await render({ keyDisplay: 'icon', keyShowTitle: true });
-  assert.equal(iconWithTitle.title, 'A song');
-  assert.match(decode(iconWithTitle.image), /x="15" y="0" width="114" height="114"/);
+  const trackIcon = 'imgs/actions/nowplaying/key@2x.png';
+  assert.deepEqual(await render({ keyDisplay: 'icon' }), { title: '', image: trackIcon });
+  state.playing = false;
+  assert.deepEqual(await render({ keyDisplay: 'icon', keyShowTitle: true, keyShowArtist: true }), {
+    title: 'A song\nAn artist', image: trackIcon,
+  });
+  const embeddedImage = asset => 'data:image/png;base64,' + readFileSync(new URL(
+    '../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/' + asset, import.meta.url)).toString('base64');
   for (const mode of ['icon', 'artwork', 'linked']) {
     const result = await render({ keyDisplay: mode, keyShowTitle: true, keyShowArtist: true, titleBackground: true });
     assert.equal(result.title, 'A song\nAn artist');
     const svg = decode(result.image);
     assert.match(svg, /y="90" width="144" height="54" fill="black"/);
     assert.equal(svg.includes(raster), mode !== 'icon');
-    if (mode === 'icon') assert.match(svg, /x="27" y="0" width="90" height="90"/);
+    if (mode === 'icon') {
+      assert.match(svg, /<image x="0" y="0" width="144" height="144"/);
+      assert.ok(svg.includes(embeddedImage(trackIcon)));
+    }
     if (mode === 'linked') assert.match(svg, /x="72" y="0" width="144" height="144"/);
     assert.equal(titles.get('next'), '', 'the linked title is local to the current track key');
   }
   assert.deepEqual(await render({ keyDisplay: 'artwork', keyShowTitle: false, keyShowArtist: true }), {
     title: 'An artist', image: raster,
   });
+  for (const mode of ['artwork', 'linked']) {
+    const result = await render({ keyDisplay: mode, keyArtworkShowIcon: true });
+    assert.ok(decode(result.image).includes(embeddedImage('imgs/actions/nowplaying/icon@2x.png')));
+  }
 });
 
 test('shared artwork settings persist from any member and the optional icon supports all nine positions', () => {
