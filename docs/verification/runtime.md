@@ -6,6 +6,7 @@ Evidence through November 28, 2026 (Asia/Seoul). [Release verification](releases
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
+| Repeat and Shuffle after Chrome exits, `00698f6` | A paired Chromium profile applied queued Stream Deck Repeat and Shuffle once each after restart. [Restart check](#repeat-and-shuffle-after-chrome-exits) | Real MV3 worker and local player fixture. The test runner restarted Chrome in place of the Windows launcher. |
 | Maintainer report after PC reboot | Saved state was restored. [Maintainer report](#130-dev-pc-reboot) | Covers saved-state restoration. Starting playback in a new browser uses the position chosen by YouTube Music. |
 | November 28 final 1.3.0-dev validation, `94593e7` | Final archives matched their staged payloads. Windows fixture verified toolbar controls, replacement by a paused selection before its first play, and retained state across Chrome and plugin restart. The live Music app and a fully loaded regular tab passed Play/Pause, Repeat and Shuffle. [Final validation](#november-28-final-130-dev-validation) | Early Play/Pause in the regular tab was unconfirmed. Physical output and input, cross-device import on the live service and a Maker Console processed build require separate verification. The PC reboot was covered by the separate maintainer report. |
 | November 28 native YouTube Music controls, `394b941` | The installed Windows bridge observed playback, Repeat, Shuffle and artwork in the regular Chrome tab and installed app. Closing the app left one saved track with artwork and settings. [Native playback record](#november-28-native-youtube-music-controls) | Confirmation came through the bridge. Account sign-in status, an imported selection closed before playback, physical input/display and PC reboot remain unverified. |
@@ -65,6 +66,14 @@ A focused comparison on the unchanged playback code reproduced the same error in
 #### Buffered playback recovery
 
 At `95d9774`, 344 Node tests, three Chromium fixtures, two Python packaging tests and static checks passed. The MV3 integration fixture ignored the first explicit Pause during buffering and confirmed exactly one repeat Pause after the original track started. No toggle click was sent for that recovery. Unit checks covered an immediate Pause, same-track/API guards, later input cancelling the retry, explicit Play waiting for a Playing state, and diagnostics separating outcome retrieval from player observation. The clean development archives matched their recorded SHA-256 checksums. The original cause remains unconfirmed, and the updated build awaits a live-service check.
+
+### Repeat and Shuffle after Chrome exits
+
+Before `00698f6`, a Stream Deck queue command could not start Chrome and a request made with no current player was rejected. The command-service regression reproduced both paths and checked that a tab still present after a brief polling gap retains its track binding. An older extension can continue handling live inputs it supports.
+
+Chromium 158.0.8127.18 exited before both key events. The test runner reopened the paired profile after the bridge's two-second launch delay. The extension opened the music tab and waited for the fixture's delayed track title and controls. Repeat changed from Off to All and Shuffle from Off to On once each. The bridge saved both observed values, and playback remained paused. The site DOM and physical key events were modeled. Native Chrome startup on Windows and the live service remain outside this check.
+
+The development packages at `1.3.0-dev+g00698f685138.local20261127230132072` passed SHA-256 checks. The packaged extension modules and plugin bundle matched the verified files, and the official Stream Deck CLI validated the plugin.
 
 ### November 28 native YouTube Music controls
 
