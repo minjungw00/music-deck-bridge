@@ -64,7 +64,7 @@ The [runtime record](verification/runtime.md#current-evidence) is the source for
 
 The maintainer selected all five Elgato gallery PNGs at `9b866cd`. The submission index includes the selected gallery, two prepared Chrome screenshots and store copy. [Store submission index](../store-assets/drafts/v1.3.0/README.md)
 
-- Verify buffering Pause and saving a cross-device selection closed before playback in a signed-in YouTube Music test session. The unsigned-in Windows profiles did not expose a playable test player. The buffering recovery and saving an unplayed selection passed automated player fixtures. [Live-service check](verification/runtime.md#live-youtube-music-checks-for-130-dev)
+- Recheck that pressing Play / Pause twice from a closed browser ends with playback paused on live YouTube Music. The maintainer confirmed that a song handed off from another device appeared as the last track. [Live-service check](verification/runtime.md#live-youtube-music-checks-for-130-dev)
 - Once authorized, promote `1.3.0-dev` to `1.3.0`, finish the changelog, verify Windows and Ubuntu CI against the tagged source, and verify the release package checksums. [Release checklist](development.md#release-checklist)
 - Complete both store submissions, including Chrome's privacy form. Verify the Maker Console processed installer on Windows, then record submission, approval, and publication separately. [Marketplace DRM record](verification/marketplace-drm.md) · [Store record](verification/stores.md)
 

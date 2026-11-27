@@ -6,6 +6,7 @@ Evidence through November 28, 2026 (Asia/Seoul). [Release verification](releases
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
+| Maintainer report on cross-device playback selection | The song handed off from another device appeared as the last track. [Maintainer report](#live-youtube-music-checks-for-130-dev) | The same report identified a separate Play / Pause failure on Chrome startup. |
 | Maintainer report on physical Stream Deck | The maintainer reported completing the requested 1.3.0-dev hardware check. [Maintainer report](#130-dev-physical-stream-deck) | Covers the requested hardware pass. The separate live-service scenarios and processed installer are tracked independently. |
 | Repeat and Shuffle after Chrome exits, `00698f6` | A paired Chromium profile applied queued Stream Deck Repeat and Shuffle once each after restart. [Restart check](#repeat-and-shuffle-after-chrome-exits) | Real MV3 worker and local player fixture. The test runner restarted Chrome in place of the Windows launcher. |
 | Maintainer report after PC reboot | Saved state was restored. [Maintainer report](#130-dev-pc-reboot) | Covers saved-state restoration. Starting playback in a new browser uses the position chosen by YouTube Music. |
@@ -74,7 +75,11 @@ On November 28, Windows Chrome 158.0.8127.89 opened the public sample from the e
 
 At `d2443a3`, the packages passed SHA-256 verification. Thirteen targeted Node cases and the Chromium MV3 integration fixture passed, including Pause during modeled buffering and recording an unplayed selection in both components.
 
-The buffering case requires confirming the player is buffering at the time of the Pause input and observing the resulting paused state. The cross-device case requires a song selected on another device using the same account, visibly restored on the Windows player without starting playback. Close the Music page and check that its selection replaces the previous entry in the extension and Stream Deck. The maintainer will perform both live checks.
+The maintainer confirmed that a song handed off from another device appeared as the last track. They also reported that pressing Play / Pause twice from a closed browser left the song playing. The report identifies a startup sequence and the final playing state. Player state at input time was not recorded.
+
+At `1a2dbad`, a worker regression reproduced the second input reaching an unstarted player before the first Play had a result. The pending startup sequence now waits for that result and sends an explicit Pause after success. If Play fails, the waiting input is cancelled. Verifying the final paused state with the updated extension on live YouTube Music remains open.
+
+The Chromium MV3 fixture queued both inputs before reopening the browser. The fixture ignored the first Play request, started on its recovery request and stopped on one explicit Pause. Playback remained paused after an additional 1.1 seconds. The test runner reopened Chromium and the player DOM was a fixture. All 350 Node tests, three Chromium fixtures, two Python packaging tests and static checks passed. Build `1.3.0-dev+g1a2dbad3d10e.local20261127234901123` passed the package checksums and Elgato validation.
 
 ### Repeat and Shuffle after Chrome exits
 
