@@ -9,7 +9,7 @@ Music Deck Bridge connects the YouTube Music web player in Chrome to a Stream De
 | Data | Purpose | Storage and retention |
 | --- | --- | --- |
 | Song title, artist, video ID, artwork URLs, playback, repeat, shuffle, mute, volume and like/dislike state | Display the current track and control the player | Plugin memory and the open extension popup. Live data is replaced as state changes and cleared on plugin exit or popup close. |
-| One last-played title, artist, video ID and cached artwork, with a local hash that binds the record to the current pairing | Restore the display after Chrome, Stream Deck or Windows restarts | Saved automatically to `last-track.json` on this computer. Each confirmed track replaces the single preceding record. Unpairing or pairing again clears the saved record. |
+| One last-played title, artist, video ID, cached artwork, volume and mute state, with a local hash that binds the record to the current pairing | Restore the track and Volume Dial displays after Chrome, Stream Deck or Windows restarts | Saved automatically to `last-track.json` on this computer. Each confirmed track replaces the single preceding record. Unpairing or pairing again clears the saved record. |
 | Chrome tab ID and installed-app status | Select a player, preferring the installed Chrome app | Plugin memory; not a persistent browsing record |
 | Six-digit pairing PIN | Authorize a new extension connection | Plugin memory; expires after ten minutes or successful pairing |
 | Random pairing token and extension origin/ID | Authenticate local requests | Plugin `auth.json`; extension token in `chrome.storage.local`; retained until replaced or deleted |

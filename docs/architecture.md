@@ -143,7 +143,7 @@ Every in-flight sync for a closing tab settles before its close notification, in
 
 Legacy commands target the selected client, expire after five seconds and are delivered once through long polling or a sync response. Startup/update/alarm handlers reinject the guarded content script into open player tabs.
 
-The last-track store keeps one confirmed title, artist, track ID and matching admitted raster under the local pairing. It writes through a temporary file and replaces the saved record. If the cover finishes downloading after the player closes, the store accepts it only for the source still associated with the saved track. The snapshot feeds the renderer when live track metadata is absent. When the same track reappears, the renderer can keep its saved cover until the live cover is available. Command selection and popup state use the live registry.
+The last-track store keeps one confirmed title, artist, track ID, matching admitted raster, volume and mute state under the local pairing. It writes through a temporary file and replaces the saved record. If the cover finishes downloading after the player closes, the store accepts it only for the source still associated with the saved track. The snapshot supplies track information when live metadata is absent and Volume Dial feedback when there is no live player. When the same track reappears, the renderer can keep its saved cover until the live cover is available. Command selection and popup state use the live registry.
 
 ## Display behavior
 

@@ -5,6 +5,7 @@ const PLAYER_STALE_MS = 35000;
 const trackKey = state => state.trackId || JSON.stringify([state.title, state.artist]);
 function normalizeState(data, timestamp = Date.now()) {
   const s = data && typeof data === 'object' ? data : {};
+  const volumeReported = Number.isFinite(s.volume);
   return {
     title: clip(s.title, 180), artist: clip(s.artist, 180),
     cover: typeof s.cover === 'string' ? s.cover.slice(0, 4096) : '',
@@ -12,7 +13,8 @@ function normalizeState(data, timestamp = Date.now()) {
     playing: s.playing === true,
     playbackConfirmed: typeof s.playbackConfirmed === 'boolean' ? s.playbackConfirmed : s.playing === true,
     muted: s.muted === true,
-    volume: Number.isFinite(s.volume) ? limit(Math.round(s.volume), 0, 100) : 0,
+    volume: volumeReported ? limit(Math.round(s.volume), 0, 100) : 0,
+    volumeReported,
     standalone: s.standalone === true,
     rating: ['LIKE', 'DISLIKE', 'INDIFFERENT'].includes(s.rating) ? s.rating : null,
     repeatMode: ['NONE', 'ALL', 'ONE'].includes(s.repeatMode) ? s.repeatMode : null,

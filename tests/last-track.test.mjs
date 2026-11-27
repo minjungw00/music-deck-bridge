@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createFileStore } from '../streamdeck/src/adapters/file-store.cjs';
 import { createLastTrack } from '../streamdeck/src/application/last-track.cjs';
+import { normalizeState } from '../streamdeck/src/domain/player-state.cjs';
 
 const image = 'data:image/png;base64,' + readFileSync(new URL(
   '../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/plugin/icon.png', import.meta.url)).toString('base64');
@@ -53,4 +54,22 @@ test('unpairing clears the stored song, and a mismatched pairing or malformed fi
   assert.equal(open().snapshot, null);
   writeFileSync(savedFile, '{');
   assert.equal(open().snapshot, null);
+});
+
+test('updates the saved volume and mute state while the confirmed track is paused', t => {
+  const { open, storage } = fixture(t);
+  const live = open();
+  const track = song('Last played', 'a');
+  live.observe(normalizeState({ ...track, volume: 63, muted: false }), image);
+  live.observe(normalizeState({ ...track, playing: false, volume: 63, muted: true }));
+  assert.equal(open().snapshot.muted, true);
+  live.observe(normalizeState({ ...track, playing: false, volume: 0, muted: true }));
+  live.observe(normalizeState({ ...track, playing: false }));
+  live.observe(normalizeState({ ...song('Never played', 'b'), playing: false, volume: 90, muted: false }));
+  assert.deepEqual(open().snapshot, { title: track.title, artist: track.artist, trackId: track.trackId,
+    image, volume: 0, muted: true });
+  assert.deepEqual(storage.readLastTrack().track, open().snapshot);
+
+  live.observe(normalizeState(song('New track without volume', 'b')));
+  assert.equal(open().snapshot.volume, undefined, 'an unknown volume must not become 0% or inherit another track’s settings');
 });

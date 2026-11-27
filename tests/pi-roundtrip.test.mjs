@@ -34,7 +34,8 @@ for (const protectedManifest of [false, true]) {
     storage.saveAuth({ origin, token: 'a'.repeat(64) });
     const lastTrack = createLastTrack({ storage, onChange() {} });
     const artwork = 'data:image/png;base64,' + readFileSync(join(installed, 'imgs/plugin/icon.png')).toString('base64');
-    lastTrack.observe({ title: 'Saved song', artist: 'Saved artist', trackId: 'aaaaaaaaaaa', playing: true }, artwork);
+    lastTrack.observe({ title: 'Saved song', artist: 'Saved artist', trackId: 'aaaaaaaaaaa', playing: true,
+      volume: 37, muted: true }, artwork);
     // Exercise the SDK's opaque-manifest path; actual Maker Console DRM still needs a device test.
     if (protectedManifest) writeFileSync(join(installed, 'manifest.json'), 'opaque manifest fixture');
     const bridgePort = await freePort();
@@ -119,9 +120,12 @@ for (const protectedManifest of [false, true]) {
     const toggleImage = (context = 'toggle') => messages.findLast(m => m.event === 'setImage' && m.context === context)?.payload.image;
     const playImage = 'imgs/actions/toggle/key@2x.png';
     const pauseImage = 'imgs/actions/toggle/pause@2x.png';
+    const volumeFeedback = (start = 0) => messages.slice(start).findLast(m => m.event === 'setFeedback' && m.context === 'volume')?.payload;
     // Recover the saved track before receiving any browser state. Live playback stays off.
     await waitFor(() => toggleImage() === playImage);
     await waitFor(() => toggleImage('mute') === 'imgs/actions/volume/key@2x.png');
+    assert.deepEqual(await waitFor(() => volumeFeedback()), { title: 'YouTube Music', icon: 'imgs/actions/mute/key@2x.png',
+      value: '음소거 37%', indicator: { value: 37, range: { min: 0, max: 100 } } });
     const dialFeedback = () => messages.findLast(m => m.event === 'setFeedback' && m.context === 'trackdial')?.payload;
     const dialLayout = () => messages.findLast(m => m.event === 'setFeedbackLayout' && m.context === 'trackdial')?.payload.layout;
     await waitFor(() => dialLayout() === '$A1' && dialFeedback()?.icon === playImage);
@@ -149,6 +153,7 @@ for (const protectedManifest of [false, true]) {
     assert.ok(reply.payload.expiresAt > Date.now());
     const { token } = await post('/pair', { pin: reply.payload.pin });
     assert.equal(storage.readLastTrack(), null);
+    await waitFor(() => volumeFeedback()?.value === 'YTM 없음');
     const state = { title: 'SDK song', artist: 'Artist', playing: true, volume: 50, rating: 'INDIFFERENT' };
     await post('/sync', { token, clientId: 1, state });
     await waitFor(() => toggleImage() === pauseImage);
@@ -226,7 +231,6 @@ for (const protectedManifest of [false, true]) {
     send('didReceiveSettings', 'volume', { settings: { volumeStep: 2 } });
     await command('dialRotate', 'volume', { ticks: 2 }, { type: 'volume_delta', amount: 4 });
     await command('dialDown', 'volume', {}, { type: 'mute', amount: 0 });
-    const volumeFeedback = () => messages.findLast(m => m.event === 'setFeedback' && m.context === 'volume')?.payload;
     assert.equal(volumeFeedback().icon, 'imgs/actions/volume/key@2x.png', 'press alone does not predict mute state');
     state.muted = true;
     await post('/sync', { token, clientId: 1, state });
@@ -326,8 +330,22 @@ for (const protectedManifest of [false, true]) {
     await post('/sync', { token, clientId: 1, state });
     await new Promise(resolve => setTimeout(resolve, 180));
     assert.ok(!messages.slice(count).some(m => m.context === 'nowplaying' && m.event === 'setTitle'));
+    state.muted = true;
+    await post('/sync', { token, clientId: 1, state });
+    await waitFor(() => volumeFeedback()?.value === '음소거 8%');
+    // A full Chrome exit can stop polling without sending a tab-close event.
+    await new Promise(resolve => setTimeout(resolve, 3200));
+    await waitFor(() => toggleImage() === playImage);
+    const offlineStart = messages.length;
+    send('didReceiveSettings', 'volume', { settings: { volumeStep: 2 } });
+    assert.equal((await waitFor(() => volumeFeedback(offlineStart))).value, '음소거 8%');
+    await post('/player-closed', { token, clientId: 1 });
+    assert.equal((await post('/status', { token })).player, null);
+    await post('/sync', { token, clientId: 1, state: { ...state, volume: 0, muted: false } });
+    await waitFor(() => volumeFeedback()?.value === '0%' && volumeFeedback()?.icon === 'imgs/actions/volume/key@2x.png');
     await post('/unpair', { token });
     await waitFor(() => toggleImage() === playImage && toggleImage('toggle-2') === playImage);
+    await waitFor(() => volumeFeedback()?.value === 'YTM 없음');
     await waitFor(() => ratingImage('like') === 'imgs/actions/like/key@2x.png' &&
       ratingImage('dislike') === 'imgs/actions/dislike/key@2x.png');
     // A newly paired browser with zero player tabs still receives the launch request.

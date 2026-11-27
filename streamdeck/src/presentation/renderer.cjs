@@ -205,10 +205,11 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
         } else if (keyActions.has(kind)) {
           nextVolumeExpiry = Math.min(nextVolumeExpiry, renderActionKey(context, item, kind, chosen, track, tiles.get(context)));
         } else if (kind === 'volume') {
-          const vol = state ? `${state.muted ? tr('muted') + ' ' : ''}${state.volume}%` : tr('absent');
-          const icon = `imgs/actions/${state?.muted ? 'mute' : 'volume'}/key@2x.png`;
+          const volumeState = state ?? (Number.isFinite(track?.volume) ? track : null);
+          const vol = volumeState ? `${volumeState.muted ? tr('muted') + ' ' : ''}${volumeState.volume}%` : tr('absent');
+          const icon = keyIcon('mute', volumeState);
           setFeedback(context, { title: 'YouTube Music', icon, value: vol,
-            indicator: { value: state?.volume ?? 0, range: { min: 0, max: 100 } } });
+            indicator: { value: volumeState?.volume ?? 0, range: { min: 0, max: 100 } } });
         } else if (kind === 'trackdial') {
           renderCurrentTrackDial(context, item, track, state);
         }
