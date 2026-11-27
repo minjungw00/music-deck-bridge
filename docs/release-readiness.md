@@ -63,7 +63,7 @@ The [runtime record](verification/runtime.md#current-evidence) is the source for
 
 The maintainer selected all five Elgato gallery PNGs at `9b866cd`. The submission index includes the selected gallery, two prepared Chrome screenshots and store copy. [Store submission index](../store-assets/drafts/v1.3.0/README.md)
 
-- Verify the latest build on physical Stream Deck hardware. Cover the new dial displays, linked artwork, and retention when Chrome is closed. The regular tab's early Play/Pause and a live import closed before playback also remain open. [Final runtime validation](verification/runtime.md#november-28-final-130-dev-validation)
+- Verify the latest build on physical Stream Deck hardware, including the new dial displays, linked artwork and retention when Chrome is closed. A cross-device selection closed before playback still needs a live-service check. The regular tab's early Play/Pause passed the follow-up; the earlier intermittent failure remains unexplained. [Live playback follow-up](verification/runtime.md#follow-up-after-the-pc-reboot)
 - Once authorized, promote `1.3.0-dev` to `1.3.0`, finish the changelog, verify Windows and Ubuntu CI against the tagged source, and verify the release package checksums. [Release checklist](development.md#release-checklist)
 - Complete both store submissions, including Chrome's privacy form. Verify the Maker Console processed installer on Windows, then record submission, approval, and publication separately. [Marketplace DRM record](verification/marketplace-drm.md) · [Store record](verification/stores.md)
 

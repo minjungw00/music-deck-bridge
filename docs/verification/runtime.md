@@ -54,6 +54,12 @@ On the existing Windows Stream Deck 7.6.1.23033 host, packaged plugin code and d
 
 The regular site's bridge reported `playback-unconfirmed` in early attempts. The attempted comparison with the site's accessible playback button did not find an enabled matching button. A follow-up passed paired Play/Pause after artwork became ready and a six-second wait. That establishes the fully loaded path. The early failure's cause and timing threshold remain unverified.
 
+#### Follow-up after the PC reboot
+
+The Windows host's installed plugin bundle matched the final `94593e7` build. With no existing Music session, the same public sample was opened in a new regular Chrome window for each trial. Four tests sent Pause as soon as the first matching player snapshot arrived, 0.87–1.08 seconds after launch. Four comparison tests waited for artwork and six additional seconds. All eight acknowledged the command and reported the paused state within 241 ms of dispatch.
+
+Half of the trials restarted the Stream Deck plugin before opening Chrome. The two immediate trials after restart sent Pause while artwork was still pending, and all four restart trials also confirmed a subsequent Play. The earlier `playback-unconfirmed` result did not recur in this sample. Its cause remains unknown. The 59 existing playback model tests also passed.
+
 ### November 28 native YouTube Music controls
 
 The installed `394b941` build played a public test track in Chrome 158.0.8127.37 and the registered YouTube Music app on Windows. The paired bridge classified the regular tab with `standalone: false` and the app with `standalone: true`. Bridge control cycled Repeat through all three modes and Shuffle off → on → off on each route. The bridge observed artwork ready in both. Account sign-in status was inconclusive.
