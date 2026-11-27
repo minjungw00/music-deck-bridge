@@ -62,6 +62,10 @@ Half of the trials restarted the Stream Deck plugin before opening Chrome. The t
 
 A focused comparison on the unchanged playback code reproduced the same error in four distinct cases: an ignored Pause while buffering, a media element that paused while the site API still reported Playing, a missing completion result, and a rejected MAIN-world call. The first two produced a `confirm` diagnostic with input and final player states; the result and injection cases returned the code without those fields. A disabled control produced a safe retry before dispatch, and a stable Playing-to-Paused transition succeeded. The earlier live bridge log contains only the reason code. It cannot distinguish these mechanisms or establish the buffering hypothesis.
 
+#### Buffered playback recovery
+
+At `95d9774`, 344 Node tests, three Chromium fixtures, two Python packaging tests and static checks passed. The MV3 integration fixture ignored the first explicit Pause during buffering and confirmed exactly one repeat Pause after the original track started. No toggle click was sent for that recovery. Unit checks covered an immediate Pause, same-track/API guards, later input cancelling the retry, explicit Play waiting for a Playing state, and diagnostics separating outcome retrieval from player observation. The clean development archives matched their recorded SHA-256 checksums. The original cause remains unconfirmed, and the updated build awaits a live-service check.
+
 ### November 28 native YouTube Music controls
 
 The installed `394b941` build played a public test track in Chrome 158.0.8127.37 and the registered YouTube Music app on Windows. The paired bridge classified the regular tab with `standalone: false` and the app with `standalone: true`. Bridge control cycled Repeat through all three modes and Shuffle off → on → off on each route. The bridge observed artwork ready in both. Account sign-in status was inconclusive.
