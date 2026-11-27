@@ -12,7 +12,7 @@ Start with the store-specific upload guide below. These guides cover future subm
 
 ## 1.3.0 submission drafts
 
-The [1.3.0 draft index](drafts/v1.3.0/README.md) links to eight Chrome descriptions, two localized Chrome screenshots with sample data, the English Elgato description and separate What's new copy.
+The [1.3.0 draft index](drafts/v1.3.0/README.md) links to eight Chrome descriptions, two localized Chrome screenshots with sample data, the English Elgato description and separate What's new copy, and three Marketplace gallery drafts.
 
 ## 1.2.0 listing reference
 

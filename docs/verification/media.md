@@ -31,6 +31,12 @@ The [root README thumbnail](../../store-assets/elgato/listing/thumbnail-1920x960
 
 These local files do not identify which media were uploaded. Actual submission provenance is tracked in [store submissions](stores.md); earlier per-export checksum inventories remain in Git history.
 
+## November 28 1.3.0 Elgato gallery drafts
+
+The three [gallery PNGs](../../store-assets/drafts/v1.3.0/README.md) are 1920 × 960 RGB files. The artwork example uses the plugin's key renderer, an original geometric cover, a sparse group with a blank position, width fitting, 15% gaps and an optional action icon. The inspector screenshot shows the same width and gap settings. The playback example uses the packaged Repeat and Shuffle icons and the English Chrome preview at its native size. The dial example captures the bundled inspector in both display modes and renders the artwork feedback from the plugin's touch-strip layout in Chromium. The inspector and popup used sample settings and playback data. Captured UI is placed at its original dimensions.
+
+Separately, on Windows Stream Deck 7.6.1.23033 with build `394b941`, the existing Stream Deck Plus page showed one cover across six linked keys, along with the saved 31% volume and artwork/title on the Current Track Dial while no Music player was active. The original page was restored after capture. The native software capture was kept out of the gallery drafts because the cover's reuse terms were unverified. The capture establishes software preview output; physical key and touch-strip output require separate verification.
+
 ## Development key backgrounds
 
 On November 13, the 1.2.0-dev renderer changed 24 device key/state PNGs and their ten matching popup copies to full-canvas square dark backgrounds. Pillow 12.0.0 generated candidates in a separate temporary directory before application. Decoded central 75% rectangles, covering the disc and symbol, matched the preceding images exactly; all 26 other generated brand/store/monochrome assets matched byte-for-byte. Existing submitted media, source captures, published packages and earlier development folders were preserved.
