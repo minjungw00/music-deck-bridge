@@ -2,7 +2,7 @@
 const { createOutputCache } = require('./output-cache.cjs');
 const { ellipsis, marquee, MARQUEE_STEP_MS } = require('./track-text.cjs');
 const { translate } = require('./messages.cjs');
-const { albumTiles, keyDisplay } = require('./album-groups.cjs');
+const { albumTiles, keyDisplay } = require('../domain/album-groups.cjs');
 const { KEY_ACTION_NAMES } = require('../domain/actions.cjs');
 const { trackKey } = require('../domain/player-state.cjs');
 const keyActions = new Set(KEY_ACTION_NAMES);

@@ -5,7 +5,7 @@ const { limit } = require('../domain/values.cjs');
 const { PLAYER_STALE_MS } = require('../domain/player-state.cjs');
 const { validFeedbackSeconds } = require('../domain/volume-feedback.cjs');
 const { createVolumeKeyFeedback } = require('./volume-key-feedback.cjs');
-const { albumGroups, albumSettings, validAlbumGap, keyDisplay } = require('../presentation/album-groups.cjs');
+const { albumGroups, albumSettings, validAlbumGap, keyDisplay } = require('../domain/album-groups.cjs');
 const CONNECTION_REQUESTS = new Set(['generate-pin', 'get-connection', 'set-linked-fit', 'set-linked-gap']);
 
 function createDeckController({ displayed, commands, session, ports, players, output, onChange,

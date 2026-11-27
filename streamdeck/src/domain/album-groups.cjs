@@ -1,4 +1,5 @@
 'use strict';
+// Shared geometry and settings for linked keys, independent of rendering and SDK output.
 const cell = (row, column) => `${row}:${column}`;
 
 function keyDisplay(settings) {

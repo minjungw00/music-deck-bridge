@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { albumTiles } from '../streamdeck/src/presentation/album-groups.cjs';
+import { albumTiles } from '../streamdeck/src/domain/album-groups.cjs';
 import { keyTextBackground } from '../streamdeck/src/key-background.cjs';
 import { createRenderer } from '../streamdeck/src/presentation/renderer.cjs';
 import { createDeckController } from '../streamdeck/src/application/deck-controller.cjs';
