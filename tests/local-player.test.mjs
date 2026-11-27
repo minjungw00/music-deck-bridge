@@ -4,7 +4,7 @@ import vm from 'node:vm';
 import artwork from '../chrome-extension/artwork-policy.js';
 import { readFileSync } from 'node:fs';
 
-function harness() {
+function harness(saved = null) {
   const tabs = [{ id: 1, active: true }, { id: 2 }];
   const states = new Map([
     [1, { title: 'Browser song', artist: 'Artist', trackId: 'aaaaaaaaaaa', playing: true, volume: 60, rating: 'LIKE' }],
@@ -23,8 +23,13 @@ function harness() {
     inputs.push(command); beforeDispatch();
     return command.type === 'open' ? true : allowed(true);
   } }) } });
-  vm.runInContext(readFileSync(new URL('../chrome-extension/background/local-player.js', import.meta.url), 'utf8'), context);
-  service = context.MusicDeckLocalPlayer.create({ chrome, pageControls: { playerPlayback() {} }, contentScripts: [] });
+  for (const file of ['last-player.js', 'local-player.js']) {
+    vm.runInContext(readFileSync(new URL(`../chrome-extension/background/${file}`, import.meta.url), 'utf8'), context);
+  }
+  const lastPlayer = { get: async () => context.MusicDeckLastPlayer.normalize(saved) };
+  let elapsed = 0;
+  service = context.MusicDeckLocalPlayer.create({ chrome, pageControls: { playerPlayback() {} }, contentScripts: [],
+    lastPlayer, now: () => elapsed, wait: async ms => { elapsed += ms; } });
   return { service, tabs, states, inputs, reads, beforeDispatch(fn) { beforeDispatch = fn; } };
 }
 
@@ -73,4 +78,19 @@ test('popup Open prefers the selected PWA and never acquires a playback lease', 
   assert.equal(h.inputs[0].type, 'open');
   assert.equal(h.inputs[0].preferredTabId, 2);
   assert.equal(h.service.controlling(2), false);
+});
+
+test('saved popup commands reopen the saved video and dispatch to its live track only', async () => {
+  const h = harness({ title: 'Saved song', artist: 'Artist', trackId: 'bbbbbbbbbbb' });
+  h.tabs.length = 0;
+  assert.equal((await h.service.check()).savedPlayer.title, 'Saved song');
+  h.beforeDispatch(() => { if (!h.tabs.length) h.tabs.push({ id: 2, active: true }); });
+  const request = { command: 'toggle', trackKey: 'bbbbbbbbbbb' };
+  assert.equal((await h.service.savedControl(request)).ok, true);
+  assert.equal(h.inputs[0].videoId, 'bbbbbbbbbbb');
+  assert.equal(h.inputs[1].playerKey, 'bbbbbbbbbbb');
+  assert.equal(h.inputs[1].nativeLaunched, true, 'offline Play must not pause a player that starts automatically');
+  h.states.get(2).trackId = 'ccccccccccc';
+  assert.equal((await h.service.savedControl({ ...request, command: 'like' })).reason, 'player-changed');
+  assert.equal(h.inputs.length, 2, 'a stale rating cannot reach the new track');
 });

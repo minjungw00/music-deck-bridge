@@ -42,26 +42,35 @@
     });
     let listenerGeneration = 0;
     let inFlight = false;
+    let resync = false;
     let syncTimer = null;
     let lastSynced = 0;
+    let submittedTrack = '';
+    const selection = state => state.trackConfirmed ? JSON.stringify([state.trackId, state.title, state.artist]) : '';
     async function synchronize() {
       if (!active || inFlight) return;
       inFlight = true;
       lastSynced = Date.now();
       try {
-        const result = await chrome.runtime.sendMessage({ type: 'sync', state: current() });
+        const state = current();
+        submittedTrack = selection(state);
+        const result = await chrome.runtime.sendMessage({ type: 'sync', state });
         if (result?.paired && Array.isArray(result.commands)) {
           for (const c of result.commands) void command(c).catch(() => {});
         }
       } catch { /* Service worker or PWA restarting. */ }
-      finally { inFlight = false; }
+      finally {
+        inFlight = false;
+        if (resync) { resync = false; scheduleSync(0); }
+      }
     }
     function scheduleSync(delay=80) {
       if (!active || syncTimer) return;
       const elapsed = Date.now() - lastSynced;
       syncTimer = setTimeout(() => {
         syncTimer = null;
-        if (!inFlight) void synchronize();
+        if (inFlight) resync = true;
+        else void synchronize();
       }, Math.max(delay, 90 - elapsed));
     }
     // Independent one-shot long-poll. A command wakes this immediately instead
@@ -85,14 +94,22 @@
       }
     }
     let clock = null;
-    const observer = typeof MutationObserver === 'undefined' ? null :
-      new MutationObserver(() => scheduleSync(120));
-    function startSynchronization() {
-      // Re-query the player bar when a cached document resumes.
-      const bar = document.querySelector('ytmusic-player-bar');
-      if (bar) observer?.observe(bar, { childList: true, subtree: true, attributes: true,
+    let observedBar;
+    const observer = typeof MutationObserver === 'undefined' ? null : new MutationObserver(() => {
+      if (!observedBar) observePlayerBar();
+      if (observedBar) scheduleSync(40);
+    });
+    function observePlayerBar() {
+      observedBar = document.querySelector('ytmusic-player-bar');
+      observer?.disconnect();
+      if (observedBar) observer?.observe(observedBar, { childList: true, subtree: true, characterData: true, attributes: true,
         attributeFilter: ['src', 'title', 'aria-label', 'style', 'aria-valuenow', 'aria-pressed', 'like-status',
           'aria-disabled', 'disabled', 'hidden', 'icon', 'shuffle-on'] });
+      else if (document.body) observer?.observe(document.body, { childList: true, subtree: true });
+    }
+    function startSynchronization() {
+      // Re-query the player bar when a cached document resumes.
+      observePlayerBar();
       clock = setInterval(synchronize, 800); // status fallback; browsers throttle idle tabs
       void synchronize();
       void listen();
@@ -106,6 +123,12 @@
     document.addEventListener('seeked', () => scheduleSync(60), true);
     document.addEventListener('ended', () => scheduleSync(60), true);
     events.addEventListener('pagehide', () => {
+      // The page can close before an already scheduled title update runs.
+      try {
+        const state = current();
+        const track = selection(state);
+        if (track && track !== submittedTrack) void chrome.runtime.sendMessage({ type: 'sync', state }).catch(() => {});
+      } catch { /* The extension context can already be gone during shutdown. */ }
       active = false;
       listenerGeneration++;
       observer?.disconnect();

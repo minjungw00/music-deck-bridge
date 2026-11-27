@@ -196,6 +196,8 @@ These settings are available in **1.3.0-dev**. In **Icon + song name** mode on t
 
 When Chrome is closed, including after Stream Deck or Windows restarts, the plugin restores the last confirmed track, cover, volume, mute, Repeat, Shuffle and rating displays. The Current Track Dial's **Icon + song name** mode shows the last position and duration when available. The open player supplies current values after reconnection. Each confirmed track replaces the previous local record. Unpairing clears the record.
 
+A title shown in the YouTube Music player bar can replace the record before playback, including a restored selection from another device. The Chrome popup also shows **Last track** when the Music tab is closed. Its controls can reopen YouTube Music and wait for the matching track. Queue and rating controls depend on availability in the reopened player.
+
 **Repeat** and **Shuffle** use the controls available in the selected YouTube Music player. Both are available as Stream Deck keys and in the Chrome popup, including standalone popup use. The popup groups track navigation and playback in the first row, ratings and queue controls in the second, and volume in the third. When Chrome is disconnected, the Stream Deck action settings place **Chrome connection** and **Local server port** first.
 
 ## Updating

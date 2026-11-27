@@ -6,8 +6,9 @@ import { playerHarness } from './helpers/player.mjs';
 
 async function scenario(useMediaSession=false, { commands, manualVolume, compact = false,
   rating = 'INDIFFERENT', ratingsAvailable = true, ratingsDisabled = false,
-  browserInputs = [], initiallyPaused = false, displayMode = 'standalone' } = {}) {
+  browserInputs = [], initiallyPaused = false, displayMode = 'standalone', titleOnClose } = {}) {
   let playClicks = 0, nextClicks = 0, syncCount = 0, lastState;
+  let title = 'Sample song';
   const player = playerHarness({ compact, delay: 2 });
   const { audio } = player;
   audio.paused = initiallyPaused;
@@ -43,7 +44,7 @@ async function scenario(useMediaSession=false, { commands, manualVolume, compact
       },
       querySelector(selector){
         return {
-          'ytmusic-player-bar .title.ytmusic-player-bar':{textContent:'Sample song'},
+          'ytmusic-player-bar .title.ytmusic-player-bar':{textContent:title},
           'ytmusic-player-bar #thumbnail':thumb,
           'ytmusic-player-bar .play-pause-button':playBtn,
           'ytmusic-player-bar .next-button':nextBtn,
@@ -84,6 +85,7 @@ async function scenario(useMediaSession=false, { commands, manualVolume, compact
       if (keep !== true) resolve({ ignored: true });
     }));
   }
+  if (titleOnClose) title = titleOnClose;
   eventHandlers.pagehide?.();
   return {syncCount,lastState,playClicks,nextClicks,audio,interval,player,ratingClicks,eventHandlers,browserResponses};
 }
@@ -109,6 +111,13 @@ test('Current track: artwork from YTM player-bar image, volume commands',async()
 test('Falls back to Media Session artwork when thumbnail DOM contains no image',async()=>{
   const r=await scenario(true);
   assert.equal(r.lastState.cover,'https://lh3.googleusercontent.com/metadata=w500');
+});
+
+test('closing before a scheduled update sends the newly visible paused song', async () => {
+  const { lastState } = await scenario(false, { commands: [], initiallyPaused: true, titleOnClose: 'Restored song' });
+  assert.equal(lastState.title, 'Restored song');
+  assert.equal(lastState.trackConfirmed, true);
+  assert.equal(lastState.playing, false);
 });
 
 test('the minimal-ui app window is reported as an app while browser and fullscreen tabs are not', async () => {

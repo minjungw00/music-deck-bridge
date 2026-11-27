@@ -4,7 +4,7 @@ const asset = path => chrome.runtime.getURL?.(path) || path;
 const language = chrome.i18n.getMessage('uiLanguageCode') || 'en';
 const text = Object.fromEntries(
   ["heading","subtitle","companionHint","installPlugin","guide","pin","connect","refresh","forget","portLabel","savePort","portHint","portInvalid","portSaved","portLocal","invalid","checking","fail","connected","unknown","player","app","tab","current","waiting","artwork","stale","paired","removed","nowPlayingLabel","playerWaiting","settingsSummary","connectionStatusLabel","previous","next","play","pause","likeLabel","dislikeLabel","controlFailed","controlChanged","controlUpdate","volumeLabel","mute","unmute","openPlayer","openPlayerFailed",
-    "repeatLabel","repeatOff","repeatAll","repeatOne","shuffleLabel","shuffleOff","shuffleOn"]
+    "repeatLabel","repeatOff","repeatAll","repeatOne","shuffleLabel","shuffleOff","shuffleOn","lastTrackLabel"]
     .map(key => [key, chrome.i18n.getMessage(key)])
 );
 const coverMessages = new Map([
@@ -39,7 +39,7 @@ const controlButtons = { previous: 'prev', playPause: 'toggle', next: 'next', li
   repeat: 'repeat', shuffle: 'shuffle', mute: 'mute' };
 const queueControl = command => command === 'repeat' || command === 'shuffle';
 function playerFor(command) {
-  if (!queueControl(command) || currentPlayer?.mode === 'local' || queueSupported) return currentPlayer;
+  if (!queueControl(command) || currentPlayer?.mode !== 'bridge' || queueSupported) return currentPlayer;
   const local = localStatus?.player;
   if (local && currentPlayer && local.id === currentPlayer.id && local.key === currentPlayer.key) {
     return { ...local, mode: 'local' };
@@ -53,7 +53,7 @@ function updateIcon(id, path) {
   if ($(id).getAttribute('src') !== source) $(id).src = source;
 }
 function updateControls() {
-  $('openPlayer').hidden = Boolean(currentPlayer);
+  $('openPlayer').hidden = Boolean(currentPlayer && currentPlayer.mode !== 'saved');
   $('openPlayer').disabled = openingPlayer || closed;
   $('openPlayer').setAttribute('aria-busy', String(openingPlayer));
   const enabled = controlsAvailable && currentPlayer && !pendingActions;
@@ -101,7 +101,7 @@ function clearArtwork() {
 }
 async function loadArtwork(player, key, revision) {
   try {
-    if (player.mode === 'local') {
+    if (player.mode !== 'bridge') {
       const url = MusicDeckArtworkPolicy.parse(player.coverKey);
       if (!url) return;
       $('artwork').src = url.href;
@@ -124,7 +124,10 @@ async function loadArtwork(player, key, revision) {
   } catch { /* Keep the placeholder; playback does not depend on artwork. */ }
 }
 function showPlayer(result) {
-  currentPlayer = result?.ok && result.active && result.player ? { ...result.player, mode: result.mode || 'bridge' } : null;
+  const saved = result?.ok && !result.active && result.savedPlayer;
+  currentPlayer = result?.ok && result.active && result.player ? { ...result.player, mode: result.mode || 'bridge' } :
+    saved ? { ...saved, id: 'saved', mode: 'saved', playing: false } : null;
+  $('nowPlayingLabel').textContent = saved ? text.lastTrackLabel : text.nowPlayingLabel;
   volume.observe(currentPlayer);
   controlsAvailable = result?.popupControls === true && !result.playerStale &&
     result.compatibility?.compatible !== false;
@@ -134,7 +137,7 @@ function showPlayer(result) {
   const title = currentPlayer?.title || (result?.ok && result.active ? result.track : '') || text.playerWaiting;
   if ($('trackTitle').textContent !== title) $('trackTitle').textContent = title;
   $('trackArtist').textContent = currentPlayer?.artist || '';
-  const key = currentPlayer && result.coverStatus === 'ready' && currentPlayer.coverKey ?
+  const key = currentPlayer?.coverKey && (saved || result.coverStatus === 'ready') ?
     JSON.stringify([currentPlayer.mode, currentPlayer.id, currentPlayer.key, currentPlayer.coverKey]) : '';
   if (key !== artworkKey) {
     artworkKey = key;
@@ -225,6 +228,7 @@ onAction('forget', async request => {
     if (!result?.ok) return info(result?.error || text.fail);
     showVersions(null);
     bridgePlayback = null;
+    if (localStatus?.savedPlayer) localStatus = { ...localStatus, savedPlayer: null };
     applyPlayback();
     display('status', '');
     info(text.removed, true);
@@ -256,7 +260,8 @@ async function executeControl(command, player, extra = {}) {
     display('controlFeedback', '');
     updateControls();
     try {
-      const result = await chrome.runtime.sendMessage({ type: player.mode === 'local' ? 'local-control' : 'control', command,
+      const type = { local: 'local-control', saved: 'saved-control', bridge: 'control' }[player.mode];
+      const result = await chrome.runtime.sendMessage({ type, command,
         playerId: player.id, trackKey: player.key, ...extra });
       if (closed || request !== latestControl) return result;
       if (!result?.ok) display('controlFeedback', result?.reason === 'player-changed' ? text.controlChanged : text.controlFailed);

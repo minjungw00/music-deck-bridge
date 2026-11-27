@@ -115,18 +115,19 @@
     function current() {
       const el = media();
       const meta = mediaMetadata();
-      const title = text('ytmusic-player-bar .title.ytmusic-player-bar') ||
-        text('ytmusic-player-bar .title') || meta?.title || '';
+      const playerTitle = text('ytmusic-player-bar .title.ytmusic-player-bar') || text('ytmusic-player-bar .title');
+      const title = playerTitle || meta?.title || '';
       const artist = [...document.querySelectorAll('ytmusic-player-bar .byline a')]
         .map(a => a.textContent?.trim()).filter(Boolean).join(', ') ||
         text('ytmusic-player-bar .byline').split(' • ')[0] || meta?.artist || '';
       return {
         title, artist, ...getCoverWithFallback(), rating: ratingState(),
+        trackConfirmed: Boolean(playerTitle),
         trackId: new URL(location.href).searchParams.get('v') || '',
         playing: el ? !el.paused && !el.ended : false,
         playbackConfirmed: Boolean(el && el.readyState >= 2 && !el.paused && !el.ended),
         muted: el ? !!el.muted : false,
-        volume: siteVolume() ?? (el ? Math.round(el.volume * 100) : 0),
+        volume: siteVolume() ?? (el ? Math.round(el.volume * 100) : null),
         ...(el?.readyState > 0 && Number.isFinite(el.duration) && el.duration > 0 && Number.isFinite(el.currentTime)
           ? { positionSeconds: el.currentTime, durationSeconds: el.duration } : {}),
         standalone: window.matchMedia('(display-mode: standalone)').matches ||

@@ -45,6 +45,26 @@ function harness({ local = { ok: true, active: false, mode: 'local' } } = {}) {
   } };
 }
 
+test('the popup shows the saved song and keeps playback and volume controls available', async () => {
+  const h = harness({ local: { ok: true, active: false, mode: 'local', popupControls: true, popupVolume: true,
+    popupQueueControls: true, savedPlayer: { title: 'Restored song', artist: 'Artist', key: 'aaaaaaaaaaa',
+      coverKey: 'https://i.ytimg.com/vi/a/cover.jpg', volume: 25, rating: 'LIKE', repeatMode: 'ALL', shuffleEnabled: false } } });
+  await h.ready();
+  assert.equal(h.element('nowPlayingLabel').textContent, 'lastTrackLabel');
+  assert.equal(h.element('trackTitle').textContent, 'Restored song');
+  assert.equal(h.element('playPause').disabled, false);
+  assert.equal(h.element('openPlayer').hidden, false);
+  assert.equal(h.element('volumeValue').textContent, '25%');
+  assert.equal(h.element('like').getAttribute('aria-pressed'), 'true');
+  assert.equal(h.element('repeat').disabled, false);
+  assert.equal(h.element('artwork').src, 'https://i.ytimg.com/vi/a/cover.jpg');
+  const playing = h.element('playPause').click();
+  const request = h.take('saved-control');
+  assert.equal(request.trackKey, 'aaaaaaaaaaa');
+  assert.equal(request.command, 'toggle');
+  request.resolve({ ok: true }); await playing;
+});
+
 test('a delayed pairing response cannot replace a newer unpair result or clear its input', async () => {
   const h = harness(); await h.ready();
   h.element('pin').value = '654321';

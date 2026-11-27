@@ -143,6 +143,9 @@
   "nowPlayingLabel": {
     "message": "현재 곡"
   },
+  "lastTrackLabel": {
+    "message": "마지막 곡"
+  },
   "playerWaiting": {
     "message": "YouTube Music 재생 대기 중"
   },

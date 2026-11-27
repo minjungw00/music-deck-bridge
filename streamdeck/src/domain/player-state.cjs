@@ -24,6 +24,7 @@ function normalizeState(data, timestamp = Date.now()) {
     coverFallback: typeof s.coverFallback === 'string' ? s.coverFallback.slice(0, 4096) : '',
     playing: s.playing === true,
     playbackConfirmed: typeof s.playbackConfirmed === 'boolean' ? s.playbackConfirmed : s.playing === true,
+    trackConfirmed: s.trackConfirmed === true,
     muted: s.muted === true,
     volume: volumeReported ? limit(Math.round(s.volume), 0, 100) : 0,
     volumeReported,

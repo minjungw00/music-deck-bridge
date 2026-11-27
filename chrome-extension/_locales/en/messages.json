@@ -143,6 +143,9 @@
   "nowPlayingLabel": {
     "message": "Now playing"
   },
+  "lastTrackLabel": {
+    "message": "Last track"
+  },
   "playerWaiting": {
     "message": "Waiting for YouTube Music"
   },

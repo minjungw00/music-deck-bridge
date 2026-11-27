@@ -74,6 +74,16 @@ test('updates the saved volume and mute state while the confirmed track is pause
   assert.equal(open().snapshot.volume, undefined, 'an unknown volume must not become 0% or inherit another track’s settings');
 });
 
+test('a restored current song replaces the previous record before playback', t => {
+  const { open } = fixture(t);
+  const live = open();
+  live.observe(song('Previous song', 'a'), image);
+  live.observe(normalizeState({ ...song('Restored song', 'b'), playing: false, trackConfirmed: true }));
+  assert.equal(open().snapshot.title, 'Restored song');
+  assert.equal(open().snapshot.trackId, 'bbbbbbbbbbb');
+  assert.equal(open().snapshot.image, '');
+});
+
 test('keeps confirmed controls and playback time with one track', t => {
   let clock = 0;
   const { open } = fixture(t, () => clock);

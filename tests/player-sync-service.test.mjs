@@ -33,7 +33,7 @@ function harness({ observe = async () => [] } = {}) {
     browserChannel: { start() {} }, pageControls: { playerPlayback() {} },
   });
   return { players, requests, applied, get present() { return present; },
-    sync: title => players.synchronize('sync', { title }, { tab: { id: 7 }, frameId: 0 }) };
+    sync: (title, fields) => players.synchronize('sync', { title, ...fields }, { tab: { id: 7 }, frameId: 0 }) };
 }
 
 test('tab closure waits for every overlapping sync, even when the latest request finishes first', async () => {
@@ -69,7 +69,34 @@ test('a snapshot still being observed when its tab closes is never posted', asyn
   const sync = h.sync('navigating');
   await flush();
   h.players.onRemoved(7); await flush();
+  assert.deepEqual(h.applied, []);
   observation.resolve([]); await sync;
+  await flush();
   assert.deepEqual(h.applied, ['closed']);
   assert.equal(h.requests.length, 0);
+});
+
+test('a restored, paused player title captured before closing is still forwarded and saved', async () => {
+  const observation = deferred();
+  const h = harness({ observe: () => observation.promise });
+  const sync = h.sync('Restored selection', { trackConfirmed: true, playing: false });
+  await flush();
+  h.players.onRemoved(7);
+  observation.reject(new Error('tab closed'));
+  await flush();
+  h.requests[0].resolve(); await sync; await flush();
+  assert.deepEqual(h.applied, ['Restored selection', 'closed']);
+});
+
+test('an older confirmed title still being enriched cannot replace a newer selection', async () => {
+  const first = deferred();
+  let calls = 0;
+  const h = harness({ observe: async () => ++calls === 1 ? first.promise : [] });
+  const old = h.sync('Prior selection', { trackConfirmed: true });
+  await flush();
+  const recent = h.sync('Restored selection', { trackConfirmed: true });
+  await flush();
+  h.requests[0].resolve(); await recent;
+  first.resolve([]); await old;
+  assert.deepEqual(h.applied, ['Restored selection']);
 });

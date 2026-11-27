@@ -143,6 +143,9 @@
   "nowPlayingLabel": {
     "message": "正在播放"
   },
+  "lastTrackLabel": {
+    "message": "上次的歌曲"
+  },
   "playerWaiting": {
     "message": "正在等待 YouTube Music"
   },

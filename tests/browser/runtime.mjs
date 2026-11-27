@@ -184,6 +184,25 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     });
     assert.equal(response.status, 200);
   };
+  const watch = `${musicURL}watch?v=aaaaaaaaaaa`;
+  const restored = await browser.newPage();
+  await restored.goto(watch);
+  await until(() => worker.evaluate(async () => (await chrome.storage.local.get('lastTrack')).lastTrack?.trackId === 'aaaaaaaaaaa'),
+    'Chrome saves a restored selection before playback');
+  await until(async () => {
+    const data = await readFile(join(temp, 'MusicDeckBridge', 'last-track.json'), 'utf8').catch(error => {
+      if (error.code === 'ENOENT') return '{}';
+      throw error;
+    });
+    return JSON.parse(data).track?.trackId === 'aaaaaaaaaaa';
+  }, 'bridge saves a restored selection before playback');
+  assert.equal(await restored.evaluate(() => playing), false);
+  await restored.close();
+  assert.equal((await worker.evaluate(() => localPlayer.check())).savedPlayer?.key, 'aaaaaaaaaaa');
+  assert.deepEqual(await worker.evaluate(() => localPlayer.savedControl({ command: 'toggle', trackKey: 'aaaaaaaaaaa' })), { ok: true });
+  const reopened = await until(() => browser.pages().find(page => page.url() === watch), 'reopened saved track');
+  assert.equal(await reopened.evaluate(() => playing), true);
+  await reopened.close();
   // Every input starts with zero music tabs. Real tab navigation, script injection,
   // runtime messaging, token validation and result ACKs are used without API mocks.
   for (const type of ['toggle', 'nowplaying', 'prev', 'next', 'mute', 'like', 'dislike', 'volume_delta', 'open']) {
@@ -551,5 +570,5 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   assert.equal(savedTrack.repeatMode, 'ONE');
   assert.equal(savedTrack.shuffleEnabled, false);
   assert.equal(savedTrack.rating, 'LIKE');
-  t.diagnostic(`Chromium ${version}; startup/destination recovery, interrupted Previous, receiver recovery, toolbar controls, standalone fallback, reconnection, protocol blocking and the saved track state after browser exit passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
+  t.diagnostic(`Chromium ${version}; paused selection capture, saved-track reopening, startup recovery, toolbar controls, reconnection and saved state after browser exit passed. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
 });

@@ -143,6 +143,9 @@
   "nowPlayingLabel": {
     "message": "再生中"
   },
+  "lastTrackLabel": {
+    "message": "最後の曲"
+  },
   "playerWaiting": {
     "message": "YouTube Music を待っています"
   },

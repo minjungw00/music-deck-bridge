@@ -56,7 +56,9 @@
       let opened = command.nativeLaunched === true;
       if (!tab) {
         if (!await allowed(true)) return denied();
-        tab = await chrome.tabs.create({ url: MUSIC_URL, active: true });
+        const url = command.type === 'open' && /^[\w-]{11}$/.test(command.videoId || '') ?
+          `${MUSIC_URL}watch?v=${command.videoId}` : MUSIC_URL;
+        tab = await chrome.tabs.create({ url, active: true });
         opened = true;
       }
       const resuming = tab.discarded || tab.frozen || tab.status === 'loading';

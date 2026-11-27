@@ -71,7 +71,7 @@
       return data.bridgeToken || '';
     }
 
-    return { post, pairedToken, configuredPort, setLocalPort, validPort, failure,
+    return { post, pairedToken, configuredPort, setLocalPort, validPort, failure, storageReady,
       async saveToken(token) { await storageReady; await chrome.storage.local.set({ bridgeToken: token }); },
       async removeToken() { await storageReady; await chrome.storage.local.remove('bridgeToken'); },
       blocked: protocolBlocked, get compatibility() { return bridgeCompatibility; },

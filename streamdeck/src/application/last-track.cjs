@@ -67,7 +67,7 @@ function createLastTrack({ storage, onChange, onError = () => {}, now = Date.now
       if (!scope || !state?.title) return;
       const key = trackKey(state);
       const sameTrack = key === confirmedKey;
-      if (!(state.playbackConfirmed ?? state.playing) && !sameTrack) return;
+      if (!state.trackConfirmed && !(state.playbackConfirmed ?? state.playing) && !sameTrack) return;
       const previous = sameTrack ? snapshot : null;
       const cached = previous?.image || '';
       const volume = volumeFields(state) ?? (previous && volumeFields(previous));

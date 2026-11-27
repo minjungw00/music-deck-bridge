@@ -1,6 +1,6 @@
 'use strict';
 (function (root) {
-  function createManagementService({ client, browserChannel, translate = () => '' }) {
+  function createManagementService({ client, browserChannel, lastPlayer, translate = () => '' }) {
     const { post, pairedToken, configuredPort, setLocalPort, validPort } = client;
     let pending = Promise.resolve();
     function serialize(operation) {
@@ -72,6 +72,7 @@
           }
         }
         await client.removeToken();
+        await lastPlayer?.clear();
         client.clearCompatibility();
         return { ok: true };
       },
