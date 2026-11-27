@@ -20,11 +20,11 @@
         ...playbackTime(state) };
     }
     if (type === 'repeat' || type === 'shuffle') return await changeQueueControl();
-    if (!['play', 'toggle', 'next', 'prev'].includes(type)) return { ok: false };
+    if (!['play', 'pause', 'toggle', 'next', 'prev'].includes(type)) return { ok: false };
 
     const sequence = ++control.sequence;
-    if (type === 'toggle' || type === 'play') control.interrupt = sequence;
     const navigation = type === 'next' || type === 'prev';
+    if (!navigation) control.interrupt = sequence;
     const expires = Number(expiresAt) || Infinity;
     let deadline = Math.min(expires, Date.now() + (dispatchOnly ? 30000 : 10000));
     const diagnostic = createDiagnostics();
@@ -100,7 +100,7 @@
         /^[\w-]{11}$/.test(state.key) && typeof state.api?.playVideo === 'function';
     }
     function canPauseDuringBuffering(state) {
-      return type === 'toggle' && state.state === 3 &&
+      return (type === 'toggle' || type === 'pause') && state.state === 3 &&
         /^[\w-]{11}$/.test(state.key) && typeof state.api?.pauseVideo === 'function';
     }
     function wait() { return new Promise(resolve => setTimeout(resolve, 80)); }
@@ -168,16 +168,16 @@
         diagnostic.phase = 'confirm';
         return { before };
       }
-      const selector = ({ play: '.play-pause-button', toggle: '.play-pause-button',
-        next: '.next-button', prev: '.previous-button' })[type];
-      const button = document.querySelector('ytmusic-player-bar ' + selector);
-      if (!usable(button)) return { result: { ok: false, retry: true } };
+      if (type === 'pause' && !before.playing) return { result: { ok: true } };
+      const button = navigation ? document.querySelector(`ytmusic-player-bar .${type === 'next' ? 'next' : 'previous'}-button`) : playButton();
+      const bufferingPause = canPauseDuringBuffering(before);
+      const explicitPause = type === 'pause' && typeof before.api?.pauseVideo === 'function';
+      if (!usable(button) && !explicitPause) return { result: { ok: false, retry: true } };
       if (!events.subscribed) events.subscribe(before);
       events.watchSeek(before.media);
       control.latest = sequence;
-      const bufferingPause = canPauseDuringBuffering(before);
       // Retain a restored track's Play intent if its first API call is ignored.
-      if (bufferingPause) requestPause(before);
+      if (bufferingPause || explicitPause) requestPause(before);
       else if (!navigation && before.ready && before.state === -1 && !(before.media?.readyState > 0) &&
           typeof before.api?.playVideo === 'function') {
         await requestPlay(before, true);
@@ -192,7 +192,7 @@
     }
 
     async function confirm(before, recoverBufferedPause) {
-      const desiredPlaying = type === 'play' || !before.playing;
+      const desiredPlaying = type !== 'pause' && (type === 'play' || !before.playing);
       const outcome = { navigated: false, destinationRecoveryStarted: false, played: new Set() };
       while (Date.now() < deadline) {
         const after = read();

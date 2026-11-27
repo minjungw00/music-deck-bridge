@@ -305,6 +305,41 @@ test('worker receives Pause and its final ACK while Previous verification is sti
   assert.deepEqual(acknowledgments.map(item => item.id), ['pause', 'previous']);
 });
 
+test('a second toggle during browser startup waits for Play and issues only Pause', async () => {
+  for (const playOk of [true, false]) {
+    let finishPlay;
+    const play = new Promise(resolve => { finishPlay = resolve; });
+    const h = harness({ response: msg => msg.type === 'bridge-command' ? { ok: true, pending: 1 } :
+      msg.id === 'first' ? play : { ok: true } });
+    await new Promise(resolve => setImmediate(resolve));
+    h.storage.bridgeToken = 'paired-token';
+    const acknowledgments = new Map();
+    const commands = [{ id: 'first', type: 'toggle', nativeLaunched: true }, { id: 'second', type: 'toggle' }];
+    h.context.fetch = async (url, options) => {
+      if (url.endsWith('/status')) return { ok: true, json: async () => ({ paired: true }) };
+      if (url.endsWith('/browser-result')) {
+        const result = JSON.parse(options.body);
+        acknowledgments.set(result.id, result);
+        return { ok: true, json: async () => ({ ok: true }) };
+      }
+      const command = commands.shift();
+      return { ok: true, json: async () => command ? { commands: [command] } : {} };
+    };
+    const inputs = () => h.calls.filter(c => c[0] === 'message' && c[2].type === 'bridge-command').map(c => c[2].command.type);
+    const listening = h.api.startBrowserListener();
+    try {
+      await new Promise(resolve => setImmediate(resolve));
+      assert.deepEqual(inputs(), ['play']);
+      assert.equal(commands.length, 0, 'the second input has already reached the worker');
+    } finally { finishPlay({ ok: playOk, reason: 'autoplay-blocked' }); await listening; }
+    assert.deepEqual(inputs(), playOk ? ['play', 'pause'] : ['play']);
+    assert.equal(acknowledgments.get('first').ok, playOk);
+    assert.equal(acknowledgments.get('second').ok, playOk);
+    if (!playOk) assert.equal(acknowledgments.get('second').reason, 'command-superseded');
+    assert.equal(h.calls.filter(c => c[0] === 'create').length, 1);
+  }
+});
+
 test('server-side revocation during startup prevents input even when local credentials remain', async () => {
   const h = harness({ tabs: [{ id: 1, windowId: 10 }] });
   await new Promise(resolve => setImmediate(resolve));

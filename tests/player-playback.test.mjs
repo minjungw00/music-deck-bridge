@@ -594,6 +594,17 @@ test('a buffering Pause that takes effect immediately sends a single explicit re
   assert.equal(h.clicks(), 0);
 });
 
+test('explicit Pause never starts playback after startup has already been paused', async () => {
+  let pauses = 0;
+  const h = harness({ initialState: 1, pause(confirm) { pauses++; confirm(); } });
+  assert.equal((await h.send('pause')).ok, true);
+  assert.equal((await h.send('pause')).ok, true);
+  assert.equal(h.state(), 2);
+  assert.equal(pauses, 1);
+  assert.equal(h.clicks(), 0);
+  assert.equal(h.plays(), 0);
+});
+
 test('buffering Pause recovery skips a different track, a replacement API and a later input', async () => {
   for (const change of ['track', 'api', 'input']) {
     let pauses = 0;

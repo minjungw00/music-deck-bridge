@@ -13,6 +13,7 @@
 - Place Chrome connection and port settings first while Chrome is disconnected.
 - Recognize the installed YouTube Music window in `minimal-ui` mode and prefer it over regular browser tabs.
 - Send an explicit Pause during initial buffering when supported, with one retry if the same track starts playing. Explicit Play waits for confirmed playback during buffering, and diagnostics distinguish missing results from player confirmation failures.
+- Apply a second Play / Pause press during Chrome startup as Pause after the initial Play is confirmed.
 
 ## v1.2.0 — 2026-11-14
 

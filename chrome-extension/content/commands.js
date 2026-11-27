@@ -19,6 +19,7 @@
       let result = { ok: false };
       switch (message.type) {
         case 'play':
+        case 'pause':
         case 'toggle':
         case 'next':
         case 'prev':

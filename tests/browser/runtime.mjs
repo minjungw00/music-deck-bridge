@@ -613,4 +613,20 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     shuffle: document.body.dataset.shuffle, playing, playRequests: document.body.dataset.playRequest })),
   { repeat: ' ALL', shuffle: '1', playing: false, playRequests: undefined });
   t.diagnostic(`Chromium ${version}; Repeat and Shuffle pressed before browser startup each changed the restored player once. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
+
+  await browser.close();
+  browser = null;
+  delayedQueue = false;
+  restoredStartup = true;
+  ignoredStartupRequests = 1;
+  await postEvent('toggle');
+  await postEvent('toggle');
+  await new Promise(resolve => setTimeout(resolve, 2200));
+  browser = await launchBrowser();
+  const startupPage = await until(() => browser.pages().find(page => page.url().startsWith(musicURL)), 'two queued playback inputs open a music tab');
+  await until(() => startupPage.evaluate(() => document.body.dataset.pauseRequest === '1' && !playing), 'second input pauses startup playback');
+  await new Promise(resolve => setTimeout(resolve, 1100));
+  assert.deepEqual(await startupPage.evaluate(() => [document.body.dataset.playRequest, document.body.dataset.ignoredStartupRequest,
+    document.body.dataset.toggle, document.querySelector('#movie_player').getPlayerState()]), ['2', '1', undefined, 2]);
+  t.diagnostic('Two playback inputs queued with Chromium closed paused the restored track after its delayed first Play. The test runner restarted Chromium.');
 });
