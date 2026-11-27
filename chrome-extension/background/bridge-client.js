@@ -4,6 +4,8 @@
     const extensionManifest = chrome.runtime.getManifest?.() || {};
     const EXTENSION_VERSION = extensionManifest.version_name || extensionManifest.version || 'unknown';
     let bridgeCompatibility = null;
+    let connectionRevision = 0;
+    let portWrites = Promise.resolve();
     const protocolBlocked = () => bridgeCompatibility?.compatible === false;
     function protocolInfo(data) {
       return { ...protocol.negotiate(data, 'extension'),
@@ -24,15 +26,40 @@
     void storageReady.catch(() => {});
     const DEFAULT_PORT = 17864;
     const validPort = p => Number.isInteger(Number(p)) && Number(p) >= 1024 && Number(p) <= 65535;
-    async function configuredPort() {
+    async function readConnection() {
       await storageReady;
-      const data = await chrome.storage.local.get('bridgePort');
-      return validPort(data.bridgePort) ? Number(data.bridgePort) : DEFAULT_PORT;
+      while (true) {
+        const writes = portWrites;
+        await writes;
+        if (writes !== portWrites) continue;
+        const revision = connectionRevision;
+        const data = await chrome.storage.local.get('bridgePort');
+        if (revision === connectionRevision && writes === portWrites) {
+          return { port: validPort(data.bridgePort) ? Number(data.bridgePort) : DEFAULT_PORT, revision };
+        }
+      }
     }
-    async function setLocalPort(port) { await chrome.storage.local.set({ bridgePort: port }); }
+    async function configuredPort() { return (await readConnection()).port; }
+    function writePort(port, fromRevision) {
+      const operation = portWrites.then(async () => {
+        await storageReady;
+        if (fromRevision !== undefined) {
+          // Recheck at the write boundary, after any preceding storage operation.
+          if (fromRevision !== connectionRevision) return;
+          connectionRevision++;
+        }
+        await chrome.storage.local.set({ bridgePort: port });
+      });
+      portWrites = operation.catch(() => {});
+      return operation;
+    }
+    function setLocalPort(port) {
+      connectionRevision++;
+      return writePort(port);
+    }
 
     async function post(endpoint, payload, timeout = 3000) {
-      const port = await configuredPort();
+      const { port, revision } = await readConnection();
       const response = await fetch(`http://127.0.0.1:${port}${endpoint}`, {
         method: 'POST', mode: 'cors', cache: 'no-store',
         headers: { 'Content-Type': 'application/json' },
@@ -47,7 +74,7 @@
         if (data.errorCode && info.compatible && ['protocol-incompatible', 'invalid-protocol'].includes(data.errorCode)) {
           Object.assign(info, { compatible: false, errorCode: 'invalid-protocol', updateRequired: null, negotiatedProtocolVersion: null });
         }
-        bridgeCompatibility = info;
+        if (revision === connectionRevision) bridgeCompatibility = info;
         if (!info.compatible) {
           const error = new Error(protocolMessage(info));
           error.httpStatus = response.status; error.compatibility = info;
@@ -61,7 +88,7 @@
       }
       // Follow live port changes announced by the paired bridge.
       if (validPort(data.serverPort) && Number(data.serverPort) !== port) {
-        await setLocalPort(Number(data.serverPort));
+        await writePort(Number(data.serverPort), revision);
       }
       return data;
     }
@@ -72,10 +99,10 @@
     }
 
     return { post, pairedToken, configuredPort, setLocalPort, validPort, failure, storageReady,
-      async saveToken(token) { await storageReady; await chrome.storage.local.set({ bridgeToken: token }); },
-      async removeToken() { await storageReady; await chrome.storage.local.remove('bridgeToken'); },
+      async saveToken(token) { connectionRevision++; await storageReady; await chrome.storage.local.set({ bridgeToken: token }); },
+      async removeToken() { connectionRevision++; await storageReady; await chrome.storage.local.remove('bridgeToken'); },
       blocked: protocolBlocked, get compatibility() { return bridgeCompatibility; },
-      clearCompatibility() { bridgeCompatibility = null; } };
+      clearCompatibility() { connectionRevision++; bridgeCompatibility = null; } };
   }
   root.MusicDeckBridgeClient = Object.freeze({ create: createBridgeClient });
 })(globalThis);

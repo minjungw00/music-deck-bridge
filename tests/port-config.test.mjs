@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import { createServer } from 'node:net';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import vm from 'node:vm';
 
 const origin = 'chrome-extension://' + 'a'.repeat(32);
 async function post(port, route, data) {
@@ -113,4 +114,26 @@ test('Chrome extension uses stored custom port and follows live port changes ann
   assert.equal(result.localOnly,false);
   assert.equal(storage.bridgePort,23113);
   assert.ok(requested.some(url=>url.startsWith('http://127.0.0.1:23112/configure-port')));
+});
+
+test('a response from an earlier connection cannot restore its port or compatibility after a local change', async () => {
+  const stored = { bridgePort: 23111 };
+  let started, respond;
+  const sent = new Promise(resolve => { started = resolve; });
+  const waiting = new Promise(resolve => { respond = resolve; });
+  const chrome = {
+    storage: { local: { setAccessLevel: async () => {}, get: async key => ({ [key]: stored[key] }),
+      set: async values => Object.assign(stored, values) } },
+    runtime: { onMessage: { addListener() {} }, onInstalled: { addListener() {} }, onStartup: { addListener() {} } },
+    alarms: { onAlarm: { addListener() {} } },
+  };
+  const context = loadExtension({ chrome, AbortSignal, fetch: url => { started(url); return waiting; } });
+  const client = vm.runInContext('bridgeClient', context);
+  const pending = client.post('/status', { token: 'fixture' });
+  assert.equal(await sent, 'http://127.0.0.1:23111/status');
+  await client.setLocalPort(23113);
+  respond({ ok: true, status: 200, json: async () => ({ protocolVersion: 1, serverPort: 23112 }) });
+  await pending;
+  assert.equal(await client.configuredPort(), 23113);
+  assert.equal(client.compatibility, null);
 });
