@@ -1,0 +1,35 @@
+Chrome 팝업이나 Elgato Stream Deck에서 YouTube Music을 제어하세요. Chrome 탭 또는 Chrome으로 설치한 YouTube Music 앱에서 음악을 들으며 현재 곡, 아티스트, 앨범 이미지를 확인할 수 있습니다.
+
+주요 기능
+- 재생·일시정지, 이전·다음 곡, 좋아요·싫어요, 볼륨 조절, 음소거.
+- 현재 곡 제목, 아티스트, 앨범 이미지 표시.
+- Stream Deck 버튼 제어 및 YouTube Music 실행.
+- Stream Deck +의 볼륨·곡 이동 다이얼.
+- 플레이어에서 지원하는 반복·셔플 제어.
+- Stream Deck 버튼에 앨범 이미지를 개별로 또는 여러 버튼에 연결해 표시. 동작 아이콘 표시 선택 가능.
+
+팝업은 Stream Deck 없이 사용할 수 있습니다. Stream Deck 제어에는 같은 Windows PC에 동반 플러그인이 필요합니다. 좋아요·싫어요는 로그인된 YouTube Music 플레이어에서 해당 기능을 사용할 수 있어야 동작합니다. 팝업은 마지막 곡 한 개와 당시의 조작 상태를 이 기기에 저장합니다.
+
+시작하기
+1. Chrome에 이 확장 프로그램을 추가합니다.
+2. music.youtube.com이나 YouTube Music Chrome 앱을 열고 곡을 재생합니다.
+3. 도구 모음에서 확장 프로그램의 팝업을 열어 조작합니다.
+
+STREAM DECK 연결 — 선택 사항
+1. Elgato Marketplace에서 동반 플러그인을 설치합니다.
+https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd?utm_source=chrome_web_store&utm_medium=referral&utm_campaign=companion_setup
+2. Stream Deck에 Music Deck Bridge 액션을 배치하고 설정에서 'PIN 발급'을 누릅니다.
+3. 팝업에 10분 이내에 6자리 PIN을 입력한 뒤 연결합니다.
+
+사용 환경 및 언어
+Windows 10/11, Google Chrome 116 이상. Stream Deck 제어에는 Stream Deck 소프트웨어 7.1 이상과 기기가 필요하며, 다이얼은 Stream Deck + 전용입니다.
+UI 지원: 영어, 한국어, 중국어 간체·번체, 일본어, 스페인어, 프랑스어, 독일어.
+
+개인정보
+연결 인증 정보는 로컬에 저장합니다. 앨범 이미지는 Google·YouTube 이미지 서버에서 받아옵니다. 청취 데이터를 프로젝트 관리자에게 보내지 않습니다. 자세한 내용은 개인정보 처리방침을 확인하세요.
+
+Google·YouTube·Elgato·Corsair의 공식 제품이나 제휴 제품이 아닌 독립적인 비공식 연동 도구입니다.
+
+설치 안내: https://github.com/minjungw00/music-deck-bridge/blob/main/docs/installation.ko.md
+개인정보 처리방침: https://github.com/minjungw00/music-deck-bridge/blob/main/PRIVACY.md
+지원: https://github.com/minjungw00/music-deck-bridge/issues

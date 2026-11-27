@@ -1,0 +1,35 @@
+Contrôlez YouTube Music depuis la fenêtre contextuelle de Chrome ou Elgato Stream Deck. Consultez le morceau, l’artiste et la pochette de l’album pendant l’écoute dans un onglet Chrome ou dans l’application YouTube Music installée depuis Chrome.
+
+FONCTIONNALITÉS
+- Lecture/pause, piste précédente/suivante, J’aime/Je n’aime pas, réglage du volume et mode muet.
+- Affichage du morceau, de l’artiste et de la pochette de l’album.
+- Commandes par les touches du Stream Deck et ouverture de YouTube Music.
+- Molettes de volume et de navigation entre les pistes sur Stream Deck +.
+- Répétition et lecture aléatoire lorsque le lecteur les prend en charge.
+- Pochette d’album sur une touche Stream Deck ou répartie entre plusieurs touches, avec une icône d’action facultative.
+
+La fenêtre contextuelle fonctionne sans Stream Deck. Le contrôle depuis Stream Deck nécessite le plugin compagnon sur le même PC Windows. Les évaluations J’aime/Je n’aime pas nécessitent une connexion à YouTube Music et la disponibilité des commandes correspondantes dans le lecteur. La fenêtre contextuelle conserve sur cet appareil le dernier morceau et l’état de ses commandes.
+
+PREMIERS PAS
+1. Ajoutez cette extension à Chrome.
+2. Ouvrez music.youtube.com ou l’application YouTube Music pour Chrome et lancez un morceau.
+3. Ouvrez la fenêtre contextuelle de l’extension depuis la barre d’outils pour utiliser les commandes.
+
+CONNEXION À STREAM DECK — FACULTATIVE
+1. Installez le plugin compagnon depuis Elgato Marketplace :
+https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd?utm_source=chrome_web_store&utm_medium=referral&utm_campaign=companion_setup
+2. Ajoutez une action Music Deck Bridge dans Stream Deck, ouvrez ses paramètres et sélectionnez « Générer un PIN ».
+3. Saisissez le PIN à six chiffres dans la fenêtre contextuelle dans les 10 minutes, puis sélectionnez « Associer ».
+
+CONFIGURATION REQUISE ET LANGUES
+Windows 10/11 et Google Chrome 116 ou version ultérieure. Le contrôle depuis Stream Deck nécessite le logiciel Stream Deck 7.1 ou version ultérieure et un appareil Stream Deck. Les commandes par molette nécessitent Stream Deck +.
+Interface : anglais, coréen, chinois simplifié, chinois traditionnel, japonais, espagnol, français et allemand.
+
+CONFIDENTIALITÉ
+Les identifiants d’association sont enregistrés localement. Les pochettes proviennent des serveurs d’images de Google/YouTube. Aucune donnée d’écoute n’est envoyée au responsable du projet. Consultez la politique de confidentialité pour en savoir plus.
+
+Intégration indépendante et non officielle, sans affiliation ni approbation de Google, YouTube, Elgato ou Corsair.
+
+Guide d’installation (en anglais) : https://github.com/minjungw00/music-deck-bridge/blob/main/docs/installation.en.md
+Politique de confidentialité : https://github.com/minjungw00/music-deck-bridge/blob/main/PRIVACY.md
+Assistance : https://github.com/minjungw00/music-deck-bridge/issues

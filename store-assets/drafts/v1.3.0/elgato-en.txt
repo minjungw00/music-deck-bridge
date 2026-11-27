@@ -1,0 +1,12 @@
+Control YouTube Music from Stream Deck while listening in Chrome or the YouTube Music app installed through Chrome. Use keys for playback, track navigation, ratings, volume, mute, Repeat and Shuffle, where supported by the player. See the song, artist and album artwork on your device.
+
+Display album artwork on one key or across several keys, with optional action icons. Stream Deck + offers volume and current-track dials. Stream Deck can continue to show the most recent track when Chrome is closed.
+
+Install the companion Chrome extension on the same Windows PC:
+https://chromewebstore.google.com/detail/ldipcjgadbppphalmibkofhigjffnlca?utm_source=elgato_marketplace&utm_medium=referral&utm_campaign=companion_setup
+
+Add a Music Deck Bridge action and select Generate PIN in its settings. Enter the six-digit PIN in the extension popup and select Connect. The Chrome popup can also control YouTube Music on its own.
+
+Requires Windows 10/11, Chrome 116+ and Stream Deck 7.1+. Dial actions require Stream Deck +.
+UI: English, Korean, Simplified/Traditional Chinese, Japanese, Spanish, French and German.
+Unofficial integration.

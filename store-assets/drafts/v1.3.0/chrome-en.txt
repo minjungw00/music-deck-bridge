@@ -1,0 +1,35 @@
+Control YouTube Music from the Chrome popup or Elgato Stream Deck. See the current song, artist and album artwork while listening in a Chrome tab or the YouTube Music app installed through Chrome.
+
+FEATURES
+- Play/pause, previous/next, Like/Dislike, volume adjustment and mute.
+- Current song, artist and album artwork display.
+- Stream Deck key controls and Open YouTube Music.
+- Volume and track-navigation dials on Stream Deck +.
+- Repeat and Shuffle when supported by the player.
+- Individual or linked album artwork on Stream Deck keys, with an optional action icon.
+
+The popup works without Stream Deck. Stream Deck control requires the companion plugin on the same Windows PC. Like/Dislike requires an available rating control in the signed-in YouTube Music player. The popup keeps one last track and its control state on this device.
+
+GET STARTED
+1. Add this extension to Chrome.
+2. Open music.youtube.com or the YouTube Music Chrome app and start a track.
+3. Open the extension's toolbar popup to use the controls.
+
+OPTIONAL STREAM DECK CONNECTION
+1. Install the companion plugin from Elgato Marketplace:
+https://marketplace.elgato.com/product/music-deck-bridge-044e81d9-9671-4277-bcb9-ce8b6d38c3fd?utm_source=chrome_web_store&utm_medium=referral&utm_campaign=companion_setup
+2. Add a Music Deck Bridge action in Stream Deck, open its settings and select Generate PIN.
+3. Enter the six-digit PIN in the extension popup within 10 minutes, then select Connect.
+
+REQUIREMENTS AND LANGUAGES
+Windows 10/11 and Google Chrome 116+. Stream Deck control requires Stream Deck software 7.1+ and a Stream Deck device. Dial actions require Stream Deck +.
+UI: English, Korean, Simplified Chinese, Traditional Chinese, Japanese, Spanish, French and German.
+
+PRIVACY
+Pairing credentials are stored locally. Album images are retrieved from Google/YouTube image servers. No listening data is sent to the project maintainer. See the privacy policy for details.
+
+Unofficial integration; not affiliated with or endorsed by Google, YouTube, Elgato or Corsair.
+
+Installation guide: https://github.com/minjungw00/music-deck-bridge/blob/main/docs/installation.en.md
+Privacy policy: https://github.com/minjungw00/music-deck-bridge/blob/main/PRIVACY.md
+Support: https://github.com/minjungw00/music-deck-bridge/issues

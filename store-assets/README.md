@@ -10,6 +10,10 @@ Start with the store-specific upload guide below. These guides cover future subm
 | Chrome Web Store | [Upload guide and sized exports](chrome/README.md#upload-files): 128px icon, localized 1280×800 screenshots and optional 440×280 promotional tile |
 | Both | [Submitted descriptions and English guidance](listing.en.md) / [한국어](listing.ko.md) and public [privacy policy](https://github.com/minjungw00/music-deck-bridge/blob/main/PRIVACY.md) |
 
+## 1.3.0 submission drafts
+
+The [1.3.0 draft index](drafts/v1.3.0/README.md) links to eight Chrome descriptions, two localized Chrome screenshots with sample data, the English Elgato description and separate What's new copy.
+
 ## 1.2.0 listing reference
 
 Both stores publish 1.2.0. The [store verification record](../docs/verification/stores.md#november-27-publication-verification) documents the live listings. The [1.2.0 draft index](drafts/v1.2.0/README.md) contains eight Chrome descriptions, the English Elgato description and seven reference translations, separate English release notes and store-specific UTM links. The local popup exports show the 1.1.1 UI.
