@@ -1,6 +1,6 @@
 # Release readiness
 
-Updated November 28, 2026 (Asia/Seoul) with native player verification, an isolated package rehearsal and store drafts. General installation starts with the [official stores](installation.en.md#method-1-official-stores).
+Updated November 28, 2026 (Asia/Seoul) with the latest dial checks and the maintainer's Elgato gallery selection. General installation starts with the [official stores](installation.en.md#method-1-official-stores).
 
 ## Current versions and distribution
 
@@ -23,8 +23,9 @@ The [runtime record](verification/runtime.md#current-evidence) is the source for
 
 | Area | Current evidence | Remaining limit |
 | --- | --- | --- |
+| November 28 final dial styling, product source `1a38762` | 337 Node tests passed in a serial run, along with static checks, two Python packaging tests, three Chromium fixtures and package checksums. Windows Stream Deck app captures confirmed the matching dial headings and icons. [Media and native app evidence](verification/media.md#november-28-revised-130-elgato-gallery) | Two suites cancelled during a local parallel run. Exact-source Windows/Ubuntu CI, physical-device output and PC reboot still need verification. |
 | November 28 Windows native and mixed-version checks, `394b941` | Live Chrome tab and installed app cycled Repeat and Shuffle through the paired bridge. The plugin saved the closed app's last track, artwork and playback settings. Both mixed upgrades from 1.2.0 retained pairing, port and popup playback. [Windows record](verification/runtime.md#november-28-native-youtube-music-controls) | Account sign-in, imported paused selection on the live site, physical output/input, PC reboot and Marketplace-processed installer require separate verification. |
-| November 28 isolated 1.3.0 package rehearsal, `394b941` product code | A temporary source copy passed stable version/tag-format verification, static checks, 336 Node tests, official Elgato validation and both package checksums. The locked npm audit reported zero vulnerabilities. [Store submission drafts](../store-assets/drafts/v1.3.0/README.md) include Chrome copy for eight locales, English Elgato copy and What's new, two localized Chrome screenshots and five Elgato gallery images. | Official promotion, exact tagged-source Windows/Ubuntu CI, final media selection, Maker Console processing and store submission remain pending. |
+| November 28 isolated 1.3.0 package rehearsal, `394b941` product code | A temporary source copy passed stable version/tag-format verification, static checks, 336 Node tests, official Elgato validation and both package checksums. The locked npm audit reported zero vulnerabilities. | Official promotion, exact tagged-source Windows/Ubuntu CI, Maker Console processing and store submission remain pending. |
 | November 27 Windows mixed-version upgrade, `a512a7f` | Both `1.2.0` / `1.3.0-dev` combinations retained pairing and the saved port. Toolbar Play/Pause worked in both, and the new popup used Chrome-local Repeat and Shuffle with the old plugin. [Mixed-version record](verification/runtime.md#november-27-windows-mixed-version-upgrade) | Packaged software used a local player model. Physical Stream Deck profile migration and Maker Console processing require separate verification. |
 | November 27 Windows installed-app priority, `a512a7f` | The paired bridge preferred the paused YouTube Music app over a playing tab and returned to the tab when the app closed. Local checks passed 316 Node tests, two Python packaging tests, static checks and three Chromium fixtures. [App record](verification/runtime.md#november-27-windows-installed-app-priority) | Sign-in state, physical output and input, restoration after PC reboot and Maker Console processing remain open. |
 | November 27 Windows and YouTube Music, `e633272` | The installed build passed live Repeat, Shuffle and artwork checks. The Stream Deck + preview restored saved artwork after restart with Chrome fully closed, and the existing pair reconnected after Chrome reopened. The local run passed 315 Node tests, two Python packaging tests, static checks and three Chromium fixtures. [Runtime record](verification/runtime.md#november-27-windows-and-youtube-music) | This run reported the installed app as a browser tab. The follow-up above covers app selection. |
@@ -56,6 +57,16 @@ The [runtime record](verification/runtime.md#current-evidence) is the source for
 | Media and copy | Actual device capture retained; sample popup renderings show 1.1.1; sized exports and verbatim v1.1.1 submitted descriptions preserved | Later submitted copy and exact uploaded package/media identities were not supplied |
 
 ## Remaining work
+
+### 1.3.0
+
+The maintainer selected all five Elgato gallery PNGs at `9b866cd`. The submission index includes the selected gallery, two prepared Chrome screenshots and store copy. [Store submission index](../store-assets/drafts/v1.3.0/README.md)
+
+- Verify the latest build on physical Stream Deck hardware and after a PC reboot. Cover the new dial displays, linked artwork, and retention when Chrome is closed. The live YouTube Music check for an imported selection closed before playback also remains open.
+- Once authorized, promote `1.3.0-dev` to `1.3.0`, finish the changelog, verify Windows and Ubuntu CI against the tagged source, and verify the release package checksums. [Release checklist](development.md#release-checklist)
+- Complete both store submissions, including Chrome's privacy form. Verify the Maker Console processed installer on Windows, then record submission, approval, and publication separately. [Marketplace DRM record](verification/marketplace-drm.md) · [Store record](verification/stores.md)
+
+### 1.2.0 records and follow-up
 
 The authorized 1.2.0 GitHub release is complete through the direct publication path in the [release checklist](development.md#release-checklist). Exact tagged-source CI, both OS package payloads, draft downloads, release inventories and anonymous public bytes passed verification. Release notes disclose outstanding manual coverage and local startup-retry fixture/clock observations. Earlier releases remain in the [release record](verification/releases.md); the [runtime record](verification/runtime.md#current-evidence) preserves maintainer confirmation within its original scope.
 
