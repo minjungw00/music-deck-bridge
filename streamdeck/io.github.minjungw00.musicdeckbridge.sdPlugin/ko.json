@@ -3,7 +3,7 @@
   "Description": "Chrome 및 YouTube Music 앱을 Stream Deck에서 직접 제어합니다.",
   "io.github.minjungw00.musicdeckbridge.nowplaying": {
     "Name": "현재 곡",
-    "Tooltip": "앨범 아트·곡 정보 표시 및 재생/일시정지. 창이 없으면 YouTube Music을 실행합니다."
+    "Tooltip": "곡 제목과 가수명을 표시합니다. 누르면 재생 또는 일시정지합니다."
   },
   "io.github.minjungw00.musicdeckbridge.toggle": {
     "Name": "재생 / 일시정지",

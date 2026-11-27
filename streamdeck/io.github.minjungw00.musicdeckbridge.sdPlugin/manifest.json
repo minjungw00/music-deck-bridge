@@ -16,7 +16,7 @@
           "ShowTitle": true
         }
       ],
-      "Tooltip": "Show artwork, song and artist. Press to play/pause or open YouTube Music when closed."
+      "Tooltip": "Show the song title and artist. Press to play or pause."
     },
     {
       "Name": "Play / Pause",

@@ -81,6 +81,11 @@ test('real SDPI components localize their first rendered labels without changing
       });
       for (const select of selects) {
         assert.deepEqual(select.actual, select.expected, `${language}/${action}/${select.id}: rendered dropdown text`);
+        if (select.id === 'keyDisplay' && (language === 'ko' || language === 'en')) {
+          const [trackInfo, defaultDisplay] = language === 'ko' ? ['곡 정보', '기본 표시'] : ['Track info', 'Default'];
+          const [defaultOption] = select.actual;
+          assert.deepEqual(defaultOption, ['default', action === 'nowplaying' ? trackInfo : defaultDisplay]);
+        }
         if (select.id === 'linkedArtworkFit') {
           assert.equal(select.selected, 'height');
           assert.equal(select.value, 'height');

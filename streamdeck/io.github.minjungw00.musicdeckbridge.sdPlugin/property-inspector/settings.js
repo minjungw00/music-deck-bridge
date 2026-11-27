@@ -46,7 +46,7 @@ function localize() {
   document.documentElement.lang = MusicDeckLanguage.html(language);
   document.title = `Music Deck Bridge – ${t('settingsTitle')}`;
   setLabel('keyDisplayRow', t('keyDisplay'));
-  $('optKeyDefault').textContent = t('keyDisplayDefault');
+  $('optKeyDefault').textContent = t(currentTrackKey ? 'keyDisplayTrackInfo' : 'keyDisplayDefault');
   $('optKeyArtwork').textContent = t('dialArtwork');
   $('optKeyLinked').textContent = t('keyDisplayLinked');
   setLabel('keyArtworkIconRow', t('dialArtwork'));

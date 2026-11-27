@@ -3,7 +3,7 @@
   "Description": "Contrôlez YouTube Music depuis Elgato Stream Deck à l’aide d’une extension Chrome.",
   "io.github.minjungw00.musicdeckbridge.nowplaying": {
     "Name": "Lecture en cours",
-    "Tooltip": "Affiche la pochette, le titre et l’artiste. Appuyez pour lire/mettre en pause ou ouvrir YouTube Music s’il est fermé."
+    "Tooltip": "Affiche le titre et l’artiste. Appuyez pour lancer ou mettre en pause la lecture."
   },
   "io.github.minjungw00.musicdeckbridge.toggle": {
     "Name": "Lecture / Pause",

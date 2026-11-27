@@ -3,7 +3,7 @@
   "Description": "透過 Chrome 擴充功能，使用 Elgato Stream Deck 控制 YouTube Music。",
   "io.github.minjungw00.musicdeckbridge.nowplaying": {
     "Name": "正在播放",
-    "Tooltip": "顯示封面、歌曲名稱及歌手。按下以播放/暫停；沒有播放器時會開啟 YouTube Music。"
+    "Tooltip": "顯示歌曲名稱和歌手。按下可播放或暫停。"
   },
   "io.github.minjungw00.musicdeckbridge.toggle": {
     "Name": "播放 / 暫停",

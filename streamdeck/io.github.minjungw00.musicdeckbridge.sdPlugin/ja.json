@@ -3,7 +3,7 @@
   "Description": "Chrome 拡張機能を使い、Elgato Stream Deck から YouTube Music を操作できます。",
   "io.github.minjungw00.musicdeckbridge.nowplaying": {
     "Name": "再生中の曲",
-    "Tooltip": "アルバムアート・曲名・アーティストを表示。押すと再生/一時停止。プレーヤーがない場合は YouTube Music を開きます。"
+    "Tooltip": "曲名とアーティストを表示します。押すと再生または一時停止します。"
   },
   "io.github.minjungw00.musicdeckbridge.toggle": {
     "Name": "再生 / 一時停止",

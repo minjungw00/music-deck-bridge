@@ -6,6 +6,7 @@
 - Add a Song name mode to the Current Track Dial alongside Icon + song name and Album artwork. Its text modes use the Volume Dial's YouTube Music heading style, and the playback icon matches the volume icon's size and position. Both text modes support truncation and scrolling.
 - Use transparent icon backgrounds on the Volume and Current Track touch-strip displays.
 - Add individual and linked album artwork for all plugin keys. Artwork is displayed on its own by default, with an optional transparent action icon in nine positions. Linked layouts preserve diagonal positions and empty cells, offer proportional width or height fitting, and can compensate for measured gaps between physical keys.
+- Label the Now Playing key’s default display mode Track info and clarify that the key shows the song title and artist and plays or pauses when pressed.
 - Arrange the Chrome popup in three edge-aligned rows for transport, ratings and queue controls, and volume.
 - Keep Open YouTube Music below the volume row in the Chrome popup. Style the connection settings toggle as a matching button with a distinct expanded state, and add icon buttons for Marketplace installation and opening Stream Deck.
 - Keep the latest track confirmed by the YouTube Music player, including restored selections before playback. Stream Deck retains artwork, volume, mute, Repeat, Shuffle, rating and the last observed playback time for display. The Chrome popup retains one track in its profile and can reopen YouTube Music and control the same track after its tab closes.

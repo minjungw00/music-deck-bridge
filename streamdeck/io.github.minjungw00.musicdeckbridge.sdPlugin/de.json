@@ -3,7 +3,7 @@
   "Description": "YouTube Music über eine Chrome-Erweiterung mit Elgato Stream Deck steuern.",
   "io.github.minjungw00.musicdeckbridge.nowplaying": {
     "Name": "Aktuelle Wiedergabe",
-    "Tooltip": "Zeigt Cover, Titel und Interpret. Drücken für Wiedergabe/Pause oder zum Öffnen von YouTube Music, falls geschlossen."
+    "Tooltip": "Zeigt den Songtitel und den Interpreten an. Drücken, um die Wiedergabe zu starten oder zu pausieren."
   },
   "io.github.minjungw00.musicdeckbridge.toggle": {
     "Name": "Wiedergabe / Pause",

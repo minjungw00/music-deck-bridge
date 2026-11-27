@@ -3,7 +3,7 @@
   "Description": "Control YouTube Music directly in Chrome.",
   "io.github.minjungw00.musicdeckbridge.nowplaying": {
     "Name": "Now Playing",
-    "Tooltip": "Show artwork, song and artist. Press to play/pause or open YouTube Music when closed."
+    "Tooltip": "Show the song title and artist. Press to play or pause."
   },
   "io.github.minjungw00.musicdeckbridge.toggle": {
     "Name": "Play / Pause",
