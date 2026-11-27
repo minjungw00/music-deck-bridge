@@ -73,7 +73,8 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     const selected = (kind === 'like' || kind === 'dislike') && state?.rating === kind.toUpperCase();
     return `imgs/actions/${kind}/${selected ? 'selected' : 'key'}@2x.png`;
   }
-  const overlay = (settings, icon) => settings?.keyArtworkShowIcon === true ? icon.replace('@2x.png', '-overlay.png') : '';
+  const transparentBadge = icon => icon.replace('@2x.png', '-overlay.png');
+  const overlay = (settings, icon) => settings?.keyArtworkShowIcon === true ? transparentBadge(icon) : '';
 
   function queueDialFeedback(context, item, frame) {
     // Keep one in-flight frame and one replaceable pending frame per dial.
@@ -102,8 +103,9 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
 
   function renderCurrentTrackDial(context, item, state, playback = state) {
     if (!online()) return;
-    const icon = keyIcon('toggle', playback);
-    writeImage(context, item, icon);
+    const keyImage = keyIcon('toggle', playback);
+    writeImage(context, item, keyImage);
+    const icon = transparentBadge(keyImage);
     const artwork = item.settings?.dialDisplay === 'artwork';
     const fit = item.settings?.artworkFit === 'width' ? 'width' : 'height';
     const showName = artwork && item.settings?.artworkShowTitle === true;
@@ -207,7 +209,7 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
   function renderVolumeDial(context, item, state) {
     const volume = state?.volume ?? 0;
     const value = state ? `${state.muted ? tr('muted') + ' ' : ''}${volume}%` : tr('absent');
-    const icon = keyIcon('mute', state);
+    const icon = transparentBadge(keyIcon('mute', state));
     const feedback = { title: 'YouTube Music', icon, value, indicator: { value: volume, range: { min: 0, max: 100 } } };
     cache.write(context, item, 'lastVolumeFeedback', feedback, next => setFeedback(context, next), JSON.stringify([icon, value, volume]));
   }

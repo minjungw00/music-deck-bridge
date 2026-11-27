@@ -45,6 +45,10 @@ for (const action of ['prev', 'toggle', 'next', 'like', 'open', 'nowplaying', 'm
     data.icons[name] = 'data:image/png;base64,' + (await readFile(join(plugin, name))).toString('base64');
   }
 }
+for (const name of ['toggle/key-overlay', 'toggle/pause-overlay', 'mute/key-overlay', 'volume/key-overlay']) {
+  const path = `imgs/actions/${name}.png`;
+  data.icons[path] = 'data:image/png;base64,' + (await readFile(join(plugin, path))).toString('base64');
+}
 for (const locale of ['en', 'ko']) {
   const catalog = await json(`chrome-extension/_locales/${locale}/messages.json`);
   const settings = { locale, catalog, title: data.title, artist: data.artist, cover, version: pkg.version,

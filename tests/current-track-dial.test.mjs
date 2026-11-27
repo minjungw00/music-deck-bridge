@@ -5,8 +5,8 @@ import { createRenderer, needsMarquee } from '../streamdeck/src/presentation/ren
 import { fitDialArtwork } from '../streamdeck/src/dial-artwork.cjs';
 
 const raster = 'data:image/png;base64,' + readFileSync(new URL('../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/plugin/icon.png', import.meta.url)).toString('base64');
-const play = 'imgs/actions/toggle/key@2x.png';
-const pause = 'imgs/actions/toggle/pause@2x.png';
+const play = 'imgs/actions/toggle/key-overlay.png';
+const pause = 'imgs/actions/toggle/pause-overlay.png';
 function harness(output = {}) {
   const calls = [], displayed = new Map();
   const context = { cachedCoverUrl: '', cachedCoverData: '', Date: { now: () => 1000 } };
@@ -76,6 +76,7 @@ test('display mode is per dial, with confirmed play/pause icons in the informati
   await h.paint('art', art, { title: 'Song', playing: true });
   assert.equal(h.calls.find(call => call.id === 'info' && call.event === 'layout').layout, '$A1');
   assert.equal(h.calls.find(call => call.id === 'art' && call.event === 'layout').layout, 'layouts/current-track-artwork.json');
+  assert.equal(h.calls.find(call => call.id === 'info' && call.event === 'image').image, 'imgs/actions/toggle/pause@2x.png');
   assert.equal(h.calls.find(call => call.id === 'info' && call.event === 'feedback').feedback.icon, pause);
   await h.paint('info', info, { title: 'Song', playing: false });
   assert.equal(h.calls.at(-1).feedback.icon, play);

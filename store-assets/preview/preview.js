@@ -32,7 +32,8 @@ async function setFeedback(context, payload) {
     if (payload.indicator) {
       const meter = document.createElement('div'); meter.className = 'meter';
       const fill = document.createElement('div'); fill.className = 'meter-fill'; fill.style.width = `${payload.indicator.value}%`;
-      meter.append(fill); target.append(meter); $('volume-icon').src = icon.src;
+      meter.append(fill); target.append(meter);
+      $('volume-icon').src = imageSource(payload.icon.replace('-overlay.png', '@2x.png'));
     }
     return;
   }

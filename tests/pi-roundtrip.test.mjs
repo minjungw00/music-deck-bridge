@@ -122,17 +122,21 @@ for (const protectedManifest of [false, true]) {
     const toggleImage = (context = 'toggle') => messages.findLast(m => m.event === 'setImage' && m.context === context)?.payload.image;
     const playImage = 'imgs/actions/toggle/key@2x.png';
     const pauseImage = 'imgs/actions/toggle/pause@2x.png';
+    const playIcon = 'imgs/actions/toggle/key-overlay.png';
+    const pauseIcon = 'imgs/actions/toggle/pause-overlay.png';
+    const volumeIcon = 'imgs/actions/volume/key-overlay.png';
+    const muteIcon = 'imgs/actions/mute/key-overlay.png';
     const volumeFeedback = (start = 0) => messages.slice(start).findLast(m => m.event === 'setFeedback' && m.context === 'volume')?.payload;
     // Recover the saved track before receiving any browser state. Live playback stays off.
     await waitFor(() => toggleImage() === playImage);
     await waitFor(() => toggleImage('mute') === 'imgs/actions/mute/key@2x.png' &&
       toggleImage('repeat') === 'imgs/actions/repeat/one@2x.png' && toggleImage('shuffle') === 'imgs/actions/shuffle/off@2x.png' &&
       toggleImage('like') === 'imgs/actions/like/selected@2x.png');
-    assert.deepEqual(await waitFor(() => volumeFeedback()), { title: 'YouTube Music', icon: 'imgs/actions/mute/key@2x.png',
+    assert.deepEqual(await waitFor(() => volumeFeedback()), { title: 'YouTube Music', icon: muteIcon,
       value: '음소거 37%', indicator: { value: 37, range: { min: 0, max: 100 } } });
     const dialFeedback = () => messages.findLast(m => m.event === 'setFeedback' && m.context === 'trackdial')?.payload;
     const dialLayout = () => messages.findLast(m => m.event === 'setFeedbackLayout' && m.context === 'trackdial')?.payload.layout;
-    await waitFor(() => dialLayout() === 'layouts/current-track-info.json' && dialFeedback()?.icon === playImage);
+    await waitFor(() => dialLayout() === 'layouts/current-track-info.json' && dialFeedback()?.icon === playIcon);
     assert.equal(dialFeedback().value.value, 'Saved song');
     assert.equal(dialFeedback().time, '1:02 / 4:00');
     const linked = { keyDisplay: 'linked' };
@@ -164,10 +168,10 @@ for (const protectedManifest of [false, true]) {
     const state = { title: 'SDK song', artist: 'Artist', playing: true, volume: 50, rating: 'INDIFFERENT' };
     await post('/sync', { token, clientId: 1, state });
     await waitFor(() => toggleImage() === pauseImage);
-    await waitFor(() => dialFeedback()?.icon === pauseImage && dialFeedback()?.value === state.title);
+    await waitFor(() => dialFeedback()?.icon === pauseIcon && dialFeedback()?.value === state.title);
     assert.equal(dialFeedback().title, '현재 곡');
     send('didReceiveSettings', 'trackdial', { settings: { dialDisplay: 'artwork' } });
-    await waitFor(() => dialLayout() === 'layouts/current-track-artwork.json' && dialFeedback()?.fallback?.value === pauseImage);
+    await waitFor(() => dialLayout() === 'layouts/current-track-artwork.json' && dialFeedback()?.fallback?.value === pauseIcon);
     assert.equal(dialFeedback().songName.enabled, false, 'song name is hidden by default');
     assert.equal(dialFeedback().artwork.enabled, false);
     send('didReceiveSettings', 'trackdial', { settings: { dialDisplay: 'artwork', artworkFit: 'width', artworkShowTitle: true,
@@ -230,7 +234,7 @@ for (const protectedManifest of [false, true]) {
     state.playing = false;
     await post('/sync', { token, clientId: 1, state });
     await waitFor(() => toggleImage() === playImage && toggleImage('toggle-2') === playImage);
-    await waitFor(() => dialFeedback()?.icon === playImage);
+    await waitFor(() => dialFeedback()?.icon === playIcon);
     await waitFor(() => messages.findLast(m => m.event === 'setTitle' && m.context === 'toggle')?.payload.title === '');
     state.playing = true;
     await post('/sync', { token, clientId: 1, state });
@@ -238,15 +242,15 @@ for (const protectedManifest of [false, true]) {
     send('didReceiveSettings', 'volume', { settings: { volumeStep: 2 } });
     await command('dialRotate', 'volume', { ticks: 2 }, { type: 'volume_delta', amount: 4 });
     await command('dialDown', 'volume', {}, { type: 'mute', amount: 0 });
-    assert.equal(volumeFeedback().icon, 'imgs/actions/volume/key@2x.png', 'press alone does not predict mute state');
+    assert.equal(volumeFeedback().icon, volumeIcon, 'press alone does not predict mute state');
     state.muted = true;
     await post('/sync', { token, clientId: 1, state });
-    await waitFor(() => volumeFeedback()?.icon === 'imgs/actions/mute/key@2x.png' &&
-      toggleImage('mute') === volumeFeedback().icon);
+    await waitFor(() => volumeFeedback()?.icon === muteIcon &&
+      toggleImage('mute') === 'imgs/actions/mute/key@2x.png');
     state.muted = false;
     await post('/sync', { token, clientId: 1, state });
-    await waitFor(() => volumeFeedback()?.icon === 'imgs/actions/volume/key@2x.png' &&
-      toggleImage('mute') === volumeFeedback().icon);
+    await waitFor(() => volumeFeedback()?.icon === volumeIcon &&
+      toggleImage('mute') === 'imgs/actions/volume/key@2x.png');
     await command('touchTap', 'volume', {}, { type: 'mute', amount: 0 });
     await command('dialRotate', 'trackdial', { ticks: -1 }, { type: 'prev', amount: 0 });
     await command('dialRotate', 'trackdial', { ticks: 1 }, { type: 'next', amount: 0 });
@@ -259,12 +263,12 @@ for (const protectedManifest of [false, true]) {
     send('willAppear', 'trackdial', { controller: 'Encoder', coordinates: { column: 1, row: 0 },
       settings: { dialDisplay: 'artwork', artworkFit: 'width', artworkShowTitle: true,
         artworkShowArtist: true, artworkTitleBackground: true, artworkTitleMode: 'truncate' }, state: 0 });
-    await waitFor(() => dialLayout() === 'layouts/current-track-artwork.json' && dialFeedback()?.fallback?.value === pauseImage);
+    await waitFor(() => dialLayout() === 'layouts/current-track-artwork.json' && dialFeedback()?.fallback?.value === pauseIcon);
     assert.equal(dialFeedback().songName.enabled, true, 'saved title visibility survives reappearance');
     assert.equal(dialFeedback().songName.value, state.title + ' — ' + state.artist);
     assert.equal(dialFeedback().songName.background, 'black');
     send('didReceiveSettings', 'trackdial', { settings: { dialDisplay: 'info' } });
-    await waitFor(() => dialLayout() === '$A1' && dialFeedback()?.icon === pauseImage);
+    await waitFor(() => dialLayout() === '$A1' && dialFeedback()?.icon === pauseIcon);
     const ratingImage = kind => messages.findLast(m => m.event === 'setImage' && m.context === kind)?.payload.image;
     await waitFor(() => ratingImage('like') === 'imgs/actions/like/key@2x.png');
     state.rating = 'LIKE';
@@ -360,7 +364,7 @@ for (const protectedManifest of [false, true]) {
     assert.equal((await post('/status', { token })).player, null);
     await post('/sync', { token, clientId: 1, state: { ...state, volume: 0, muted: false, rating: 'INDIFFERENT',
       repeatMode: 'NONE', shuffleEnabled: false, positionSeconds: 94 } });
-    await waitFor(() => volumeFeedback()?.value === '0%' && volumeFeedback()?.icon === 'imgs/actions/volume/key@2x.png');
+    await waitFor(() => volumeFeedback()?.value === '0%' && volumeFeedback()?.icon === volumeIcon);
     await waitFor(() => dialFeedback()?.time === '1:34 / 4:00');
     const liveControls = post('/browser-listen', { token, repeat: true, shuffle: true, clientIds: [1] }, 6000);
     await waitFor(() => toggleImage('repeat') === 'imgs/actions/repeat/none@2x.png' &&
