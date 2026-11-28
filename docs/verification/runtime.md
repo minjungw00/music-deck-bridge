@@ -6,8 +6,8 @@ Evidence through November 28, 2026 (Asia/Seoul). [Release verification](releases
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
-| Sequential Play/Pause, `48f0382` | Chromium applied a second Stream Deck toggle after confirmed playback in both startup timing cases. Volume and Repeat completed during each wait. [Sequential toggle check](#sequential-playpause-confirmation) | The browser ran against a local player model. Signed-in Windows playback awaits verification. |
-| Maintainer report on cross-device playback selection | The song handed off from another device appeared as the last track. [Maintainer report](#live-youtube-music-checks-for-130-dev) | The separate Play / Pause issue persisted on Chrome startup. |
+| Sequential Play/Pause, `48f0382` | The maintainer confirmed normal operation after receiving the updated development packages. The Chromium player model covered both startup timings and confirmed Volume and Repeat during each wait. [Sequential toggle check](#sequential-playpause-confirmation) | The maintainer report did not specify each timing or the installed package IDs. |
+| Maintainer report on cross-device playback selection | The song handed off from another device appeared as the last track. [Maintainer report](#live-youtube-music-checks-for-130-dev) | Covers the saved track after handoff. |
 | Maintainer report on physical Stream Deck | The maintainer reported completing the requested 1.3.0-dev hardware check. [Maintainer report](#130-dev-physical-stream-deck) | Covers the requested hardware pass. The separate live-service scenarios and processed installer are tracked independently. |
 | Repeat and Shuffle after Chrome exits, `00698f6` | A paired Chromium profile applied queued Stream Deck Repeat and Shuffle once each after restart. [Restart check](#repeat-and-shuffle-after-chrome-exits) | Real MV3 worker and local player fixture. The test runner restarted Chrome in place of the Windows launcher. |
 | Maintainer report after PC reboot | Saved state was restored. [Maintainer report](#130-dev-pc-reboot) | Covers saved-state restoration. Starting playback in a new browser uses the position chosen by YouTube Music. |
@@ -87,6 +87,8 @@ On November 28, an unsigned-in Windows Chrome probe again reached the Premium pa
 At `48f0382`, Chromium with the real MV3 worker and bundled plugin sent a second toggle before Chrome connected and, separately, after the fixture received its first Play request while the song was still loading. In both cases the first input confirmed Playing, the second confirmed Paused, and Volume and Repeat took effect before playback confirmation. The worker and plugin logs shared both request IDs. The Node regressions cover the first input's recovery, predecessor failure, expiry and a changed track.
 
 All 352 Node tests, three Chromium fixtures, two Python packaging tests and static checks passed. Build `1.3.0-dev+g48f0382967d8.local20261128111200580` passed SHA-256 and source comparisons for all 54 Chrome and 117 Stream Deck archive files, with the Elgato-normalized manifest compared as JSON. The official Elgato validator and packager passed. The [development diagnostics](../troubleshooting.md#development-playback-diagnostics--개발-빌드-재생-진단) can correlate the three player events with the plugin's request outcome in a signed-in Windows check.
+
+On November 28, the maintainer reported that sequential Play/Pause worked normally after receiving the updated `1.3.0-dev` packages. The report did not include an itemized timing or installed-package identity.
 
 ### Repeat and Shuffle after Chrome exits
 
