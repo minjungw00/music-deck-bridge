@@ -138,15 +138,18 @@ test('a response from an earlier connection cannot restore its port or compatibi
   assert.equal(client.compatibility, null);
 });
 
-test('an explicit port change owns a single local write for the confirmed port', async () => {
-  for (const failWrite of [false, true]) {
+test('an explicit port change writes once without falling back on storage failures', async () => {
+  for (const failure of [null, 'read', 'write']) {
     const data = { bridgeToken: 'fixture', bridgePort: 23111 };
     const writes = [], requests = [];
     const chrome = {
-      storage: { local: { setAccessLevel: async () => {}, get: async key => ({ [key]: data[key] }),
+      storage: { local: { setAccessLevel: async () => {}, async get(key) {
+        if (key === 'bridgePort' && failure === 'read') throw Error('Simulated port storage failure');
+        return { [key]: data[key] };
+      },
         async set(fields) {
           writes.push(fields.bridgePort);
-          if (failWrite || writes.length > 1) throw Error('Simulated port storage failure');
+          if (failure === 'write' || writes.length > 1) throw Error('Simulated port storage failure');
           Object.assign(data, fields);
         } } },
       runtime: { onMessage: { addListener() {} }, onInstalled: { addListener() {} }, onStartup: { addListener() {} } },
@@ -157,10 +160,10 @@ test('an explicit port change owns a single local write for the confirmed port',
       return { ok: true, status: 200, json: async () => ({ port: 23112, serverPort: 23112 }) };
     } });
     const change = vm.runInContext('management.setPort({ port: 23112 })', context);
-    if (failWrite) await assert.rejects(change, /Simulated port storage failure/);
+    if (failure) await assert.rejects(change, /Simulated port storage failure/);
     else assert.equal((await change).localOnly, false);
-    assert.equal(data.bridgePort, failWrite ? 23111 : 23112);
-    assert.deepEqual(writes, [23112]);
-    assert.deepEqual(requests, ['/configure-port']);
+    assert.equal(data.bridgePort, failure ? 23111 : 23112);
+    assert.deepEqual(writes, failure === 'read' ? [] : [23112]);
+    assert.deepEqual(requests, failure === 'read' ? [] : ['/configure-port']);
   }
 });
