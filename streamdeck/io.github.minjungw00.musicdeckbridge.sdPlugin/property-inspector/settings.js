@@ -16,8 +16,6 @@ let portIsDirty = false;
 let volumeKey = false;
 let currentTrackKey = false;
 let queueKey = '';
-let receivingLinkedSettings = false;
-let linkedGapDirty = false;
 const connectionSection = $('connectionSection');
 const connectionEnd = connectionSection.nextElementSibling;
 const { validVolume, validDuration, createVolumeEditor } = MusicDeckVolumeEditor;
@@ -36,6 +34,7 @@ const editor = createVolumeEditor({
 });
 
 const t = key => strings[language][key];
+const linkedArtwork = MusicDeckLinkedArtworkEditor.create({ element: $, request: requestConnection, translate: t });
 function setLabel(id, value) {
   const element = $(id);
   element.setAttribute('label', value);
@@ -195,13 +194,6 @@ function showConnection(payload) {
   currentStatus = payload;
   const connected = payload.paired && payload.extensionOnline && payload.bridgeOnline !== false && payload.compatibility?.compatible !== false;
   prioritizeConnection(connected);
-  receivingLinkedSettings = true;
-  $('linkedArtworkFit').value = payload.linkedArtworkFit === 'width' ? 'width' : 'height';
-  if (!linkedGapDirty) {
-    $('linkedGapHorizontal').value = String(payload.linkedArtworkGap?.horizontal ?? 0);
-    $('linkedGapVertical').value = String(payload.linkedArtworkGap?.vertical ?? 0);
-  }
-  receivingLinkedSettings = false;
   const queueError = queueKey && payload[queueKey + 'Error'];
   const error = queueError ? null : payload.lastCommandError;
   const hint = error === 'autoplay-blocked' ? 'commandAutoplay' :
@@ -251,7 +243,10 @@ async function requestConnection(type='get-connection', fields = {}) {
   catch { $('pairState').textContent = t('offline'); prioritizeConnection(false); }
 }
 client.sendToPropertyInspector.subscribe(msg => {
-  if (msg.payload?.type === 'connection') showConnection(msg.payload);
+  if (msg.payload?.type === 'connection') {
+    showConnection(msg.payload);
+    linkedArtwork.receive(msg.payload);
+  }
   if (msg.payload?.type === 'port-result') {
     const result = msg.payload;
     if (result.ok) {
@@ -277,27 +272,6 @@ $('installExtension').addEventListener('click', async () => {
   catch { $('companionHint').textContent = t('storeOpenFailed'); }
 });
 $('generatePin').addEventListener('click', () => { lastPin = ''; void requestConnection('generate-pin'); });
-$('linkedArtworkFit').addEventListener('valuechange', () => {
-  if (!receivingLinkedSettings) void requestConnection('set-linked-fit', { fit: $('linkedArtworkFit').value });
-});
-for (const id of ['linkedGapHorizontal', 'linkedGapVertical']) {
-  $(id).addEventListener('valuechange', () => {
-    if (receivingLinkedSettings) return;
-    linkedGapDirty = true;
-    $('linkedGapError').classList.add('hidden');
-  });
-}
-$('applyLinkedGap').addEventListener('click', () => {
-  const horizontal = Number($('linkedGapHorizontal').value || 0);
-  const vertical = Number($('linkedGapVertical').value || 0);
-  if ([horizontal, vertical].some(gap => !Number.isInteger(gap) || gap < 0 || gap > 100)) {
-    $('linkedGapError').textContent = t('linkedGapInvalid');
-    $('linkedGapError').classList.remove('hidden');
-    return;
-  }
-  linkedGapDirty = false;
-  void requestConnection('set-linked-gap', { gap: { horizontal, vertical } });
-});
 // Read event.target.value from the native input while persistence is pending.
 $('volumeStep').addEventListener('input', event => editor.input(event.target.value));
 $('volumeStep').addEventListener('change', event => editor.change(event.target.value));
