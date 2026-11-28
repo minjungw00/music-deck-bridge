@@ -6,6 +6,7 @@ Evidence through November 29, 2026 (Asia/Seoul). [Release verification](releases
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
+| November 29 two-tab player selection, `a262173` | Chromium kept the newly active Music tab selected during repeated updates from both tabs. Both last-track records agreed, and closing the active tab selected the remaining player. [Two-tab check](#november-29-two-tab-player-selection) | The maintainer reported the original issue. The updated packages were checked with Chromium, a local player model and a simulated Stream Deck host. |
 | November 29 track selection, linked artwork and port review, `17b10ce` | Chrome selects the remaining track on a repeated observation, linked settings survive older host events, and explicit port changes write once. All 365 Node tests, three Chromium fixtures and package checks passed. [Review record](#november-29-track-selection-linked-artwork-and-port-review) | The new race and storage failure cases used controlled fixtures. |
 | November 29 track retention and popup review, `65cf002` | 362 Node tests, three Chromium fixtures, two Python packaging tests, static checks and both archive comparisons passed. The paired Chromium fixture saved the visible track when a tab closed with conflicting player state. [Review record](#november-29-track-retention-and-popup-review) | The integration used actual Chromium and a local player model with a simulated Stream Deck host. |
 | November 29 playback and display review, `85e8623` | 357 Node tests, three MV3/Chromium fixtures, two Python packaging tests and static checks passed. All 88 compared dial outputs matched the pre-refactor renderer. Both development archives matched source. [Review record](#november-29-playback-and-display-review) | These tests used a local player model and simulated SDK output. Live confirmation of the earlier startup build retains its original scope. |
@@ -50,6 +51,14 @@ The November 7 `main` run used `@elgato/streamdeck` 3.0.4, `@elgato/cli` 1.10.4 
 | Key/dial output | Settings, profile reappearance, rotation/press/touch, proportional artwork, artist placement, backdrops and scrolling; Qt 6.10.3 reference rendering |
 | Popup | Real toolbar controls, captured routes, slider coalescing/closure, native catalogs and button bounds in all eight UI languages; separately labeled sample previews |
 | Distribution | Real worker import graph, serialized MAIN entry point, package allowlists/notices, fixed development versions and source/checksum metadata |
+
+### November 29 two-tab player selection
+
+The maintainer reported that two Music tabs alternated in the displayed track after switching tabs once. With two equally ranked paused tabs, the previous registry selected each source in turn when its periodic snapshot arrived. The preceding Chrome cache could also change the saved record on each report.
+
+At `a262173`, focused Music tabs win ties after installed-app and playback priority. The selected player stays in place across background reports, missing focus information and an older foreground observation. The regression passed for both the Stream Deck registry and Chrome cache. Chromium switched once between two open, paused tabs and observed at least two additional reports from each. The second tab remained selected and both persisted records showed its track. Closing it selected the first tab.
+
+All 367 Node tests, three Chromium integration tests, two Python packaging tests and static checks passed. Build `1.3.0-dev+ga26217386493.local20261128161300836` passed SHA-256 and complete source comparison for 57 Chrome and 118 Stream Deck archive files, with the Elgato manifest compared as JSON. The official validator and packager passed.
 
 ### November 29 track selection, linked artwork and port review
 
