@@ -16,6 +16,18 @@ function createPortService({ initialPort, savePort, bindPort, notifyPortChange, 
     pendingOperation = operation.then(() => undefined, () => undefined);
     return operation;
   }
+  function retire(port, server) {
+    const timer = setTimeout(() => { retiringListeners.delete(port); server.close(); }, PORT_GRACE_MS);
+    timer.unref();
+    retiringListeners.set(port, { server, timer });
+    // Avoid leaving many ports open after repeated changes.
+    while (retiringListeners.size > 3) {
+      const [oldestPort, detail] = retiringListeners.entries().next().value;
+      clearTimeout(detail.timer);
+      retiringListeners.delete(oldestPort);
+      detail.server.close();
+    }
+  }
   function changePort(value) {
     // Startup and changes from every inspector/popup share one listener lifecycle.
     return enqueue(async () => {
@@ -35,12 +47,8 @@ function createPortService({ initialPort, savePort, bindPort, notifyPortChange, 
       }
       try { savePort(next); }
       catch (error) {
-        if (!reuse) server.close();
-        else {
-          const timer = setTimeout(() => { retiringListeners.delete(next); server.close(); }, PORT_GRACE_MS);
-          timer.unref();
-          retiringListeners.set(next, {server, timer});
-        }
+        if (reuse) retire(next, server);
+        else server.close();
         return { ok: false, error: `Could not save port: ${error.message}` };
       }
       const old = bridgeServer;
@@ -52,20 +60,7 @@ function createPortService({ initialPort, savePort, bindPort, notifyPortChange, 
       notifyPortChange();
       log(`Loopback bridge now on ${LOCALHOST}:${currentPort}`);
       // Grace period lets Chrome learn the new port from the authenticated old endpoint.
-      if (old && old !== server) {
-        const timer = setTimeout(() => { retiringListeners.delete(oldPort); old.close(); }, PORT_GRACE_MS);
-        timer.unref();
-        retiringListeners.set(oldPort, {server:old, timer});
-        // Avoid leaving many ports open if someone repeatedly changes the setting.
-        while (retiringListeners.size > 3) {
-          const oldest = retiringListeners.entries().next().value;
-          if (!oldest) break;
-          const [oldestPort, detail] = oldest;
-          clearTimeout(detail.timer);
-          retiringListeners.delete(oldestPort);
-          detail.server.close();
-        }
-      }
+      if (old && old !== server) retire(oldPort, old);
       return { ok: true, port: next };
     });
   }
