@@ -6,6 +6,7 @@ Evidence through November 29, 2026 (Asia/Seoul). [Release verification](releases
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
+| November 29 track retention and popup review, `65cf002` | 362 Node tests, three Chromium fixtures, two Python packaging tests, static checks and both archive comparisons passed. The paired Chromium fixture saved the visible track when a tab closed with conflicting player state. [Review record](#november-29-track-retention-and-popup-review) | The integration used actual Chromium and a local player model with a simulated Stream Deck host. |
 | November 29 playback and display review, `85e8623` | 357 Node tests, three MV3/Chromium fixtures, two Python packaging tests and static checks passed. All 88 compared dial outputs matched the pre-refactor renderer. Both development archives matched source. [Review record](#november-29-playback-and-display-review) | These tests used a local player model and simulated SDK output. Live confirmation of the earlier startup build retains its original scope. |
 | Sequential Play/Pause, `2944ed7` | The maintainer confirmed normal operation after the fix for three or more startup inputs. Node and MV3 regressions exercise longer bursts with explicit Play/Pause actions. [Multiple startup inputs](#three-or-more-presses-during-startup) | The maintainer report did not specify the exact press count, timing, or installed archive identity. |
 | Maintainer report on cross-device playback selection | The song handed off from another device appeared as the last track. [Maintainer report](#live-youtube-music-checks-for-130-dev) | Covers the saved track after handoff. |
@@ -48,6 +49,14 @@ The November 7 `main` run used `@elgato/streamdeck` 3.0.4, `@elgato/cli` 1.10.4 
 | Key/dial output | Settings, profile reappearance, rotation/press/touch, proportional artwork, artist placement, backdrops and scrolling; Qt 6.10.3 reference rendering |
 | Popup | Real toolbar controls, captured routes, slider coalescing/closure, native catalogs and button bounds in all eight UI languages; separately labeled sample previews |
 | Distribution | Real worker import graph, serialized MAIN entry point, package allowlists/notices, fixed development versions and source/checksum metadata |
+
+### November 29 track retention and popup review
+
+Five regression cases failed on the previous source and passed after the changes. They cover an initially unknown video ID on the original media source, closing during or after a mismatched player read, a delayed failure for a replaced Stream Deck key, and scrolling with hidden track text. The identity test also rejects a changed media source. In the paired Chromium fixture the bridge kept its previous record while the player and visible track disagreed. On tab closure it saved the visible track ID and title. The saved record had no playback time or Repeat state from the mismatched observation.
+
+Separate refactor commits unified the content runtime's command receipt and result records and extracted the popup's player and command-route selection from DOM rendering. Existing coverage exercised duplicate request IDs, legacy queue fallback, the standalone popup and the eight popup locales.
+
+Development build `1.3.0-dev+g65cf002d9fc7.local20261128151951445` passed 362 Node tests, three Chromium fixtures, two Python packaging tests, static checks, and the official Elgato validator and packager. Both archives and their build metadata passed SHA-256 verification. All 56 Chrome and 117 Stream Deck archive files matched source, with the Elgato manifest compared as JSON.
 
 ### November 29 playback and display review
 
