@@ -40,7 +40,7 @@ export function playerHarness({ compact = false, available = true, delay = 0, da
     querySelectorAll: selector => available && selector === '#volume-slider, #expand-volume-slider' ? sliders : [],
   };
   const page = { document: { querySelector: selector => available && selector === 'ytmusic-player-bar' ? bar : null }, Event,
-    setTimeout, Date: date };
+    setTimeout, clearTimeout, Date: date };
   const scriptCalls = [];
   // MAIN-world globals persist across injections in a real document.
   const pageContext = vm.createContext(page);

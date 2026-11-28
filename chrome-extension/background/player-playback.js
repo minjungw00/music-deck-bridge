@@ -2,7 +2,7 @@
 (function (root) {
   // Chrome serializes this function into MAIN. All helpers must stay inside it;
   // the worker module only publishes its entry point, never page data.
-  async function playerPlayback(type, expiresAt, dispatchOnly = false, queueStartup = false) {
+  async function playerPlayback(type, expiresAt, dispatchOnly = false, queueStartup = false, trace = false) {
     const key = Symbol.for('music-deck-bridge.playback');
     const control = globalThis[key] ||= { sequence: 0, latest: 0, interrupt: 0,
       dispatch: Promise.resolve(), results: new Map() };
@@ -22,27 +22,45 @@
     if (type === 'repeat' || type === 'shuffle') return await changeQueueControl();
     if (!['play', 'toggle', 'next', 'prev'].includes(type)) return { ok: false };
 
-    const sequence = ++control.sequence;
-    if (type === 'toggle' || type === 'play') control.interrupt = sequence;
     const navigation = type === 'next' || type === 'prev';
+    const receipt = control.receipt = (control.receipt ?? control.sequence) + 1;
+    const preceding = type === 'toggle' ? control.playback : null;
+    if (type !== 'toggle') control.playbackEpoch = (control.playbackEpoch ?? 0) + 1;
+    const epoch = control.playbackEpoch;
+    const request = { result: null, target: null, preceding, done: false };
+    control.playback = navigation ? null : request;
+    let sequence;
     const expires = Number(expiresAt) || Infinity;
     let deadline = Math.min(expires, Date.now() + (dispatchOnly ? 30000 : 10000));
     const diagnostic = createDiagnostics();
     const events = createPlayerEvents();
     const recovery = createStartupRecovery();
 
-    // Preparation/clicks stay ordered. Outcome polling does not own the queue.
-    const dispatch = control.dispatch.then(prepareAndDispatch);
-    control.dispatch = dispatch.then(() => {}, () => {});
-    const completion = complete();
+    const operation = complete();
+    const completion = request.result = trace ? operation.then(result => ({ ...result, trace: diagnostic.trace() })) : operation;
     if (!dispatchOnly) return await completion;
-    control.results.set(sequence, completion);
+    control.results.set(receipt, completion);
     while (control.results.size > 100) control.results.delete(control.results.keys().next().value);
-    return { ok: true, pending: sequence };
+    return { ok: true, pending: receipt };
 
     function read() { return diagnostic.observe(readPlayer()); }
     function failure(reason) { return diagnostic.failure(reason, recovery.attempts); }
     function superseded() { return control.latest > sequence || (navigation && control.interrupt > sequence); }
+    function samePlayer(target, state) {
+      return target.api === state.api && (!target.key || target.key === state.key) &&
+        (!Number.isInteger(target.index) || target.index === state.index);
+    }
+    function playbackScopeError(state) {
+      if (!preceding) return null;
+      if (epoch !== control.playbackEpoch) return 'command-superseded';
+      return samePlayer(preceding.target, state) ? null : 'player-changed';
+    }
+    async function waitForPreceding() {
+      let timer;
+      const timeout = new Promise(resolve => { timer = setTimeout(resolve, Math.max(0, deadline - Date.now())); });
+      try { return await Promise.race([preceding.result, timeout]); }
+      finally { clearTimeout(timer); }
+    }
     function started(state) {
       return Number.isFinite(state.state) ? state.state === 1 : state.playing && state.media?.readyState >= 2;
     }
@@ -133,6 +151,8 @@
 
     async function prepareAndDispatch() {
       let before = read();
+      const initialScopeError = playbackScopeError(before);
+      if (initialScopeError) return { result: failure(initialScopeError) };
       if (error(before)) return { result: failure(error(before)) };
       if (Date.now() >= deadline) return { result: failure('command-timeout') };
       if (!before.ready && !dispatchOnly && !canStart(before)) return { result: { ok: false, retry: true } };
@@ -156,8 +176,11 @@
         diagnostic.phase = 'prepare';
         await wait(); before = read();
       }
+      const scopeError = playbackScopeError(before);
+      if (scopeError) return { result: failure(scopeError) };
       if (error(before)) return { result: failure(error(before)) };
       if (Date.now() >= deadline) return { result: failure('command-timeout') };
+      if (!navigation) request.target = before;
       recovery.clear();
       if (type === 'play' && before.playing) {
         if (started(before)) return { result: { ok: true } };
@@ -198,7 +221,10 @@
         const after = read();
         if (error(after)) return failure(error(after));
         if (!navigation) {
-          if (desiredPlaying ? started(after) : !after.playing) return { ok: true };
+          if (desiredPlaying ? started(after) : !after.playing) {
+            if (samePlayer(request.target, after)) request.target = after;
+            return { ok: true };
+          }
           if (recoverBufferedPause) {
             if (control.sequence !== sequence || after.api !== before.api || after.key !== before.key || after.index !== before.index) {
               recoverBufferedPause = false;
@@ -240,12 +266,31 @@
 
     async function complete() {
       try {
+        // Held toggles acknowledge receipt without entering the ordered input
+        // queue or interrupting the preceding input's bounded recovery.
+        if (preceding) {
+          const previous = await waitForPreceding();
+          if (!previous || Date.now() >= deadline) return failure('command-timeout');
+          if (!previous.ok || epoch !== control.playbackEpoch) return failure('command-superseded');
+        }
+        sequence = ++control.sequence;
+        if (!navigation) control.interrupt = sequence;
+        const dispatch = control.dispatch.then(prepareAndDispatch);
+        control.dispatch = dispatch.then(() => {}, () => {});
         const dispatched = await dispatch;
         return dispatched.result || await confirm(dispatched.before, dispatched.bufferingPause);
       } catch (error) {
         diagnostic.recordFault('exception', null, error?.name);
         return failure(error?.name === 'NotAllowedError' && diagnostic.phase !== 'pause-api' ? 'autoplay-blocked' : 'player-error');
-      } finally { events.cleanup(); }
+      } finally {
+        request.done = true;
+        if (control.playback === request) {
+          let active = preceding;
+          while (active?.done) active = active.preceding;
+          control.playback = active;
+        }
+        events.cleanup();
+      }
     }
 
     function createStartupRecovery() {
@@ -337,6 +382,8 @@
           fault = { source, phase, code: Number.isInteger(code) && code >= 0 && code <= 999 ? code : null,
             exception: exception ? exceptionName(exception) : null };
         },
+        trace() { return { held: Boolean(preceding), state: snapshot?.state ?? null,
+          inputState: input?.state ?? null, inputAction: input?.action ?? null }; },
         failure(reason, startupAttempts) {
           return { ok: false, reason, diagnostic: {
             phase: info.phase, source: fault?.source || 'observation', errorPhase: fault?.phase || info.phase,

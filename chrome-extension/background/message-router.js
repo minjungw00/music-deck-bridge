@@ -22,7 +22,8 @@
       if (msg?.type === 'player-playback' && mainFrame) {
         if (!['play', 'toggle', 'next', 'prev', 'repeat', 'shuffle'].includes(msg.command)) { respond({ ok: false }); return false; }
         const args = [msg.command, msg.expiresAt, msg.dispatchOnly === true];
-        if (msg.queueStartup === true) args.push(true);
+        if (msg.trace === true) args.push(msg.queueStartup === true, true);
+        else if (msg.queueStartup === true) args.push(true);
         return runPlayback(tabId, args, respond);
       }
       if (msg?.type === 'player-playback-result' && mainFrame && Number.isSafeInteger(msg.pending) && msg.pending > 0) {

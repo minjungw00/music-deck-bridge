@@ -9,12 +9,23 @@
     let browserRetryTimer = null;
     let browserChannelAvailable = null;
     let lastFailure = null;
+    const playbackTrace = [];
+    const development = chrome.runtime.getManifest?.().version_name?.endsWith('-dev');
     const actions = ['play-button', 'play-api', 'pause-api', 'navigate-button'];
     const phases = ['prepare', 'subscribe', ...actions, 'confirm', 'dispatch', 'result'];
     const faultSources = ['observation', 'site-event', 'media', 'play-rejection', 'pause-rejection', 'exception',
       'missing-result', 'script-execution', 'result-transport'];
     const exceptions = ['Error', 'TypeError', 'ReferenceError', 'NotAllowedError', 'InvalidStateError',
       'SecurityError', 'AbortError', 'NotSupportedError', 'Other'];
+    const traceReasons = new Set(['command-superseded', 'command-timeout', 'player-changed', 'player-not-ready',
+      'playback-unconfirmed', 'autoplay-blocked', 'player-error']);
+    function recordTrace(id, stage, fields = {}) {
+      if (!id) return;
+      const entry = Object.freeze({ id, stage, ...fields });
+      playbackTrace.push(entry);
+      if (playbackTrace.length > 48) playbackTrace.shift();
+      console.info?.('Music Deck Bridge playback trace:', JSON.stringify(entry));
+    }
     function recordFailure(type, result) {
       if (!['player-error', 'player-not-ready', 'playback-unconfirmed', 'autoplay-blocked', 'delivery-uncertain'].includes(result?.reason)) return;
       const data = result.diagnostic || {};
@@ -49,6 +60,8 @@
     async function performBrowserCommand(command, stillPaired = async () => true, diagnostic = {}, onAccepted = () => {}) {
       const failed = reason => { diagnostic.reason = reason; return false; };
       if (!isBrowserCommand(command?.type)) return false;
+      const traceId = development && command.type === 'toggle' && /^[a-f0-9]{24}$/.test(command.id) ? command.id : null;
+      recordTrace(traceId, 'extension-received');
       const queueStartup = isQueueControl(command.type) && command.queueStartup === true;
       const deadline = Math.min(Number(command.expiresAt) || Date.now() + 30000, Date.now() + 30000);
       const allowed = async (confirm = false) => !client.blocked() && Date.now() < deadline && await stillPaired(confirm) && !client.blocked() && Date.now() < deadline;
@@ -74,6 +87,7 @@
         if (Number.isInteger(tab.windowId)) await chrome.windows.update(tab.windowId, { focused: true });
         if (command.type === 'open') return true;
       }
+      const type = command.type === 'toggle' && opened ? 'play' : command.type;
       while (await allowed()) {
         // Injection can fail harmlessly while a tab is loading. Do not retry an
         // ambiguously delivered input. Missing receivers and explicit not-ready
@@ -89,15 +103,17 @@
           const trackKey = !opened && !resuming ? command.trackKey : undefined;
           result = await chrome.tabs.sendMessage(tab.id, { type: 'bridge-command', id: command.id,
             expiresAt: deadline, dispatchOnly: true, command: {
-              type: command.type === 'toggle' && opened ? 'play' : command.type,
+              type,
               amount: command.amount, trackKey, allowCurrentTrack: !trackKey,
               ...(command.playerKey ? { playerKey: command.playerKey } : {}),
               ...(queueStartup ? { queueStartup: true } : {}),
+              ...(traceId ? { trace: true } : {}),
             } }, { frameId: 0 });
           if (result?.pending) {
             // Receipt starts an ordered MAIN-world dispatch operation. Keep its
             // final ACK separate so the listener can receive later controls.
             accepted = true;
+            recordTrace(traceId, 'player-received', { type });
             onAccepted();
             result = await chrome.tabs.sendMessage(tab.id, { type: 'bridge-command-result',
               id: command.id, expiresAt: deadline }, { frameId: 0 });
@@ -114,6 +130,15 @@
           if (accepted) recordFailure(command.type, { reason: 'delivery-uncertain',
             diagnostic: { phase: 'result', source: 'result-transport' } });
           return failed('delivery-uncertain');
+        }
+        if (traceId) {
+          const observation = result?.trace;
+          const states = [-1, 0, 1, 2, 3, 5];
+          recordTrace(traceId, 'player-result', { type, held: typeof observation?.held === 'boolean' ? observation.held : null,
+            result: result?.ok ? 'ok' : result?.retry ? 'retry' : traceReasons.has(result?.reason) ? result.reason : 'failed',
+            inputState: states.includes(observation?.inputState) ? observation.inputState : null,
+            state: states.includes(observation?.state) ? observation.state : null,
+            inputAction: actions.includes(observation?.inputAction) ? observation.inputAction : null });
         }
         if (result?.ok) return true;
         recordFailure(command.type, result);
@@ -216,6 +241,7 @@
 
     return { start: startBrowserListener, perform: performBrowserCommand,
       get lastFailure() { return lastFailure; },
+      get playbackTrace() { return playbackTrace.slice(); },
       get available() { return browserChannelAvailable; } };
   }
   root.MusicDeckBrowserChannel = Object.freeze({ create: createBrowserChannel });

@@ -12,7 +12,7 @@ const COMMAND_ERRORS = new Set(['pairing-required', 'extension-unavailable', 'co
   'shuffle-update-required', 'shuffle-unavailable']);
 
 // A channel port supplies reply(data, status) and onClose(callback); no HTTP objects enter this service.
-function createCommandService({ getSession, selectedEntry, launch, log,
+function createCommandService({ getSession, selectedEntry, launch, log, tracePlayback = false,
   now = Date.now, newId = () => crypto.randomBytes(12).toString('hex'),
   setTimeout = globalThis.setTimeout, clearTimeout = globalThis.clearTimeout }) {
   const queue = [];
@@ -29,6 +29,11 @@ function createCommandService({ getSession, selectedEntry, launch, log,
   let latestRequest = 0;
   const hasLaunchableRequest = () => [...browserRequests.values()].some(request => request.queueStartup || !queueControl(request.type));
   const supports = type => type === 'repeat' ? browserRepeat : browserShuffle;
+  function playbackTrace(request, stage, result) {
+    if (tracePlayback && request.type === 'toggle') {
+      log(`Playback trace ${JSON.stringify({ id: request.id, stage, ...(result ? { result } : {}) })}`);
+    }
+  }
   function addCommand(type, ticks = 0) {
     if (getSession().blocked) return false;
     const entry = selectedEntry();
@@ -136,6 +141,7 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     const preferredTabId = queueStartup ? selectedTabId : request.preferredTabId;
     const playerKey = queueStartup ? undefined : request.playerKey;
     request.state = 'delivered';
+    playbackTrace(request, 'bridge-delivered');
     clearTimeout(nativeLaunchTimer); nativeLaunchTimer = null;
     browserWaiter.reply({ commands: [{ id: request.id, type: request.type, amount: request.amount,
       expiresAt: request.expiresAt, nativeLaunched: nativeTabPending,
@@ -205,6 +211,7 @@ function createCommandService({ getSession, selectedEntry, launch, log,
         request.state = reason === 'command-superseded' ? 'cancelled' : ok ? 'succeeded' :
           ['command-timeout', 'extension-unavailable'].includes(reason) ? 'expired' : 'failed';
         const failure = COMMAND_ERRORS.has(reason) ? reason : 'command-failed';
+        playbackTrace(request, 'bridge-result', ok ? 'ok' : failure);
         if (request.order === latestRequest && reason !== 'command-superseded') lastCommandError = ok ? '' : failure;
         if (!ok && reason !== 'command-superseded') log(`Browser command ${type} failed: ${failure}`);
         clearTimeout(request.timer);
@@ -222,6 +229,7 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     request.timer = setTimeout(() => request.finish(false,
       request.state === 'delivered' ? 'command-timeout' : 'extension-unavailable'), timeout);
     browserRequests.set(request.id, request);
+    playbackTrace(request, 'bridge-queued');
     flushBrowserRequest();
     scheduleNativeLaunch();
     return promise;

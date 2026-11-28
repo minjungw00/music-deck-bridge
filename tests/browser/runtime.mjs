@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const musicURL = 'https://music.youtube.com/';
-const fixture = (restored = false, ignoredStartupRequests = 0, delayedQueue = false) => `<!doctype html><html><body>
+const fixture = (restored = false, ignoredStartupRequests = 0, delayedQueue = false, holdStartup = false) => `<!doctype html><html><body>
 <ytmusic-player-bar>
  <span class="title">Fixture song</span><span class="byline">Fixture artist</span>
  <audio></audio><div id="movie_player"></div>
@@ -98,6 +98,7 @@ api.playVideo=()=>{
  document.body.dataset.apiUserActive=String(navigator.userActivation.isActive);
  document.body.dataset.apiUserEverActive=String(navigator.userActivation.hasBeenActive);
  record('playRequest');
+ if(${holdStartup}&&!initialized)return;
  if(restored&&!initialized&&Number(document.body.dataset.playRequest)<=ignoredStartupRequests){record('ignoredStartupRequest');return;}
  if(unstartedDestination&&++destinationPlays<=ignoredDestinationPlays){record('ignoredDestinationRequest');return;}
  unstartedDestination=false;
@@ -134,6 +135,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   let restoredStartup = false;
   let ignoredStartupRequests = 0;
   let delayedQueue = false;
+  let holdStartup = false;
   t.after(async () => {
     await browser?.close();
     if (child) await child.stop();
@@ -144,7 +146,8 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '1',
     '-keyout', join(temp, 'key'), '-out', join(temp, 'cert'), '-subj', '/CN=music.youtube.com'], { stdio: 'ignore' });
   site = httpsServer({ key: await readFile(join(temp, 'key')), cert: await readFile(join(temp, 'cert')) },
-    (_req, res) => { setTimeout(() => { res.setHeader('Content-Type', 'text/html'); res.end(fixture(restoredStartup, ignoredStartupRequests, delayedQueue)); }, 250); });
+    (_req, res) => { setTimeout(() => { res.setHeader('Content-Type', 'text/html');
+      res.end(fixture(restoredStartup, ignoredStartupRequests, delayedQueue, holdStartup)); }, 250); });
   await new Promise(resolve => site.listen(0, '127.0.0.1', resolve));
   const port = await freePort();
   async function startBridge() {
@@ -613,4 +616,39 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     shuffle: document.body.dataset.shuffle, playing, playRequests: document.body.dataset.playRequest })),
   { repeat: ' ALL', shuffle: '1', playing: false, playRequests: undefined });
   t.diagnostic(`Chromium ${version}; Repeat and Shuffle pressed before browser startup each changed the restored player once. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
+
+  for (const pressBeforeConnect of [true, false]) {
+    await browser.close();
+    browser = null;
+    restoredStartup = true;
+    delayedQueue = false;
+    holdStartup = true;
+    await postEvent('toggle');
+    await new Promise(resolve => setTimeout(resolve, 2200));
+    if (pressBeforeConnect) await postEvent('toggle');
+    browser = await launchBrowser();
+    const startupWorker = browser.serviceWorkers()[0] || await browser.waitForEvent('serviceworker');
+    const page = await until(() => browser.pages().find(page => page.url().startsWith(musicURL)), 'playback opens Music');
+    await until(() => page.evaluate(() => document.body.dataset.playRequest === '1' && !playing), 'first Play is sent but has not started');
+    if (!pressBeforeConnect) await postEvent('toggle');
+    await postEvent('volume_delta');
+    await postEvent('repeat');
+    await until(() => page.evaluate(() => document.body.dataset.volume_delta === '1' && playerBar.repeatMode === 'ALL'),
+      'volume and repeat still execute while the second toggle is waiting');
+    assert.equal(await page.evaluate(() => document.body.dataset.toggle), undefined);
+    await page.evaluate(() => { playing = true; initialized = true; });
+    const results = await until(() => startupWorker.evaluate(() => {
+      const rows = browserChannel.playbackTrace.filter(event => event.stage === 'player-result');
+      return rows.length === 2 ? rows : null;
+    }), 'both playback results are traced');
+    assert.equal(await page.evaluate(() => playing), false);
+    assert.equal(await page.evaluate(() => document.body.dataset.toggle), '1');
+    assert.deepEqual(results.map(({ type, held, result, inputState, state }) => [type, held, result, inputState, state]),
+      [['play', false, 'ok', -1, 1], ['toggle', true, 'ok', 1, 2]]);
+    for (const { id } of results) {
+      assert.match(child.output, new RegExp(`Playback trace {"id":"${id}","stage":"bridge-queued"`));
+      assert.match(child.output, new RegExp(`Playback trace {"id":"${id}","stage":"bridge-delivered"`));
+    }
+  }
+  t.diagnostic('Second toggles pressed before Chrome connected and during modeled startup each waited for actual playback and then paused. Volume and repeat applied during both waits.');
 });

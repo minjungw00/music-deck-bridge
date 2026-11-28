@@ -45,6 +45,7 @@ const players = createPlayerRegistry({ onChange: drawSoon, onObserved: entry => 
   if (state?.title) lastTrack.observe(state, covers.image(state.cover));
 } });
 const commands = createCommandService({ selectedEntry: players.selected, log,
+  tracePlayback: version.endsWith('-dev'),
   getSession: () => session.access, launch: isTest ? async () => {} : launchChrome });
 const covers = createCoverStore({ selectedSource: () => players.selected()?.[1].cover,
   onChange: drawSoon, onLoaded: lastTrack.observeArtwork });

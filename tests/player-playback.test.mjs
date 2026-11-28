@@ -266,17 +266,82 @@ test('an autoplay block on a startup retry stops recovery without a toggle fallb
   assert.equal(h.clicks(), 0);
 });
 
-test('a later Pause stops startup recovery and cannot be undone by an old Play request', async () => {
+test('a later Pause waits for startup playback and cannot be undone by an old Play request', async () => {
   const h = harness({ initialState: -1, playNoEffect: true });
   h.player.audio.readyState = 0;
   const pending = await h.send('play', Date.now() + 1800, true);
   await until(() => h.plays() === 1);
   h.setState(1);
   assert.equal((await h.send('toggle')).ok, true);
-  assert.equal((await h.result(pending.pending)).reason, 'command-superseded');
+  assert.equal((await h.result(pending.pending)).ok, true);
   await new Promise(resolve => setTimeout(resolve, 1100));
   assert.equal(h.plays(), 1);
   assert.equal(h.state(), 2);
+});
+
+test('a second toggle returns a receipt and waits for the first playback result', async () => {
+  for (const firstType of ['play', 'toggle']) {
+    const h = harness({ initialState: -1, ignoredPlayRequests: 1 });
+    h.player.audio.readyState = 0;
+    const expires = Date.now() + 2500;
+    const first = await h.send(firstType, expires, true);
+    await until(() => h.plays() === 1);
+    const second = await h.send('toggle', expires, true);
+    assert.ok(second.pending);
+    await new Promise(resolve => setTimeout(resolve, 110));
+    assert.equal(h.plays(), 1);
+    assert.equal(h.clicks(), 0);
+    assert.equal((await h.result(first.pending)).ok, true);
+    assert.equal((await h.result(second.pending)).ok, true);
+    assert.equal(h.state(), 2);
+    assert.equal(h.plays(), 2, 'the initial request keeps its Play recovery while the next toggle is held');
+    assert.equal(h.clicks(), 1);
+  }
+});
+
+test('a held toggle after a failed Play cannot start playback', async () => {
+  const h = harness({ initialState: -1, playNoEffect: true });
+  h.player.audio.readyState = 0;
+  const first = await h.send('play', Date.now() + 240, true);
+  await until(() => h.plays() === 1);
+  const second = await h.send('toggle', Date.now() + 800, true);
+  assert.equal((await h.result(first.pending)).reason, 'playback-unconfirmed');
+  assert.equal((await h.result(second.pending)).reason, 'command-superseded');
+  assert.equal(h.plays(), 1);
+});
+
+test('an expired held toggle leaves the first playback result available to a new toggle', async () => {
+  const h = harness({ initialState: -1, playNoEffect: true });
+  h.player.audio.readyState = 0;
+  const expires = Date.now() + 1500;
+  const first = await h.send('play', expires, true);
+  await until(() => h.plays() === 1);
+  const expired = await h.send('toggle', Date.now() + 100, true);
+  assert.equal((await h.result(expired.pending)).reason, 'command-timeout');
+  const next = await h.send('toggle', expires, true);
+  assert.equal(h.plays(), 1);
+  assert.equal(h.clicks(), 0);
+  h.setState(1);
+  assert.equal((await h.result(first.pending)).ok, true);
+  assert.equal((await h.result(next.pending)).ok, true);
+  assert.equal(h.state(), 2);
+  assert.equal(h.clicks(), 1);
+});
+
+test('a held toggle is cancelled if the selected track changes before Play is confirmed', async () => {
+  const h = harness({ initialState: -1, playNoEffect: true });
+  h.player.audio.readyState = 0;
+  const expires = Date.now() + 800;
+  const first = await h.send('play', expires, true);
+  await until(() => h.plays() === 1);
+  const second = await h.send('toggle', expires, true);
+  h.setTrack('bbbbbbbbbbb');
+  h.setState(1);
+  await h.result(first.pending);
+  assert.equal((await h.result(second.pending)).reason, 'player-changed');
+  assert.equal(h.state(), 1);
+  assert.equal(h.plays(), 1);
+  assert.equal(h.clicks(), 0);
 });
 
 for (const change of ['track', 'buffering', 'pause', 'media', 'queue-index', 'api']) {

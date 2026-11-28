@@ -76,6 +76,10 @@ For Previous, compare track identity and playback position separately. The site'
 
 ### Development playback diagnostics / 개발 빌드 재생 진단
 
+For a Play/Pause issue after fully closing Chrome, reproduce first and open the extension worker inspector after Chrome reopens. Run `JSON.stringify(browserChannel.playbackTrace, null, 2)` in **Console**. Match those records by `id` with the `Playback trace` lines in the Stream Deck plugin log. The worker keeps the latest 48 entries. The trace records queueing, receipt, input and final player states, and the outcome under a random request ID.
+
+Chrome을 완전히 닫아야 재현되는 재생·일시정지 문제는 먼저 재현하고, Chrome이 다시 열리면 확장의 서비스 워커 검사 창에서 **Console**을 엽니다. `JSON.stringify(browserChannel.playbackTrace, null, 2)`의 `id`를 Stream Deck 플러그인 로그의 `Playback trace` 항목과 비교합니다. 워커에 남는 최근 48개 항목으로 입력 대기, 전달, 실행 시점과 결과 시점의 플레이어 상태를 확인할 수 있습니다.
+
 Development builds with this instrumentation retain the most recent playback failure in the extension worker's memory. Reproduce after opening the inspector so the worker remains available; a worker restart clears it. A successful later command does not clear this diagnostic record.
 
 이 진단 기능이 포함된 개발 빌드는 마지막 재생 실패를 확장 프로그램 워커 메모리에 보관합니다. 검사 창을 먼저 연 뒤 문제를 확인하세요. 워커가 재시작되면 기록이 사라지며, 이후 명령이 성공해도 마지막 진단 기록은 남습니다.
