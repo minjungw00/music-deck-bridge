@@ -11,7 +11,8 @@ import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const musicURL = 'https://music.youtube.com/';
-const fixture = (restored = false, ignoredStartupRequests = 0, delayedQueue = false) => `<!doctype html><html><body>
+const fixture = (restored = false, ignoredStartupRequests = 0, delayedQueue = false,
+  holdStartupPlay = false, holdReadiness = false) => `<!doctype html><html><body>
 <ytmusic-player-bar>
  <span class="title">Fixture song</span><span class="byline">Fixture artist</span>
  <audio></audio><div id="movie_player"></div>
@@ -34,6 +35,8 @@ let destinationUnstarted=false, unstartedDestination=false, ignoredDestinationPl
 const restored=${restored};
 const ignoredStartupRequests=${ignoredStartupRequests};
 const delayedQueue=${delayedQueue};
+const holdStartupPlay=${holdStartupPlay};
+let finishStartupPlay;
 const playerListeners=new Map();
 const playerBar=document.querySelector('ytmusic-player-bar');
 const repeatModes=['NONE','ALL','ONE'];
@@ -99,6 +102,7 @@ api.playVideo=()=>{
  document.body.dataset.apiUserEverActive=String(navigator.userActivation.hasBeenActive);
  record('playRequest');
  if(restored&&!initialized&&Number(document.body.dataset.playRequest)<=ignoredStartupRequests){record('ignoredStartupRequest');return;}
+ if(restored&&!initialized&&holdStartupPlay){finishStartupPlay=()=>{playing=true;initialized=true;record('lateStart');};return;}
  if(unstartedDestination&&++destinationPlays<=ignoredDestinationPlays){record('ignoredDestinationRequest');return;}
  unstartedDestination=false;
  playing=true;initialized=true;
@@ -113,8 +117,11 @@ api.addEventListener=(name,fn)=>{if(!playerListeners.has(name))playerListeners.s
 api.removeEventListener=(name,fn)=>playerListeners.get(name)?.delete(fn);
 // Controls/API become ready before a selection. Play is invalid until cueing;
 // loaded media/track identity then still require the first valid Play input.
-setTimeout(()=>{ready=true;for(const button of document.querySelectorAll('button[disabled]'))button.disabled=false;},500);
-setTimeout(()=>{cued=true;},900);
+function makePlayerReady(){ready=true;for(const button of document.querySelectorAll('button[disabled]'))button.disabled=false;}
+if(!${holdReadiness}){
+ setTimeout(makePlayerReady,500);
+ setTimeout(()=>{cued=true;},900);
+}
 const slider=document.querySelector('#volume-slider');slider.value=50;
 slider.addEventListener('change',()=>{slider.setAttribute('aria-valuenow',slider.value);record('volume_delta');});
 </script></body></html>`;
@@ -134,6 +141,8 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   let restoredStartup = false;
   let ignoredStartupRequests = 0;
   let delayedQueue = false;
+  let holdStartupPlay = false;
+  let holdReadiness = false;
   t.after(async () => {
     await browser?.close();
     if (child) await child.stop();
@@ -144,7 +153,8 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '1',
     '-keyout', join(temp, 'key'), '-out', join(temp, 'cert'), '-subj', '/CN=music.youtube.com'], { stdio: 'ignore' });
   site = httpsServer({ key: await readFile(join(temp, 'key')), cert: await readFile(join(temp, 'cert')) },
-    (_req, res) => { setTimeout(() => { res.setHeader('Content-Type', 'text/html'); res.end(fixture(restoredStartup, ignoredStartupRequests, delayedQueue)); }, 250); });
+    (_req, res) => { setTimeout(() => { res.setHeader('Content-Type', 'text/html');
+      res.end(fixture(restoredStartup, ignoredStartupRequests, delayedQueue, holdStartupPlay, holdReadiness)); }, 250); });
   await new Promise(resolve => site.listen(0, '127.0.0.1', resolve));
   const port = await freePort();
   async function startBridge() {
@@ -618,15 +628,33 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   browser = null;
   delayedQueue = false;
   restoredStartup = true;
-  ignoredStartupRequests = 1;
+  ignoredStartupRequests = 0;
+  holdStartupPlay = true;
+  await postEvent('toggle');
+  await new Promise(resolve => setTimeout(resolve, 2200));
+  browser = await launchBrowser();
+  const startupPage = await until(() => browser.pages().find(page => page.url().startsWith(musicURL)), 'queued playback opens a music tab');
+  await until(() => startupPage.evaluate(() => document.body.dataset.playRequest === '1' && !playing), 'site has received Play and remains unstarted');
+  await postEvent('toggle');
+  await until(() => startupPage.evaluate(() => document.body.dataset.pauseRequest === '1'), 'Pause reaches the still-unstarted player');
+  await startupPage.evaluate(() => finishStartupPlay());
+  await until(() => startupPage.evaluate(() => document.body.dataset.pauseRequest === '2' && !playing), 'Pause applies before and after the late start');
+  assert.deepEqual(await startupPage.evaluate(() => [document.body.dataset.playRequest, document.body.dataset.lateStart,
+    document.body.dataset.toggle, document.querySelector('#movie_player').getPlayerState()]), ['1', '1', undefined, 2]);
+
+  await browser.close();
+  browser = null;
+  holdReadiness = true;
   await postEvent('toggle');
   await postEvent('toggle');
   await new Promise(resolve => setTimeout(resolve, 2200));
   browser = await launchBrowser();
-  const startupPage = await until(() => browser.pages().find(page => page.url().startsWith(musicURL)), 'two queued playback inputs open a music tab');
-  await until(() => startupPage.evaluate(() => document.body.dataset.pauseRequest === '1' && !playing), 'second input pauses startup playback');
-  await new Promise(resolve => setTimeout(resolve, 1100));
-  assert.deepEqual(await startupPage.evaluate(() => [document.body.dataset.playRequest, document.body.dataset.ignoredStartupRequest,
-    document.body.dataset.toggle, document.querySelector('#movie_player').getPlayerState()]), ['2', '1', undefined, 2]);
-  t.diagnostic('Two playback inputs queued with Chromium closed paused the restored track after its delayed first Play. The test runner restarted Chromium.');
+  const idlePage = await until(() => browser.pages().find(page => page.url().startsWith(musicURL)), 'two queued playback presses open Music');
+  await until(() => idlePage.evaluate(() => globalThis[Symbol.for('music-deck-bridge.playback')]?.pause), 'both commands arrive before the player is ready');
+  await idlePage.evaluate(() => makePlayerReady());
+  await until(() => idlePage.evaluate(() => document.body.dataset.pauseRequest === '1'), 'startup Pause reaches an idle player');
+  await new Promise(resolve => setTimeout(resolve, 1400));
+  assert.deepEqual(await idlePage.evaluate(() => [playing, document.body.dataset.playRequest, document.body.dataset.toggle]),
+    [false, undefined, undefined]);
+  t.diagnostic('Startup Pause cancels an undispatched Play and stops an already dispatched Play that takes effect late. The test runner restarted Chromium.');
 });

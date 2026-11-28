@@ -84,7 +84,8 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
     setTrack: value => { track = value; },
     replaceApi: () => { api = { ...api }; },
     time: value => { time = value; },
-    send: (command, expiresAt, dispatchOnly = false) => player.send({ type: 'player-playback', command, expiresAt, dispatchOnly }),
+    send: (command, expiresAt, dispatchOnly = false, startupPause = false) =>
+      player.send({ type: 'player-playback', command, expiresAt, dispatchOnly, startupPause }),
     result: pending => player.send({ type: 'player-playback-result', pending }) };
 }
 
@@ -595,14 +596,30 @@ test('a buffering Pause that takes effect immediately sends a single explicit re
 });
 
 test('explicit Pause never starts playback after startup has already been paused', async () => {
-  let pauses = 0;
-  const h = harness({ initialState: 1, pause(confirm) { pauses++; confirm(); } });
+  const h = harness({ initialState: 1 });
   assert.equal((await h.send('pause')).ok, true);
   assert.equal((await h.send('pause')).ok, true);
   assert.equal(h.state(), 2);
-  assert.equal(pauses, 1);
-  assert.equal(h.clicks(), 0);
+  assert.equal(h.clicks(), 1);
   assert.equal(h.plays(), 0);
+});
+
+test('a Pause during startup supersedes Play and still pauses a late start on that track', async () => {
+  let pauses = 0;
+  const h = harness({ initialState: -1, playNoEffect: true, pause(confirm) { if (++pauses === 2) confirm(); } });
+  h.player.audio.readyState = 0;
+  const deadline = Date.now() + 850;
+  const play = await h.send('play', deadline, true);
+  await until(() => h.plays() === 1);
+  const pause = await h.send('pause', deadline, true, true);
+  await until(() => pauses === 1);
+  assert.equal((await h.result(play.pending)).reason, 'command-superseded');
+  h.setState(1);
+  assert.equal((await h.result(pause.pending)).ok, true);
+  assert.equal(h.state(), 2);
+  assert.equal(h.plays(), 1);
+  assert.equal(pauses, 2);
+  assert.equal(h.clicks(), 0);
 });
 
 test('buffering Pause recovery skips a different track, a replacement API and a later input', async () => {

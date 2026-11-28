@@ -11,11 +11,11 @@ function harness({ selected = null } = {}) {
     launch: async options => { launches.push(options); },
     setTimeout: (run, delay) => { const key = ++id; timers.set(key, { run, at: clock + delay }); return key; },
     clearTimeout: key => timers.delete(key) });
-  function channel(concurrent = false, repeat = false, queueStartup = false, clientIds) {
+  function channel(concurrent = false, repeat = false, queueStartup = false, clientIds, playbackIntent = false) {
     const replies = [];
     let close;
     commands.listenBrowser({ reply: (data, status = 200) => replies.push({ data, status }), onClose: fn => { close = fn; } },
-      { concurrent, repeat, shuffle: repeat, queueStartup, clientIds });
+      { concurrent, repeat, shuffle: repeat, queueStartup, clientIds, playbackIntent });
     return { replies, close };
   }
   return { commands, session, launches, timers, channel, select(entry) { selected = entry; }, async advance(ms) {
@@ -25,6 +25,49 @@ function harness({ selected = null } = {}) {
     }
   } };
 }
+
+test('startup playback keys alternate explicit intent before or after Chrome reconnects', async () => {
+  for (const alreadyConnected of [false, true]) {
+    const h = harness();
+    const play = h.commands.request('toggle');
+    assert.equal(h.commands.playbackIntent, true);
+    let first;
+    if (alreadyConnected) {
+      first = h.channel(true, true, true, [], true).replies[0].data.commands[0];
+      h.select(['18', { title: 'Loading song', playing: false, lastMediaSyncAt: 1000 }]);
+    }
+    const pause = h.commands.request('toggle');
+    assert.equal(h.commands.playbackIntent, false);
+    first ??= h.channel(true, true, true, [], true).replies[0].data.commands[0];
+    const second = h.channel(true, true, true, [], true).replies[0].data.commands[0];
+    assert.deepEqual([first.playing, second.playing], [true, false]);
+    h.commands.acknowledge(first.id, false, 'command-superseded');
+    assert.equal(await play, null);
+    assert.equal(h.commands.playbackIntent, false);
+    h.commands.acknowledge(second.id, true);
+    h.commands.observePlayback(['18', { playing: false }]);
+    assert.equal(await pause, true);
+    assert.equal(h.commands.playbackIntent, undefined);
+  }
+});
+
+test('a stale title from a closed tab does not hide the first two startup playback presses', async () => {
+  for (const beforeReconnect of [true, false]) {
+    const h = harness({ selected: ['19', { title: 'Last player', playing: false, lastMediaSyncAt: 1000 }] });
+    h.channel(true, true, true, [19], true).close();
+    const first = h.commands.request('toggle');
+    let second = beforeReconnect ? h.commands.request('toggle') : undefined;
+    await h.advance(2000);
+    h.select(null);
+    const play = h.channel(true, true, true, [], true).replies[0].data.commands[0];
+    h.select(['20', { title: 'Loading song', playing: false, lastMediaSyncAt: 3000 }]);
+    second ??= h.commands.request('toggle');
+    const pause = h.channel(true, true, true, [20], true).replies[0].data.commands[0];
+    assert.deepEqual([play.playing, play.preferredTabId, pause.playing, h.commands.playbackIntent], [true, null, false, false]);
+    h.commands.reset();
+    assert.deepEqual(await Promise.all([first, second]), [false, false]);
+  }
+});
 
 test('repeat requires an eligible player and an advertised capability on the paired channel', async () => {
   const track = { title: 'Song', trackId: 'aaaaaaaaaaa', repeatMode: 'NONE', lastMediaSyncAt: 1000 };

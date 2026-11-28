@@ -28,6 +28,7 @@ function needsMarquee(displayed, actionName) {
 // Output and artwork are ports: this module can run in Node, tests or a preview.
 function createRenderer({ displayed, covers, selectedEntry, actionName, online = () => true,
   lastTrack = () => null, repeatAvailable = () => true, shuffleAvailable = () => true,
+  playbackIntent = () => undefined,
   tr = key => translate('en', key), now = Date.now, fitDialArtwork, keyTextBackground, volumeKeyImage,
   setTimeout = globalThis.setTimeout, clearTimeout = globalThis.clearTimeout,
   output: { setImage, setTitle, setFeedback, sendStream } }) {
@@ -188,9 +189,9 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
       writeImage(context, item, image || (legacy ? null : EMPTY_KEY_IMAGE));
     }
   }
-  function renderActionKey(context, item, kind, chosen, track, tile) {
+  function renderActionKey(context, item, kind, chosen, track, tile, playback) {
     const live = chosen?.[1];
-    const icon = keyIcon(kind, live ?? track, Boolean(live));
+    const icon = keyIcon(kind, kind === 'toggle' ? playback : live ?? track, Boolean(live));
     const artwork = keyDisplay(item.settings) !== 'icon';
     const frame = artwork ? null : item.volumeFeedback?.frame(chosen, item.settings, now());
     const value = frame?.volume != null ? volumeKeyImage?.(frame.volume, item.settings?.volumeShowPercent === true) : null;
@@ -229,6 +230,8 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
     try {
       const chosen = selectedEntry();
       const state = chosen?.[1];
+      const playing = playbackIntent();
+      const playback = typeof playing === 'boolean' ? { playing } : state;
       const track = displayTrack(state);
       const tiles = albumTiles(displayed);
       for (const [context, item] of displayed) {
@@ -236,11 +239,11 @@ function createRenderer({ displayed, covers, selectedEntry, actionName, online =
         if (kind === 'nowplaying') {
           renderCurrentTrackKey(context, item, track, tiles.get(context));
         } else if (keyActions.has(kind)) {
-          nextVolumeExpiry = Math.min(nextVolumeExpiry, renderActionKey(context, item, kind, chosen, track, tiles.get(context)));
+          nextVolumeExpiry = Math.min(nextVolumeExpiry, renderActionKey(context, item, kind, chosen, track, tiles.get(context), playback));
         } else if (kind === 'volume') {
           renderVolumeDial(context, item, state ?? (Number.isFinite(track?.volume) ? track : null));
         } else if (kind === 'trackdial') {
-          renderCurrentTrackDial(context, item, track, state);
+          renderCurrentTrackDial(context, item, track, playback);
         }
       }
       if (state?.cover && !covers.image(state.cover))

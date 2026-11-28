@@ -50,6 +50,10 @@ Standalone popup messages (`player-status`, `local-control`) remain inside the e
 
 `/browser-listen` accepts optional `concurrent: true` to allow up to eight delivered requests awaiting separate final acknowledgments. The default remains serial, and older plugins can ignore the flag. Request IDs, final `/browser-result` semantics and authentication are unchanged; a local extension/page receipt is not a successful final result. See [dispatch and confirmation](architecture.md#command-dispatch-and-confirmation) for ordering, cancellation and mixed-component behavior.
 
+### Optional playback intent
+
+`playbackIntent: true` on `/browser-listen` advertises support for a boolean `playing` on Stream Deck `toggle` commands. The worker interprets `true` as Play and `false` as Pause. This lets the plugin convey the target of a press made before the site reports playing. Older peers continue using the existing `toggle` wire command without that field.
+
 ### Optional Repeat and Shuffle controls
 
 The 1.3.0 development extension advertises `repeat: true` and `shuffle: true` on `/browser-listen` and reports `repeatMode` (`NONE`, `ALL`, `ONE` or `null`) and `shuffleEnabled` (boolean or `null`) in player metadata. Live inputs are bound to the selected player and track. Confirmation requires a mode change or a queue reorder for shuffle variants without a persistent toggle.

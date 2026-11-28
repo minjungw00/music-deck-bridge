@@ -75,9 +75,11 @@
         if (command.type === 'open') return true;
       }
       if (command.type === 'next' || command.type === 'prev') startupPlayback?.delete(tab.id);
-      const prior = command.type === 'toggle' ? startupPlayback?.get(tab.id) : undefined;
+      const hasIntent = command.type === 'toggle' && typeof command.playing === 'boolean';
+      const prior = command.type === 'toggle' && !hasIntent ? startupPlayback?.get(tab.id) : undefined;
       let type = command.type;
-      if (prior) type = prior.type === 'play' ? 'pause' : 'play';
+      if (hasIntent) type = command.playing ? 'play' : 'pause';
+      else if (prior) type = prior.type === 'play' ? 'pause' : 'play';
       else if (type === 'toggle' && opened) type = 'play';
       const completed = (async () => {
         // A follow-up key press must not interpret an unstarted player as a
@@ -85,7 +87,7 @@
         if (prior && !await prior.completed.catch(() => false)) return failed('command-superseded');
         return dispatch(type);
       })();
-      if (!startupPlayback || (!prior && type !== 'play')) return completed;
+      if (hasIntent || !startupPlayback || (!prior && type !== 'play')) return completed;
       const pending = { type, completed };
       startupPlayback.set(tab.id, pending);
       try { return await completed; }
@@ -111,6 +113,7 @@
                 amount: command.amount, trackKey, allowCurrentTrack: !trackKey,
                 ...(command.playerKey ? { playerKey: command.playerKey } : {}),
                 ...(queueStartup ? { queueStartup: true } : {}),
+                ...(hasIntent && type === 'pause' ? { startupPause: true } : {}),
               } }, { frameId: 0 });
             if (result?.pending) {
               // Receipt starts an ordered MAIN-world dispatch operation. Keep its
@@ -169,7 +172,7 @@
           try {
             const tabs = await chrome.tabs.query({ url: MUSIC_URL + '*' });
             result = await post('/browser-listen', { token, clientIds: tabs.map(tab => tab.id),
-              concurrent: true, repeat: true, shuffle: true, queueStartup: true }, 15500);
+              concurrent: true, repeat: true, shuffle: true, queueStartup: true, playbackIntent: true }, 15500);
           }
           catch (error) {
             if (error.httpStatus === 404) browserChannelAvailable = false;

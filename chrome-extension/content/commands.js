@@ -27,7 +27,8 @@
         case 'shuffle':
           result = await chrome.runtime.sendMessage({ type: 'player-playback', command: message.type,
             expiresAt: message.expiresAt, dispatchOnly: message.dispatchOnly === true,
-            ...(queueStartup ? { queueStartup: true } : {}) });
+            ...(queueStartup ? { queueStartup: true } : {}),
+            ...(message.type === 'pause' && message.startupPause === true ? { startupPause: true } : {}) });
           result = result || { ok: false, reason: 'playback-unconfirmed' };
           break;
         case 'playback-result':

@@ -12,7 +12,7 @@ const COMMAND_ERRORS = new Set(['pairing-required', 'extension-unavailable', 'co
   'shuffle-update-required', 'shuffle-unavailable']);
 
 // A channel port supplies reply(data, status) and onClose(callback); no HTTP objects enter this service.
-function createCommandService({ getSession, selectedEntry, launch, log,
+function createCommandService({ getSession, selectedEntry, playbackEntry = selectedEntry, onPlaybackChange = () => {}, launch, log,
   now = Date.now, newId = () => crypto.randomBytes(12).toString('hex'),
   setTimeout = globalThis.setTimeout, clearTimeout = globalThis.clearTimeout }) {
   const queue = [];
@@ -25,10 +25,32 @@ function createCommandService({ getSession, selectedEntry, launch, log,
   let browserCapable = false;
   let browserRepeat = false;
   let browserShuffle = false;
+  let playbackRequest = null;
   let lastCommandError = '';
   let latestRequest = 0;
   const hasLaunchableRequest = () => [...browserRequests.values()].some(request => request.queueStartup || !queueControl(request.type));
   const supports = type => type === 'repeat' ? browserRepeat : browserShuffle;
+  function clearPlayback(request = playbackRequest) {
+    if (!request || playbackRequest !== request) return;
+    clearTimeout(request.playbackTimer);
+    playbackRequest = null;
+    onPlaybackChange();
+  }
+  function setPlayback(request, playing) {
+    request.playing = playing;
+    if (playbackRequest?.order > request.order) return;
+    clearTimeout(playbackRequest?.playbackTimer);
+    playbackRequest = request;
+    onPlaybackChange();
+  }
+  function observePlayback(entry) {
+    if (!playbackRequest?.awaitingSnapshot || !entry) return;
+    const state = entry[1];
+    if (playbackRequest.preferredTabId != null && playbackRequest.preferredTabId !== Number(entry[0])) {
+      clearPlayback(); return;
+    }
+    if (state.playing === playbackRequest.playing && (!state.playing || state.playbackConfirmed)) clearPlayback();
+  }
   function addCommand(type, ticks = 0) {
     if (getSession().blocked) return false;
     const entry = selectedEntry();
@@ -133,6 +155,23 @@ function createCommandService({ getSession, selectedEntry, launch, log,
       return request.finish(false, `${request.type}-update-required`);
     }
     if (browserWaiter.concurrent && pending.filter(item => item.state === 'delivered').length >= 8) return;
+    const previousTabGone = request.preferredTabId != null && browserWaiter.clientIds &&
+      !browserWaiter.clientIds.includes(request.preferredTabId);
+    if (browserWaiter.playbackIntent && request.playbackKey && typeof request.playing !== 'boolean' &&
+        (nativeTabPending || previousTabGone)) {
+      // Chrome can exit without reporting its last tab. Rebase in-flight key
+      // presses once the relaunch or the new inventory establishes startup.
+      const originalTabId = request.preferredTabId;
+      let playing = true;
+      for (const queued of pending.slice(pending.indexOf(request))) {
+        if (queued.type === 'next' || queued.type === 'prev' || (queued.type === 'toggle' && !queued.playbackKey)) break;
+        if (!queued.playbackKey || queued.state !== 'queued') continue;
+        if (queued.preferredTabId != null && queued.preferredTabId !== originalTabId) break;
+        if (previousTabGone) queued.preferredTabId = null;
+        setPlayback(queued, playing);
+        playing = !playing;
+      }
+    }
     const preferredTabId = queueStartup ? selectedTabId : request.preferredTabId;
     const playerKey = queueStartup ? undefined : request.playerKey;
     request.state = 'delivered';
@@ -140,17 +179,19 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     browserWaiter.reply({ commands: [{ id: request.id, type: request.type, amount: request.amount,
       expiresAt: request.expiresAt, nativeLaunched: nativeTabPending,
       preferredTabId, ...(request.trackKey ? { trackKey: request.trackKey } : {}),
-      ...(playerKey ? { playerKey } : {}), ...(queueStartup ? { queueStartup: true } : {}) }] });
+      ...(playerKey ? { playerKey } : {}), ...(queueStartup ? { queueStartup: true } : {}),
+      ...(browserWaiter.playbackIntent && typeof request.playing === 'boolean' ? { playing: request.playing } : {}) }] });
     nativeTabPending = false;
   }
-  function listenForBrowser(channel, { concurrent = false, repeat = false, shuffle = false, queueStartup = false, clientIds } = {}) {
+  function listenForBrowser(channel, { concurrent = false, repeat = false, shuffle = false,
+    queueStartup = false, playbackIntent = false, clientIds } = {}) {
     // One paired extension profile owns the browser-wide channel, even with no tabs.
     browserCapable = true;
     browserRepeat = repeat;
     browserShuffle = shuffle;
     browserWaiter?.reply({ commands: [] });
     const waiter = {
-      concurrent, clientIds, queueStartup,
+      concurrent, clientIds, queueStartup, playbackIntent,
       timer: null,
       reply(message, status = 200) {
         clearTimeout(waiter.timer);
@@ -192,13 +233,24 @@ function createCommandService({ getSession, selectedEntry, launch, log,
       if (existing) return existing.promise;
     }
     if (browserRequests.size >= 60) return false;
+    let playing;
+    const playbackKey = type === 'toggle' && !playerKey && session.paired;
+    const observed = playbackKey ? playbackEntry() : entry;
+    const preferredTabId = observed ? Number(observed[0]) : null;
+    if (type === 'next' || type === 'prev' || (playerKey && type === 'toggle')) clearPlayback();
+    if (playbackKey) {
+      if (playbackRequest?.preferredTabId != null && preferredTabId != null &&
+          playbackRequest.preferredTabId !== preferredTabId) clearPlayback();
+      if (playbackRequest) playing = !playbackRequest.playing;
+      else if (!observed?.[1].title) playing = true;
+    }
     let resolve;
     const promise = new Promise(done => { resolve = done; });
     const timeout = isQueue && !queueStartup ? 4000 : 45000;
     const request = {
       id: newId(), type, amount, promise, state: 'queued', order: ++latestRequest,
-      expiresAt: now() + timeout, preferredTabId: entry ? Number(entry[0]) : null,
-      playerKey, queueStartup,
+      expiresAt: now() + timeout, preferredTabId,
+      playerKey, queueStartup, playbackKey,
       trackKey: isRatingCommand(type) && state?.title ? trackKey(state) : null,
       finish(ok, reason = 'command-failed') {
         if (!['queued', 'delivered'].includes(request.state)) return;
@@ -209,6 +261,13 @@ function createCommandService({ getSession, selectedEntry, launch, log,
         if (!ok && reason !== 'command-superseded') log(`Browser command ${type} failed: ${failure}`);
         clearTimeout(request.timer);
         browserRequests.delete(request.id);
+        if (playbackRequest === request) {
+          if (ok) {
+            request.awaitingSnapshot = true;
+            request.playbackTimer = setTimeout(() => clearPlayback(request), 1500);
+            observePlayback(playbackEntry());
+          } else clearPlayback(request);
+        }
         resolve(reason === 'command-superseded' ? null : ok);
         if (!browserRequests.size) {
           nativeLaunchStarted = false;
@@ -222,12 +281,14 @@ function createCommandService({ getSession, selectedEntry, launch, log,
     request.timer = setTimeout(() => request.finish(false,
       request.state === 'delivered' ? 'command-timeout' : 'extension-unavailable'), timeout);
     browserRequests.set(request.id, request);
+    if (typeof playing === 'boolean') setPlayback(request, playing);
     flushBrowserRequest();
     scheduleNativeLaunch();
     return promise;
   }
 
   function cancel(message = { error: 'Pairing revoked' }, status = 401, reason = 'command-failed') {
+    clearPlayback();
     browserWaiter?.reply(message, status);
     clearTimeout(nativeLaunchTimer); nativeLaunchTimer = null;
     const pending = [...browserRequests.values()];
@@ -246,6 +307,8 @@ function createCommandService({ getSession, selectedEntry, launch, log,
   return {
     request: requestPlayerCommand, addLegacy: addCommand, dispatch,
     listen: listenForCommands, listenBrowser: listenForBrowser,
+    observePlayback,
+    get playbackIntent() { return playbackRequest?.playing; },
     get lastError() { return lastCommandError; },
     get repeatError() { return queueError('repeat', selectedEntry()?.[1]); },
     get shuffleError() { return queueError('shuffle', selectedEntry()?.[1]); },
@@ -269,6 +332,7 @@ function createCommandService({ getSession, selectedEntry, launch, log,
       if (request?.state === 'delivered') request.finish(ok === true, reason);
     },
     removePlayer(clientId) {
+      if (playbackRequest?.preferredTabId === Number(clientId) || !selectedEntry()) clearPlayback();
       for (const waiter of [...(listenWaiters.get(clientId) || [])]) waiter.reply({ commands: [], idle: true });
     },
     notifyPortChange() {
