@@ -30,7 +30,7 @@
     "prebuild:dev": "npm run build:plugin"
   },
   "dependencies": {
-    "@elgato/streamdeck": "3.0.4",
+    "@elgato/streamdeck": "3.0.6",
     "image-size": "2.1.0"
   },
   "devDependencies": {
