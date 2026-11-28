@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import artwork from '../chrome-extension/artwork-policy.js';
 import trackIdentity from '../chrome-extension/track-identity.js';
+import playerPriority from '../chrome-extension/player-priority.js';
 import playerState from '../streamdeck/src/domain/player-state.cjs';
 import { readFileSync } from 'node:fs';
 
@@ -10,7 +11,8 @@ const source = readFileSync(new URL('../chrome-extension/background/last-player.
 const track = (id, title, fields = {}) => ({ trackId: id.repeat(11), title, artist: 'Artist', trackConfirmed: true, ...fields });
 
 function openCache(storage, now = Date.now) {
-  const context = vm.createContext({ MusicDeckArtworkPolicy: artwork, MusicDeckTrackIdentity: trackIdentity });
+  const context = vm.createContext({ MusicDeckArtworkPolicy: artwork, MusicDeckTrackIdentity: trackIdentity,
+    MusicDeckPlayerPriority: playerPriority });
   vm.runInContext(source, context);
   return context.MusicDeckLastPlayer.create({ storage, ready: Promise.resolve(), now });
 }
@@ -74,6 +76,22 @@ test('a repeated provisional observation can save the new selected player after 
   const { title, repeatMode, volume } = await openCache(storage).get();
   assert.deepEqual({ title, repeatMode, volume }, { title: restored.title, repeatMode: 'ONE', volume: 25 });
   assert.equal(writes, 2);
+});
+
+test('Chrome retains the foreground track through alternating background observations', async () => {
+  const writes = [];
+  const cache = openCache({ async set({ lastTrack }) { writes.push(lastTrack.title); } });
+  const a = track('a', 'First song');
+  const b = track('b', 'Second song');
+  await cache.observe({ id: 1 }, a, false, { tabId: 1, observedAt: 1 });
+  await cache.observe({ id: 2 }, b, false, { tabId: 1, observedAt: 2 });
+  await cache.observe({ id: 2 }, b, false, { tabId: 2, observedAt: 4 });
+  await cache.observe({ id: 1 }, a, false, { tabId: 1, observedAt: 3 });
+  await cache.observe({ id: 1 }, a, true);
+  await cache.observe({ id: 2 }, b, false, { tabId: null, observedAt: 5 });
+  await cache.observe({ id: 1 }, a, false);
+  assert.equal((await cache.get()).title, b.title);
+  assert.deepEqual(writes, [a.title, b.title]);
 });
 
 test('clearing waits for removal and can be retried after a storage failure', async () => {

@@ -3,6 +3,7 @@
   const STORAGE_KEY = 'lastTrack';
   const LIVE_MS = 90000;
   const { normalizeTrackIdentity, trackKey } = root.MusicDeckTrackIdentity;
+  const { acceptForeground, choosePlayer } = root.MusicDeckPlayerPriority;
   function normalize(state) {
     const identity = normalizeTrackIdentity(state);
     if (!identity.title) return null;
@@ -15,15 +16,12 @@
       shuffleEnabled: typeof state.shuffleEnabled === 'boolean' ? state.shuffleEnabled : null };
   }
 
-  function preferredRecord(players) {
-    return [...players].sort((a, b) => Number(b.standalone) - Number(a.standalone) ||
-      Number(b.playing) - Number(a.playing) || b.seen - a.seen)[0]?.record;
-  }
-
   function createObservations(now) {
     const players = new Map();
-    function observe(id, state, provisional) {
+    let foreground, selectedId;
+    function observe(id, state, provisional, focus) {
       if (!Number.isInteger(id)) return;
+      foreground = acceptForeground(foreground, focus);
       const record = normalize(state);
       const entry = players.get(id);
       const previous = entry?.record;
@@ -43,9 +41,13 @@
         players.set(id, { record, seen, standalone: state.standalone === true, playing: state.playing === true });
       }
       for (const [tabId, player] of players) if (seen - player.seen >= LIVE_MS) players.delete(tabId);
-      return preferredRecord(players.values());
+      const selected = choosePlayer(players, foreground?.tabId, selectedId);
+      selectedId = selected?.[0];
+      return selected?.[1].record;
     }
-    return { observe, remove: id => players.delete(id), clear: () => players.clear() };
+    return { observe, remove: id => players.delete(id), clear() {
+      players.clear(); foreground = selectedId = undefined;
+    } };
   }
 
   function create({ storage, ready, now = Date.now }) {
@@ -78,8 +80,8 @@
       });
       return writing;
     }
-    function observe(tab, state, provisional = false) {
-      const selected = observations.observe(tab.id, state, provisional);
+    function observe(tab, state, provisional = false, foreground) {
+      const selected = observations.observe(tab.id, state, provisional, foreground);
       if (!selected) return;
       if (JSON.stringify(selected) !== JSON.stringify(latest)) latest = selected;
       return persist()?.catch(() => { /* A subsequent observation can retry the write. */ });

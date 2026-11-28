@@ -5,6 +5,7 @@
     const { post, pairedToken } = client;
     const { playerPlayback } = pageControls;
     const removedTabs = new Set(), tabs = new Map();
+    let lastForegroundTime = 0;
     const idle = { paired: false, commands: [] };
     const pairedIdle = { paired: true, commands: [], idle: true };
     function synchronize(type, state, sender) {
@@ -33,10 +34,22 @@
       if (client.blocked() || browserChannel.available !== false) return pairedIdle;
       return forward('/listen', { token, clientId: tabId }, 15500);
     }
+    async function readForeground() {
+      if (!chrome.tabs?.query) return undefined;
+      const clock = globalThis.performance;
+      const time = clock ? clock.timeOrigin + clock.now() : Date.now();
+      const observedAt = lastForegroundTime = Math.max(time, lastForegroundTime + 0.001);
+      try {
+        const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true, url: 'https://music.youtube.com/*' });
+        return { tabId: Number.isSafeInteger(tab?.id) && tab.id >= 0 ? tab.id : null, observedAt };
+      } catch { return undefined; }
+    }
     async function syncTrack(tab, input, state, { tab: source, frameId }) {
       const token = await pairedToken();
       const bridge = !!token && !client.blocked();
+      let foreground;
       if (frameId === 0 && (bridge || state?.title)) {
+        const readingForeground = readForeground();
         try {
           const observed = await chrome.scripting.executeScript({ target: { tabId: source.id, frameIds: [0] },
             world: 'MAIN', func: playerPlayback, args: ['state'] });
@@ -50,17 +63,22 @@
                 input.closeSnapshot = { token, clientId: source.id,
                   state: { title, artist, trackId, cover, coverFallback, standalone, trackConfirmed: true } };
               }
+              foreground = await readingForeground;
+              if (foreground && input.captured && tab.latest === input && !tab.closed) {
+                void lastPlayer?.observe(source, state, true, foreground);
+              }
               return token ? pairedIdle : idle;
             }
             state = merged;
           }
         } catch { /* Keep the DOM snapshot if the page is navigating. */ }
-        if (tab.latest === input && !tab.closed) void lastPlayer?.observe(source, state);
+        foreground = await readingForeground;
+        if (tab.latest === input && !tab.closed) void lastPlayer?.observe(source, state, false, foreground);
       }
       if (!bridge) return token ? pairedIdle : idle;
       const send = () => {
         if (client.blocked() || tab.latest !== input || (tab.closed && !input.captured)) return pairedIdle;
-        return forward('/sync', { token, clientId: source.id, state });
+        return forward('/sync', { token, clientId: source.id, state, ...(foreground && { foreground }) });
       };
       // Documents in the same tab can overlap during navigation or pagehide.
       // Finish an in-flight publication before sending its replacement.

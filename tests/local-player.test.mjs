@@ -4,6 +4,7 @@ import vm from 'node:vm';
 import artwork from '../chrome-extension/artwork-policy.js';
 import commandPolicy from '../chrome-extension/command-policy.js';
 import trackIdentity from '../chrome-extension/track-identity.js';
+import playerPriority from '../chrome-extension/player-priority.js';
 import { readFileSync } from 'node:fs';
 
 function harness(saved = null) {
@@ -27,7 +28,7 @@ function harness(saved = null) {
     return command.type === 'open' ? true : allowed(true);
   } };
   const context = vm.createContext({ chrome, URL, Date, MusicDeckArtworkPolicy: artwork,
-    MusicDeckCommandPolicy: commandPolicy, MusicDeckTrackIdentity: trackIdentity });
+    MusicDeckCommandPolicy: commandPolicy, MusicDeckTrackIdentity: trackIdentity, MusicDeckPlayerPriority: playerPriority });
   for (const file of ['last-player.js', 'local-player.js']) {
     vm.runInContext(readFileSync(new URL(`../chrome-extension/background/${file}`, import.meta.url), 'utf8'), context);
   }

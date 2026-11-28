@@ -1,6 +1,7 @@
 'use strict';
 const { limit } = require('./values.cjs');
 const { normalizeTrackIdentity, trackKey } = require('../../../chrome-extension/track-identity.js');
+const { choosePlayer } = require('../../../chrome-extension/player-priority.js');
 const LIVE_MS = 90000;
 const PLAYER_STALE_MS = 35000;
 function normalizePlayerControls(state) {
@@ -35,16 +36,8 @@ function normalizeState(data, timestamp = Date.now()) {
     lastSeen: timestamp, lastMediaSyncAt: timestamp,
   };
 }
-function comparePriority(a, b) {
-  // Prefer installed apps, then playing tabs, then newer observations.
-  return Number(a.standalone) - Number(b.standalone) || Number(a.playing) - Number(b.playing) || a.lastSeen - b.lastSeen;
-}
-function selectPlayer(candidates, now = Date.now()) {
-  let selected = null;
-  for (const candidate of candidates) {
-    const state = candidate[1];
-    if (now - state.lastSeen < LIVE_MS && (!selected || comparePriority(state, selected[1]) > 0)) selected = candidate;
-  }
-  return selected;
+function selectPlayer(candidates, now = Date.now(), foregroundId, previousId) {
+  const eligible = [...candidates].filter(([, state]) => now - state.lastSeen < LIVE_MS);
+  return choosePlayer(eligible, foregroundId, previousId);
 }
 module.exports = { normalizeState, normalizePlayerControls, normalizePlaybackTime, selectPlayer, trackKey, LIVE_MS, PLAYER_STALE_MS };

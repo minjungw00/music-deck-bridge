@@ -1,17 +1,24 @@
 'use strict';
 const { normalizeState, selectPlayer, LIVE_MS } = require('../domain/player-state.cjs');
+const { acceptForeground } = require('../../../chrome-extension/player-priority.js');
 
 function createPlayerRegistry({ onChange, onObserved = () => {}, now = Date.now }) {
   const candidates = new Map();
-  let selectedSignature = '';
-  const selected = () => selectPlayer(candidates, now());
+  let selectedSignature = '', foreground, selectedId;
+  function selected(timestamp = now()) {
+    const foregroundId = foreground?.tabId == null ? undefined : String(foreground.tabId);
+    const chosen = selectPlayer(candidates, timestamp, foregroundId, selectedId);
+    selectedId = chosen?.[0];
+    return chosen;
+  }
   return {
     selected,
-    sync(clientId, data) {
+    sync(clientId, data, focus) {
       const timestamp = now();
+      foreground = acceptForeground(foreground, focus);
       candidates.set(clientId, normalizeState(data, timestamp));
       for (const [id, state] of candidates) if (timestamp - state.lastSeen > LIVE_MS * 2) candidates.delete(id);
-      const chosen = selectPlayer(candidates, timestamp);
+      const chosen = selected(timestamp);
       const state = chosen?.[1];
       const signature = JSON.stringify(state ? [chosen[0], state.title, state.artist, state.trackId,
         state.cover, state.coverFallback, state.playing, state.volume, state.muted, state.rating, state.repeatMode,
@@ -32,7 +39,7 @@ function createPlayerRegistry({ onChange, onObserved = () => {}, now = Date.now 
       for (const id of candidates.keys()) if (!present.has(id)) candidates.delete(id);
       onChange();
     },
-    reset() { candidates.clear(); selectedSignature = ''; onChange(); },
+    reset() { candidates.clear(); selectedSignature = ''; foreground = selectedId = undefined; onChange(); },
   };
 }
 module.exports = { createPlayerRegistry };

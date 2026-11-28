@@ -1,8 +1,35 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createBridgeFixture } from './helpers/bridge.mjs';
+import { createPlayerRegistry } from '../streamdeck/src/application/player-registry.cjs';
 const BAD_ORIGIN = 'https://music.youtube.com';
 const OTHER_EXTENSION = 'chrome-extension://' + 'b'.repeat(32);
+
+test('background snapshots cannot switch between equally ranked tabs after a focus change', () => {
+  let time = 0;
+  const players = createPlayerRegistry({ now: () => ++time, onChange() {} });
+  const a = { title: 'First song', playing: false };
+  const b = { title: 'Second song', playing: false };
+  players.sync('1', a, { tabId: 1, observedAt: 1 });
+  players.sync('2', b, { tabId: 1, observedAt: 2 });
+  assert.equal(players.selected()[0], '1');
+
+  players.sync('2', b, { tabId: 2, observedAt: 4 });
+  players.sync('1', a, { tabId: 1, observedAt: 3 });
+  assert.equal(players.selected()[0], '2', 'an older focus read must not undo the new tab selection');
+  for (const id of ['1', '2', '1', '2', '1']) {
+    players.sync(id, id === '1' ? a : b);
+    assert.equal(players.selected()[0], '2');
+  }
+  players.sync('1', a, { tabId: null, observedAt: 5 });
+  assert.equal(players.selected()[0], '2', 'opening a non-Music tab keeps the last selected music tab');
+  players.sync('1', { ...a, playing: true }, { tabId: 2, observedAt: 6 });
+  assert.equal(players.selected()[0], '1', 'a playing tab outranks a paused tab');
+  players.sync('2', { ...b, standalone: true });
+  assert.equal(players.selected()[0], '2', 'the installed app retains priority');
+  players.remove('2');
+  assert.equal(players.selected()[0], '1');
+});
 test('local bridge pairing, auth, standalone prioritization and queue', async t => {
   const bridge = await createBridgeFixture(t, { pin: '456789' });
   const post = async (route, body, origin) => {

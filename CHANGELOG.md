@@ -18,6 +18,7 @@
 - Confirm resumed playback when the original media acquires its video ID. Preserve the visible track when a tab closes during a player transition.
 - Keep failure alerts on the original Stream Deck action and skip scrolling updates when both track text lines are hidden.
 - Refresh Chrome's last track when a remaining tab becomes selected. Preserve linked artwork fit and gap edits across delayed host settings updates, and save explicit Chrome port changes once.
+- Keep the selected YouTube Music tab steady during background updates. Prefer the foreground tab when the players have equal playback priority.
 
 ## v1.2.0 — 2026-11-14
 

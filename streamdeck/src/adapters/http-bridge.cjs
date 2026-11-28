@@ -133,7 +133,7 @@ function createHttpBridge({ session, players, commands, covers, getPorts, onDeck
     if (req.url === '/sync') {
       const clientId = String(body.clientId ?? '').slice(0, 64);
       if (!/^\d{1,12}$/.test(clientId)) return sendHttp(res, 400, { error: 'Invalid client' }, origin);
-      const selected = players.sync(clientId, body.state);
+      const selected = players.sync(clientId, body.state, body.foreground);
       return sendHttp(res, 200, { commands: commands.dispatch(clientId), selected }, origin);
     }
     if (isTest && req.url === '/__test/event') {

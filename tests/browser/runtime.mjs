@@ -181,6 +181,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     globalThis.acknowledgments = [];
     globalThis.legacyPollsStarted = 0;
     globalThis.playerSnapshots = [];
+    globalThis.tabSelections = [];
     const original = fetch;
     globalThis.fetch = async (url, options) => {
       if (url.endsWith('/listen')) legacyPollsStarted++;
@@ -193,7 +194,15 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
         const { ok, reason } = JSON.parse(options.body);
         acknowledgments.push({ ok, reason, legacyPollsStarted });
       }
-      return original(url, options);
+      const response = await original(url, options);
+      if (url.endsWith('/sync') && response.ok) {
+        const { state } = JSON.parse(options.body);
+        if (state.trackId) {
+          const { selected } = await response.clone().json();
+          tabSelections.push({ trackId: state.trackId, selected });
+        }
+      }
+      return response;
     };
     void startBrowserListener();
     return result.token;
@@ -240,6 +249,26 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   assert.equal(closedTrack.title, 'Fixture song');
   assert.equal(closedTrack.positionSeconds, undefined);
   assert.equal(closedTrack.repeatMode, undefined);
+  const firstTab = await browser.newPage();
+  const secondTab = await browser.newPage();
+  await firstTab.goto(watch);
+  await secondTab.goto(`${musicURL}watch?v=bbbbbbbbbbb`);
+  const selectedTrack = () => worker.evaluate(async token => (await post('/status', { token })).player?.key, token);
+  await firstTab.bringToFront();
+  await until(async () => await selectedTrack() === 'aaaaaaaaaaa', 'the first paused tab is selected while active');
+  await secondTab.bringToFront();
+  await until(async () => await selectedTrack() === 'bbbbbbbbbbb', 'the new active paused tab is selected');
+  const selectionStart = await worker.evaluate(() => tabSelections.length);
+  const selections = await until(() => worker.evaluate(start => {
+    const rows = tabSelections.slice(start);
+    return ['aaaaaaaaaaa', 'bbbbbbbbbbb'].every(id => rows.filter(row => row.trackId === id).length >= 2) && rows;
+  }, selectionStart), 'both tabs continue reporting after a single activation');
+  for (const row of selections) assert.equal(row.selected, row.trackId === 'bbbbbbbbbbb');
+  assert.equal((await readSavedTrack()).trackId, 'bbbbbbbbbbb');
+  assert.equal(await worker.evaluate(async () => (await chrome.storage.local.get('lastTrack')).lastTrack.trackId), 'bbbbbbbbbbb');
+  await secondTab.close();
+  await until(async () => await selectedTrack() === 'aaaaaaaaaaa', 'the remaining Music tab is selected after closure');
+  await firstTab.close();
   // Every input starts with zero music tabs. Real tab navigation, script injection,
   // runtime messaging, token validation and result ACKs are used without API mocks.
   for (const type of ['toggle', 'nowplaying', 'prev', 'next', 'mute', 'like', 'dislike', 'volume_delta', 'open']) {

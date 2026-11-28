@@ -147,7 +147,7 @@ Test-only `/__test/*` routes and deterministic PIN/port overrides are enabled on
 
 ### Player lifecycle
 
-The plugin prioritizes an installed Chrome app over a browser tab. State is periodically refreshed and remains eligible for 90 seconds to accommodate idle throttling; slower media updates can be marked stale. Tab-close notifications remove its state immediately, and authenticated browser polls reconcile current tab IDs after browser/worker restart.
+The plugin and the Chrome last-track cache prefer the installed Music app, then a playing candidate, then the active Music tab in the last-focused Chrome window. If those criteria tie, the previously selected eligible player remains selected. Periodic updates refresh its lease without changing the tie-break. The plugin uses a 90-second lease to accommodate idle throttling. Tab-close notifications remove the closed player, and authenticated browser polls reconcile tab IDs after browser or worker restart.
 
 Every in-flight sync for a closing tab settles before its close notification, including overlapping snapshots from different documents and failed requests. The content runtime stops observation/timers on page hide and restarts observation, periodic sync and command listening on cached-page restoration.
 
