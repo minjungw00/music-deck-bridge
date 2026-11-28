@@ -17,7 +17,7 @@ CHROME_FILES = (
     "background/player-playback.js", "background/page-controls.js", "background/local-player.js", "background/last-player.js",
     "background/message-router.js", "background/management-service.js", "background/player-sync-service.js",
     "content/metadata.js", "content/commands.js", "content/runtime.js", "content.js",
-    "popup.html", "popup.js", "popup/volume-controller.js",
+    "popup.html", "popup.js", "popup/player-selection.js", "popup/volume-controller.js",
     "icons/16.png", "icons/48.png", "icons/128.png",
     *(f"_locales/{locale}/messages.json" for locale in LOCALES),
     *(f"icons/controls/{name}.png" for name in (

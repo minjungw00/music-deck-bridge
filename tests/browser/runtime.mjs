@@ -471,7 +471,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     } finally { popupSession.off('Target.receivedMessageFromTarget', listener); }
   }
   async function popupQueueControls(mode, repeat, shuffle) {
-    await until(() => popupEvaluate(`currentPlayer?.mode === "${mode}" && !document.getElementById("repeat").disabled`), 'popup repeat ready');
+    await until(() => popupEvaluate(`playback.player?.mode === "${mode}" && !document.getElementById("repeat").disabled`), 'popup repeat ready');
     await popupEvaluate('document.getElementById("repeat").click()');
     await until(() => music.evaluate(desired => playerBar.repeatMode === desired, repeat), 'popup repeat executed');
     await until(() => popupEvaluate(`document.getElementById("repeatIcon").src.includes("repeat-${repeat.toLowerCase()}.png")`), 'popup repeat state');
@@ -519,7 +519,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     const beforeLocal = await worker.evaluate(() => acknowledgments.length);
     await child.stop();
     await worker.evaluate(() => chrome.storage.local.remove('bridgeToken'));
-    await until(() => popupEvaluate('currentPlayer?.mode === "local" && !document.getElementById("playPause").disabled'), 'standalone fallback after stopping plugin');
+    await until(() => popupEvaluate('playback.player?.mode === "local" && !document.getElementById("playPause").disabled'), 'standalone fallback after stopping plugin');
     for (const desired of [false, true]) {
       await popupEvaluate('document.getElementById("playPause").click()');
       await until(() => music.evaluate(desired => playing === desired, desired), 'standalone playback');
@@ -537,7 +537,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     assert.equal(await worker.evaluate(() => pairedToken()), '', 'standalone controls need no pairing token');
     await worker.evaluate(token => chrome.storage.local.set({ bridgeToken: token }), token);
     await startBridge();
-    await until(() => popupEvaluate('currentPlayer?.mode === "bridge"'), 'bridge route recovery');
+    await until(() => popupEvaluate('playback.player?.mode === "bridge"'), 'bridge route recovery');
     const recoveredPlayer = await worker.evaluate(async token => (await post('/status', { token })).player, token);
     assert.equal(recoveredPlayer.volume, 37);
     assert.equal(recoveredPlayer.muted, true);

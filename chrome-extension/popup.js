@@ -1,4 +1,5 @@
 'use strict';
+const { selectStatus, describePlayer, commandPlayer } = MusicDeckPopupPlayer;
 const $ = id => document.getElementById(id);
 const asset = path => chrome.runtime.getURL?.(path) || path;
 const language = chrome.i18n.getMessage('uiLanguageCode') || 'en';
@@ -21,11 +22,8 @@ let portRevision = 0;
 let pendingActions = 0;
 let statusRequests = 0;
 let closed = false;
-let currentPlayer = null;
+let playback = describePlayer(null);
 let openingPlayer = false;
-let controlsAvailable = false;
-let volumeSupported = false;
-let queueSupported = false;
 let settingsInitialized = false;
 let settingsTouched = false;
 let artworkKey = '';
@@ -37,14 +35,8 @@ let localRequests = 0;
 const pendingControls = new Map();
 const controlButtons = { previous: 'prev', playPause: 'toggle', next: 'next', like: 'like', dislike: 'dislike',
   repeat: 'repeat', shuffle: 'shuffle', mute: 'mute' };
-const queueControl = command => command === 'repeat' || command === 'shuffle';
 function playerFor(command) {
-  if (!queueControl(command) || currentPlayer?.mode !== 'bridge' || queueSupported) return currentPlayer;
-  const local = localStatus?.player;
-  if (local && currentPlayer && local.id === currentPlayer.id && local.key === currentPlayer.key) {
-    return { ...local, mode: 'local' };
-  }
-  return null;
+  return commandPlayer(command, playback, localStatus?.player);
 }
 const volume = MusicDeckPopupVolume.create({ slider: $('volumeSlider'), label: $('volumeValue'),
   execute: executeControl, onChange: updateControls });
@@ -53,6 +45,7 @@ function updateIcon(id, path) {
   if ($(id).getAttribute('src') !== source) $(id).src = source;
 }
 function updateControls() {
+  const { player: currentPlayer, controlsAvailable, volumeSupported } = playback;
   $('openPlayer').disabled = openingPlayer || closed;
   $('openPlayer').setAttribute('aria-busy', String(openingPlayer));
   const enabled = controlsAvailable && currentPlayer && !pendingActions;
@@ -123,36 +116,23 @@ async function loadArtwork(player, key, revision) {
   } catch { /* Keep the placeholder; playback does not depend on artwork. */ }
 }
 function showPlayer(result) {
-  const saved = result?.ok && !result.active && result.savedPlayer;
-  currentPlayer = result?.ok && result.active && result.player ? { ...result.player, mode: result.mode || 'bridge' } :
-    saved ? { ...saved, id: 'saved', mode: 'saved', playing: false } : null;
+  playback = describePlayer(result);
+  const { player, saved, artworkKey: key } = playback;
   $('nowPlayingLabel').textContent = saved ? text.lastTrackLabel : text.nowPlayingLabel;
-  volume.observe(currentPlayer);
-  controlsAvailable = result?.popupControls === true && !result.playerStale &&
-    result.compatibility?.compatible !== false;
-  volumeSupported = result?.popupVolume === true;
-  queueSupported = result?.popupQueueControls === true;
-  // Older compatible plugins still supply a title, but do not advertise controls.
-  const title = currentPlayer?.title || (result?.ok && result.active ? result.track : '') || text.playerWaiting;
+  volume.observe(player);
+  const title = playback.title || text.playerWaiting;
   if ($('trackTitle').textContent !== title) $('trackTitle').textContent = title;
-  $('trackArtist').textContent = currentPlayer?.artist || '';
-  const key = currentPlayer?.coverKey && (saved || result.coverStatus === 'ready') ?
-    JSON.stringify([currentPlayer.mode, currentPlayer.id, currentPlayer.key, currentPlayer.coverKey]) : '';
+  $('trackArtist').textContent = player?.artist || '';
   if (key !== artworkKey) {
     artworkKey = key;
     const revision = ++artworkRevision;
     clearArtwork();
-    if (key) void loadArtwork(currentPlayer, key, revision);
+    if (key) void loadArtwork(player, key, revision);
   }
   updateControls();
 }
 function applyPlayback() {
-  const paired = bridgeStatus?.ok && bridgeStatus.active ? bridgeStatus : null;
-  const liveBridge = paired && !paired.playerStale ? paired : null;
-  const controlledBridge = liveBridge?.popupControls === true && liveBridge.popupVolume === true ? liveBridge : null;
-  const localPlayer = localStatus?.ok && localStatus.active ? localStatus : null;
-  const saved = localStatus?.ok && localStatus.savedPlayer ? localStatus : null;
-  showPlayer(controlledBridge || localPlayer || liveBridge || saved || paired || localStatus);
+  showPlayer(selectStatus(bridgeStatus, localStatus));
 }
 async function refreshLocalPlayer() {
   if (closed || localRequests || document.hidden) return;
