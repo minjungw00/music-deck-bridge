@@ -63,7 +63,9 @@ function repeat(){
  document.body.dataset.repeatModes=(document.body.dataset.repeatModes||'')+' '+playerBar.repeatMode;
 }
 const tracks=['aaaaaaaaaaa','bbbbbbbbbbb','ccccccccccc','ddddddddddd','eeeeeeeeeee'];
-const requestedTrack=tracks.indexOf(new URL(location.href).searchParams.get('v'));
+const params=new URL(location.href).searchParams;
+const requestedTrack=tracks.indexOf(params.get('v'));
+const observedTrack=params.get('fixtureObservedTrack');
 if(requestedTrack>=0)index=requestedTrack;
 function record(key){ document.body.dataset[key]=String(Number(document.body.dataset[key]||0)+1); }
 function rate(value){
@@ -93,7 +95,7 @@ Object.defineProperties(document.querySelector('audio'), {
 });
 const api=document.querySelector('#movie_player');
 api.isReady=()=>ready;api.getPlayerState=()=>unstartedDestination?-1:!initialized?(cued&&!restored?5:-1):buffering?3:playing?1:2;
-api.getVideoData=()=>({video_id:initialized||restored?tracks[index]:''});
+api.getVideoData=()=>({video_id:observedTrack||(initialized||restored?tracks[index]:'')});
 api.getCurrentTime=()=>time;
 api.getDuration=()=>180;
 api.playVideo=()=>{
@@ -224,6 +226,20 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   const reopened = await until(() => browser.pages().find(page => page.url() === watch), 'reopened saved track');
   assert.equal(await reopened.evaluate(() => playing), true);
   await reopened.close();
+  const mismatched = await browser.newPage();
+  await mismatched.goto(`${musicURL}watch?v=bbbbbbbbbbb&fixtureObservedTrack=aaaaaaaaaaa`);
+  await until(() => worker.evaluate(async () => (await chrome.storage.local.get('lastTrack')).lastTrack?.trackId === 'bbbbbbbbbbb'),
+    'Chrome captures the new visible selection before the previous player state changes');
+  const readSavedTrack = async () => JSON.parse(await readFile(join(temp, 'MusicDeckBridge', 'last-track.json'), 'utf8')).track;
+  assert.equal((await readSavedTrack()).trackId, 'aaaaaaaaaaa', 'the live bridge skips the mismatched observation');
+  await mismatched.close();
+  const closedTrack = await until(async () => {
+    const track = await readSavedTrack();
+    return track.trackId === 'bbbbbbbbbbb' && track;
+  }, 'the bridge saves the captured track when the mismatched tab closes');
+  assert.equal(closedTrack.title, 'Fixture song');
+  assert.equal(closedTrack.positionSeconds, undefined);
+  assert.equal(closedTrack.repeatMode, undefined);
   // Every input starts with zero music tabs. Real tab navigation, script injection,
   // runtime messaging, token validation and result ACKs are used without API mocks.
   for (const type of ['toggle', 'nowplaying', 'prev', 'next', 'mute', 'like', 'dislike', 'volume_delta', 'open']) {
