@@ -21,19 +21,19 @@ function harness(saved = null) {
       observedTrackId: state.observedTrackId ?? state.trackId } }];
     return [{ result: state }];
   } } };
-  const context = vm.createContext({ chrome, URL, Date, MusicDeckArtworkPolicy: artwork,
-    MusicDeckCommandPolicy: commandPolicy, MusicDeckTrackIdentity: trackIdentity,
-    MusicDeckBrowserChannel: { create: () => ({ async perform(command, allowed) {
+  const tabCommands = { async perform(command, allowed) {
     assert.equal(service.controlling(command.preferredTabId), command.type !== 'open');
     inputs.push(command); beforeDispatch();
     return command.type === 'open' ? true : allowed(true);
-  } }) } });
+  } };
+  const context = vm.createContext({ chrome, URL, Date, MusicDeckArtworkPolicy: artwork,
+    MusicDeckCommandPolicy: commandPolicy, MusicDeckTrackIdentity: trackIdentity });
   for (const file of ['last-player.js', 'local-player.js']) {
     vm.runInContext(readFileSync(new URL(`../chrome-extension/background/${file}`, import.meta.url), 'utf8'), context);
   }
   const lastPlayer = { get: async () => context.MusicDeckLastPlayer.normalize(saved) };
   let elapsed = 0;
-  service = context.MusicDeckLocalPlayer.create({ chrome, pageControls: { playerPlayback() {} }, contentScripts: [],
+  service = context.MusicDeckLocalPlayer.create({ chrome, pageControls: { playerPlayback() {} }, tabCommands,
     lastPlayer, now: () => elapsed, wait: async ms => { elapsed += ms; } });
   return { service, tabs, states, inputs, reads, beforeDispatch(fn) { beforeDispatch = fn; } };
 }

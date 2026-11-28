@@ -2,10 +2,9 @@
 (function (root) {
   const { isStandaloneCommand, isRatingCommand } = root.MusicDeckCommandPolicy;
   const { mergePlaybackObservation } = root.MusicDeckTrackIdentity;
-  function createLocalPlayer({ chrome, pageControls, contentScripts, lastPlayer,
+  function createLocalPlayer({ chrome, pageControls, tabCommands, lastPlayer,
     now = Date.now, wait = ms => new Promise(resolve => setTimeout(resolve, ms)) }) {
     const leases = new Map();
-    const native = MusicDeckBrowserChannel.create({ chrome, client: { blocked: () => false }, contentScripts });
     let sequence = 0;
     let opening = null, resuming = null;
     async function snapshot(tab) {
@@ -43,7 +42,7 @@
       // Coalesce simultaneous clicks across popups; Open never dispatches playback.
       if (!opening) opening = (async () => {
         const selected = await check();
-        const ok = await native.perform({ type: 'open',
+        const ok = await tabCommands.perform({ type: 'open',
           preferredTabId: selected.player ? Number(selected.player.id) : undefined });
         return { ok };
       })().finally(() => { opening = null; });
@@ -68,7 +67,7 @@
       try {
         // No listener, token, HTTP request or extra server is used for local controls.
         // Reuse the exact same bounded dispatch/confirmation engine as bridge inputs.
-        const ok = await native.perform({ id: `popup-local-${Date.now()}-${++sequence}`, type: command,
+        const ok = await tabCommands.perform({ id: `popup-local-${Date.now()}-${++sequence}`, type: command,
           amount, preferredTabId: tabId, playerKey: trackKey, nativeLaunched: playFromSaved && command === 'toggle',
           ...(isRatingCommand(command) ? { trackKey } : {}), expiresAt: Date.now() + 30000 },
         async () => {
@@ -88,7 +87,7 @@
       let { player } = await check();
       if (player && player.key !== trackKey) return { ok: false, reason: 'player-changed' };
       if (!player) {
-        resuming ??= native.perform({ type: 'open', videoId: saved.trackId }).finally(() => { resuming = null; });
+        resuming ??= tabCommands.perform({ type: 'open', videoId: saved.trackId }).finally(() => { resuming = null; });
         if (!await resuming) return { ok: false, reason: 'player-unavailable' };
       }
       const deadline = now() + 10000;

@@ -1,16 +1,18 @@
 'use strict';
 // Classic MV3 composition root. The modules expose factories without starting work on import.
 if (typeof importScripts === 'function') importScripts('protocol.js', 'artwork-policy.js', 'command-policy.js', 'track-identity.js',
-  'background/bridge-client.js', 'background/browser-channel.js',
+  'background/bridge-client.js', 'background/tab-commands.js', 'background/browser-channel.js',
   'background/player-playback.js', 'background/page-controls.js', 'background/last-player.js', 'background/local-player.js', 'background/management-service.js',
   'background/player-sync-service.js', 'background/message-router.js');
 
 const bridgeClient = MusicDeckBridgeClient.create({ chrome, protocol: MusicDeckProtocol,
   fetch: (...args) => fetch(...args) });
 const contentScripts = chrome.runtime.getManifest().content_scripts[0].js;
-const browserChannel = MusicDeckBrowserChannel.create({ chrome, client: bridgeClient, contentScripts });
+const tabCommands = MusicDeckTabCommands.create({ chrome, contentScripts, blocked: bridgeClient.blocked });
+const browserChannel = MusicDeckBrowserChannel.create({ chrome, client: bridgeClient, tabCommands });
 const lastPlayer = MusicDeckLastPlayer.create({ storage: chrome.storage.local, ready: bridgeClient.storageReady });
-const localPlayer = MusicDeckLocalPlayer.create({ chrome, contentScripts, pageControls: MusicDeckPageControls, lastPlayer });
+const localPlayer = MusicDeckLocalPlayer.create({ chrome, pageControls: MusicDeckPageControls, lastPlayer,
+  tabCommands: MusicDeckTabCommands.create({ chrome, contentScripts }) });
 const management = MusicDeckManagementService.create({ client: bridgeClient, browserChannel, lastPlayer,
   translate: key => chrome.i18n?.getMessage?.(key) || '' });
 const players = MusicDeckPlayerSyncService.create({ chrome, client: bridgeClient,
@@ -23,7 +25,7 @@ chrome.tabs?.onRemoved?.addListener(router.onRemoved);
 // Named operations are also used by the real MV3 integration fixture.
 const { post, pairedToken, configuredPort, setLocalPort } = bridgeClient;
 const startBrowserListener = browserChannel.start;
-const performBrowserCommand = browserChannel.perform;
+const performBrowserCommand = tabCommands.perform;
 
 // Reinject into existing YouTube Music tabs after an extension update or Chrome startup.
 // A manifest content_script only runs on NEW document loads; already-open PWA windows
