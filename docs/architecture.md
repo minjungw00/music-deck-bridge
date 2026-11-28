@@ -157,6 +157,8 @@ The last-track store keeps one confirmed title, artist, track ID, matching admit
 
 The extension captures a visible player-bar title before checking the pairing or enriching the snapshot in the page context. The worker serializes bridge updates per tab and drops superseded snapshots that have yet to be sent. Tab closure removes the local candidate immediately and lets the latest captured update finish before notifying the bridge. The extension also replaces one local profile record after each selected track change. The popup uses that record when live bridge and standalone players are unavailable. A saved control can reopen Music and waits for the live track identity to match before using the standalone command route.
 
+The extension's observation model selects a candidate independently of profile storage. A repeated provisional observation can select the remaining player after a tab closes while retaining that player's richer confirmed fields.
+
 ## Display behavior
 
 ### Key feedback
@@ -199,6 +201,8 @@ Album artwork uses its measured aspect ratio, centered within the 144 × 144 key
 
 All plugin keys can select individual or linked artwork. The SDK adapter supplies a device ID and key coordinates for visible physical keys. Automatic groups use eight-way adjacency. Keys with the same group name join across gaps on the same device. Each group shares a proportional width or height fit. A fixed 144 × 144 viewport clips each key's part. Empty cells retain their positions and produce no output. The SDK supplies row and column counts without physical spacing. Optional horizontal and vertical gap percentages increase the pitch between viewports. Key removal, device disconnection and settings changes schedule another paint. [Elgato device events](https://docs.elgato.com/streamdeck/sdk/references/websocket/plugin/#devicedidconnect)
 
+The inspector's linked artwork editor owns fit and gap inputs and their pending edits. The controller retains the latest group values changed through those inputs for each displayed action. Host settings events can still update unrelated fields.
+
 Artwork modes clear the native title and show the cover on its own by default. A transparent action icon can be placed in any of nine positions. Key presses retain their original commands. Cover and geometry variants are cached so unchanged settings do not rebuild or resend the same image.
 
 ## Command delivery
@@ -231,7 +235,7 @@ Inspector connection state uses active authenticated polls or a three-second gap
 
 ### Port lifecycle
 
-Port `17864` is the default; both components accept integers 1024–65535. Startup and live changes share one serialized listener lifecycle; repeated startup reuses an active listener. On a live change the plugin binds the new port first, persists it, notifies clients and retains the old listener for two minutes. Sleeping/offline clients may need the port changed manually. No LAN listener is opened.
+Port `17864` is the default and both components accept integers 1024–65535. Startup and live changes share one serialized listener lifecycle. Repeated startup reuses an active listener. On a live change the plugin binds the new port, persists it and notifies clients. A shared retirement path gives old listeners a two-minute grace period, including after a failed attempt to reuse one. Chrome saves an explicit port response in the management operation and follows passive port announcements in the bridge client. Either component can be configured manually when its peer is offline. The listener is bound to loopback.
 
 ### Artwork downloads
 
