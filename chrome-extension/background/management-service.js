@@ -43,14 +43,12 @@
           await setLocalPort(port);
           return { ok: true, port, localOnly: true };
         }
+        let result;
         try {
           // When the original server is reachable, change its listener AND this client together.
-          const result = await post('/configure-port', { token, port }, 6000);
-          await setLocalPort(result.port);
-          return { ok: true, port: result.port, localOnly: false };
+          result = await post('/configure-port', { token, port }, 6000);
         } catch (error) {
-          // A server rejected an occupied/invalid port: do not modify client settings.
-          if (error.httpStatus) throw error;
+          if (error.httpStatus || error.code === 'bridge-port-storage') throw error;
           // Bridge may already have moved in the Stream Deck inspector while Chrome slept.
           // Try the new address, retaining it even if the bridge isn't reachable yet.
           await setLocalPort(port);
@@ -61,6 +59,8 @@
             return { ok: true, port, localOnly: true };
           }
         }
+        await setLocalPort(result.port);
+        return { ok: true, port: result.port, localOnly: false };
       },
       async unpair() {
         const token = await pairedToken();

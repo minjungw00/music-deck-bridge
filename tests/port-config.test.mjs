@@ -137,3 +137,30 @@ test('a response from an earlier connection cannot restore its port or compatibi
   assert.equal(await client.configuredPort(), 23113);
   assert.equal(client.compatibility, null);
 });
+
+test('an explicit port change owns a single local write for the confirmed port', async () => {
+  for (const failWrite of [false, true]) {
+    const data = { bridgeToken: 'fixture', bridgePort: 23111 };
+    const writes = [], requests = [];
+    const chrome = {
+      storage: { local: { setAccessLevel: async () => {}, get: async key => ({ [key]: data[key] }),
+        async set(fields) {
+          writes.push(fields.bridgePort);
+          if (failWrite || writes.length > 1) throw Error('Simulated port storage failure');
+          Object.assign(data, fields);
+        } } },
+      runtime: { onMessage: { addListener() {} }, onInstalled: { addListener() {} }, onStartup: { addListener() {} } },
+      alarms: { onAlarm: { addListener() {} } },
+    };
+    const context = loadExtension({ chrome, AbortSignal, async fetch(url) {
+      requests.push(new URL(url).pathname);
+      return { ok: true, status: 200, json: async () => ({ port: 23112, serverPort: 23112 }) };
+    } });
+    const change = vm.runInContext('management.setPort({ port: 23112 })', context);
+    if (failWrite) await assert.rejects(change, /Simulated port storage failure/);
+    else assert.equal((await change).localOnly, false);
+    assert.equal(data.bridgePort, failWrite ? 23111 : 23112);
+    assert.deepEqual(writes, [23112]);
+    assert.deepEqual(requests, ['/configure-port']);
+  }
+});

@@ -59,7 +59,9 @@
     }
 
     async function post(endpoint, payload, timeout = 3000) {
-      const { port, revision } = await readConnection();
+      const { port, revision } = await readConnection().catch(cause => {
+        throw Object.assign(new Error(cause.message, { cause }), { code: 'bridge-port-storage' });
+      });
       const response = await fetch(`http://127.0.0.1:${port}${endpoint}`, {
         method: 'POST', mode: 'cors', cache: 'no-store',
         headers: { 'Content-Type': 'application/json' },
@@ -86,8 +88,8 @@
         error.httpStatus = response.status;
         throw error;
       }
-      // Follow live port changes announced by the paired bridge.
-      if (validPort(data.serverPort) && Number(data.serverPort) !== port) {
+      // An explicit port change is persisted by its management operation.
+      if (endpoint !== '/configure-port' && validPort(data.serverPort) && Number(data.serverPort) !== port) {
         await writePort(Number(data.serverPort), revision);
       }
       return data;
