@@ -14,8 +14,42 @@
       repeatMode: ['NONE', 'ALL', 'ONE'].includes(state.repeatMode) ? state.repeatMode : null,
       shuffleEnabled: typeof state.shuffleEnabled === 'boolean' ? state.shuffleEnabled : null };
   }
-  function create({ storage, ready, now = Date.now }) {
+
+  function preferredRecord(players) {
+    return [...players].sort((a, b) => Number(b.standalone) - Number(a.standalone) ||
+      Number(b.playing) - Number(a.playing) || b.seen - a.seen)[0]?.record;
+  }
+
+  function createObservations(now) {
     const players = new Map();
+    function observe(id, state, provisional) {
+      if (!Number.isInteger(id)) return;
+      const record = normalize(state);
+      const entry = players.get(id);
+      const previous = entry?.record;
+      if (!record || !(state.trackConfirmed || (state.playbackConfirmed ?? state.playing) || previous?.key === record.key)) {
+        players.delete(id);
+        return;
+      }
+      const seen = now();
+      if (provisional && entry && previous.key === record.key) {
+        entry.seen = seen;
+      } else {
+        if (previous?.key === record.key) {
+          for (const field of ['rating', 'repeatMode', 'shuffleEnabled', 'volume', 'coverKey']) {
+            if (record[field] == null || record[field] === '') record[field] = previous[field];
+          }
+        }
+        players.set(id, { record, seen, standalone: state.standalone === true, playing: state.playing === true });
+      }
+      for (const [tabId, player] of players) if (seen - player.seen >= LIVE_MS) players.delete(tabId);
+      return preferredRecord(players.values());
+    }
+    return { observe, remove: id => players.delete(id), clear: () => players.clear() };
+  }
+
+  function create({ storage, ready, now = Date.now }) {
+    const observations = createObservations(now);
     let latest, written, reading, writing, clearing;
     async function get() {
       if (latest !== undefined) return latest;
@@ -45,36 +79,13 @@
       return writing;
     }
     function observe(tab, state, provisional = false) {
-      if (!Number.isInteger(tab.id)) return;
-      const record = normalize(state);
-      const entry = players.get(tab.id);
-      const previous = entry?.record;
-      if (provisional && entry && previous.key === record?.key) {
-        entry.seen = now();
-        return saveSelection(entry.seen);
-      }
-      if (!record || !(state.trackConfirmed || (state.playbackConfirmed ?? state.playing) || previous?.key === record.key)) {
-        players.delete(tab.id);
-        return;
-      }
-      if (previous?.key === record.key) {
-        for (const field of ['rating', 'repeatMode', 'shuffleEnabled', 'volume', 'coverKey']) {
-          if (record[field] == null || record[field] === '') record[field] = previous[field];
-        }
-      }
-      const seen = now();
-      players.set(tab.id, { record, seen, standalone: state.standalone === true, playing: state.playing === true });
-      return saveSelection(seen);
-    }
-    function saveSelection(seen) {
-      for (const [id, player] of players) if (seen - player.seen >= LIVE_MS) players.delete(id);
-      const selected = [...players.values()].sort((a, b) => Number(b.standalone) - Number(a.standalone) ||
-        Number(b.playing) - Number(a.playing) || b.seen - a.seen)[0].record;
+      const selected = observations.observe(tab.id, state, provisional);
+      if (!selected) return;
       if (JSON.stringify(selected) !== JSON.stringify(latest)) latest = selected;
       return persist()?.catch(() => { /* A subsequent observation can retry the write. */ });
     }
     function clear() {
-      players.clear();
+      observations.clear();
       latest = null;
       // Block new writes until deletion finishes and report a failure to Unpair.
       clearing ??= Promise.resolve(writing).catch(() => {}).then(async () => {
@@ -84,7 +95,7 @@
       }).finally(() => { clearing = null; });
       return clearing;
     }
-    return { get, observe, remove: id => players.delete(id), clear };
+    return { get, observe, remove: observations.remove, clear };
   }
   root.MusicDeckLastPlayer = Object.freeze({ create, normalize });
 })(globalThis);
