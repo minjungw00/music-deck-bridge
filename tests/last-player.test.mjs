@@ -57,6 +57,25 @@ test('a transient read failure is retried by the same worker', async () => {
   assert.equal(reads, 2);
 });
 
+test('a repeated provisional observation can save the new selected player after a prior tab closes', async () => {
+  let saved = {}, writes = 0, time = 0;
+  const storage = { get: async () => saved, async set(data) { saved = data; writes++; } };
+  const cache = openCache(storage, () => ++time);
+  const previous = track('a', 'Playing song', { playing: true });
+  const restored = track('b', 'Restored song');
+  await cache.observe({ id: 1 }, previous);
+  await cache.observe({ id: 2 }, restored, true);
+  await cache.observe({ id: 2 }, { ...restored, repeatMode: 'ONE', volume: 25 });
+  assert.equal((await cache.get()).title, previous.title);
+
+  cache.remove(1);
+  await cache.observe({ id: 2 }, { ...restored, volume: 0 }, true);
+  await cache.observe({ id: 2 }, restored, true);
+  const { title, repeatMode, volume } = await openCache(storage).get();
+  assert.deepEqual({ title, repeatMode, volume }, { title: restored.title, repeatMode: 'ONE', volume: 25 });
+  assert.equal(writes, 2);
+});
+
 test('clearing waits for removal and can be retried after a storage failure', async () => {
   let record = { lastTrack: track('a', 'Stored song') }, attempts = 0;
   const storage = { get: async () => record, async remove() {

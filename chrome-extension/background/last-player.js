@@ -47,8 +47,12 @@
     function observe(tab, state, provisional = false) {
       if (!Number.isInteger(tab.id)) return;
       const record = normalize(state);
-      const previous = players.get(tab.id)?.record;
-      if (provisional && previous?.key === record?.key) return;
+      const entry = players.get(tab.id);
+      const previous = entry?.record;
+      if (provisional && entry && previous.key === record?.key) {
+        entry.seen = now();
+        return saveSelection(entry.seen);
+      }
       if (!record || !(state.trackConfirmed || (state.playbackConfirmed ?? state.playing) || previous?.key === record.key)) {
         players.delete(tab.id);
         return;
@@ -60,6 +64,9 @@
       }
       const seen = now();
       players.set(tab.id, { record, seen, standalone: state.standalone === true, playing: state.playing === true });
+      return saveSelection(seen);
+    }
+    function saveSelection(seen) {
       for (const [id, player] of players) if (seen - player.seen >= LIVE_MS) players.delete(id);
       const selected = [...players.values()].sort((a, b) => Number(b.standalone) - Number(a.standalone) ||
         Number(b.playing) - Number(a.playing) || b.seen - a.seen)[0].record;
