@@ -169,6 +169,30 @@ test('current track text works with icon, individual artwork and linked artwork 
   }
 });
 
+test('older host settings cannot undo newer linked artwork edits', () => {
+  const position = column => {
+    const item = key(0, column);
+    item.settings.linkedArtworkGap = noGap;
+    return { ...item, action: PLUGIN_ID + '.next' };
+  };
+  const displayed = new Map([['left', position(0)], ['right', position(1)]]);
+  const messages = [];
+  const controller = createDeckController({ displayed, players: { selected: () => null }, commands: {},
+    session: { extensionOnline: () => false }, ports: {}, onChange() {}, output: { send: message => messages.push(message) } });
+  const send = (event, context, payload) => controller.handle({ event, context, action: PLUGIN_ID + '.next', payload });
+  const newGap = { horizontal: 18, vertical: 5 };
+  send('sendToPlugin', 'right', { type: 'set-linked-fit', fit: 'width' });
+  const earlier = messages.find(message => message.event === 'setSettings' && message.context === 'left').payload;
+  send('sendToPlugin', 'right', { type: 'set-linked-gap', gap: newGap });
+  const latest = messages.filter(message => message.event === 'setSettings' && message.context === 'left').at(-1).payload;
+  for (const payload of [earlier, latest, earlier]) {
+    send('didReceiveSettings', 'left', { settings: { ...payload.settings, keyArtworkShowIcon: true } });
+    assert.deepEqual(albumTiles(displayed).get('left').gap, newGap);
+    assert.equal(albumTiles(displayed).get('left').fit, 'width');
+    assert.equal(displayed.get('left').settings.keyArtworkShowIcon, true);
+  }
+});
+
 test('shared artwork settings persist from any member and the optional icon supports all nine positions', () => {
   const displayed = new Map([
     ['top', { ...key(0, 0), action: PLUGIN_ID + '.prev' }],

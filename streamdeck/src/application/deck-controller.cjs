@@ -46,15 +46,17 @@ function createDeckController({ displayed, commands, session, ports, players, ou
     const fit = request.type === 'set-linked-fit' && ['width', 'height'].includes(request.fit) ? request.fit : null;
     const gap = request.type === 'set-linked-gap' && validAlbumGap(request.gap) ? request.gap : null;
     if ((fit || gap) && group.length) {
+      const update = fit ? { linkedArtworkFit: fit } : { linkedArtworkGap: { horizontal: gap.horizontal, vertical: gap.vertical } };
       for (const key of group) {
+        const action = displayed.get(key.context);
+        // These fields are edited by the controller. Host settings can echo an
+        // older edit, including after the latest one has already been echoed.
+        Object.assign(action.linkedArtworkEdits ||= {}, update);
         const currentGap = key.settings.linkedArtworkGap;
         if (fit ? key.settings.linkedArtworkFit === fit :
           currentGap?.horizontal === gap.horizontal && currentGap?.vertical === gap.vertical) continue;
-        const update = fit ? { linkedArtworkFit: fit } : {
-          linkedArtworkGap: { horizontal: gap.horizontal, vertical: gap.vertical },
-        };
         const settings = { ...key.settings, ...update };
-        displayed.get(key.context).settings = key.settings = settings;
+        action.settings = key.settings = settings;
         output.send({ event: 'setSettings', context: key.context, payload: { settings } });
       }
       onChange();
@@ -101,7 +103,7 @@ function createDeckController({ displayed, commands, session, ports, players, ou
           retainPreview(item, incoming, 'volumePreview', 'volumeStep');
           retainPreview(item, incoming, 'durationPreview', 'volumeFeedbackSeconds', validFeedbackSeconds);
         }
-        item.settings = incoming;
+        item.settings = item.linkedArtworkEdits ? { ...incoming, ...item.linkedArtworkEdits } : incoming;
         item.volumeFeedback?.configure(item.settings);
         onChange();
       }
