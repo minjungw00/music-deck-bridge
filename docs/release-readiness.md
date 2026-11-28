@@ -1,6 +1,6 @@
 # Release readiness
 
-Updated November 29, 2026 (Asia/Seoul) with the playback and display refactor checks. The development record also covers the confirmed Elgato gallery and earlier physical Stream Deck and PC reboot checks. General installation starts with the [official stores](installation.en.md#method-1-official-stores).
+Updated November 29, 2026 (Asia/Seoul) with the final pre-release review. The development record also covers the confirmed Elgato gallery and earlier physical Stream Deck and PC reboot checks. General installation starts with the [official stores](installation.en.md#method-1-official-stores).
 
 ## Current versions and distribution
 
@@ -16,6 +16,19 @@ Use the corrected [Chrome 1.2.0 ZIP](https://github.com/minjungw00/music-deck-br
 The public listings describe standalone Chrome popup controls and link to the companion store. The [1.2.0 listing drafts](../store-assets/drafts/v1.2.0/README.md) remain reference material. The exact Console submissions, store package identity, installation and runtime operation for 1.2.0 remain unverified.
 
 The selected development version is **1.3.0-dev**, with Chrome **1.3.0** and Stream Deck **1.3.0.0**. Its [changes](../CHANGELOG.md#unreleased--130) cover Repeat and Shuffle, the Current Track Dial, key artwork and last-track restoration.
+
+## November 29 final pre-release review
+
+Development source `a0810f5ae310400154ddfeadad73c95bf7c85897` passed all 367 Node tests, three Chromium fixtures, two Python tests and static checks locally. Both full and production-only npm audits reported zero vulnerabilities. GitHub reported zero open Dependabot and secret-scanning alerts. Private reporting, Dependabot alerts and automated fixes, secret scanning and push protection were enabled, and default workflow permissions were read-only. Chrome's permissions, host permissions and minimum version matched 1.2.0. The eight Chrome descriptions, two Chrome screenshots and five Elgato gallery images were present with the expected locale coverage and dimensions.
+
+A temporary `1.3.0` source copy passed the tag/version check, a fresh locked install, both packaging paths, official Elgato validation and release checksum verification. The Chrome archive had 57 files and no development version label. The Stream Deck archive had 118 files and manifest version `1.3.0.0`. Both payloads matched their staging directories and included the four legal notices. Rehearsal SHA-256 values identify the local packages only.
+
+| Rehearsal package | SHA-256 |
+| --- | --- |
+| Chrome | `c8bf9c05d8a75b375547e8b1572950a213fdf84f7f0ad18d676ad42039e8f9ad` |
+| Stream Deck | `4a2771413d50a161ca944703d9e94b0fcf74641cdc36e120c5a542105a06b289` |
+
+GitHub `main` was at `b7e7bee10c6ad8f7a2e4242fed7ed2526ad3903c` and had no `v1.3.0` tag. Windows/Ubuntu CI for the release commit and the Maker Console processed Windows installer remain open. The review used local fixtures and retained the existing maintainer confirmations for real operation.
 
 ## Development validation
 
@@ -70,7 +83,7 @@ The [runtime record](verification/runtime.md#current-evidence) is the source for
 
 The maintainer selected all five Elgato gallery PNGs at `9b866cd`. The submission index includes the selected gallery, two prepared Chrome screenshots and store copy. [Store submission index](../store-assets/drafts/v1.3.0/README.md)
 
-- Once authorized, promote `1.3.0-dev` to `1.3.0`, finish the changelog, verify Windows and Ubuntu CI against the tagged source, and verify the release package checksums. [Release checklist](development.md#release-checklist)
+- Once authorized, promote `1.3.0-dev` to `1.3.0`, finish the changelog, and update the packaged privacy policy's development scope statement for the stable release. Verify Windows and Ubuntu CI against the tagged source and verify the release package checksums. [Release checklist](development.md#release-checklist)
 - Complete both store submissions, including Chrome's privacy form. Verify the Maker Console processed installer on Windows, then record submission, approval, and publication separately. [Marketplace DRM record](verification/marketplace-drm.md) · [Store record](verification/stores.md)
 
 ### 1.2.0 records and follow-up
