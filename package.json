@@ -34,7 +34,7 @@
     "image-size": "2.1.0"
   },
   "devDependencies": {
-    "@elgato/cli": "1.10.4",
+    "@elgato/cli": "1.10.5",
     "esbuild": "0.28.2",
     "playwright": "1.65.0",
     "ws": "8.22.2"
