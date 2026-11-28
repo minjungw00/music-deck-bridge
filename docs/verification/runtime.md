@@ -6,7 +6,7 @@ Evidence through November 28, 2026 (Asia/Seoul). [Release verification](releases
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
-| Sequential Play/Pause, `48f0382` | The maintainer confirmed normal operation after receiving the updated development packages. The Chromium player model covered both startup timings and confirmed Volume and Repeat during each wait. [Sequential toggle check](#sequential-playpause-confirmation) | The maintainer report did not specify each timing or the installed package IDs. |
+| Sequential Play/Pause, `2944ed7` | The maintainer confirmed two presses on the previous build; Windows logs recorded an unconfirmed third press. Node and MV3 regressions exercise longer bursts with explicit Play/Pause actions. [Multiple startup inputs](#three-or-more-presses-during-startup) | The observed Windows failure used the previous build. The new build still needs a live-service check. |
 | Maintainer report on cross-device playback selection | The song handed off from another device appeared as the last track. [Maintainer report](#live-youtube-music-checks-for-130-dev) | Covers the saved track after handoff. |
 | Maintainer report on physical Stream Deck | The maintainer reported completing the requested 1.3.0-dev hardware check. [Maintainer report](#130-dev-physical-stream-deck) | Covers the requested hardware pass. The separate live-service scenarios and processed installer are tracked independently. |
 | Repeat and Shuffle after Chrome exits, `00698f6` | A paired Chromium profile applied queued Stream Deck Repeat and Shuffle once each after restart. [Restart check](#repeat-and-shuffle-after-chrome-exits) | Real MV3 worker and local player fixture. The test runner restarted Chrome in place of the Windows launcher. |
@@ -88,7 +88,15 @@ At `48f0382`, Chromium with the real MV3 worker and bundled plugin sent a second
 
 All 352 Node tests, three Chromium fixtures, two Python packaging tests and static checks passed. Build `1.3.0-dev+g48f0382967d8.local20261128111200580` passed SHA-256 and source comparisons for all 54 Chrome and 117 Stream Deck archive files, with the Elgato-normalized manifest compared as JSON. The official Elgato validator and packager passed. The [development diagnostics](../troubleshooting.md#development-playback-diagnostics--개발-빌드-재생-진단) can correlate the three player events with the plugin's request outcome in a signed-in Windows check.
 
-On November 28, the maintainer reported that sequential Play/Pause worked normally after receiving the updated `1.3.0-dev` packages. The report did not include an itemized timing or installed-package identity.
+On November 28, the maintainer initially reported normal operation after receiving the updated `1.3.0-dev` packages. Their follow-up established that two presses produced Play then Pause, while three or more rapid presses still failed.
+
+#### Three or more presses during startup
+
+The Windows plugin log recorded three bursts of three presses and one burst of four. The bridge delivered all the inputs. The first two returned `ok` in each burst. The third returned `playback-unconfirmed` about 10 seconds after the second succeeded, and the fourth in the four-press burst returned `command-superseded`. A separate third press sent about 3.4 seconds after the second succeeded returned `ok`. The logs establish delivery and result timing. They do not reveal why the live player failed to confirm the third input.
+
+The baseline Node regression reproduces the failed third press by modeling a site button that ignores an immediate resume after Pause. At `2944ed7`, held toggles use the relevant explicit playback method when the ready player supports it. The result is observed before the next held input runs.
+
+The Node model confirmed three, four and five presses. Chromium confirmed three presses queued before Chrome connected and four queued during the first Play request, with Volume and Repeat completing during both waits. All 353 Node tests, three Chromium fixtures, two Python packaging tests and static checks passed. Build `1.3.0-dev+g2944ed7aad61.local20261128112131175` passed official Elgato validation, SHA-256 and full archive comparisons. All 117 Stream Deck package files match the previous build. The new Chrome extension still needs confirmation on live YouTube Music.
 
 ### Repeat and Shuffle after Chrome exits
 
