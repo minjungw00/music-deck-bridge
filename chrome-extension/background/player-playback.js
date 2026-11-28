@@ -6,12 +6,7 @@
     const key = Symbol.for('music-deck-bridge.playback');
     const control = globalThis[key] ||= { sequence: 0, latest: 0, interrupt: 0,
       dispatch: Promise.resolve(), results: new Map() };
-    if (type === 'result') {
-      const result = control.results.get(expiresAt);
-      if (!result) return { ok: false, reason: 'playback-unconfirmed', diagnostic: { phase: 'result', source: 'missing-result' } };
-      try { return await result; }
-      finally { control.results.delete(expiresAt); }
-    }
+    if (type === 'result') return await readCompletion(expiresAt);
     if (type === 'state') {
       const state = readPlayer();
       const playbackConfirmed = state.playable && started(state);
@@ -24,12 +19,8 @@
     if (!['play', 'toggle', 'next', 'prev'].includes(type)) return { ok: false };
 
     const navigation = type === 'next' || type === 'prev';
-    const receipt = control.receipt = (control.receipt ?? control.sequence) + 1;
-    const preceding = type === 'toggle' ? control.playback : null;
-    if (type !== 'toggle') control.playbackEpoch = (control.playbackEpoch ?? 0) + 1;
-    const epoch = control.playbackEpoch;
-    const request = { result: null, target: null, preceding, done: false };
-    control.playback = navigation ? null : request;
+    const request = registerRequest();
+    const { preceding, epoch } = request;
     let sequence;
     const expires = Number(expiresAt) || Infinity;
     let deadline = Math.min(expires, Date.now() + (dispatchOnly ? 30000 : 10000));
@@ -40,13 +31,10 @@
     const operation = complete();
     const completion = request.result = trace ? operation.then(result => ({ ...result, trace: diagnostic.trace() })) : operation;
     if (!dispatchOnly) return await completion;
-    control.results.set(receipt, completion);
-    while (control.results.size > 100) control.results.delete(control.results.keys().next().value);
-    return { ok: true, pending: receipt };
+    return retainCompletion();
 
     function read() { return diagnostic.observe(readPlayer()); }
     function failure(reason) { return diagnostic.failure(reason, recovery.attempts); }
-    function superseded() { return control.latest > sequence || (navigation && control.interrupt > sequence); }
     function samePlayer(target, state) {
       return target.api === state.api && (!target.key || target.key === state.key) &&
         (!Number.isInteger(target.index) || target.index === state.index);
@@ -56,12 +44,6 @@
       if (!target) return null;
       if (epoch !== control.playbackEpoch) return 'command-superseded';
       return samePlayer(target, state) ? null : 'player-changed';
-    }
-    async function waitForPreceding() {
-      let timer;
-      const timeout = new Promise(resolve => { timer = setTimeout(resolve, Math.max(0, deadline - Date.now())); });
-      try { return await Promise.race([preceding.result, timeout]); }
-      finally { clearTimeout(timer); }
     }
     function started(state) {
       return Number.isFinite(state.state) ? state.state === 1 : state.playing && state.media?.readyState >= 2;
@@ -219,55 +201,103 @@
     }
 
     async function confirm(before, recoverBufferedPause) {
-      const desiredPlaying = type === 'play' || !before.playing;
-      const outcome = { navigated: false, destinationRecoveryStarted: false, played: new Set() };
+      const observe = navigation ? observeNavigation(before) : observePlayback(before, recoverBufferedPause);
       while (Date.now() < deadline) {
         const after = read();
         if (error(after)) return failure(error(after));
-        if (!navigation) {
-          if (desiredPlaying ? started(after) : !after.playing) {
-            if (!samePlayer(request.target, after)) return failure('player-changed');
-            request.target = after;
-            return { ok: true };
-          }
-          if (recoverBufferedPause) {
-            if (control.sequence !== sequence || after.api !== before.api || after.key !== before.key || after.index !== before.index) {
-              recoverBufferedPause = false;
-            } else if (after.ready && started(after)) {
-              // Some players ignore Pause while buffering. Retry the same
-              // intent once playback has actually started on this track.
-              recoverBufferedPause = false;
-              requestPause(after);
-            }
-          }
-          await recovery.step(after);
-          diagnostic.phase = 'confirm';
-        } else if (await confirmNavigation(before, after, outcome)) return { ok: true };
+        const result = await observe(after);
+        if (result) return result;
         await wait();
       }
       return failure('playback-unconfirmed');
     }
 
-    async function confirmNavigation(before, after, outcome) {
-      outcome.navigated ||= Boolean((before.key && after.key && before.key !== after.key) ||
-        (Number.isInteger(before.index) && Number.isInteger(after.index) && before.index !== after.index) ||
-        (before.key === after.key && type === 'prev' && after.time < 2 && (after.time < before.time || events.seeked)));
-      if (outcome.navigated && started(after)) return true;
-      // A same-item restart can omit a seek event: recover playback separately
-      // from navigation evidence, without inventing a successful transition.
-      const target = JSON.stringify([after.key, after.index]);
-      if (!after.playing && after.ready && !outcome.played.has(target) && outcome.played.size < 2) {
-        const recoverDestination = outcome.navigated && !outcome.destinationRecoveryStarted && canRecoverStartup(after);
-        if (await requestPlay(after, recoverDestination)) {
-          outcome.played.add(target);
-          if (recoverDestination) outcome.destinationRecoveryStarted = true;
+    function observePlayback(before, recoverBufferedPause) {
+      const desiredPlaying = type === 'play' || !before.playing;
+      return async after => {
+        if (desiredPlaying ? started(after) : !after.playing) {
+          if (!samePlayer(request.target, after)) return failure('player-changed');
+          request.target = after;
+          return { ok: true };
         }
+        if (recoverBufferedPause) {
+          if (control.sequence !== sequence || after.api !== before.api || after.key !== before.key || after.index !== before.index) {
+            recoverBufferedPause = false;
+          } else if (after.ready && started(after)) {
+            // Retry an ignored buffering Pause once after the same track starts.
+            recoverBufferedPause = false;
+            requestPause(after);
+          }
+        }
+        await recovery.step(after);
         diagnostic.phase = 'confirm';
-      }
-      await recovery.step(after);
-      diagnostic.phase = 'confirm';
-      return false;
+      };
     }
+
+    function observeNavigation(before) {
+      let navigated = false, destinationRecoveryStarted = false;
+      const played = new Set();
+      return async after => {
+        navigated ||= Boolean((before.key && after.key && before.key !== after.key) ||
+          (Number.isInteger(before.index) && Number.isInteger(after.index) && before.index !== after.index) ||
+          (before.key === after.key && type === 'prev' && after.time < 2 && (after.time < before.time || events.seeked)));
+        if (navigated && started(after)) return { ok: true };
+        // A same-item restart can omit a seek event. Recovery and navigation
+        // confirmation use separate evidence.
+        const target = JSON.stringify([after.key, after.index]);
+        if (!after.playing && after.ready && !played.has(target) && played.size < 2) {
+          const recoverDestination = navigated && !destinationRecoveryStarted && canRecoverStartup(after);
+          if (await requestPlay(after, recoverDestination)) {
+            played.add(target);
+            if (recoverDestination) destinationRecoveryStarted = true;
+          }
+          diagnostic.phase = 'confirm';
+        }
+        await recovery.step(after);
+        diagnostic.phase = 'confirm';
+      };
+    }
+
+    // Receipts identify caller-visible results. Dispatch order only advances
+    // when an input is admitted to the shared queue.
+    function registerRequest() {
+      const receipt = control.receipt = (control.receipt ?? control.sequence) + 1;
+      const preceding = type === 'toggle' ? control.playback : null;
+      if (type !== 'toggle') control.playbackEpoch = (control.playbackEpoch ?? 0) + 1;
+      const next = { receipt, preceding, epoch: control.playbackEpoch, result: null, target: null, done: false };
+      control.playback = navigation ? null : next;
+      return next;
+    }
+
+    function retainCompletion() {
+      control.results.set(request.receipt, request.result);
+      while (control.results.size > 100) control.results.delete(control.results.keys().next().value);
+      return { ok: true, pending: request.receipt };
+    }
+
+    async function readCompletion(receipt) {
+      const result = control.results.get(receipt);
+      if (!result) return { ok: false, reason: 'playback-unconfirmed', diagnostic: { phase: 'result', source: 'missing-result' } };
+      try { return await result; }
+      finally { control.results.delete(receipt); }
+    }
+
+    function releaseRequest() {
+      request.done = true;
+      if (control.playback !== request) return;
+      let active = preceding;
+      while (active?.done) active = active.preceding;
+      control.playback = active;
+    }
+
+    async function waitForPreceding() {
+      let timer;
+      const timeout = new Promise(resolve => { timer = setTimeout(resolve, Math.max(0, deadline - Date.now())); });
+      try { return await Promise.race([preceding.result, timeout]); }
+      finally { clearTimeout(timer); }
+    }
+
+    function superseded() { return control.latest > sequence || (navigation && control.interrupt > sequence); }
 
     async function complete() {
       try {
@@ -279,8 +309,6 @@
           if (epoch !== control.playbackEpoch) return failure('command-superseded');
           if (!previous.ok) return failure(previous.reason === 'player-changed' ? 'player-changed' : 'command-superseded');
         }
-        sequence = ++control.sequence;
-        if (!navigation) control.interrupt = sequence;
         let dispatched = await enqueueDispatch();
         // A disabled button is a safe pre-dispatch retry. Keep the same receipt
         // and let other operations use the dispatch queue while it becomes ready.
@@ -294,17 +322,16 @@
         diagnostic.recordFault('exception', null, error?.name);
         return failure(error?.name === 'NotAllowedError' && diagnostic.phase !== 'pause-api' ? 'autoplay-blocked' : 'player-error');
       } finally {
-        request.done = true;
-        if (control.playback === request) {
-          let active = preceding;
-          while (active?.done) active = active.preceding;
-          control.playback = active;
-        }
+        releaseRequest();
         events.cleanup();
       }
     }
 
     function enqueueDispatch() {
+      if (sequence === undefined) {
+        sequence = ++control.sequence;
+        if (!navigation) control.interrupt = sequence;
+      }
       const dispatch = control.dispatch.then(prepareAndDispatch);
       control.dispatch = dispatch.then(() => {}, () => {});
       return dispatch;
