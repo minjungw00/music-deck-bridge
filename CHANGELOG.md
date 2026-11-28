@@ -15,6 +15,8 @@
 - Send an explicit Pause during initial buffering when supported, with one retry if the same track starts playing. Explicit Play waits for confirmed playback during buffering, and diagnostics distinguish missing results from player confirmation failures.
 - Confirm each Play/Pause result before applying the next queued toggle. Use explicit Play or Pause when the player supports it, and keep volume and queue controls available during the wait.
 - Keep queued playback inputs during safe readiness retries and verify that playback results and synchronized state belong to the captured track.
+- Confirm resumed playback when the original media acquires its video ID. Preserve the visible track when a tab closes during a player transition.
+- Keep failure alerts on the original Stream Deck action and skip scrolling updates when both track text lines are hidden.
 
 ## v1.2.0 — 2026-11-14
 
