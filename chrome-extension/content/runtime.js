@@ -3,8 +3,7 @@
   function startContentRuntime({ chrome, document, events, current, createCommands }) {
     let active = true;
     const command = createCommands({ isActive: () => active, scheduleSync });
-    const browserCommands = new Map();
-    const browserResults = new Map();
+    const browserRequests = new Map();
     chrome.runtime.onMessage.addListener((message, sender, respond) => {
       if (!['bridge-command', 'bridge-toggle', 'bridge-command-result'].includes(message?.type) ||
           sender.id !== chrome.runtime.id || sender.tab || !active) return;
@@ -13,34 +12,34 @@
       }
       const input = message.type === 'bridge-toggle' ? { type: 'toggle' } : message.command;
       const id = typeof message.id === 'string' ? message.id : null;
-      let operation = id && browserCommands.get(id);
+      let request = id && browserRequests.get(id);
+      const forgetRetry = result => {
+        if (result.retry && browserRequests.get(id) === request) browserRequests.delete(id);
+      };
       if (message.type === 'bridge-command-result') {
-        if (!operation) {
+        if (!request) {
           respond({ ok: false, reason: 'playback-unconfirmed', diagnostic: { phase: 'result', source: 'missing-result' } });
           return false;
         }
-        if (!browserResults.has(id)) {
-          const result = operation.then(dispatched => dispatched.pending ?
+        if (!request.result) {
+          request.result = request.receipt.then(dispatched => dispatched.pending ?
             command({ type: 'playback-result', pending: dispatched.pending }) : dispatched)
             .catch(() => ({ ok: false, reason: 'playback-unconfirmed', diagnostic: { phase: 'result', source: 'result-transport' } }));
-          browserResults.set(id, result);
-          result.then(value => { if (value.retry) { browserCommands.delete(id); browserResults.delete(id); } });
+          request.result.then(forgetRetry);
         }
-        browserResults.get(id).then(respond);
+        request.result.then(respond);
         return true;
       }
-      if (!operation) {
-        operation = command({ ...input, expiresAt: message.expiresAt, dispatchOnly: message.dispatchOnly === true }).catch(() => ({ ok: false }));
+      if (!request) {
+        const receipt = command({ ...input, expiresAt: message.expiresAt, dispatchOnly: message.dispatchOnly === true }).catch(() => ({ ok: false }));
+        request = { receipt, result: null };
         if (id) {
-          browserCommands.set(id, operation);
-          operation.then(result => { if (result.retry) browserCommands.delete(id); });
-          while (browserCommands.size > 100) {
-            const oldest = browserCommands.keys().next().value;
-            browserCommands.delete(oldest); browserResults.delete(oldest);
-          }
+          browserRequests.set(id, request);
+          receipt.then(forgetRetry);
+          while (browserRequests.size > 100) browserRequests.delete(browserRequests.keys().next().value);
         }
       }
-      operation.then(respond);
+      request.receipt.then(respond);
       return true;
     });
     let listenerGeneration = 0;
