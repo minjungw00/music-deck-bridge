@@ -15,7 +15,7 @@ Use the corrected [Chrome 1.2.0 ZIP](https://github.com/minjungw00/music-deck-br
 
 The public listings describe standalone Chrome popup controls and link to the companion store. The [1.2.0 listing drafts](../store-assets/drafts/v1.2.0/README.md) remain reference material. The exact Console submissions, store package identity, installation and runtime operation for 1.2.0 remain unverified.
 
-The selected development version is **1.3.0-dev**, with Chrome **1.3.0** and Stream Deck **1.3.0.0**. Its [changes](../CHANGELOG.md#unreleased--130) cover Repeat and Shuffle, the Current Track Dial, key artwork and last-track restoration.
+The source has been promoted to **1.3.0**, with Chrome **1.3.0** and Stream Deck **1.3.0.0**. Its [changes](../CHANGELOG.md#v130--2026-11-29) cover Repeat and Shuffle, the Current Track Dial, key artwork and last-track restoration.
 
 ## November 29 final pre-release review
 
@@ -83,7 +83,7 @@ The [runtime record](verification/runtime.md#current-evidence) is the source for
 
 The maintainer selected all five Elgato gallery PNGs at `9b866cd`. The submission index includes the selected gallery, two prepared Chrome screenshots and store copy. [Store submission index](../store-assets/drafts/v1.3.0/README.md)
 
-- Once authorized, promote `1.3.0-dev` to `1.3.0`, finish the changelog, and update the packaged privacy policy's development scope statement for the stable release. Verify Windows and Ubuntu CI against the tagged source and verify the release package checksums. [Release checklist](development.md#release-checklist)
+- Verify Windows and Ubuntu CI against the tagged source, then verify the release package checksums. [Release checklist](development.md#release-checklist)
 - Complete both store submissions, including Chrome's privacy form. Verify the Maker Console processed installer on Windows, then record submission, approval, and publication separately. [Marketplace DRM record](verification/marketplace-drm.md) · [Store record](verification/stores.md)
 
 ### 1.2.0 records and follow-up

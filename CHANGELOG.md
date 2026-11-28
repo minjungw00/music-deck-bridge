@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased — 1.3.0
+## v1.3.0 — 2026-11-29
 
 - Add Repeat and Shuffle to Stream Deck and the Chrome popup. The popup supports both paired and standalone control, and the buttons reflect the player's confirmed modes.
 - Add a Song name mode to the Current Track Dial alongside Icon + song name and Album artwork. Its text modes use the Volume Dial's YouTube Music heading style, and the playback icon matches the volume icon's size and position. Both text modes support truncation and scrolling.

@@ -21,9 +21,9 @@ Stream Deck control uses two components installed together: a Stream Deck plugin
 
 See the guides for [PIN pairing](docs/installation.en.md#pairing), [updates](docs/installation.en.md#updating), switching installation methods and removal. If using a Chrome ZIP, extract it to a permanent folder and load it unpacked in Developer mode.
 
-**1.2.0** is available from both official stores and GitHub Releases. Elgato Marketplace displays it as **1.2**. See [release readiness](docs/release-readiness.md) for the distribution record and use build metadata to identify development revisions. The extension offers popup playback controls on its own. Stream Deck hardware control requires the paired plugin.
+**1.2.0** is available from both official stores. Elgato Marketplace displays it as **1.2**. See [release readiness](docs/release-readiness.md) for the distribution record and use build metadata to identify development revisions. The extension offers popup playback controls on its own. Stream Deck hardware control requires the paired plugin.
 
-**1.3.0-dev** adds Repeat and Shuffle to Stream Deck and the Chrome popup, a Song name mode and text scrolling for the Current Track Dial, individual and linked key artwork, and last-track display after a restart. [Development changes](CHANGELOG.md#unreleased--130) · [Key artwork and last-track display](docs/installation.en.md#key-artwork-and-last-track)
+**1.3.0** adds Repeat and Shuffle to Stream Deck and the Chrome popup, a Song name mode and text scrolling for the Current Track Dial, individual and linked key artwork, and last-track display after a restart. [Changelog](CHANGELOG.md#v130--2026-11-29) · [Key artwork and last-track display](docs/installation.en.md#key-artwork-and-last-track)
 
 ## Requirements
 
@@ -33,7 +33,7 @@ See the guides for [PIN pairing](docs/installation.en.md#pairing), [updates](doc
 | Browser | Google Chrome 116+ |
 | Stream Deck software | 7.1+ (provides Node.js 24) |
 | Device | Key actions target Stream Deck key models; encoder actions require Stream Deck + |
-| UI languages (1.2.0) | English / 한국어 / 简体中文 / 繁體中文 / 日本語 / Español / Français / Deutsch |
+| UI languages | English / 한국어 / 简体中文 / 繁體中文 / 日本語 / Español / Français / Deutsch |
 
 UI translations cover the Stream Deck plugin and Chrome extension. Customer-support and legal-notice language coverage is not committed by this list. Installation guides and previously submitted store descriptions retain their existing scope.
 

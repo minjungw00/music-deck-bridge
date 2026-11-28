@@ -1,6 +1,6 @@
 # Privacy
 
-This policy covers the 1.3.0 development source. Published packages retain the policy included with their own revision.
+This policy applies to Music Deck Bridge 1.3.0. Published packages retain the policy included with their own revision.
 
 Music Deck Bridge connects the YouTube Music web player in Chrome to a Stream Deck plugin on the same computer. It has no project-operated server, analytics, advertising or telemetry. It does not read Google passwords, account tokens, payment information or browser history. Normal YouTube Music and Chrome network activity is governed by their providers' policies.
 
@@ -11,7 +11,7 @@ Music Deck Bridge connects the YouTube Music web player in Chrome to a Stream De
 | Song title, artist, video ID, artwork URLs, playback, position, duration, repeat, shuffle, mute, volume and like/dislike state | Display the current track and control the player | Plugin memory and the open extension popup. Live data is replaced as state changes and cleared on plugin exit or popup close. |
 | One last-observed title, artist, video ID, cached artwork, volume, mute, repeat, shuffle, rating, position and duration, with a local hash that binds the record to the current pairing | Restore Stream Deck key and dial displays after Chrome, Stream Deck or Windows restarts | Saved automatically to `last-track.json` on this computer. Each confirmed track replaces the preceding record. Unpairing or pairing again clears the saved record. |
 | One last-observed title, artist, video ID, approved artwork URL, volume, mute, repeat, shuffle and rating | Restore the Chrome popup after the Music tab or Chrome closes | Saved as one replacement record (`lastTrack`) in the current profile's `chrome.storage.local`. Unpairing or removing the extension clears the record. An open player can supply a new record during standalone operation. |
-| Chrome tab ID and installed-app status | Select a player, preferring the installed Chrome app | Plugin memory; not a persistent browsing record |
+| YouTube Music tab IDs, installed-app status and the latest active Music tab observation | Select a player, preferring the installed Chrome app and using the active tab to break ties between players with the same playback priority | Extension service worker and plugin memory. The latest active tab ID and observation time replace the previous observation. |
 | Six-digit pairing PIN | Authorize a new extension connection | Plugin memory; expires after ten minutes or successful pairing |
 | Random pairing token and extension origin/ID | Authenticate local requests | Plugin `auth.json`; extension token in `chrome.storage.local`; retained until replaced or deleted |
 | Local bridge port | Connect the two components | Plugin `config.json` and extension `chrome.storage.local` (`bridgePort`); retained until changed or deleted |
