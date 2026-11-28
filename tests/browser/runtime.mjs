@@ -34,6 +34,7 @@ let destinationUnstarted=false, unstartedDestination=false, ignoredDestinationPl
 const restored=${restored};
 const ignoredStartupRequests=${ignoredStartupRequests};
 const delayedQueue=${delayedQueue};
+const playbackInputs=[];
 const playerListeners=new Map();
 const playerBar=document.querySelector('ytmusic-player-bar');
 const repeatModes=['NONE','ALL','ONE'];
@@ -103,6 +104,7 @@ api.playVideo=()=>{
  document.body.dataset.apiUserActive=String(navigator.userActivation.isActive);
  document.body.dataset.apiUserEverActive=String(navigator.userActivation.hasBeenActive);
  record('playRequest');
+ playbackInputs.push('play');
  if(${holdStartup}&&!initialized)return;
  if(restored&&!initialized&&Number(document.body.dataset.playRequest)<=ignoredStartupRequests){record('ignoredStartupRequest');return;}
  if(unstartedDestination&&++destinationPlays<=ignoredDestinationPlays){record('ignoredDestinationRequest');return;}
@@ -111,6 +113,7 @@ api.playVideo=()=>{
 };
 api.pauseVideo=()=>{
  record('pauseRequest');
+ playbackInputs.push('pause');
  if(buffering){record('ignoredBufferingPause');return;}
  playing=false;
 };
@@ -173,6 +176,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   });
   browser = await launchBrowser();
   const worker = browser.serviceWorkers()[0] || await browser.waitForEvent('serviceworker');
+  const playbackTracing = await worker.evaluate(() => chrome.runtime.getManifest().version_name?.endsWith('-dev') === true);
   const origin = new URL(worker.url()).origin === 'null' ? worker.url().split('/').slice(0, 3).join('/') : new URL(worker.url()).origin;
   const token = await worker.evaluate(async port => {
     await setLocalPort(port);
@@ -683,26 +687,33 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     await postEvent('repeat');
     await until(() => page.evaluate(() => document.body.dataset.volume_delta === '1' && playerBar.repeatMode === 'ALL'),
       'volume and repeat still execute while playback toggles are waiting');
-    await until(() => startupWorker.evaluate(count =>
-      browserChannel.playbackTrace.filter(event => event.stage === 'player-received').length === count, count),
-    'every toggle reaches the player before playback starts');
-    assert.equal(await page.evaluate(() => document.body.dataset.toggle), undefined);
-    await page.evaluate(() => { playing = true; initialized = true; });
-    const results = await until(() => startupWorker.evaluate(count => {
-      const rows = browserChannel.playbackTrace.filter(event => event.stage === 'player-result');
-      return rows.length === count || rows.some(row => row.result !== 'ok') ? rows : null;
-    }, count), 'every playback result is traced');
-    const states = [-1, ...Array.from({ length: count }, (_, index) => index % 2 === 0 ? 1 : 2)];
-    assert.deepEqual(results.map(({ type, held, result, inputState, state }) => [type, held, result, inputState, state]),
-      states.slice(1).map((state, index) => [index === 0 ? 'play' : 'toggle', index > 0, 'ok', states[index], state]));
-    assert.deepEqual(results.map(({ inputAction }) => inputAction),
-      results.map((_, index) => index % 2 === 0 ? 'play-api' : 'pause-api'));
-    assert.equal(await page.evaluate(() => playing), count % 2 === 1);
-    assert.equal(await page.evaluate(() => document.body.dataset.ignoredResumeClick), undefined);
-    for (const { id } of results) {
-      assert.match(child.output, new RegExp(`Playback trace {"id":"${id}","stage":"bridge-queued"`));
-      assert.match(child.output, new RegExp(`Playback trace {"id":"${id}","stage":"bridge-delivered"`));
+    if (playbackTracing) {
+      await until(() => startupWorker.evaluate(count =>
+        browserChannel.playbackTrace.filter(event => event.stage === 'player-received').length === count, count),
+      'every toggle reaches the player before playback starts');
     }
+    assert.deepEqual(await page.evaluate(() => playbackInputs.slice()), ['play']);
+    await page.evaluate(() => { playing = true; initialized = true; });
+    const expectedInputs = Array.from({ length: count }, (_, index) => index % 2 === 0 ? 'play' : 'pause');
+    await until(() => page.evaluate(count => playbackInputs.length >= count, count), 'all playback inputs reach the player');
+    if (playbackTracing) {
+      const results = await until(() => startupWorker.evaluate(count => {
+        const rows = browserChannel.playbackTrace.filter(event => event.stage === 'player-result');
+        return rows.length === count || rows.some(row => row.result !== 'ok') ? rows : null;
+      }, count), 'every playback result is traced');
+      const states = [-1, ...expectedInputs.map(input => input === 'play' ? 1 : 2)];
+      assert.deepEqual(results.map(({ type, held, result, inputState, state }) => [type, held, result, inputState, state]),
+        states.slice(1).map((state, index) => [index === 0 ? 'play' : 'toggle', index > 0, 'ok', states[index], state]));
+      assert.deepEqual(results.map(({ inputAction }) => inputAction), expectedInputs.map(input => `${input}-api`));
+      for (const { id } of results) {
+        assert.match(child.output, new RegExp(`Playback trace {"id":"${id}","stage":"bridge-queued"`));
+        assert.match(child.output, new RegExp(`Playback trace {"id":"${id}","stage":"bridge-delivered"`));
+      }
+    }
+    assert.deepEqual(await page.evaluate(() => playbackInputs.slice()), expectedInputs);
+    assert.equal(await page.evaluate(() => playing), count % 2 === 1);
+    assert.equal(await page.evaluate(() => document.body.dataset.toggle), undefined);
+    assert.equal(await page.evaluate(() => document.body.dataset.ignoredResumeClick), undefined);
   }
   t.diagnostic('Three presses before Chrome connected and four during modeled startup each alternated playback after confirmation. Volume and Repeat applied during both waits.');
 });
