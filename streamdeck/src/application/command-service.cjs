@@ -1,9 +1,9 @@
 'use strict';
 const crypto = require('node:crypto');
-const { isBrowserCommand, isLegacyCommand, isRatingCommand, isQueueControl: queueControl } =
+const { isBrowserCommand, isRatingCommand, isQueueControl: queueControl } =
   require('../../../chrome-extension/command-policy.js');
 const { PLAYER_STALE_MS, trackKey } = require('../domain/player-state.cjs');
-const { limit } = require('../domain/values.cjs');
+const { createLegacyCommandChannel } = require('./legacy-command-channel.cjs');
 const COMMAND_ERRORS = new Set(['pairing-required', 'extension-unavailable', 'command-timeout',
   'authorization-lost', 'injection-unavailable', 'receiver-unavailable', 'delivery-uncertain',
   'player-rejected', 'player-not-ready', 'browser-api-failed', 'bridge-unavailable', 'command-failed',
@@ -15,8 +15,7 @@ const COMMAND_ERRORS = new Set(['pairing-required', 'extension-unavailable', 'co
 function createCommandService({ getSession, selectedEntry, launch, log, tracePlayback = false,
   now = Date.now, newId = () => crypto.randomBytes(12).toString('hex'),
   setTimeout = globalThis.setTimeout, clearTimeout = globalThis.clearTimeout }) {
-  const queue = [];
-  const listenWaiters = new Map(); // active one-shot long polls per Chrome tab
+  const legacy = createLegacyCommandChannel({ getSession, selectedEntry, now, setTimeout, clearTimeout });
   let browserWaiter = null;
   const browserRequests = new Map();
   let nativeLaunchStarted = false;
@@ -33,73 +32,6 @@ function createCommandService({ getSession, selectedEntry, launch, log, tracePla
     if (tracePlayback && request.type === 'toggle') {
       log(`Playback trace ${JSON.stringify({ id: request.id, stage, ...(result ? { result } : {}) })}`);
     }
-  }
-  function addCommand(type, ticks = 0) {
-    if (getSession().blocked) return false;
-    const entry = selectedEntry();
-    if (!entry) return false;
-    const [clientId, state] = entry;
-    if (!isLegacyCommand(type)) return false;
-    const amount = type === 'volume_delta' ? limit(Number(ticks) || 0, -100, 100) : 0;
-    if (type === 'volume_delta' && amount === 0) return true;
-    const rating = isRatingCommand(type);
-    if (rating && (!state.title || state.rating === null)) return false;
-    queue.push({ clientId, type, amount, created: now(),
-      ...(rating ? { trackKey: trackKey(state) } : {}) });
-    while (queue.length > 60) queue.shift();
-    flushWaiters(clientId);
-    return true;
-  }
-  function dispatch(clientId) {
-    const out = [];
-    for (let i = queue.length - 1; i >= 0; i--) {
-      const cmd = queue[i];
-      if (now() - cmd.created > 5000) { queue.splice(i, 1); continue; }
-      if (cmd.clientId === clientId) {
-        out.push({ type: cmd.type, amount: cmd.amount, ...(cmd.trackKey ? { trackKey: cmd.trackKey } : {}) });
-        queue.splice(i, 1);
-      }
-    }
-    return out.reverse();
-  }
-  // Deliver controls to an already-waiting Chrome tab instead of waiting for its next 550ms state poll.
-  function flushWaiters(clientId) {
-    const waiting = listenWaiters.get(clientId);
-    if (!waiting?.size) return;
-    for (const waiter of [...waiting]) {
-      const commands = dispatch(clientId);
-      if (!commands.length) break;
-      waiter.reply({ commands });
-    }
-  }
-  function listenForCommands(clientId, channel) {
-    const immediately = dispatch(clientId);
-    if (immediately.length) return channel.reply({ commands: immediately });
-    const set = listenWaiters.get(clientId) || new Set();
-    listenWaiters.set(clientId, set);
-    let complete = false;
-    const waiter = {
-      timer: null,
-      reply(message, status = 200) {
-        if (complete) return;
-        complete = true;
-        clearTimeout(waiter.timer);
-        set.delete(waiter);
-        if (!set.size) listenWaiters.delete(clientId);
-        channel.reply(message, status);
-      },
-    };
-    set.add(waiter);
-    // Below MV3 service-worker request duration limits; repeated when idle.
-    waiter.timer = setTimeout(() => waiter.reply({ commands: [] }), 12000);
-    channel.onClose(() => {
-      if (!complete) {
-        complete = true;
-        clearTimeout(waiter.timer);
-        set.delete(waiter);
-        if (!set.size) listenWaiters.delete(clientId);
-      }
-    });
   }
   function scheduleNativeLaunch() {
     if (getSession().blocked || getSession().pairingRequired || !hasLaunchableRequest() || nativeLaunchStarted || nativeLaunchTimer ||
@@ -192,7 +124,7 @@ function createCommandService({ getSession, selectedEntry, launch, log, tracePla
       if (state?.title) playerKey = trackKey(state);
     }
     // Keep existing controls available when paired with a legacy extension.
-    if (type !== 'open' && !isQueue && !browserCapable && entry && !playerKey) return addCommand(type, amount);
+    if (type !== 'open' && !isQueue && !browserCapable && entry && !playerKey) return legacy.add(type, amount);
     if (type === 'open') {
       const existing = [...browserRequests.values()].find(request => request.type === 'open');
       if (existing) return existing.promise;
@@ -246,14 +178,11 @@ function createCommandService({ getSession, selectedEntry, launch, log, tracePla
     browserCapable = false;
     browserRepeat = false;
     browserShuffle = false;
-    for (const waiters of [...listenWaiters.values()]) {
-      for (const waiter of [...waiters]) waiter.reply(message, status);
-    }
-    queue.length = 0;
+    legacy.cancel(message, status);
   }
   return {
-    request: requestPlayerCommand, addLegacy: addCommand, dispatch,
-    listen: listenForCommands, listenBrowser: listenForBrowser,
+    request: requestPlayerCommand, addLegacy: legacy.add, dispatch: legacy.dispatch,
+    listen: legacy.listen, listenBrowser: listenForBrowser,
     get lastError() { return lastCommandError; },
     get repeatError() { return queueError('repeat', selectedEntry()?.[1]); },
     get shuffleError() { return queueError('shuffle', selectedEntry()?.[1]); },
@@ -261,7 +190,7 @@ function createCommandService({ getSession, selectedEntry, launch, log, tracePla
       if (['protocol-incompatible', 'invalid-protocol'].includes(lastCommandError)) lastCommandError = '';
     },
     get browserPolling() { return Boolean(browserWaiter); },
-    get polling() { return Boolean(browserWaiter) || [...listenWaiters.values()].some(waiters => waiters.size); },
+    get polling() { return Boolean(browserWaiter) || legacy.polling; },
     reset() { cancel(); lastCommandError = ''; },
     block(compatibility) {
       cancel({ error: 'Incompatible bridge protocol', errorCode: compatibility.errorCode, compatibility }, 409, compatibility.errorCode);
@@ -276,14 +205,7 @@ function createCommandService({ getSession, selectedEntry, launch, log, tracePla
       const request = browserRequests.get(id);
       if (request?.state === 'delivered') request.finish(ok === true, reason);
     },
-    removePlayer(clientId) {
-      for (const waiter of [...(listenWaiters.get(clientId) || [])]) waiter.reply({ commands: [], idle: true });
-    },
-    notifyPortChange() {
-      for (const waiters of [...listenWaiters.values()]) {
-        for (const waiter of [...waiters]) waiter.reply({ commands: [] });
-      }
-    },
+    removePlayer: legacy.removePlayer, notifyPortChange: legacy.notifyPortChange,
   };
 }
 module.exports = { createCommandService };
