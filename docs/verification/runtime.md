@@ -6,6 +6,7 @@ Evidence through November 29, 2026 (Asia/Seoul). [Release verification](releases
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
+| November 29 track selection, linked artwork and port review, `17b10ce` | Chrome selects the remaining track on a repeated observation, linked settings survive older host events, and explicit port changes write once. All 365 Node tests, three Chromium fixtures and package checks passed. [Review record](#november-29-track-selection-linked-artwork-and-port-review) | The new race and storage failure cases used controlled fixtures. |
 | November 29 track retention and popup review, `65cf002` | 362 Node tests, three Chromium fixtures, two Python packaging tests, static checks and both archive comparisons passed. The paired Chromium fixture saved the visible track when a tab closed with conflicting player state. [Review record](#november-29-track-retention-and-popup-review) | The integration used actual Chromium and a local player model with a simulated Stream Deck host. |
 | November 29 playback and display review, `85e8623` | 357 Node tests, three MV3/Chromium fixtures, two Python packaging tests and static checks passed. All 88 compared dial outputs matched the pre-refactor renderer. Both development archives matched source. [Review record](#november-29-playback-and-display-review) | These tests used a local player model and simulated SDK output. Live confirmation of the earlier startup build retains its original scope. |
 | Sequential Play/Pause, `2944ed7` | The maintainer confirmed normal operation after the fix for three or more startup inputs. Node and MV3 regressions exercise longer bursts with explicit Play/Pause actions. [Multiple startup inputs](#three-or-more-presses-during-startup) | The maintainer report did not specify the exact press count, timing, or installed archive identity. |
@@ -49,6 +50,14 @@ The November 7 `main` run used `@elgato/streamdeck` 3.0.4, `@elgato/cli` 1.10.4 
 | Key/dial output | Settings, profile reappearance, rotation/press/touch, proportional artwork, artist placement, backdrops and scrolling; Qt 6.10.3 reference rendering |
 | Popup | Real toolbar controls, captured routes, slider coalescing/closure, native catalogs and button bounds in all eight UI languages; separately labeled sample previews |
 | Distribution | Real worker import graph, serialized MAIN entry point, package allowlists/notices, fixed development versions and source/checksum metadata |
+
+### November 29 track selection, linked artwork and port review
+
+Three focused regressions failed on the previous source. After the changes, the Chrome cache saved the remaining player's track and retained its richer metadata when a previously selected tab closed. Stream Deck retained the new linked fit and gap when the host returned older settings before and after the latest response. The same events still updated an unrelated icon option. An explicit Chrome port change issued one local write. Simulated read and write failures surfaced as storage errors and left the connection-recovery route unused.
+
+Separate refactors moved candidate observation out of storage, assigned the fit and gap inputs to their own inspector editor, and unified listener retirement. Chromium verified the real SDPI controls and bundled plugin behavior against simulated hosts and players.
+
+All 365 Node tests, three Chromium fixtures, two Python packaging tests and static checks passed. Development build `1.3.0-dev+g17b10ce2472c.local20261128154356711` passed SHA-256 and full archive comparisons for 56 Chrome and 118 Stream Deck files. The Elgato manifest was compared as JSON. The official Elgato validator and packager passed.
 
 ### November 29 track retention and popup review
 
