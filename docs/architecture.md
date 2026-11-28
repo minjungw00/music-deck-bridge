@@ -36,7 +36,7 @@ The plugin uses ports and adapters with explicit factories. [plugin.cjs](../stre
 
 ### Plugin services
 
-The command service owns `queued → delivered → succeeded/failed/expired/cancelled` transitions. Its channel port exposes only `reply` and `onClose`; HTTP request/response objects stay in the transport adapter. A delivered command is not replayed after a missing result. A superseded outcome is cancellation, not successful navigation or a key error; older results cannot replace the newest request's diagnostic state.
+The command service owns `queued → delivered → succeeded/failed/expired/cancelled` transitions for browser-wide inputs. The [legacy command channel](../streamdeck/src/application/legacy-command-channel.cjs) owns the per-tab queue and polls used by older extensions. Both use `reply` and `onClose` from the HTTP adapter. Missing results leave a delivered input unreplayed. A superseded outcome cancels the request and preserves the current diagnostic state.
 
 A session coordinator cancels polls/inputs and resets player/artwork state through explicit service methods. The session service publishes only pairing/access flags and a generation number to command delivery; it does not expose the stored token or assign command error fields.
 
@@ -46,7 +46,7 @@ Each volume key owns a `volume-key-feedback.cjs` model. It joins the latest comm
 
 ### Extension and inspector
 
-[background.js](../chrome-extension/background.js) is the classic MV3 worker entry point. Its [background modules](../chrome-extension/background/) separate the authenticated bridge client, browser-wide command channel, message router and fixed page-control functions. The client owns credential access and protocol state; the channel owns polling/retry and tab delivery. Management and player-sync services own pairing/port workflows and tab state/closure. The router validates message senders and arguments, then dispatches to those services.
+[background.js](../chrome-extension/background.js) is the classic MV3 worker entry point. The bridge client owns credentials and protocol state, and the browser channel owns authenticated polling and acknowledgments. [tab-commands.js](../chrome-extension/background/tab-commands.js) selects a tab, delivers the input and retrieves its result for both bridge and standalone popup commands. Management and player-sync services own pairing/port workflows and tab state/closure. The router validates message senders and arguments before dispatching to those services.
 
 `MAIN`-world functions remain self-contained because Chrome serializes them for execution in the page.
 
@@ -72,7 +72,7 @@ The local-player service reads metadata in the isolated world and the same scala
 
 ### Display output
 
-Image/title output caches record a value only when the SDK output promise succeeds. Pending writes serialize per field and coalesce newer values; rejection or a skipped output permits retry on the next repaint. This confirms SDK submission, not physical-device rendering.
+Image/title output caches record a value only when the SDK output promise succeeds. Pending writes serialize per field and coalesce newer values; rejection or a skipped output permits retry on the next repaint. The [current-track dial frame](../streamdeck/src/presentation/current-track-dial.cjs) calculates the layout and payload. The renderer sends the layout first and coalesces pending dial frames. These confirmations cover SDK submission.
 
 Each Current Track Dial retains one in-flight feedback frame and one replaceable pending frame. Unsent intermediate state changes coalesce into the latest frame, including display-mode and artwork changes. Each submitted frame applies its layout before its content. Successful frames are cached; failure permits retry without invalidating a newer successful frame. Disappearing actions discard pending content.
 
