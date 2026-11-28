@@ -199,10 +199,12 @@
       events.watchSeek(before.media);
       control.latest = sequence;
       const bufferingPause = canPauseDuringBuffering(before);
-      // Retain a restored track's Play intent if its first API call is ignored.
-      if (bufferingPause) requestPause(before);
-      else if (!navigation && before.ready && before.state === -1 && !(before.media?.readyState > 0) &&
-          typeof before.api?.playVideo === 'function') {
+      // The player can confirm a transition before its toggle button has updated.
+      // For held inputs choose the explicit action from the confirmed player state.
+      const heldReady = preceding && before.ready;
+      const startupPlay = !navigation && before.ready && before.state === -1 && !(before.media?.readyState > 0);
+      if (bufferingPause || (heldReady && before.playing && typeof before.api?.pauseVideo === 'function')) requestPause(before);
+      else if ((heldReady || startupPlay) && !before.playing && typeof before.api?.playVideo === 'function') {
         await requestPlay(before, true);
       } else {
         diagnostic.phase = navigation ? 'navigate-button' : 'play-button';

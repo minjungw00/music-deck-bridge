@@ -12,9 +12,9 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
   restart = false, playBlocked = false, playNoEffect = false, initialState = 2,
   cueOnNavigation = false, ignoreUntilPlaying = false, seekEvent = true, ignoredTypes = [], playPromise,
   unloadedUntilPlay = false, rejectUncued = false, clearOnError = false, clickError,
-  ignoredPlayRequests = 0, blockedPlayRequest = 0, unstartedOnNavigation = false, pause } = {}) {
+  ignoredPlayRequests = 0, blockedPlayRequest = 0, unstartedOnNavigation = false, pause, ignoreToggle } = {}) {
   const player = playerHarness({ date: Date });
-  let state = initialState, track = 'aaaaaaaaaaa', clicks = 0, time = 0, plays = 0, ignored = 0;
+  let state = initialState, track = 'aaaaaaaaaaa', clicks = 0, time = 0, plays = 0, pauses = 0, ignored = 0;
   let initialized = !unloadedUntilPlay;
   if (unloadedUntilPlay) { player.audio.readyState = 0; player.audio.currentSrc = ''; player.audio.paused = true; }
   const listeners = new Map();
@@ -36,7 +36,10 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
       if (!playNoEffect) state = 1;
       return playPromise;
     },
-    ...(pause && { pauseVideo: () => pause(() => { state = 2; player.audio.paused = true; }) }),
+    ...(pause && { pauseVideo() {
+      pauses++;
+      return pause(() => { state = 2; player.audio.paused = true; });
+    } }),
     addEventListener: (name, fn) => add(listeners, name, fn),
     removeEventListener: (name, fn) => remove(listeners, name, fn),
   };
@@ -56,7 +59,7 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
         emit(listeners, 'onError', { data: typeof error === 'number' ? error : undefined }); return;
       }
       if (noEffect) return;
-      if (ignoredTypes.includes(type)) return;
+      if (ignoredTypes.includes(type) || (type === 'toggle' && ignoreToggle?.(state))) return;
       if (type !== 'toggle' && ignoreUntilPlaying && state !== 1) { ignored++; return; }
       if (type === 'toggle') {
         state = state === 1 || state === 3 ? 2 : 1;
@@ -78,7 +81,7 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
     querySelector: selector => selector === '#movie_player' ? api : buttons[selector.replace('ytmusic-player-bar ', '')] || null,
     querySelectorAll: selector => selector === 'video, audio' ? [player.audio] : [],
   });
-  return { player, listeners, mediaListeners, clicks: () => clicks, plays: () => plays,
+  return { player, listeners, mediaListeners, clicks: () => clicks, plays: () => plays, pauses: () => pauses,
     state: () => state, ignored: () => ignored, ready: value => { ready = value; },
     setState: value => { state = value; },
     setTrack: value => { track = value; },
@@ -308,6 +311,26 @@ test('a held toggle after a failed Play cannot start playback', async () => {
   assert.equal((await h.result(first.pending)).reason, 'playback-unconfirmed');
   assert.equal((await h.result(second.pending)).reason, 'command-superseded');
   assert.equal(h.plays(), 1);
+});
+
+test('queued toggles keep alternating when the site button ignores a Play immediately after Pause', async () => {
+  for (const count of [3, 4, 5]) {
+    const h = harness({ initialState: -1, ignoredPlayRequests: 1, pause: apply => apply(), ignoreToggle: state => state === 2 });
+    h.player.audio.readyState = 0;
+    const expires = Date.now() + 750;
+    const first = await h.send('play', expires, true);
+    await until(() => h.plays() === 1);
+    const receipts = [first];
+    for (let index = 1; index < count; index++) receipts.push(await h.send('toggle', expires, true));
+    h.player.audio.readyState = 4;
+    h.setState(1);
+    const results = await Promise.all(receipts.map(({ pending }) => h.result(pending)));
+    assert.deepEqual(results.map(result => result.ok), Array(count).fill(true));
+    assert.equal(h.plays(), Math.ceil(count / 2));
+    assert.equal(h.pauses(), Math.floor(count / 2));
+    assert.equal(h.clicks(), 0);
+    assert.equal(h.state(), count % 2 === 0 ? 2 : 1);
+  }
 });
 
 test('an expired held toggle leaves the first playback result available to a new toggle', async () => {

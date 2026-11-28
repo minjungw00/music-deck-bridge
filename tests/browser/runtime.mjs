@@ -72,6 +72,7 @@ function rate(value){
 function control(type){
  if(!ready){record('early');return;}
  if(type==='toggle'&&restored&&!initialized){record('ignoredRestoredClick');return;}
+ if(type==='toggle'&&${holdStartup}&&!playing){record('ignoredResumeClick');return;}
  if(!initialized&&!cued){record('uncuedInput');for(const fn of playerListeners.get('onError')||[])fn({data:2});return;}
  if(type==='toggle'){playing=!playing;initialized=true;}
  if(type==='prev'||type==='next'){
@@ -617,7 +618,7 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
   { repeat: ' ALL', shuffle: '1', playing: false, playRequests: undefined });
   t.diagnostic(`Chromium ${version}; Repeat and Shuffle pressed before browser startup each changed the restored player once. Fixture DOM; actual YouTube Music and Windows launch remain manual checks.`);
 
-  for (const pressBeforeConnect of [true, false]) {
+  for (const [pressBeforeConnect, count] of [[true, 3], [false, 4]]) {
     await browser.close();
     browser = null;
     restoredStartup = true;
@@ -625,30 +626,36 @@ test('real MV3 worker retains cold-tab inputs and safely recovers a replaced rec
     holdStartup = true;
     await postEvent('toggle');
     await new Promise(resolve => setTimeout(resolve, 2200));
-    if (pressBeforeConnect) await postEvent('toggle');
+    if (pressBeforeConnect) for (let index = 1; index < count; index++) await postEvent('toggle');
     browser = await launchBrowser();
     const startupWorker = browser.serviceWorkers()[0] || await browser.waitForEvent('serviceworker');
     const page = await until(() => browser.pages().find(page => page.url().startsWith(musicURL)), 'playback opens Music');
     await until(() => page.evaluate(() => document.body.dataset.playRequest === '1' && !playing), 'first Play is sent but has not started');
-    if (!pressBeforeConnect) await postEvent('toggle');
+    if (!pressBeforeConnect) for (let index = 1; index < count; index++) await postEvent('toggle');
     await postEvent('volume_delta');
     await postEvent('repeat');
     await until(() => page.evaluate(() => document.body.dataset.volume_delta === '1' && playerBar.repeatMode === 'ALL'),
-      'volume and repeat still execute while the second toggle is waiting');
+      'volume and repeat still execute while playback toggles are waiting');
+    await until(() => startupWorker.evaluate(count =>
+      browserChannel.playbackTrace.filter(event => event.stage === 'player-received').length === count, count),
+    'every toggle reaches the player before playback starts');
     assert.equal(await page.evaluate(() => document.body.dataset.toggle), undefined);
     await page.evaluate(() => { playing = true; initialized = true; });
-    const results = await until(() => startupWorker.evaluate(() => {
+    const results = await until(() => startupWorker.evaluate(count => {
       const rows = browserChannel.playbackTrace.filter(event => event.stage === 'player-result');
-      return rows.length === 2 ? rows : null;
-    }), 'both playback results are traced');
-    assert.equal(await page.evaluate(() => playing), false);
-    assert.equal(await page.evaluate(() => document.body.dataset.toggle), '1');
+      return rows.length === count || rows.some(row => row.result !== 'ok') ? rows : null;
+    }, count), 'every playback result is traced');
+    const states = [-1, ...Array.from({ length: count }, (_, index) => index % 2 === 0 ? 1 : 2)];
     assert.deepEqual(results.map(({ type, held, result, inputState, state }) => [type, held, result, inputState, state]),
-      [['play', false, 'ok', -1, 1], ['toggle', true, 'ok', 1, 2]]);
+      states.slice(1).map((state, index) => [index === 0 ? 'play' : 'toggle', index > 0, 'ok', states[index], state]));
+    assert.deepEqual(results.map(({ inputAction }) => inputAction),
+      results.map((_, index) => index % 2 === 0 ? 'play-api' : 'pause-api'));
+    assert.equal(await page.evaluate(() => playing), count % 2 === 1);
+    assert.equal(await page.evaluate(() => document.body.dataset.ignoredResumeClick), undefined);
     for (const { id } of results) {
       assert.match(child.output, new RegExp(`Playback trace {"id":"${id}","stage":"bridge-queued"`));
       assert.match(child.output, new RegExp(`Playback trace {"id":"${id}","stage":"bridge-delivered"`));
     }
   }
-  t.diagnostic('Second toggles pressed before Chrome connected and during modeled startup each waited for actual playback and then paused. Volume and repeat applied during both waits.');
+  t.diagnostic('Three presses before Chrome connected and four during modeled startup each alternated playback after confirmation. Volume and Repeat applied during both waits.');
 });
