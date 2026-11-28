@@ -6,7 +6,7 @@ Evidence through November 28, 2026 (Asia/Seoul). [Release verification](releases
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
-| Maintainer report on cross-device playback selection | The song handed off from another device appeared as the last track. [Maintainer report](#live-youtube-music-checks-for-130-dev) | The same report identified a separate Play / Pause failure on Chrome startup. |
+| Maintainer report on cross-device playback selection | The song handed off from another device appeared as the last track. [Maintainer report](#live-youtube-music-checks-for-130-dev) | The separate Play / Pause issue persisted on Chrome startup. |
 | Maintainer report on physical Stream Deck | The maintainer reported completing the requested 1.3.0-dev hardware check. [Maintainer report](#130-dev-physical-stream-deck) | Covers the requested hardware pass. The separate live-service scenarios and processed installer are tracked independently. |
 | Repeat and Shuffle after Chrome exits, `00698f6` | A paired Chromium profile applied queued Stream Deck Repeat and Shuffle once each after restart. [Restart check](#repeat-and-shuffle-after-chrome-exits) | Real MV3 worker and local player fixture. The test runner restarted Chrome in place of the Windows launcher. |
 | Maintainer report after PC reboot | Saved state was restored. [Maintainer report](#130-dev-pc-reboot) | Covers saved-state restoration. Starting playback in a new browser uses the position chosen by YouTube Music. |
@@ -75,15 +75,9 @@ On November 28, Windows Chrome 158.0.8127.89 opened the public sample from the e
 
 At `d2443a3`, the packages passed SHA-256 verification. Thirteen targeted Node cases and the Chromium MV3 integration fixture passed, including Pause during modeled buffering and recording an unplayed selection in both components.
 
-The maintainer confirmed that a song handed off from another device appeared as the last track. They also reported that pressing Play / Pause twice from a closed browser left the song playing. The report identifies a startup sequence and the final playing state. Player state at input time was not recorded.
+The maintainer confirmed that a song handed off from another device appeared as the last track. Separately, they reported that pressing Play / Pause twice from a closed browser left the song playing. They observed the issue when the second press arrived during either browser loading or music loading.
 
-At `1a2dbad`, a worker regression reproduced the second input reaching an unstarted player before the first Play had a result. The pending startup sequence now waits for that result and sends an explicit Pause after success. If Play fails, the waiting input is cancelled. Verifying the final paused state with the updated extension on live YouTube Music remains open.
-
-The Chromium MV3 fixture queued both inputs before reopening the browser. The fixture ignored the first Play request, started on its recovery request and stopped on one explicit Pause. Playback remained paused after an additional 1.1 seconds. The test runner reopened Chromium and the player DOM was a fixture. All 350 Node tests, three Chromium fixtures, two Python packaging tests and static checks passed. Build `1.3.0-dev+g1a2dbad3d10e.local20261127234901123` passed the package checksums and Elgato validation.
-
-After the `1a2dbad` build was provided, the maintainer reported that the song still played when the second press arrived during browser loading or during music loading. They observed that Stream Deck continued showing the Play icon before the song started. A Chromium comparison reproduced the second press failing to reach the idle player as Pause. A bridge test then reproduced retaining the closed tab's metadata until the new browser inventory arrived.
-
-At `7e70dc8`, the bridge sends explicit target states and uses the pending state for the Play / Pause key and Current Track Dial. When the reopened browser inventory excludes the previous tab, the bridge rebases queued startup inputs. The full Chromium fixture verified two inputs before player readiness and a second input after Play had been sent but before it took effect. The early case sent no Play to the site. The late case paused the same track after its delayed start. The Stream Deck SDK fixture confirmed that the pending icon switches before a browser observation arrives. All 353 Node tests, three Chromium fixtures, two Python packaging tests and static checks passed. Both packages at `1.3.0-dev+g7e70dc8ad8d0.local20261128000643314` passed checksum and payload checks. The updated pair awaits a live-service retest.
+The `1a2dbad` and `7e70dc8` attempts passed their respective Chromium fixtures. The maintainer reported that the second press still failed in live use and requested that both attempts be reverted. Their implementation and fixture details are retained in Git history.
 
 ### Repeat and Shuffle after Chrome exits
 

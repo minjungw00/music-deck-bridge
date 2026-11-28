@@ -19,7 +19,6 @@
       let result = { ok: false };
       switch (message.type) {
         case 'play':
-        case 'pause':
         case 'toggle':
         case 'next':
         case 'prev':
@@ -27,8 +26,7 @@
         case 'shuffle':
           result = await chrome.runtime.sendMessage({ type: 'player-playback', command: message.type,
             expiresAt: message.expiresAt, dispatchOnly: message.dispatchOnly === true,
-            ...(queueStartup ? { queueStartup: true } : {}),
-            ...(message.type === 'pause' && message.startupPause === true ? { startupPause: true } : {}) });
+            ...(queueStartup ? { queueStartup: true } : {}) });
           result = result || { ok: false, reason: 'playback-unconfirmed' };
           break;
         case 'playback-result':

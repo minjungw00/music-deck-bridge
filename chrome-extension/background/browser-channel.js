@@ -46,7 +46,7 @@
       console.warn('Music Deck Bridge playback diagnostic:', JSON.stringify(lastFailure));
     }
     const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-    async function performBrowserCommand(command, stillPaired = async () => true, diagnostic = {}, onAccepted = () => {}, startupPlayback) {
+    async function performBrowserCommand(command, stillPaired = async () => true, diagnostic = {}, onAccepted = () => {}) {
       const failed = reason => { diagnostic.reason = reason; return false; };
       if (!isBrowserCommand(command?.type)) return false;
       const queueStartup = isQueueControl(command.type) && command.queueStartup === true;
@@ -74,76 +74,54 @@
         if (Number.isInteger(tab.windowId)) await chrome.windows.update(tab.windowId, { focused: true });
         if (command.type === 'open') return true;
       }
-      if (command.type === 'next' || command.type === 'prev') startupPlayback?.delete(tab.id);
-      const hasIntent = command.type === 'toggle' && typeof command.playing === 'boolean';
-      const prior = command.type === 'toggle' && !hasIntent ? startupPlayback?.get(tab.id) : undefined;
-      let type = command.type;
-      if (hasIntent) type = command.playing ? 'play' : 'pause';
-      else if (prior) type = prior.type === 'play' ? 'pause' : 'play';
-      else if (type === 'toggle' && opened) type = 'play';
-      const completed = (async () => {
-        // A follow-up key press must not interpret an unstarted player as a
-        // fresh Play while the original Play is still waiting or recovering.
-        if (prior && !await prior.completed.catch(() => false)) return failed('command-superseded');
-        return dispatch(type);
-      })();
-      if (hasIntent || !startupPlayback || (!prior && type !== 'play')) return completed;
-      const pending = { type, completed };
-      startupPlayback.set(tab.id, pending);
-      try { return await completed; }
-      finally { if (startupPlayback.get(tab.id) === pending) startupPlayback.delete(tab.id); }
-
-      async function dispatch(type) {
-        while (await allowed()) {
-          // Injection can fail harmlessly while a tab is loading. Do not retry an
-          // ambiguously delivered input. Missing receivers and explicit not-ready
-          // replies are safe to retry because neither has performed the input.
-          try {
-            await chrome.scripting.executeScript({ target: { tabId: tab.id, frameIds: [0] },
-              files: contentScripts, world: 'ISOLATED' });
-          } catch { diagnostic.reason = 'injection-unavailable'; await wait(200); continue; }
-          if (!await allowed(true)) return denied();
-          let result;
-          let accepted = false;
-          try {
-            const trackKey = !opened && !resuming ? command.trackKey : undefined;
-            result = await chrome.tabs.sendMessage(tab.id, { type: 'bridge-command', id: command.id,
-              expiresAt: deadline, dispatchOnly: true, command: {
-                type,
-                amount: command.amount, trackKey, allowCurrentTrack: !trackKey,
-                ...(command.playerKey ? { playerKey: command.playerKey } : {}),
-                ...(queueStartup ? { queueStartup: true } : {}),
-                ...(hasIntent && type === 'pause' ? { startupPause: true } : {}),
-              } }, { frameId: 0 });
-            if (result?.pending) {
-              // Receipt starts an ordered MAIN-world dispatch operation. Keep its
-              // final ACK separate so the listener can receive later controls.
-              accepted = true;
-              onAccepted();
-              result = await chrome.tabs.sendMessage(tab.id, { type: 'bridge-command-result',
-                id: command.id, expiresAt: deadline }, { frameId: 0 });
-            }
-          } catch (error) {
-            // A new tab can navigate between injection and messaging. Chrome's
-            // missing-receiver error guarantees that this input was not delivered.
-            // A closed/lost reply after delivery remains ambiguous and is not retried.
-            if (!accepted && String(error?.message).includes('Receiving end does not exist')) {
-              diagnostic.reason = 'receiver-unavailable';
-              await wait(200);
-              continue;
-            }
-            if (accepted) recordFailure(command.type, { reason: 'delivery-uncertain',
-              diagnostic: { phase: 'result', source: 'result-transport' } });
-            return failed('delivery-uncertain');
+      while (await allowed()) {
+        // Injection can fail harmlessly while a tab is loading. Do not retry an
+        // ambiguously delivered input. Missing receivers and explicit not-ready
+        // replies are safe to retry because neither has performed the input.
+        try {
+          await chrome.scripting.executeScript({ target: { tabId: tab.id, frameIds: [0] },
+            files: contentScripts, world: 'ISOLATED' });
+        } catch { diagnostic.reason = 'injection-unavailable'; await wait(200); continue; }
+        if (!await allowed(true)) return denied();
+        let result;
+        let accepted = false;
+        try {
+          const trackKey = !opened && !resuming ? command.trackKey : undefined;
+          result = await chrome.tabs.sendMessage(tab.id, { type: 'bridge-command', id: command.id,
+            expiresAt: deadline, dispatchOnly: true, command: {
+              type: command.type === 'toggle' && opened ? 'play' : command.type,
+              amount: command.amount, trackKey, allowCurrentTrack: !trackKey,
+              ...(command.playerKey ? { playerKey: command.playerKey } : {}),
+              ...(queueStartup ? { queueStartup: true } : {}),
+            } }, { frameId: 0 });
+          if (result?.pending) {
+            // Receipt starts an ordered MAIN-world dispatch operation. Keep its
+            // final ACK separate so the listener can receive later controls.
+            accepted = true;
+            onAccepted();
+            result = await chrome.tabs.sendMessage(tab.id, { type: 'bridge-command-result',
+              id: command.id, expiresAt: deadline }, { frameId: 0 });
           }
-          if (result?.ok) return true;
-          recordFailure(command.type, result);
-          if (result?.retry !== true) return failed(result?.reason || 'player-rejected');
-          diagnostic.reason = 'player-not-ready';
-          await wait(200);
+        } catch (error) {
+          // A new tab can navigate between injection and messaging. Chrome's
+          // missing-receiver error guarantees that this input was not delivered.
+          // A closed/lost reply after delivery remains ambiguous and is not retried.
+          if (!accepted && String(error?.message).includes('Receiving end does not exist')) {
+            diagnostic.reason = 'receiver-unavailable';
+            await wait(200);
+            continue;
+          }
+          if (accepted) recordFailure(command.type, { reason: 'delivery-uncertain',
+            diagnostic: { phase: 'result', source: 'result-transport' } });
+          return failed('delivery-uncertain');
         }
-        return failed(diagnostic.reason || 'command-timeout');
+        if (result?.ok) return true;
+        recordFailure(command.type, result);
+        if (result?.retry !== true) return failed(result?.reason || 'player-rejected');
+        diagnostic.reason = 'player-not-ready';
+        await wait(200);
       }
+      return failed(diagnostic.reason || 'command-timeout');
     }
     async function startBrowserListener() {
       if (browserListening || !chrome.tabs?.query) return;
@@ -154,13 +132,11 @@
       let retry = false;
       let retryDelay = 1000;
       const active = new Set();
-      const startupPlayback = new Map();
       let executionFailure;
       try {
         while (true) {
           if (executionFailure) throw executionFailure;
           const token = await pairedToken();
-          if (token !== listeningToken) startupPlayback.clear();
           listeningToken = token;
           if (!token) {
             // Notify only about missing credentials; this never authenticates or
@@ -172,7 +148,7 @@
           try {
             const tabs = await chrome.tabs.query({ url: MUSIC_URL + '*' });
             result = await post('/browser-listen', { token, clientIds: tabs.map(tab => tab.id),
-              concurrent: true, repeat: true, shuffle: true, queueStartup: true, playbackIntent: true }, 15500);
+              concurrent: true, repeat: true, shuffle: true, queueStartup: true }, 15500);
           }
           catch (error) {
             if (error.httpStatus === 404) browserChannelAvailable = false;
@@ -207,7 +183,7 @@
                     }
                   }
                   return await pairedToken() === token;
-                }, diagnostic, release, startupPlayback);
+                }, diagnostic, release);
               } catch { diagnostic.reason = 'browser-api-failed'; }
               try {
                 if (await pairedToken() === token) await post('/browser-result',

@@ -13,7 +13,6 @@
 - Place Chrome connection and port settings first while Chrome is disconnected.
 - Recognize the installed YouTube Music window in `minimal-ui` mode and prefer it over regular browser tabs.
 - Send an explicit Pause during initial buffering when supported, with one retry if the same track starts playing. Explicit Play waits for confirmed playback during buffering, and diagnostics distinguish missing results from player confirmation failures.
-- Show Pause as soon as Stream Deck requests playback while opening YouTube Music. A second press during Chrome or player startup cancels an undispatched Play and pauses a late start from an already delivered request.
 
 ## v1.2.0 — 2026-11-14
 

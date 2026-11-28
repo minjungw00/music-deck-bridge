@@ -368,19 +368,6 @@ for (const protectedManifest of [false, true]) {
     assert.equal(toggleImage('dislike'), 'imgs/actions/dislike/selected@2x.png');
     await post('/player-closed', { token, clientId: 1 });
     assert.equal((await post('/status', { token })).player, null);
-    const listenForPlayback = () => post('/browser-listen', { token, concurrent: true, playbackIntent: true, clientIds: [] });
-    const listeningForPlay = listenForPlayback();
-    send('keyDown', 'toggle');
-    const { commands: [startPlay] } = await listeningForPlay;
-    assert.equal(startPlay.playing, true);
-    await waitFor(() => toggleImage() === pauseImage && toggleImage('toggle-2') === pauseImage && dialFeedback()?.icon === pauseIcon);
-    const listeningForPause = listenForPlayback();
-    send('keyDown', 'toggle');
-    const { commands: [stopPlay] } = await listeningForPause;
-    assert.equal(stopPlay.playing, false);
-    await waitFor(() => toggleImage() === playImage && toggleImage('toggle-2') === playImage && dialFeedback()?.icon === playIcon);
-    await post('/browser-result', { token, id: startPlay.id, ok: false, reason: 'command-superseded' });
-    await post('/browser-result', { token, id: stopPlay.id, ok: true });
     await post('/sync', { token, clientId: 1, state: { ...state, volume: 0, muted: false, rating: 'INDIFFERENT',
       repeatMode: 'NONE', shuffleEnabled: false, positionSeconds: 94 } });
     await waitFor(() => volumeFeedback()?.value === '0%' && volumeFeedback()?.icon === volumeIcon);

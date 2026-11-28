@@ -41,12 +41,10 @@ const players = createPlayerRegistry({ onChange: drawSoon, onObserved: entry => 
   // A fresh 0/100 snapshot can confirm a bounded volume input without changing
   // the registry's display signature. Wake only keys waiting for that snapshot.
   if ([...displayed.values()].some(item => item.volumeFeedback?.awaitingSnapshot())) drawSoon();
-  commands.observePlayback(entry);
   const state = entry?.[1];
   if (state?.title) lastTrack.observe(state, covers.image(state.cover));
 } });
 const commands = createCommandService({ selectedEntry: players.selected, log,
-  playbackEntry: () => session.extensionOnline() ? players.selected() : null, onPlaybackChange: drawSoon,
   getSession: () => session.access, launch: isTest ? async () => {} : launchChrome });
 const covers = createCoverStore({ selectedSource: () => players.selected()?.[1].cover,
   onChange: drawSoon, onLoaded: lastTrack.observeArtwork });
@@ -63,7 +61,6 @@ const controller = createDeckController({ displayed, commands, session, ports, p
 const selectedDisplayEntry = () => lastTrack.snapshot && !session.extensionOnline() ? null : players.selected();
 const renderer = createRenderer({ displayed, covers, actionName,
   selectedEntry: selectedDisplayEntry,
-  playbackIntent: () => commands.playbackIntent,
   lastTrack: () => lastTrack.snapshot, repeatAvailable: () => !commands.repeatError,
   shuffleAvailable: () => !commands.shuffleError,
   online: () => deck.online, tr: key => translate(deck.locale, key), fitDialArtwork, keyTextBackground, volumeKeyImage,

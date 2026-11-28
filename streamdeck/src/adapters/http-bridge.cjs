@@ -111,7 +111,7 @@ function createHttpBridge({ session, players, commands, covers, getPorts, onDeck
       }
       return commands.listenBrowser(httpChannel(res, origin), { concurrent: body.concurrent === true,
         repeat: body.repeat === true, shuffle: body.shuffle === true,
-        queueStartup: body.queueStartup === true, playbackIntent: body.playbackIntent === true, clientIds: body.clientIds });
+        queueStartup: body.queueStartup === true, clientIds: body.clientIds });
     }
     if (req.url === '/player-closed') {
       const clientId = String(body.clientId ?? '');

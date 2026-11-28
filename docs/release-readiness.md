@@ -64,7 +64,8 @@ The [runtime record](verification/runtime.md#current-evidence) is the source for
 
 The maintainer selected all five Elgato gallery PNGs at `9b866cd`. The submission index includes the selected gallery, two prepared Chrome screenshots and store copy. [Store submission index](../store-assets/drafts/v1.3.0/README.md)
 
-- With the updated `7e70dc8` packages, recheck both second-press timings on live YouTube Music. Chromium verified the cases before player readiness and after sending Play but before playback began. The maintainer confirmed that a song handed off from another device appeared as the last track. [Live-service check](verification/runtime.md#live-youtube-music-checks-for-130-dev)
+The maintainer confirmed that a song handed off from another device appeared as the last track. The two attempts to handle a second Play / Pause press during startup were reverted after the symptom persisted on live YouTube Music. [Live-service check](verification/runtime.md#live-youtube-music-checks-for-130-dev)
+
 - Once authorized, promote `1.3.0-dev` to `1.3.0`, finish the changelog, verify Windows and Ubuntu CI against the tagged source, and verify the release package checksums. [Release checklist](development.md#release-checklist)
 - Complete both store submissions, including Chrome's privacy form. Verify the Maker Console processed installer on Windows, then record submission, approval, and publication separately. [Marketplace DRM record](verification/marketplace-drm.md) · [Store record](verification/stores.md)
 

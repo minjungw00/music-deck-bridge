@@ -20,9 +20,9 @@
         respond({ ok: false, reason: 'protocol-incompatible' }); return false;
       }
       if (msg?.type === 'player-playback' && mainFrame) {
-        if (!['play', 'pause', 'toggle', 'next', 'prev', 'repeat', 'shuffle'].includes(msg.command)) { respond({ ok: false }); return false; }
+        if (!['play', 'toggle', 'next', 'prev', 'repeat', 'shuffle'].includes(msg.command)) { respond({ ok: false }); return false; }
         const args = [msg.command, msg.expiresAt, msg.dispatchOnly === true];
-        if (msg.queueStartup === true || (msg.command === 'pause' && msg.startupPause === true)) args.push(true);
+        if (msg.queueStartup === true) args.push(true);
         return runPlayback(tabId, args, respond);
       }
       if (msg?.type === 'player-playback-result' && mainFrame && Number.isSafeInteger(msg.pending) && msg.pending > 0) {
