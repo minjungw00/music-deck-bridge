@@ -6,6 +6,7 @@ Evidence through November 28, 2026 (Asia/Seoul). [Release verification](releases
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
+| Sequential Play/Pause, `48f0382` | Chromium applied a second Stream Deck toggle after confirmed playback in both startup timing cases. Volume and Repeat completed during each wait. [Sequential toggle check](#sequential-playpause-confirmation) | The browser ran against a local player model. Signed-in Windows playback awaits verification. |
 | Maintainer report on cross-device playback selection | The song handed off from another device appeared as the last track. [Maintainer report](#live-youtube-music-checks-for-130-dev) | The separate Play / Pause issue persisted on Chrome startup. |
 | Maintainer report on physical Stream Deck | The maintainer reported completing the requested 1.3.0-dev hardware check. [Maintainer report](#130-dev-physical-stream-deck) | Covers the requested hardware pass. The separate live-service scenarios and processed installer are tracked independently. |
 | Repeat and Shuffle after Chrome exits, `00698f6` | A paired Chromium profile applied queued Stream Deck Repeat and Shuffle once each after restart. [Restart check](#repeat-and-shuffle-after-chrome-exits) | Real MV3 worker and local player fixture. The test runner restarted Chrome in place of the Windows launcher. |
@@ -78,6 +79,14 @@ At `d2443a3`, the packages passed SHA-256 verification. Thirteen targeted Node c
 The maintainer confirmed that a song handed off from another device appeared as the last track. Separately, they reported that pressing Play / Pause twice from a closed browser left the song playing. They observed the issue when the second press arrived during either browser loading or music loading.
 
 The `1a2dbad` and `7e70dc8` attempts passed their respective Chromium fixtures. The maintainer reported that the second press still failed in live use and requested that both attempts be reverted. Their implementation and fixture details are retained in Git history.
+
+#### Sequential Play/Pause confirmation
+
+On November 28, an unsigned-in Windows Chrome probe again reached the Premium page for the public sample without exposing a player. The original two-press failure could not be traced against the live player in that session.
+
+At `48f0382`, Chromium with the real MV3 worker and bundled plugin sent a second toggle before Chrome connected and, separately, after the fixture received its first Play request while the song was still loading. In both cases the first input confirmed Playing, the second confirmed Paused, and Volume and Repeat took effect before playback confirmation. The worker and plugin logs shared both request IDs. The Node regressions cover the first input's recovery, predecessor failure, expiry and a changed track.
+
+All 352 Node tests, three Chromium fixtures, two Python packaging tests and static checks passed. Build `1.3.0-dev+g48f0382967d8.local20261128111200580` passed SHA-256 and source comparisons for all 54 Chrome and 117 Stream Deck archive files, with the Elgato-normalized manifest compared as JSON. The official Elgato validator and packager passed. The [development diagnostics](../troubleshooting.md#development-playback-diagnostics--개발-빌드-재생-진단) can correlate the three player events with the plugin's request outcome in a signed-in Windows check.
 
 ### Repeat and Shuffle after Chrome exits
 
