@@ -1,5 +1,6 @@
 'use strict';
 (function (root) {
+  const { mergePlaybackObservation } = root.MusicDeckTrackIdentity;
   function createPlayerSyncService({ chrome, client, browserChannel, pageControls, lastPlayer }) {
     const { post, pairedToken } = client;
     const { playerPlayback } = pageControls;
@@ -39,7 +40,10 @@
         try {
           const observed = await chrome.scripting.executeScript({ target: { tabId: source.id, frameIds: [0] },
             world: 'MAIN', func: playerPlayback, args: ['state'] });
-          if (observed[0]?.result) state = { ...state, ...observed[0].result };
+          if (observed[0]?.result) {
+            state = mergePlaybackObservation(state, observed[0].result);
+            if (!state) return token ? pairedIdle : idle;
+          }
         } catch { /* Keep the DOM snapshot if the page is navigating. */ }
         if (tab.latest === input && !tab.closed) void lastPlayer?.observe(source, state);
       }

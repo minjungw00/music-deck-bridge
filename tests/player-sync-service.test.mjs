@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
+import trackIdentity from '../chrome-extension/track-identity.js';
 
 function deferred() {
   let resolve, reject;
@@ -11,10 +12,10 @@ function deferred() {
 const flush = async () => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
 
 function harness({ observe = async () => [] } = {}) {
-  const context = vm.createContext({});
+  const context = vm.createContext({ MusicDeckTrackIdentity: trackIdentity });
   vm.runInContext(readFileSync(new URL('../chrome-extension/background/player-sync-service.js', import.meta.url), 'utf8'), context);
   const requests = [], applied = [], saved = [];
-  let present = false;
+  let present = false, published;
   const players = context.MusicDeckPlayerSyncService.create({
     chrome: { scripting: { executeScript: observe } },
     client: { pairedToken: async () => 'fixture-token', blocked: () => false,
@@ -23,7 +24,7 @@ function harness({ observe = async () => [] } = {}) {
           const pending = deferred();
           requests.push(pending);
           return pending.promise.then(() => {
-            present = true; applied.push(body.state.title); return { commands: [] };
+            present = true; published = body.state; applied.push(body.state.title); return { commands: [] };
           });
         }
         assert.equal(route, '/player-closed');
@@ -34,9 +35,32 @@ function harness({ observe = async () => [] } = {}) {
     lastPlayer: { observe(_tab, state, provisional) { saved.push([state.title, provisional === true]); },
       remove(id) { saved.push(['removed', id]); } },
   });
-  return { players, requests, applied, saved, get present() { return present; },
+  return { players, requests, applied, saved, get published() { return published; }, get present() { return present; },
     sync: (title, fields) => players.synchronize('sync', { title, ...fields }, { tab: { id: 7 }, frameId: 0 }) };
 }
+
+test('a mismatched MAIN observation cannot enrich or publish the captured track', async () => {
+  let trackId = 'bbbbbbbbbbb';
+  const h = harness({ observe: async () => [{ result: {
+    observedTrackId: trackId, playing: true, positionSeconds: 18, durationSeconds: 220,
+  } }] });
+  const state = { trackId: 'aaaaaaaaaaa', trackConfirmed: true };
+  const mismatch = h.sync('Visible title', state);
+  await flush();
+  const [unexpected] = h.requests;
+  unexpected?.resolve();
+  await mismatch;
+  assert.equal(h.requests.length, 0);
+  assert.deepEqual(h.saved, [['Visible title', true]]);
+
+  trackId = state.trackId;
+  const matching = h.sync('Visible title', state);
+  await flush();
+  h.requests[0].resolve(); await matching;
+  assert.equal(h.published.positionSeconds, 18);
+  assert.equal(h.published.trackId, trackId);
+  assert.equal(Object.hasOwn(h.published, 'observedTrackId'), false);
+});
 
 test('a failed publication does not prevent a queued confirmed snapshot from being applied before closure', async () => {
   const h = harness();

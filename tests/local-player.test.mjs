@@ -17,7 +17,8 @@ function harness(saved = null) {
   const chrome = { tabs: { query: async () => tabs }, scripting: { async executeScript(options) {
     reads.push(options);
     const state = states.get(options.target.tabId);
-    if (options.world === 'MAIN') return [{ result: { playing: state.playing, muted: state.muted === true } }];
+    if (options.world === 'MAIN') return [{ result: { playing: state.playing, muted: state.muted === true,
+      observedTrackId: state.observedTrackId ?? state.trackId } }];
     return [{ result: state }];
   } } };
   const context = vm.createContext({ chrome, URL, Date, MusicDeckArtworkPolicy: artwork,
@@ -59,6 +60,15 @@ test('standalone controls revalidate the selected track and expose a tab-scoped 
   assert.equal((await h.service.control(input)).ok, false);
   assert.equal(h.service.controlling(2), false);
   assert.equal((await h.service.control(input)).reason, 'player-changed');
+});
+
+test('standalone selection ignores a tab whose title and playback observation refer to different tracks', async () => {
+  const h = harness();
+  h.states.get(2).observedTrackId = 'ccccccccccc';
+  assert.equal((await h.service.check()).player.id, '1');
+  const result = await h.service.control({ command: 'toggle', playerId: '2', trackKey: 'bbbbbbbbbbb' });
+  assert.equal(result.reason, 'player-changed');
+  assert.equal(h.inputs.length, 0);
 });
 
 test('standalone controls and artwork reject invalid commands, volume and non-CDN images', async () => {

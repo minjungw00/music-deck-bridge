@@ -1,6 +1,7 @@
 'use strict';
 (function (root) {
   const { isStandaloneCommand, isRatingCommand } = root.MusicDeckCommandPolicy;
+  const { mergePlaybackObservation } = root.MusicDeckTrackIdentity;
   function createLocalPlayer({ chrome, pageControls, contentScripts, lastPlayer,
     now = Date.now, wait = ms => new Promise(resolve => setTimeout(resolve, ms)) }) {
     const leases = new Map();
@@ -20,7 +21,8 @@
       if (!data?.title) return null;
       const observed = await chrome.scripting.executeScript({ target, world: 'MAIN',
         func: pageControls.playerPlayback, args: ['state'] });
-      const state = { ...data, ...observed[0]?.result };
+      const state = mergePlaybackObservation(data, observed[0]?.result);
+      if (!state) return null;
       const record = root.MusicDeckLastPlayer.normalize(state);
       return record && { ...record, id: String(tab.id), playing: state.playing === true,
         standalone: state.standalone === true, activeTab: tab.active === true };

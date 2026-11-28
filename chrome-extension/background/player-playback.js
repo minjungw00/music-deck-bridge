@@ -15,7 +15,8 @@
     if (type === 'state') {
       const state = readPlayer();
       const playbackConfirmed = state.playable && started(state);
-      return { playing: state.playing, playbackConfirmed, muted: state.muted,
+      return { observedTrackId: /^[\w-]{11}$/.test(state.videoId) ? state.videoId : '',
+        playing: state.playing, playbackConfirmed, muted: state.muted,
         repeatMode: readQueueControl('repeat')?.mode ?? null, shuffleEnabled: readQueueControl('shuffle')?.mode ?? null,
         ...playbackTime(state) };
     }
@@ -51,9 +52,10 @@
         (!Number.isInteger(target.index) || target.index === state.index);
     }
     function playbackScopeError(state) {
-      if (!preceding) return null;
+      const target = request.target ?? preceding?.target;
+      if (!target) return null;
       if (epoch !== control.playbackEpoch) return 'command-superseded';
-      return samePlayer(preceding.target, state) ? null : 'player-changed';
+      return samePlayer(target, state) ? null : 'player-changed';
     }
     async function waitForPreceding() {
       let timer;
@@ -224,7 +226,8 @@
         if (error(after)) return failure(error(after));
         if (!navigation) {
           if (desiredPlaying ? started(after) : !after.playing) {
-            if (samePlayer(request.target, after)) request.target = after;
+            if (!samePlayer(request.target, after)) return failure('player-changed');
+            request.target = after;
             return { ok: true };
           }
           if (recoverBufferedPause) {
@@ -273,13 +276,19 @@
         if (preceding) {
           const previous = await waitForPreceding();
           if (!previous || Date.now() >= deadline) return failure('command-timeout');
-          if (!previous.ok || epoch !== control.playbackEpoch) return failure('command-superseded');
+          if (epoch !== control.playbackEpoch) return failure('command-superseded');
+          if (!previous.ok) return failure(previous.reason === 'player-changed' ? 'player-changed' : 'command-superseded');
         }
         sequence = ++control.sequence;
         if (!navigation) control.interrupt = sequence;
-        const dispatch = control.dispatch.then(prepareAndDispatch);
-        control.dispatch = dispatch.then(() => {}, () => {});
-        const dispatched = await dispatch;
+        let dispatched = await enqueueDispatch();
+        // A disabled button is a safe pre-dispatch retry. Keep the same receipt
+        // and let other operations use the dispatch queue while it becomes ready.
+        while (!navigation && dispatchOnly && dispatched.result?.retry === true) {
+          await wait();
+          if (Date.now() >= deadline) return failure('player-not-ready');
+          dispatched = await enqueueDispatch();
+        }
         return dispatched.result || await confirm(dispatched.before, dispatched.bufferingPause);
       } catch (error) {
         diagnostic.recordFault('exception', null, error?.name);
@@ -293,6 +302,12 @@
         }
         events.cleanup();
       }
+    }
+
+    function enqueueDispatch() {
+      const dispatch = control.dispatch.then(prepareAndDispatch);
+      control.dispatch = dispatch.then(() => {}, () => {});
+      return dispatch;
     }
 
     function createStartupRecovery() {
@@ -446,7 +461,7 @@
       const playing = Number.isFinite(state) ? state === 1 || state === 3 :
         Boolean(media && !media.paused && !media.ended);
       const position = Number.isFinite(time) ? time : media?.currentTime;
-      return { api, apiSource, media, ready, apiReady, queueReady, playable, playing, state, index,
+      return { api, apiSource, media, ready, apiReady, queueReady, playable, playing, state, index, videoId,
         muted: typeof muted === 'boolean' ? muted : Boolean(media?.muted),
         key: videoId || media?.currentSrc || media?.src || '',
         time: position || 0, position };

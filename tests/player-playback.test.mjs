@@ -15,6 +15,7 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
   ignoredPlayRequests = 0, blockedPlayRequest = 0, unstartedOnNavigation = false, pause, ignoreToggle } = {}) {
   const player = playerHarness({ date: Date });
   let state = initialState, track = 'aaaaaaaaaaa', clicks = 0, time = 0, plays = 0, pauses = 0, ignored = 0;
+  let playButtonDisabled = false;
   let initialized = !unloadedUntilPlay;
   if (unloadedUntilPlay) { player.audio.readyState = 0; player.audio.currentSrc = ''; player.audio.paused = true; }
   const listeners = new Map();
@@ -44,6 +45,7 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
     removeEventListener: (name, fn) => remove(listeners, name, fn),
   };
   const button = type => ({
+    get disabled() { return type === 'toggle' && playButtonDisabled; },
     getAttribute: () => null,
     click() {
       clicks++;
@@ -83,6 +85,7 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
   });
   return { player, listeners, mediaListeners, clicks: () => clicks, plays: () => plays, pauses: () => pauses,
     state: () => state, ignored: () => ignored, ready: value => { ready = value; },
+    disablePlayButton: value => { playButtonDisabled = value; },
     setState: value => { state = value; },
     setTrack: value => { track = value; },
     replaceApi: () => { api = { ...api }; },
@@ -313,6 +316,35 @@ test('a held toggle after a failed Play cannot start playback', async () => {
   assert.equal(h.plays(), 1);
 });
 
+test('a temporary disabled button keeps queued toggles behind the original Play', async () => {
+  const h = harness({ ready: false, initialState: -1 });
+  h.player.audio.readyState = 0;
+  h.disablePlayButton(true);
+  const expires = Date.now() + 1000;
+  const first = await h.send('play', expires, true);
+  const second = await h.send('toggle', expires, true);
+  h.ready(true);
+  await new Promise(resolve => setTimeout(resolve, 180));
+  assert.equal(h.plays(), 0);
+  assert.equal(h.clicks(), 0);
+  h.disablePlayButton(false);
+  const results = await Promise.all([h.result(first.pending), h.result(second.pending)]);
+  assert.deepEqual(results.map(result => result.ok), [true, true]);
+  assert.equal(h.plays(), 1);
+  assert.equal(h.clicks(), 1);
+  assert.equal(h.state(), 2);
+});
+
+test('navigation can supersede a playback input waiting for a disabled button', async () => {
+  const h = harness({ initialState: 1 });
+  h.disablePlayButton(true);
+  const pending = await h.send('toggle', Date.now() + 800, true);
+  const navigation = await h.send('next', Date.now() + 500, true);
+  assert.equal((await h.result(navigation.pending)).ok, true);
+  assert.equal((await h.result(pending.pending)).reason, 'command-superseded');
+  assert.equal(h.clicks(), 1);
+});
+
 test('queued toggles keep alternating when the site button ignores a Play immediately after Pause', async () => {
   for (const count of [3, 4, 5]) {
     const h = harness({ initialState: -1, ignoredPlayRequests: 1, pause: apply => apply(), ignoreToggle: state => state === 2 });
@@ -360,7 +392,7 @@ test('a held toggle is cancelled if the selected track changes before Play is co
   const second = await h.send('toggle', expires, true);
   h.setTrack('bbbbbbbbbbb');
   h.setState(1);
-  await h.result(first.pending);
+  assert.equal((await h.result(first.pending)).reason, 'player-changed');
   assert.equal((await h.result(second.pending)).reason, 'player-changed');
   assert.equal(h.state(), 1);
   assert.equal(h.plays(), 1);

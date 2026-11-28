@@ -11,7 +11,15 @@
   function trackKey({ title, artist, trackId }) {
     return trackId || JSON.stringify([title, artist]);
   }
-  const api = Object.freeze({ normalizeTrackId, normalizeTrackIdentity, trackKey });
+  function mergePlaybackObservation(snapshot, observation) {
+    if (!observation) return snapshot;
+    const { observedTrackId, ...playback } = observation;
+    const capturedId = normalizeTrackId(snapshot?.trackId);
+    const playerId = normalizeTrackId(observedTrackId);
+    if (capturedId && playerId && capturedId !== playerId) return null;
+    return { ...snapshot, ...playback };
+  }
+  const api = Object.freeze({ normalizeTrackId, normalizeTrackIdentity, trackKey, mergePlaybackObservation });
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.MusicDeckTrackIdentity = api;
 })(globalThis);

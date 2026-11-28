@@ -63,6 +63,8 @@ function repeat(){
  document.body.dataset.repeatModes=(document.body.dataset.repeatModes||'')+' '+playerBar.repeatMode;
 }
 const tracks=['aaaaaaaaaaa','bbbbbbbbbbb','ccccccccccc','ddddddddddd','eeeeeeeeeee'];
+const requestedTrack=tracks.indexOf(new URL(location.href).searchParams.get('v'));
+if(requestedTrack>=0)index=requestedTrack;
 function record(key){ document.body.dataset[key]=String(Number(document.body.dataset[key]||0)+1); }
 function rate(value){
  const renderer=document.querySelector('ytmusic-like-button-renderer');

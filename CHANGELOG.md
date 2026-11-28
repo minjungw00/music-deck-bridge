@@ -14,6 +14,7 @@
 - Recognize the installed YouTube Music window in `minimal-ui` mode and prefer it over regular browser tabs.
 - Send an explicit Pause during initial buffering when supported, with one retry if the same track starts playing. Explicit Play waits for confirmed playback during buffering, and diagnostics distinguish missing results from player confirmation failures.
 - Confirm each Play/Pause result before applying the next queued toggle. Use explicit Play or Pause when the player supports it, and keep volume and queue controls available during the wait.
+- Keep queued playback inputs during safe readiness retries and verify that playback results and synchronized state belong to the captured track.
 
 ## v1.2.0 — 2026-11-14
 
