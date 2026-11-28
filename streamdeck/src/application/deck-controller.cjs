@@ -11,7 +11,10 @@ const CONNECTION_REQUESTS = new Set(['generate-pin', 'get-connection', 'set-link
 function createDeckController({ displayed, commands, session, ports, players, output, onChange,
   version, now = Date.now }) {
   function controlPlayer(context, type, amount = 0) {
-    void commands.request(type, amount).then(ok => { if (ok === false) output.send({ event: 'showAlert', context }); });
+    const item = displayed.get(context);
+    void commands.request(type, amount).then(ok => {
+      if (ok === false && displayed.get(context) === item) output.send({ event: 'showAlert', context });
+    });
   }
   function volumeStep(context) {
     const item = displayed.get(context);

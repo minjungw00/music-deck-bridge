@@ -3,6 +3,26 @@ import assert from 'node:assert/strict';
 import { createDeckController } from '../streamdeck/src/application/deck-controller.cjs';
 import { createRenderer } from '../streamdeck/src/presentation/renderer.cjs';
 
+test('playback alerts belong to the key instance that sent the request', async () => {
+  const pending = [], alerts = [], displayed = new Map();
+  const controller = createDeckController({ displayed, onChange() {},
+    commands: { request: () => new Promise(resolve => pending.push(resolve)) },
+    output: { send: message => alerts.push(message) } });
+  const send = event => controller.handle({ event, context: 'key',
+    action: 'io.github.minjungw00.musicdeckbridge.toggle', payload: {} });
+  send('willAppear');
+  send('keyDown');
+  send('willDisappear');
+  send('willAppear');
+  send('keyDown');
+  pending[0](false);
+  await Promise.resolve();
+  assert.deepEqual(alerts, []);
+  pending[1](false);
+  await Promise.resolve();
+  assert.deepEqual(alerts, [{ event: 'showAlert', context: 'key' }]);
+});
+
 test('volume keys use independent bounded steps and the same default as the dial', () => {
   const requests = [], displayed = new Map();
   const controller = createDeckController({ displayed, onChange() {},
