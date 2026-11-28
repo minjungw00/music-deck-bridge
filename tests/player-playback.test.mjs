@@ -88,6 +88,7 @@ function harness({ ready = true, blocked = false, error = false, noEffect = fals
     disablePlayButton: value => { playButtonDisabled = value; },
     setState: value => { state = value; },
     setTrack: value => { track = value; },
+    identifyTrack: () => { initialized = true; },
     replaceApi: () => { api = { ...api }; },
     time: value => { time = value; },
     send: (command, expiresAt, dispatchOnly = false) => player.send({ type: 'player-playback', command, expiresAt, dispatchOnly }),
@@ -397,6 +398,23 @@ test('a held toggle is cancelled if the selected track changes before Play is co
   assert.equal(h.state(), 1);
   assert.equal(h.plays(), 1);
   assert.equal(h.clicks(), 0);
+});
+
+test('Play can confirm a video ID first observed on the original media source', async () => {
+  for (const replaceSource of [false, true]) {
+    const h = harness({ initialState: 5, unloadedUntilPlay: true, noEffect: true });
+    h.player.audio.currentSrc = 'blob:https://music.youtube.com/original';
+    const pending = await h.send('play', Date.now() + 700, true);
+    await until(() => h.clicks() === 1);
+    h.identifyTrack();
+    h.setState(1);
+    h.player.audio.readyState = 4;
+    if (replaceSource) h.player.audio.currentSrc = 'blob:https://music.youtube.com/replacement';
+    const result = await h.result(pending.pending);
+    assert.equal(result.ok, !replaceSource);
+    if (replaceSource) assert.equal(result.reason, 'player-changed');
+    assert.equal(h.clicks(), 1);
+  }
 });
 
 for (const change of ['track', 'buffering', 'pause', 'media', 'queue-index', 'api']) {

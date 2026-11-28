@@ -10,7 +10,7 @@
     if (type === 'state') {
       const state = readPlayer();
       const playbackConfirmed = state.playable && started(state);
-      return { observedTrackId: /^[\w-]{11}$/.test(state.videoId) ? state.videoId : '',
+      return { observedTrackId: state.videoId,
         playing: state.playing, playbackConfirmed, muted: state.muted,
         repeatMode: readQueueControl('repeat')?.mode ?? null, shuffleEnabled: readQueueControl('shuffle')?.mode ?? null,
         ...playbackTime(state) };
@@ -36,8 +36,11 @@
     function read() { return diagnostic.observe(readPlayer()); }
     function failure(reason) { return diagnostic.failure(reason, recovery.attempts); }
     function samePlayer(target, state) {
-      return target.api === state.api && (!target.key || target.key === state.key) &&
-        (!Number.isInteger(target.index) || target.index === state.index);
+      if (target.api !== state.api || (Number.isInteger(target.index) && target.index !== state.index)) return false;
+      if (!target.key || target.key === state.key) return true;
+      // A cued player can expose its video ID only after playback starts.
+      return !target.videoId && Boolean(state.videoId) && target.media === state.media &&
+        target.key === target.mediaSource && target.mediaSource === state.mediaSource;
     }
     function playbackScopeError(state) {
       const target = request.target ?? preceding?.target;
@@ -488,9 +491,11 @@
       const playing = Number.isFinite(state) ? state === 1 || state === 3 :
         Boolean(media && !media.paused && !media.ended);
       const position = Number.isFinite(time) ? time : media?.currentTime;
-      return { api, apiSource, media, ready, apiReady, queueReady, playable, playing, state, index, videoId,
+      const mediaSource = media?.currentSrc || media?.src || '';
+      return { api, apiSource, media, mediaSource, ready, apiReady, queueReady, playable, playing, state, index,
+        videoId: typeof videoId === 'string' && /^[\w-]{11}$/.test(videoId) ? videoId : '',
         muted: typeof muted === 'boolean' ? muted : Boolean(media?.muted),
-        key: videoId || media?.currentSrc || media?.src || '',
+        key: videoId || mediaSource,
         time: position || 0, position };
     }
   }
