@@ -41,8 +41,18 @@
           const observed = await chrome.scripting.executeScript({ target: { tabId: source.id, frameIds: [0] },
             world: 'MAIN', func: playerPlayback, args: ['state'] });
           if (observed[0]?.result) {
-            state = mergePlaybackObservation(state, observed[0].result);
-            if (!state) return token ? pairedIdle : idle;
+            const merged = mergePlaybackObservation(state, observed[0].result);
+            if (!merged) {
+              // Keep the current bridge view during disagreement. If the tab
+              // closes first, it can still save the visible selection alone.
+              if (bridge && input.captured && state.title) {
+                const { title, artist, trackId, cover, coverFallback, standalone } = state;
+                input.closeSnapshot = { token, clientId: source.id,
+                  state: { title, artist, trackId, cover, coverFallback, standalone, trackConfirmed: true } };
+              }
+              return token ? pairedIdle : idle;
+            }
+            state = merged;
           }
         } catch { /* Keep the DOM snapshot if the page is navigating. */ }
         if (tab.latest === input && !tab.closed) void lastPlayer?.observe(source, state);
@@ -74,7 +84,12 @@
         if (tab) await Promise.allSettled(tab.pending);
         tabs.delete(tabId);
         const token = await pairedToken();
-        if (token) await post('/player-closed', { token, clientId: tabId });
+        if (!token) return;
+        const snapshot = tab?.latest?.closeSnapshot;
+        if (snapshot?.token === token && !client.blocked()) {
+          try { await post('/sync', snapshot); } catch { /* Still remove the closed player. */ }
+        }
+        await post('/player-closed', { token, clientId: tabId });
       })().catch(() => {});
     }
     return { synchronize, onRemoved };

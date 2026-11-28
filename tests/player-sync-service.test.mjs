@@ -62,6 +62,37 @@ test('a mismatched MAIN observation cannot enrich or publish the captured track'
   assert.equal(Object.hasOwn(h.published, 'observedTrackId'), false);
 });
 
+for (const closeDuringRead of [true, false]) {
+  test(`closing ${closeDuringRead ? 'during' : 'after'} a mismatched read preserves only the captured track metadata`, async () => {
+    const observation = deferred();
+    const h = harness({ observe: () => observation.promise });
+    const captured = { trackId: 'bbbbbbbbbbb', artist: 'Visible artist', trackConfirmed: true,
+      cover: 'https://i.ytimg.com/visible', volume: 20, positionSeconds: 18, durationSeconds: 311 };
+    const sync = h.sync('Restored song', captured);
+    await flush();
+    if (closeDuringRead) h.players.onRemoved(7);
+    observation.resolve([{ result: { observedTrackId: 'aaaaaaaaaaa', playing: true,
+      positionSeconds: 150, durationSeconds: 300, repeatMode: 'ALL' } }]);
+    await sync;
+    if (!closeDuringRead) {
+      assert.equal(h.requests.length, 0, 'keep the live snapshot while observations disagree');
+      h.players.onRemoved(7);
+    }
+    await flush();
+    assert.equal(h.requests.length, 1);
+    h.requests[0].resolve();
+    await flush();
+    assert.deepEqual(h.applied, ['Restored song', 'closed']);
+    assert.equal(h.published.trackId, captured.trackId);
+    assert.equal(h.published.artist, captured.artist);
+    assert.equal(h.published.cover, captured.cover);
+    assert.equal(h.published.trackConfirmed, true);
+    for (const field of ['playing', 'volume', 'positionSeconds', 'durationSeconds', 'repeatMode']) {
+      assert.equal(Object.hasOwn(h.published, field), false, field);
+    }
+  });
+}
+
 test('a failed publication does not prevent a queued confirmed snapshot from being applied before closure', async () => {
   const h = harness();
   const older = h.sync('older', { trackConfirmed: true });
