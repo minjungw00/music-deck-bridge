@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { crc32, deflateSync } from 'node:zlib';
-import { createRenderer } from '../streamdeck/src/presentation/renderer.cjs';
+import { createRenderer, needsMarquee } from '../streamdeck/src/presentation/renderer.cjs';
 import { keyTextBackground } from '../streamdeck/src/key-background.cjs';
 
 const raster = 'data:image/png;base64,' + readFileSync(new URL('../streamdeck/io.github.minjungw00.musicdeckbridge.sdPlugin/imgs/plugin/icon.png', import.meta.url)).toString('base64');
@@ -16,6 +16,17 @@ function harness(settings = {}, cover = raster) {
   return { calls, item, context, paint: state => context.render('key', item, state) };
 }
 const state = { title: 'Song', artist: 'Artist', cover: 'cover' };
+
+test('current-track key schedules scrolling only while at least one text line is enabled', () => {
+  const item = { action: 'nowplaying', settings: { titleMode: 'scroll', keyDisplay: 'icon', keyShowTitle: false, keyShowArtist: false } };
+  const displayed = new Map([['key', item]]);
+  const scrolling = () => needsMarquee(displayed, name => name);
+  assert.equal(scrolling(), false);
+  item.settings.keyShowArtist = true;
+  assert.equal(scrolling(), true);
+  item.settings = { titleMode: 'scroll' };
+  assert.equal(scrolling(), true, 'legacy keys default to showing text');
+});
 test('current-track key retains title and artist below by default, with independent visibility and position', () => {
   const h = harness(); h.paint(state);
   assert.equal(h.calls.find(x => 'title' in x).title, 'Song\nArtist');

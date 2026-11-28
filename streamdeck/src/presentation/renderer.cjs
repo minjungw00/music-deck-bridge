@@ -12,11 +12,15 @@ const EMPTY_KEY_IMAGE = 'data:image/svg+xml;base64,' +
   btoa('<svg xmlns="http://www.w3.org/2000/svg" width="144" height="144"><rect width="144" height="144" fill="black"/></svg>');
 
 function needsMarquee(displayed, actionName) {
-  return [...displayed.values()].some(item =>
-    (actionName(item.action) === 'nowplaying' && item.settings?.titleMode === 'scroll') ||
-    (actionName(item.action) === 'trackdial' && (item.settings?.dialDisplay === 'artwork' ?
-      item.settings?.artworkShowTitle === true && item.settings?.artworkTitleMode === 'scroll' :
-      item.settings?.infoTitleMode === 'scroll')));
+  return [...displayed.values()].some(({ action, settings }) => {
+    const kind = actionName(action);
+    if (kind === 'nowplaying' && settings?.titleMode === 'scroll') {
+      const { showTitle, showArtist } = currentTrackKeySettings(settings);
+      return showTitle || showArtist;
+    }
+    return kind === 'trackdial' && (settings?.dialDisplay === 'artwork' ?
+      settings?.artworkShowTitle === true && settings?.artworkTitleMode === 'scroll' : settings?.infoTitleMode === 'scroll');
+  });
 }
 
 // Output and artwork are ports: this module can run in Node, tests or a preview.
