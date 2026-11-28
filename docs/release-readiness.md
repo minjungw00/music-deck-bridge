@@ -1,6 +1,6 @@
 # Release readiness
 
-Updated November 28, 2026 (Asia/Seoul) with development verification, the confirmed Elgato gallery and the maintainer's physical Stream Deck and PC reboot checks. General installation starts with the [official stores](installation.en.md#method-1-official-stores).
+Updated November 29, 2026 (Asia/Seoul) with the playback and display refactor checks. The development record also covers the confirmed Elgato gallery and earlier physical Stream Deck and PC reboot checks. General installation starts with the [official stores](installation.en.md#method-1-official-stores).
 
 ## Current versions and distribution
 
@@ -23,6 +23,7 @@ The [runtime record](verification/runtime.md#current-evidence) is the source for
 
 | Area | Current evidence | Remaining limit |
 | --- | --- | --- |
+| November 29 playback and display review, `85e8623` | 357 Node tests, three Chromium fixtures, two Python packaging tests, static checks and both package comparisons passed. The refactored dial produced the same 88 tested outputs. [Runtime check](verification/runtime.md#november-29-playback-and-display-review) | The added readiness and mismatched-observation cases ran in the player model. |
 | Sequential Play/Pause, `2944ed7` | The maintainer confirmed normal operation after the fix for three or more startup inputs. Node and MV3 regressions confirmed ordered Play/Pause in longer bursts. [Runtime check](verification/runtime.md#three-or-more-presses-during-startup) | The maintainer report did not specify the exact press count, timing, or installed archive identity. |
 | Cross-device playback selection | The maintainer confirmed that a song handed off from another device appeared as the last track. [Maintainer report](verification/runtime.md#live-youtube-music-checks-for-130-dev) | Covers the saved track after handoff. |
 | Physical Stream Deck | The maintainer reported completing the requested 1.3.0-dev hardware check. [Maintainer report](verification/runtime.md#130-dev-physical-stream-deck) | The live-service buffering and cross-device selection checks have separate criteria. |

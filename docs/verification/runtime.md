@@ -1,11 +1,12 @@
 # Runtime verification
 
-Evidence through November 28, 2026 (Asia/Seoul). [Release verification](releases.md) holds published source, CI and package hashes. This record separates local models, maintainer reports and independently observed operation.
+Evidence through November 29, 2026 (Asia/Seoul). [Release verification](releases.md) holds published source, CI and package hashes. This record separates local models, maintainer reports and independently observed operation.
 
 ## Current evidence
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
+| November 29 playback and display review, `85e8623` | 357 Node tests, three MV3/Chromium fixtures, two Python packaging tests and static checks passed. All 88 compared dial outputs matched the pre-refactor renderer. Both development archives matched source. [Review record](#november-29-playback-and-display-review) | These tests used a local player model and simulated SDK output. Live confirmation of the earlier startup build retains its original scope. |
 | Sequential Play/Pause, `2944ed7` | The maintainer confirmed normal operation after the fix for three or more startup inputs. Node and MV3 regressions exercise longer bursts with explicit Play/Pause actions. [Multiple startup inputs](#three-or-more-presses-during-startup) | The maintainer report did not specify the exact press count, timing, or installed archive identity. |
 | Maintainer report on cross-device playback selection | The song handed off from another device appeared as the last track. [Maintainer report](#live-youtube-music-checks-for-130-dev) | Covers the saved track after handoff. |
 | Maintainer report on physical Stream Deck | The maintainer reported completing the requested 1.3.0-dev hardware check. [Maintainer report](#130-dev-physical-stream-deck) | Covers the requested hardware pass. The separate live-service scenarios and processed installer are tracked independently. |
@@ -47,6 +48,14 @@ The November 7 `main` run used `@elgato/streamdeck` 3.0.4, `@elgato/cli` 1.10.4 
 | Key/dial output | Settings, profile reappearance, rotation/press/touch, proportional artwork, artist placement, backdrops and scrolling; Qt 6.10.3 reference rendering |
 | Popup | Real toolbar controls, captured routes, slider coalescing/closure, native catalogs and button bounds in all eight UI languages; separately labeled sample previews |
 | Distribution | Real worker import graph, serialized MAIN entry point, package allowlists/notices, fixed development versions and source/checksum metadata |
+
+### November 29 playback and display review
+
+The earlier Chrome source failed targeted checks for a transient disabled button, a Play result from a different track, and mismatched metadata and playback observations in both the standalone and paired paths. Product commit `38fe574` passed those checks and an added case where navigation supersedes the waiting input. The paired path retains the captured title when reading a closing tab fails. When both video IDs are known and disagree, the worker skips publishing the mixed observation.
+
+Separate commits reorganized playback receipts and outcome observation, shared a tab executor between bridge and standalone paths, extracted legacy per-tab delivery, and separated dial frame calculation from SDK output. A before/after comparison covered 88 image, layout and feedback outputs across modes, artwork fits, text placement and missing artwork. The existing browser integration retained its three- and four-press cold-start cases.
+
+Development build `1.3.0-dev+g85e86232b43c.local20261128150559049` passed 357 Node tests, three Chromium fixtures, two Python packaging tests, static checks and the official Elgato validator and packager. SHA-256 checks passed and all 55 Chrome and 117 Stream Deck archive files matched source, with the Elgato manifest compared as JSON. The changes were exercised using modeled playback and SDK output.
 
 ### November 28 final 1.3.0-dev validation
 
