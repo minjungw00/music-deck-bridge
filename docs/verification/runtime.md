@@ -6,7 +6,7 @@ Evidence through November 28, 2026 (Asia/Seoul). [Release verification](releases
 
 | Evidence | Completed scope | Limit |
 | --- | --- | --- |
-| Sequential Play/Pause, `2944ed7` | The maintainer confirmed two presses on the previous build; Windows logs recorded an unconfirmed third press. Node and MV3 regressions exercise longer bursts with explicit Play/Pause actions. [Multiple startup inputs](#three-or-more-presses-during-startup) | The observed Windows failure used the previous build. The new build still needs a live-service check. |
+| Sequential Play/Pause, `2944ed7` | The maintainer confirmed normal operation after the fix for three or more startup inputs. Node and MV3 regressions exercise longer bursts with explicit Play/Pause actions. [Multiple startup inputs](#three-or-more-presses-during-startup) | The maintainer report did not specify the exact press count, timing, or installed archive identity. |
 | Maintainer report on cross-device playback selection | The song handed off from another device appeared as the last track. [Maintainer report](#live-youtube-music-checks-for-130-dev) | Covers the saved track after handoff. |
 | Maintainer report on physical Stream Deck | The maintainer reported completing the requested 1.3.0-dev hardware check. [Maintainer report](#130-dev-physical-stream-deck) | Covers the requested hardware pass. The separate live-service scenarios and processed installer are tracked independently. |
 | Repeat and Shuffle after Chrome exits, `00698f6` | A paired Chromium profile applied queued Stream Deck Repeat and Shuffle once each after restart. [Restart check](#repeat-and-shuffle-after-chrome-exits) | Real MV3 worker and local player fixture. The test runner restarted Chrome in place of the Windows launcher. |
@@ -96,7 +96,9 @@ The Windows plugin log recorded three bursts of three presses and one burst of f
 
 The baseline Node regression reproduces the failed third press by modeling a site button that ignores an immediate resume after Pause. At `2944ed7`, held toggles use the relevant explicit playback method when the ready player supports it. The result is observed before the next held input runs.
 
-The Node model confirmed three, four and five presses. Chromium confirmed three presses queued before Chrome connected and four queued during the first Play request, with Volume and Repeat completing during both waits. All 353 Node tests, three Chromium fixtures, two Python packaging tests and static checks passed. Build `1.3.0-dev+g2944ed7aad61.local20261128112131175` passed official Elgato validation, SHA-256 and full archive comparisons. All 117 Stream Deck package files match the previous build. The new Chrome extension still needs confirmation on live YouTube Music.
+The Node model confirmed three, four and five presses. Chromium confirmed three presses queued before Chrome connected and four queued during the first Play request, with Volume and Repeat completing during both waits. All 353 Node tests, three Chromium fixtures, two Python packaging tests and static checks passed. Build `1.3.0-dev+g2944ed7aad61.local20261128112131175` passed official Elgato validation, SHA-256 and full archive comparisons. All 117 Stream Deck package files match the previous build.
+
+On November 28, the maintainer confirmed normal operation after receiving the Chrome extension with the fix for three or more startup inputs. The report did not specify the exact press count, timing, or installed archive identity.
 
 ### Repeat and Shuffle after Chrome exits
 
